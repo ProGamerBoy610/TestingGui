@@ -17,7 +17,7 @@ screenGui.Parent = playerGui
 -- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 320, 0, 180)
+mainFrame.Size = UDim2.new(0, 250, 0, 130)
 mainFrame.Position = UDim2.new(0, 50, 0, 50)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BorderSizePixel = 2
@@ -34,7 +34,7 @@ mainCorner.Parent = mainFrame
 -- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Size = UDim2.new(1, 0, 0, 25)
 titleBar.Position = UDim2.new(0, 0, 0, 0)
 titleBar.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
 titleBar.BorderSizePixel = 0
@@ -50,7 +50,7 @@ titleText.Name = "TitleText"
 titleText.Size = UDim2.new(1, -60, 1, 0)
 titleText.Position = UDim2.new(0, 10, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "AdminGui"
+titleText.Text = "Position Manager"
 titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleText.TextScaled = true
 titleText.Font = Enum.Font.SourceSansBold
@@ -60,8 +60,8 @@ titleText.Parent = titleBar
 -- Close Button
 local closeButton = Instance.new("TextButton")
 closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(1, -30, 0, 2.5)
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -22, 0, 2.5)
 closeButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
 closeButton.BorderSizePixel = 0
 closeButton.Text = "X"
@@ -77,8 +77,8 @@ closeCorner.Parent = closeButton
 -- Text Box
 local textBox = Instance.new("TextBox")
 textBox.Name = "PositionTextBox"
-textBox.Size = UDim2.new(0.9, 0, 0, 35)
-textBox.Position = UDim2.new(0.05, 0, 0, 45)
+textBox.Size = UDim2.new(0.9, 0, 0, 25)
+textBox.Position = UDim2.new(0.05, 0, 0, 35)
 textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 textBox.BorderSizePixel = 1
 textBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
@@ -96,15 +96,15 @@ textBoxCorner.Parent = textBox
 -- Button Frame
 local buttonFrame = Instance.new("Frame")
 buttonFrame.Name = "ButtonFrame"
-buttonFrame.Size = UDim2.new(0.9, 0, 0, 80)
-buttonFrame.Position = UDim2.new(0.05, 0, 0, 90)
+buttonFrame.Size = UDim2.new(0.9, 0, 0, 55)
+buttonFrame.Position = UDim2.new(0.05, 0, 0, 70)
 buttonFrame.BackgroundTransparency = 1
 buttonFrame.Parent = mainFrame
 
 -- Check Button
 local checkButton = Instance.new("TextButton")
 checkButton.Name = "CheckButton"
-checkButton.Size = UDim2.new(0.3, -5, 0, 35)
+checkButton.Size = UDim2.new(0.3, -3, 0, 25)
 checkButton.Position = UDim2.new(0, 0, 0, 0)
 checkButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 checkButton.BorderSizePixel = 0
@@ -121,7 +121,7 @@ checkCorner.Parent = checkButton
 -- TP Button
 local tpButton = Instance.new("TextButton")
 tpButton.Name = "TPButton"
-tpButton.Size = UDim2.new(0.3, -5, 0, 35)
+tpButton.Size = UDim2.new(0.3, -3, 0, 25)
 tpButton.Position = UDim2.new(0.35, 0, 0, 0)
 tpButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
 tpButton.BorderSizePixel = 0
@@ -138,7 +138,7 @@ tpCorner.Parent = tpButton
 -- Copy Button
 local copyButton = Instance.new("TextButton")
 copyButton.Name = "CopyButton"
-copyButton.Size = UDim2.new(0.3, -5, 0, 35)
+copyButton.Size = UDim2.new(0.3, -3, 0, 25)
 copyButton.Position = UDim2.new(0.7, 0, 0, 0)
 copyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
 copyButton.BorderSizePixel = 0
@@ -155,8 +155,8 @@ copyCorner.Parent = copyButton
 -- Status Label
 local statusLabel = Instance.new("TextLabel")
 statusLabel.Name = "StatusLabel"
-statusLabel.Size = UDim2.new(0.9, 0, 0, 20)
-statusLabel.Position = UDim2.new(0.05, 0, 0, 155)
+statusLabel.Size = UDim2.new(0.9, 0, 0, 15)
+statusLabel.Position = UDim2.new(0.05, 0, 0, 105)
 statusLabel.BackgroundTransparency = 1
 statusLabel.Text = "Ready"
 statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
