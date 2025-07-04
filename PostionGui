@@ -1,0 +1,277 @@
+-- Roblox Position Manager GUI for Executor
+-- Copy and paste this entire script into your executor
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "PositionManagerGui"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+-- Main Frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 320, 0, 180)
+mainFrame.Position = UDim2.new(0, 50, 0, 50)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BorderSizePixel = 2
+mainFrame.BorderColor3 = Color3.fromRGB(0, 162, 255)
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
+
+-- Add corner radius
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 8)
+mainCorner.Parent = mainFrame
+
+-- Title Bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleBar
+
+-- Title Text
+local titleText = Instance.new("TextLabel")
+titleText.Name = "TitleText"
+titleText.Size = UDim2.new(1, -60, 1, 0)
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Position Manager"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.TextScaled = true
+titleText.Font = Enum.Font.SourceSansBold
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Parent = titleBar
+
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 2.5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 4)
+closeCorner.Parent = closeButton
+
+-- Text Box
+local textBox = Instance.new("TextBox")
+textBox.Name = "PositionTextBox"
+textBox.Size = UDim2.new(0.9, 0, 0, 35)
+textBox.Position = UDim2.new(0.05, 0, 0, 45)
+textBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+textBox.BorderSizePixel = 1
+textBox.BorderColor3 = Color3.fromRGB(100, 100, 100)
+textBox.Text = "0, 0, 0"
+textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+textBox.TextSize = 14
+textBox.Font = Enum.Font.SourceSans
+textBox.PlaceholderText = "X, Y, Z"
+textBox.Parent = mainFrame
+
+local textBoxCorner = Instance.new("UICorner")
+textBoxCorner.CornerRadius = UDim.new(0, 4)
+textBoxCorner.Parent = textBox
+
+-- Button Frame
+local buttonFrame = Instance.new("Frame")
+buttonFrame.Name = "ButtonFrame"
+buttonFrame.Size = UDim2.new(0.9, 0, 0, 80)
+buttonFrame.Position = UDim2.new(0.05, 0, 0, 90)
+buttonFrame.BackgroundTransparency = 1
+buttonFrame.Parent = mainFrame
+
+-- Check Button
+local checkButton = Instance.new("TextButton")
+checkButton.Name = "CheckButton"
+checkButton.Size = UDim2.new(0.3, -5, 0, 35)
+checkButton.Position = UDim2.new(0, 0, 0, 0)
+checkButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+checkButton.BorderSizePixel = 0
+checkButton.Text = "Check"
+checkButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+checkButton.TextScaled = true
+checkButton.Font = Enum.Font.SourceSansBold
+checkButton.Parent = buttonFrame
+
+local checkCorner = Instance.new("UICorner")
+checkCorner.CornerRadius = UDim.new(0, 4)
+checkCorner.Parent = checkButton
+
+-- TP Button
+local tpButton = Instance.new("TextButton")
+tpButton.Name = "TPButton"
+tpButton.Size = UDim2.new(0.3, -5, 0, 35)
+tpButton.Position = UDim2.new(0.35, 0, 0, 0)
+tpButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+tpButton.BorderSizePixel = 0
+tpButton.Text = "TP"
+tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpButton.TextScaled = true
+tpButton.Font = Enum.Font.SourceSansBold
+tpButton.Parent = buttonFrame
+
+local tpCorner = Instance.new("UICorner")
+tpCorner.CornerRadius = UDim.new(0, 4)
+tpCorner.Parent = tpButton
+
+-- Copy Button
+local copyButton = Instance.new("TextButton")
+copyButton.Name = "CopyButton"
+copyButton.Size = UDim2.new(0.3, -5, 0, 35)
+copyButton.Position = UDim2.new(0.7, 0, 0, 0)
+copyButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+copyButton.BorderSizePixel = 0
+copyButton.Text = "Copy"
+copyButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+copyButton.TextScaled = true
+copyButton.Font = Enum.Font.SourceSansBold
+copyButton.Parent = buttonFrame
+
+local copyCorner = Instance.new("UICorner")
+copyCorner.CornerRadius = UDim.new(0, 4)
+copyCorner.Parent = copyButton
+
+-- Status Label
+local statusLabel = Instance.new("TextLabel")
+statusLabel.Name = "StatusLabel"
+statusLabel.Size = UDim2.new(0.9, 0, 0, 20)
+statusLabel.Position = UDim2.new(0.05, 0, 0, 155)
+statusLabel.BackgroundTransparency = 1
+statusLabel.Text = "Ready"
+statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+statusLabel.TextSize = 12
+statusLabel.Font = Enum.Font.SourceSans
+statusLabel.TextXAlignment = Enum.TextXAlignment.Center
+statusLabel.Parent = mainFrame
+
+-- Functions
+local function showStatus(message, color)
+    statusLabel.Text = message
+    statusLabel.TextColor3 = color or Color3.fromRGB(200, 200, 200)
+    wait(2)
+    statusLabel.Text = "Ready"
+    statusLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+end
+
+local function getPlayerPosition()
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local pos = player.Character.HumanoidRootPart.Position
+        return math.floor(pos.X), math.floor(pos.Y), math.floor(pos.Z)
+    end
+    return nil, nil, nil
+end
+
+local function parsePosition(posString)
+    local coords = {}
+    for coord in string.gmatch(posString, "([^,]+)") do
+        local num = tonumber(coord:match("^%s*(.-)%s*$"))
+        if num then
+            table.insert(coords, num)
+        end
+    end
+    return coords[1], coords[2], coords[3]
+end
+
+local function teleportPlayer(x, y, z)
+    if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(x, y, z)
+        return true
+    end
+    return false
+end
+
+-- Button Events
+checkButton.MouseButton1Click:Connect(function()
+    local x, y, z = getPlayerPosition()
+    if x then
+        textBox.Text = x .. ", " .. y .. ", " .. z
+        spawn(function()
+            showStatus("Position updated!", Color3.fromRGB(0, 255, 0))
+        end)
+    else
+        spawn(function()
+            showStatus("Player not found!", Color3.fromRGB(255, 0, 0))
+        end)
+    end
+end)
+
+tpButton.MouseButton1Click:Connect(function()
+    local x, y, z = parsePosition(textBox.Text)
+    if x and y and z then
+        if teleportPlayer(x, y, z) then
+            spawn(function()
+                showStatus("Teleported!", Color3.fromRGB(0, 255, 0))
+            end)
+        else
+            spawn(function()
+                showStatus("Teleport failed!", Color3.fromRGB(255, 0, 0))
+            end)
+        end
+    else
+        spawn(function()
+            showStatus("Invalid coordinates!", Color3.fromRGB(255, 0, 0))
+        end)
+    end
+end)
+
+copyButton.MouseButton1Click:Connect(function()
+    if setclipboard then
+        setclipboard(textBox.Text)
+        spawn(function()
+            showStatus("Copied to clipboard!", Color3.fromRGB(0, 255, 0))
+        end)
+    else
+        spawn(function()
+            showStatus("Clipboard not supported!", Color3.fromRGB(255, 0, 0))
+        end)
+    end
+end)
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Button Hover Effects
+local function createHoverEffect(button, hoverColor, originalColor)
+    button.MouseEnter:Connect(function()
+        button.BackgroundColor3 = hoverColor
+    end)
+    
+    button.MouseLeave:Connect(function()
+        button.BackgroundColor3 = originalColor
+    end)
+end
+
+createHoverEffect(checkButton, Color3.fromRGB(0, 220, 0), Color3.fromRGB(0, 200, 0))
+createHoverEffect(tpButton, Color3.fromRGB(255, 185, 20), Color3.fromRGB(255, 165, 0))
+createHoverEffect(copyButton, Color3.fromRGB(120, 120, 255), Color3.fromRGB(100, 100, 255))
+createHoverEffect(closeButton, Color3.fromRGB(255, 120, 120), Color3.fromRGB(255, 100, 100))
+
+print("Position Manager GUI loaded successfully!")
+print("Features:")
+print("- Check: Get current player position")
+print("- TP: Teleport to coordinates in textbox")
+print("- Copy: Copy coordinates to clipboard")
+print("- Drag the GUI to move it around")
+print("- Click X to close the GUI")
