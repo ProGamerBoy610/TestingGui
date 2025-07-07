@@ -121,7 +121,7 @@ end
 
 -- Button configurations
 local buttonConfigs = {
-    {name = "God Speed", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
+    {name = "God Speed", color = Color3.fromRGB(50, 50, 50), action = function()
         toggleGodSpeed()
     end},
     {name = "Night Vision", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
