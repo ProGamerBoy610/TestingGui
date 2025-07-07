@@ -1,6 +1,7 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -71,35 +72,59 @@ toggleCorner.Parent = toggleButton
 -- Content Frame (for buttons)
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, 0, 0, 280)
+contentFrame.Size = UDim2.new(1, 0, 0, 90)
 contentFrame.Position = UDim2.new(0, 0, 0, 50)
 contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
--- Functions removed - only GUI elements remain
+-- God Speed functionality with anti-cheat bypass
+local godSpeedEnabled = false
+local godSpeedLoop = nil
+
+local function toggleGodSpeed()
+    local player = Players.LocalPlayer
+    
+    if not godSpeedEnabled then
+        godSpeedEnabled = true
+        print("God Speed enabled")
+        
+        -- Create a loop that constantly sets walkspeed to bypass anti-cheat
+        godSpeedLoop = game:GetService("RunService").Heartbeat:Connect(function()
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChild("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = 27
+                end
+            end
+        end)
+    else
+        godSpeedEnabled = false
+        print("God Speed disabled")
+        
+        -- Stop the loop and reset walkspeed
+        if godSpeedLoop then
+            godSpeedLoop:Disconnect()
+            godSpeedLoop = nil
+        end
+        
+        local character = player.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.WalkSpeed = 16 -- Reset to default
+            end
+        end
+    end
+end
 
 -- Button configurations
 local buttonConfigs = {
-    {name = "Teleport", color = Color3.fromRGB(50, 50, 50), action = function()
-        -- Function removed
+    {name = "God Speed", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
+        toggleGodSpeed()
     end},
     {name = "Night Vision", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
-        -- Function removed
-    end},
-    {name = "Walk Speed", color = Color3.fromRGB(40, 40, 40), isSlider = true, min = 16, max = 100, action = function(value)
-        -- Function removed
-    end},
-    {name = "Button 4", color = Color3.fromRGB(35, 35, 35), action = function()
-        -- Function removed
-    end},
-    {name = "Button 5", color = Color3.fromRGB(50, 50, 50), action = function()
-        -- Function removed
-    end},
-    {name = "Button 6", color = Color3.fromRGB(45, 45, 45), action = function()
-        -- Function removed
-    end},
-    {name = "Button 7", color = Color3.fromRGB(40, 40, 40), action = function()
         -- Function removed
     end}
 }
@@ -352,7 +377,7 @@ local function toggleDropdown()
     
     local targetSize, targetRotation
     if isOpen then
-        targetSize = UDim2.new(0, 250, 0, 330)
+        targetSize = UDim2.new(0, 250, 0, 140)
         targetRotation = 180
     else
         targetSize = UDim2.new(0, 250, 0, 50)
