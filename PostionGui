@@ -51,6 +51,19 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = headerFrame
 
+-- Creator Label (subtitle)
+local creatorLabel = Instance.new("TextLabel")
+creatorLabel.Name = "Creator"
+creatorLabel.Size = UDim2.new(0, 150, 0, 20)
+creatorLabel.Position = UDim2.new(0, 5, 1, -25)
+creatorLabel.BackgroundTransparency = 1
+creatorLabel.Text = "By: ProGamer_boy"
+creatorLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+creatorLabel.TextScaled = true
+creatorLabel.Font = Enum.Font.Gotham
+creatorLabel.TextXAlignment = Enum.TextXAlignment.Left
+creatorLabel.Parent = mainFrame
+
 -- Toggle Button
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
@@ -123,7 +136,11 @@ local function updateNoclip()
     if player.Character then
         for _, part in pairs(player.Character:GetChildren()) do
             if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.CanCollide = not noclipEnabled
+                if noclipEnabled then
+                    part.CanCollide = false
+                else
+                    part.CanCollide = true
+                end
             end
         end
     end
@@ -134,8 +151,7 @@ local function toggleNoclip()
     
     if noclipEnabled then
         -- Start the noclip update loop
-        noclipConnection = RunService.Heartbeat:Connect(function()
-            wait(0.1)
+        noclipConnection = RunService.Stepped:Connect(function()
             updateNoclip()
         end)
     else
