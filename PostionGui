@@ -115,13 +115,48 @@ local function toggleWalkspeed()
     return walkspeedEnabled
 end
 
+-- Noclip functionality
+local noclipEnabled = false
+local noclipConnection = nil
+
+local function updateNoclip()
+    if player.Character then
+        for _, part in pairs(player.Character:GetChildren()) do
+            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                part.CanCollide = not noclipEnabled
+            end
+        end
+    end
+end
+
+local function toggleNoclip()
+    noclipEnabled = not noclipEnabled
+    
+    if noclipEnabled then
+        -- Start the noclip update loop
+        noclipConnection = RunService.Heartbeat:Connect(function()
+            wait(0.1)
+            updateNoclip()
+        end)
+    else
+        -- Stop the noclip update loop
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        updateNoclip() -- Reset to default
+    end
+    
+    return noclipEnabled
+end
+
 -- Button configurations (removed buttons 5, 6, 7)
 local buttonConfigs = {
     {name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
         return toggleWalkspeed()
     end},
-    {name = "Night Vision", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
-        -- Function removed
+    {name = "Noclip", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
+        return toggleNoclip()
     end},
     {name = "Walk Speed", color = Color3.fromRGB(40, 40, 40), isSlider = true, min = 16, max = 100, action = function(value)
         -- Function removed
