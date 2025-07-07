@@ -72,59 +72,61 @@ toggleCorner.Parent = toggleButton
 -- Content Frame (for buttons)
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, 0, 0, 90)
+contentFrame.Size = UDim2.new(1, 0, 0, 200)
 contentFrame.Position = UDim2.new(0, 0, 0, 50)
 contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
--- God Speed functionality with anti-cheat bypass
-local godSpeedEnabled = false
-local godSpeedLoop = nil
+-- Walkspeed functionality
+local walkspeedEnabled = false
+local walkspeedConnection = nil
+local defaultWalkspeed = 16
+local boostedWalkspeed = 50
 
-local function toggleGodSpeed()
-    local player = Players.LocalPlayer
-    
-    if not godSpeedEnabled then
-        godSpeedEnabled = true
-        print("God Speed enabled")
-        
-        -- Create a loop that constantly sets walkspeed to bypass anti-cheat
-        godSpeedLoop = game:GetService("RunService").Heartbeat:Connect(function()
-            local character = player.Character
-            if character then
-                local humanoid = character:FindFirstChild("Humanoid")
-                if humanoid then
-                    humanoid.WalkSpeed = 27
-                end
-            end
-        end)
-    else
-        godSpeedEnabled = false
-        print("God Speed disabled")
-        
-        -- Stop the loop and reset walkspeed
-        if godSpeedLoop then
-            godSpeedLoop:Disconnect()
-            godSpeedLoop = nil
-        end
-        
-        local character = player.Character
-        if character then
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.WalkSpeed = 16 -- Reset to default
-            end
+local function updateWalkspeed()
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        if walkspeedEnabled then
+            player.Character.Humanoid.WalkSpeed = boostedWalkspeed
+        else
+            player.Character.Humanoid.WalkSpeed = defaultWalkspeed
         end
     end
 end
 
--- Button configurations
+local function toggleWalkspeed()
+    walkspeedEnabled = not walkspeedEnabled
+    
+    if walkspeedEnabled then
+        -- Start the walkspeed update loop
+        walkspeedConnection = RunService.Heartbeat:Connect(function()
+            wait(0.1)
+            updateWalkspeed()
+        end)
+    else
+        -- Stop the walkspeed update loop
+        if walkspeedConnection then
+            walkspeedConnection:Disconnect()
+            walkspeedConnection = nil
+        end
+        updateWalkspeed() -- Reset to default
+    end
+    
+    return walkspeedEnabled
+end
+
+-- Button configurations (removed buttons 5, 6, 7)
 local buttonConfigs = {
-    {name = "God Speed", color = Color3.fromRGB(50, 50, 50), action = function()
-        toggleGodSpeed()
+    {name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
+        return toggleWalkspeed()
     end},
     {name = "Night Vision", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
+        -- Function removed
+    end},
+    {name = "Walk Speed", color = Color3.fromRGB(40, 40, 40), isSlider = true, min = 16, max = 100, action = function(value)
+        -- Function removed
+    end},
+    {name = "Button 4", color = Color3.fromRGB(35, 35, 35), action = function()
         -- Function removed
     end}
 }
@@ -179,7 +181,19 @@ for i, config in ipairs(buttonConfigs) do
         button.Text = ""
         
         button.MouseButton1Click:Connect(function()
-            toggleState = not toggleState
+            -- Execute the button's action if it exists and get the callback result
+            local callbackResult = false
+            if config.action then
+                local success, result = pcall(config.action)
+                if success then
+                    callbackResult = result or false
+                else
+                    warn("Error executing action for " .. config.name .. ": " .. tostring(result))
+                end
+            end
+            
+            -- Update toggle state based on callback result
+            toggleState = callbackResult
             
             if toggleState then
                 checkboxIcon.Text = "✓"
@@ -190,14 +204,6 @@ for i, config in ipairs(buttonConfigs) do
                 checkboxIcon.Text = "☐"
                 checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
                 button.BackgroundColor3 = config.color
-            end
-            
-            -- Execute the button's action if it exists
-            if config.action then
-                local success, error = pcall(config.action)
-                if not success then
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-                end
             end
         end)
         
@@ -377,7 +383,7 @@ local function toggleDropdown()
     
     local targetSize, targetRotation
     if isOpen then
-        targetSize = UDim2.new(0, 250, 0, 140)
+        targetSize = UDim2.new(0, 250, 0, 210) -- Adjusted height for 4 buttons
         targetRotation = 180
     else
         targetSize = UDim2.new(0, 250, 0, 50)
