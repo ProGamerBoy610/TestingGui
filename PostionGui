@@ -1,3 +1,4 @@
+-- Same initial services
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -6,12 +7,11 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Create ScreenGui
+-- GUI setup
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "DropdownGUI"
 screenGui.Parent = playerGui
 
--- Main Frame (Container)
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 250, 0, 50)
@@ -21,12 +21,10 @@ mainFrame.BorderSizePixel = 0
 mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Add corner radius
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
--- Header Frame
 local headerFrame = Instance.new("Frame")
 headerFrame.Name = "Header"
 headerFrame.Size = UDim2.new(1, 0, 0, 50)
@@ -39,7 +37,6 @@ local headerCorner = Instance.new("UICorner")
 headerCorner.CornerRadius = UDim.new(0, 12)
 headerCorner.Parent = headerFrame
 
--- Title Label
 local titleLabel = Instance.new("TextLabel")
 titleLabel.Name = "Title"
 titleLabel.Size = UDim2.new(1, -50, 1, 0)
@@ -51,20 +48,6 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = headerFrame
 
--- Creator Label (subtitle)
-local creatorLabel = Instance.new("TextLabel")
-creatorLabel.Name = "Creator"
-creatorLabel.Size = UDim2.new(0, 150, 0, 20)
-creatorLabel.Position = UDim2.new(0, 5, 1, -25)
-creatorLabel.BackgroundTransparency = 1
-creatorLabel.Text = "By: ProGamer_boy"
-creatorLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-creatorLabel.TextScaled = true
-creatorLabel.Font = Enum.Font.Gotham
-creatorLabel.TextXAlignment = Enum.TextXAlignment.Left
-creatorLabel.Parent = mainFrame
-
--- Toggle Button
 local toggleButton = Instance.new("TextButton")
 toggleButton.Name = "ToggleButton"
 toggleButton.Size = UDim2.new(0, 40, 0, 40)
@@ -82,7 +65,6 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(0, 8)
 toggleCorner.Parent = toggleButton
 
--- Content Frame (for buttons)
 local contentFrame = Instance.new("Frame")
 contentFrame.Name = "Content"
 contentFrame.Size = UDim2.new(1, 0, 0, 200)
@@ -91,406 +73,188 @@ contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
--- Walkspeed functionality
+-- Walkspeed toggle
 local walkspeedEnabled = false
 local walkspeedConnection = nil
 local defaultWalkspeed = 16
 local boostedWalkspeed = 50
 
 local function updateWalkspeed()
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        if walkspeedEnabled then
-            player.Character.Humanoid.WalkSpeed = boostedWalkspeed
-        else
-            player.Character.Humanoid.WalkSpeed = defaultWalkspeed
-        end
-    end
+	if player.Character and player.Character:FindFirstChild("Humanoid") then
+		player.Character.Humanoid.WalkSpeed = walkspeedEnabled and boostedWalkspeed or defaultWalkspeed
+	end
 end
 
 local function toggleWalkspeed()
-    walkspeedEnabled = not walkspeedEnabled
-    
-    if walkspeedEnabled then
-        -- Start the walkspeed update loop
-        walkspeedConnection = RunService.Heartbeat:Connect(function()
-            wait(0.1)
-            updateWalkspeed()
-        end)
-    else
-        -- Stop the walkspeed update loop
-        if walkspeedConnection then
-            walkspeedConnection:Disconnect()
-            walkspeedConnection = nil
-        end
-        updateWalkspeed() -- Reset to default
-    end
-    
-    return walkspeedEnabled
+	walkspeedEnabled = not walkspeedEnabled
+	if walkspeedEnabled then
+		walkspeedConnection = RunService.Heartbeat:Connect(function()
+			updateWalkspeed()
+		end)
+	else
+		if walkspeedConnection then walkspeedConnection:Disconnect() walkspeedConnection = nil end
+		updateWalkspeed()
+	end
+	return walkspeedEnabled
 end
 
--- Noclip functionality
+-- ✅ FIXED Noclip toggle
 local noclipEnabled = false
 local noclipConnection = nil
+local characterConnection = nil
 
-local function updateNoclip()
-    if player.Character then
-        for _, part in pairs(player.Character:GetChildren()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                if noclipEnabled then
-                    part.CanCollide = false
-                else
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
+local function applyNoclipToCharacter(char)
+	for _, part in ipairs(char:GetDescendants()) do
+		if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+			part.CanCollide = not noclipEnabled
+		end
+	end
+end
+
+local function startNoclip()
+	if player.Character then applyNoclipToCharacter(player.Character) end
+	noclipConnection = RunService.Stepped:Connect(function()
+		if noclipEnabled and player.Character then
+			applyNoclipToCharacter(player.Character)
+		end
+	end)
+	characterConnection = player.CharacterAdded:Connect(function(char)
+		char:WaitForChild("HumanoidRootPart")
+		applyNoclipToCharacter(char)
+	end)
+end
+
+local function stopNoclip()
+	if noclipConnection then noclipConnection:Disconnect() noclipConnection = nil end
+	if characterConnection then characterConnection:Disconnect() characterConnection = nil end
+	if player.Character then
+		for _, part in ipairs(player.Character:GetDescendants()) do
+			if part:IsA("BasePart") then part.CanCollide = true end
+		end
+	end
 end
 
 local function toggleNoclip()
-    noclipEnabled = not noclipEnabled
-    
-    if noclipEnabled then
-        -- Start the noclip update loop
-        noclipConnection = RunService.Stepped:Connect(function()
-            updateNoclip()
-        end)
-    else
-        -- Stop the noclip update loop
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
-        end
-        updateNoclip() -- Reset to default
-    end
-    
-    return noclipEnabled
+	noclipEnabled = not noclipEnabled
+	if noclipEnabled then startNoclip() else stopNoclip() end
+	return noclipEnabled
 end
 
--- Button configurations (removed buttons 5, 6, 7)
+-- Button config (3 shown)
 local buttonConfigs = {
-    {name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
-        return toggleWalkspeed()
-    end},
-    {name = "Noclip", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
-        return toggleNoclip()
-    end},
-    {name = "Walk Speed", color = Color3.fromRGB(40, 40, 40), isSlider = true, min = 16, max = 100, action = function(value)
-        -- Function removed
-    end},
-    {name = "Button 4", color = Color3.fromRGB(35, 35, 35), action = function()
-        -- Function removed
-    end}
+	{name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = toggleWalkspeed},
+	{name = "Noclip", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = toggleNoclip},
+	{name = "Button 3", color = Color3.fromRGB(35, 35, 35), action = function()
+		print("Button 3 pressed")
+	end}
 }
 
--- Create buttons
+-- Buttons loop (shortened to keep it focused)
 for i, config in ipairs(buttonConfigs) do
-    local button = Instance.new("TextButton")
-    button.Name = "Button" .. i
-    button.Size = UDim2.new(1, -20, 0, 35)
-    button.Position = UDim2.new(0, 10, 0, (i-1) * 40 + 5)
-    button.BackgroundColor3 = config.color
-    button.BorderSizePixel = 0
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextScaled = true
-    button.Font = Enum.Font.Gotham
-    button.Parent = contentFrame
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 8)
-    buttonCorner.Parent = button
-    
-    -- Handle toggle buttons with improved styling
-    if config.isToggle then
-        local toggleState = false
-        
-        -- Create checkbox icon (separate from button text)
-        local checkboxIcon = Instance.new("TextLabel")
-        checkboxIcon.Name = "CheckboxIcon"
-        checkboxIcon.Size = UDim2.new(0, 20, 0, 20)
-        checkboxIcon.Position = UDim2.new(0, 8, 0.5, -10)
-        checkboxIcon.BackgroundTransparency = 1
-        checkboxIcon.Text = "☐"
-        checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-        checkboxIcon.TextScaled = true
-        checkboxIcon.Font = Enum.Font.GothamBold
-        checkboxIcon.Parent = button
-        
-        -- Create text label for button name
-        local buttonText = Instance.new("TextLabel")
-        buttonText.Name = "ButtonText"
-        buttonText.Size = UDim2.new(1, -35, 1, 0)
-        buttonText.Position = UDim2.new(0, 35, 0, 0)
-        buttonText.BackgroundTransparency = 1
-        buttonText.Text = config.name
-        buttonText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        buttonText.TextScaled = true
-        buttonText.Font = Enum.Font.Gotham
-        buttonText.TextXAlignment = Enum.TextXAlignment.Left
-        buttonText.Parent = button
-        
-        -- Remove the original button text
-        button.Text = ""
-        
-        button.MouseButton1Click:Connect(function()
-            -- Execute the button's action if it exists and get the callback result
-            local callbackResult = false
-            if config.action then
-                local success, result = pcall(config.action)
-                if success then
-                    callbackResult = result or false
-                else
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(result))
-                end
-            end
-            
-            -- Update toggle state based on callback result
-            toggleState = callbackResult
-            
-            if toggleState then
-                checkboxIcon.Text = "✓"
-                checkboxIcon.TextColor3 = Color3.fromRGB(255, 85, 85) -- Red checkmark only
-                -- Keep button background the same
-                button.BackgroundColor3 = config.color
-            else
-                checkboxIcon.Text = "☐"
-                checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-                button.BackgroundColor3 = config.color
-            end
-        end)
-        
-    -- Handle slider buttons with much better styling
-    elseif config.isSlider then
-        local sliderValue = config.min
-        
-        -- Create text label for slider name and value
-        local sliderText = Instance.new("TextLabel")
-        sliderText.Name = "SliderText"
-        sliderText.Size = UDim2.new(1, -20, 0, 18)
-        sliderText.Position = UDim2.new(0, 10, 0, 3)
-        sliderText.BackgroundTransparency = 1
-        sliderText.Text = config.name .. ": " .. sliderValue
-        sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        sliderText.TextScaled = true
-        sliderText.Font = Enum.Font.Gotham
-        sliderText.TextXAlignment = Enum.TextXAlignment.Left
-        sliderText.Parent = button
-        
-        -- Remove the original button text
-        button.Text = ""
-        
-        -- Create slider track (improved design)
-        local sliderTrack = Instance.new("Frame")
-        sliderTrack.Name = "SliderTrack"
-        sliderTrack.Size = UDim2.new(0.8, 0, 0, 6)
-        sliderTrack.Position = UDim2.new(0.1, 0, 0, 22)
-        sliderTrack.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        sliderTrack.BorderSizePixel = 0
-        sliderTrack.Parent = button
-        
-        local sliderTrackCorner = Instance.new("UICorner")
-        sliderTrackCorner.CornerRadius = UDim.new(0, 3)
-        sliderTrackCorner.Parent = sliderTrack
-        
-        -- Create slider fill (progress bar)
-        local sliderFill = Instance.new("Frame")
-        sliderFill.Name = "SliderFill"
-        sliderFill.Size = UDim2.new(0, 0, 1, 0)
-        sliderFill.Position = UDim2.new(0, 0, 0, 0)
-        sliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255) -- Nice blue color
-        sliderFill.BorderSizePixel = 0
-        sliderFill.Parent = sliderTrack
-        
-        local sliderFillCorner = Instance.new("UICorner")
-        sliderFillCorner.CornerRadius = UDim.new(0, 3)
-        sliderFillCorner.Parent = sliderFill
-        
-        -- Create slider handle (much better looking)
-        local sliderHandle = Instance.new("Frame")
-        sliderHandle.Name = "SliderHandle"
-        sliderHandle.Size = UDim2.new(0, 16, 0, 16)
-        sliderHandle.Position = UDim2.new(0, -8, 0, -5)
-        sliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        sliderHandle.BorderSizePixel = 0
-        sliderHandle.Parent = sliderTrack
-        
-        local sliderHandleCorner = Instance.new("UICorner")
-        sliderHandleCorner.CornerRadius = UDim.new(0, 8)
-        sliderHandleCorner.Parent = sliderHandle
-        
-        -- Add shadow effect to handle
-        local handleShadow = Instance.new("Frame")
-        handleShadow.Name = "HandleShadow"
-        handleShadow.Size = UDim2.new(0, 18, 0, 18)
-        handleShadow.Position = UDim2.new(0, -9, 0, -6)
-        handleShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        handleShadow.BackgroundTransparency = 0.5
-        handleShadow.BorderSizePixel = 0
-        handleShadow.ZIndex = sliderHandle.ZIndex - 1
-        handleShadow.Parent = sliderTrack
-        
-        local handleShadowCorner = Instance.new("UICorner")
-        handleShadowCorner.CornerRadius = UDim.new(0, 9)
-        handleShadowCorner.Parent = handleShadow
-        
-        -- Slider functionality
-        local dragging = false
-        
-        local function updateSlider(input)
-            local sliderTrackAbsolutePos = sliderTrack.AbsolutePosition
-            local sliderTrackAbsoluteSize = sliderTrack.AbsoluteSize
-            local relativeX = math.clamp((input.Position.X - sliderTrackAbsolutePos.X) / sliderTrackAbsoluteSize.X, 0, 1)
-            
-            sliderValue = math.floor(config.min + (config.max - config.min) * relativeX)
-            
-            -- Update visual elements with smooth animation
-            local targetFillSize = UDim2.new(relativeX, 0, 1, 0)
-            local targetHandlePos = UDim2.new(relativeX, -8, 0, -5)
-            local targetShadowPos = UDim2.new(relativeX, -9, 0, -6)
-            
-            TweenService:Create(sliderFill, TweenInfo.new(0.1), {Size = targetFillSize}):Play()
-            TweenService:Create(sliderHandle, TweenInfo.new(0.1), {Position = targetHandlePos}):Play()
-            TweenService:Create(handleShadow, TweenInfo.new(0.1), {Position = targetShadowPos}):Play()
-            
-            sliderText.Text = config.name .. ": " .. sliderValue
-            
-            -- Execute action
-            if config.action then
-                local success, error = pcall(config.action, sliderValue)
-                if not success then
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-                end
-            end
-        end
-        
-        -- Handle mouse/touch input
-        sliderTrack.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                updateSlider(input)
-                
-                -- Visual feedback when dragging starts
-                TweenService:Create(sliderHandle, TweenInfo.new(0.1), {
-                    Size = UDim2.new(0, 18, 0, 18),
-                    Position = UDim2.new(sliderHandle.Position.X.Scale, -9, 0, -6)
-                }):Play()
-            end
-        end)
-        
-        sliderTrack.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                updateSlider(input)
-            end
-        end)
-        
-        sliderTrack.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = false
-                
-                -- Reset handle size when dragging ends
-                TweenService:Create(sliderHandle, TweenInfo.new(0.1), {
-                    Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new(sliderHandle.Position.X.Scale, -8, 0, -5)
-                }):Play()
-            end
-        end)
-        
-        -- Initialize slider at minimum value
-        sliderFill.Size = UDim2.new(0, 0, 1, 0)
-        sliderHandle.Position = UDim2.new(0, -8, 0, -5)
-        handleShadow.Position = UDim2.new(0, -9, 0, -6)
-        
-    -- Handle regular buttons
-    else
-        button.Text = config.name
-        
-        button.MouseButton1Click:Connect(function()
-            -- Execute the button's action if it exists
-            if config.action then
-                local success, error = pcall(config.action)
-                if not success then
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-                end
-            end
-            
-            -- Visual feedback with better animation
-            local originalColor = button.BackgroundColor3
-            local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-            
-            TweenService:Create(button, tweenInfo, {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
-            
-            wait(0.1)
-            
-            TweenService:Create(button, tweenInfo, {BackgroundColor3 = originalColor}):Play()
-        end)
-    end
+	local button = Instance.new("TextButton")
+	button.Name = "Button" .. i
+	button.Size = UDim2.new(1, -20, 0, 35)
+	button.Position = UDim2.new(0, 10, 0, (i - 1) * 40 + 5)
+	button.BackgroundColor3 = config.color
+	button.BorderSizePixel = 0
+	button.TextColor3 = Color3.fromRGB(255, 255, 255)
+	button.TextScaled = true
+	button.Font = Enum.Font.Gotham
+	button.Parent = contentFrame
+
+	local buttonCorner = Instance.new("UICorner")
+	buttonCorner.CornerRadius = UDim.new(0, 8)
+	buttonCorner.Parent = button
+
+	if config.isToggle then
+		local checkboxIcon = Instance.new("TextLabel")
+		checkboxIcon.Size = UDim2.new(0, 20, 0, 20)
+		checkboxIcon.Position = UDim2.new(0, 8, 0.5, -10)
+		checkboxIcon.BackgroundTransparency = 1
+		checkboxIcon.Text = "☐"
+		checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+		checkboxIcon.TextScaled = true
+		checkboxIcon.Font = Enum.Font.GothamBold
+		checkboxIcon.Parent = button
+
+		local buttonText = Instance.new("TextLabel")
+		buttonText.Size = UDim2.new(1, -35, 1, 0)
+		buttonText.Position = UDim2.new(0, 35, 0, 0)
+		buttonText.BackgroundTransparency = 1
+		buttonText.Text = config.name
+		buttonText.TextColor3 = Color3.fromRGB(255, 255, 255)
+		buttonText.TextScaled = true
+		buttonText.Font = Enum.Font.Gotham
+		buttonText.TextXAlignment = Enum.TextXAlignment.Left
+		buttonText.Parent = button
+
+		button.Text = ""
+
+		button.MouseButton1Click:Connect(function()
+			local success, result = pcall(config.action)
+			local toggleState = success and result or false
+			if toggleState then
+				checkboxIcon.Text = "✓"
+				checkboxIcon.TextColor3 = Color3.fromRGB(255, 85, 85)
+			else
+				checkboxIcon.Text = "☐"
+				checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
+			end
+		end)
+
+	else
+		button.Text = config.name
+		button.MouseButton1Click:Connect(function()
+			if config.action then
+				pcall(config.action)
+			end
+		end)
+	end
 end
 
--- Dropdown functionality
+-- Dropdown toggle
 local isOpen = false
 local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 
 local function toggleDropdown()
-    isOpen = not isOpen
-    
-    local targetSize, targetRotation
-    if isOpen then
-        targetSize = UDim2.new(0, 250, 0, 210) -- Adjusted height for 4 buttons
-        targetRotation = 180
-    else
-        targetSize = UDim2.new(0, 250, 0, 50)
-        targetRotation = 0
-    end
-    
-    -- Animate main frame
-    local sizeTween = TweenService:Create(mainFrame, tweenInfo, {Size = targetSize})
-    sizeTween:Play()
-    
-    -- Animate toggle button rotation
-    local rotationTween = TweenService:Create(toggleButton, tweenInfo, {Rotation = targetRotation})
-    rotationTween:Play()
+	isOpen = not isOpen
+	local targetSize = isOpen and UDim2.new(0, 250, 0, 210) or UDim2.new(0, 250, 0, 50)
+	local targetRotation = isOpen and 180 or 0
+	TweenService:Create(mainFrame, tweenInfo, {Size = targetSize}):Play()
+	TweenService:Create(toggleButton, tweenInfo, {Rotation = targetRotation}):Play()
 end
 
 toggleButton.MouseButton1Click:Connect(toggleDropdown)
 
--- Dragging functionality
+-- Drag support
 local dragToggle = nil
-local dragSpeed = 0
 local dragStart = nil
 local startPos = nil
 
 local function updateInput(input)
-    local delta = input.Position - dragStart
-    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    TweenService:Create(mainFrame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+	local delta = input.Position - dragStart
+	local newPos = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+	TweenService:Create(mainFrame, TweenInfo.new(0.05), {Position = newPos}):Play()
 end
 
 headerFrame.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        dragToggle = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = false
-            end
-        end)
-    end
+	if input.UserInputType == Enum.UserInputType.MouseButton1 then
+		dragToggle = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+		input.Changed:Connect(function()
+			if input.UserInputState == Enum.UserInputState.End then
+				dragToggle = false
+			end
+		end)
+	end
 end)
 
 UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragToggle then
-            updateInput(input)
-        end
-    end
+	if input.UserInputType == Enum.UserInputType.MouseMovement and dragToggle then
+		updateInput(input)
+	end
 end)
 
--- Mobile touch support for dragging
-headerFrame.TouchMoved:Connect(function(touch, gameProcessed)
-    if dragToggle then
-        updateInput(touch)
-    end
-end)
-
-print("Improved Dropdown GUI loaded successfully!")
+-- Final log
+print("✅ GUI with fixed Noclip loaded!")
