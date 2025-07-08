@@ -78,6 +78,19 @@ contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
+-- Subtitle Label (By @P_G_B)
+local subtitleLabel = Instance.new("TextLabel")
+subtitleLabel.Name = "Subtitle"
+subtitleLabel.Size = UDim2.new(0, 100, 0, 20)
+subtitleLabel.Position = UDim2.new(0, 10, 1, -25)
+subtitleLabel.BackgroundTransparency = 1
+subtitleLabel.Text = "By @P_G_B"
+subtitleLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+subtitleLabel.TextScaled = true
+subtitleLabel.Font = Enum.Font.Gotham
+subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+subtitleLabel.Parent = contentFrame
+
 -- Walkspeed functionality
 local walkspeedEnabled = false
 local walkspeedConnection = nil
