@@ -96,7 +96,7 @@ creditLabel.Parent = contentFrame
 local walkspeedEnabled = false
 local walkspeedConnection = nil
 local defaultWalkspeed = 16
-local boostedWalkspeed = 80
+local boostedWalkspeed = 45
 
 local function updateWalkspeed()
     if player.Character and player.Character:FindFirstChild("Humanoid") then
