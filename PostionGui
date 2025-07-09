@@ -140,8 +140,8 @@ local buttonConfigs = {
     {name = "GLIDE Help", color = Color3.fromRGB(40, 40, 40), action = function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/GLIDE%20button%20gui%20for%20steal%20a%20brianrot.lua"))()
     end},
-    {name = "Button 4", color = Color3.fromRGB(35, 35, 35), action = function()
-        -- Function removed
+    {name = "Respawn Players", color = Color3.fromRGB(35, 35, 35), action = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Resspwn%20players"))()
     end}
 }
 
