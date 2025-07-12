@@ -1,9 +1,8 @@
--- Advanced Auto Farm System for Roblox Simulator Games
--- Compatible with most executor environments
+-- Click-Based Auto Farm System with Teleportation
+-- Finds coins in nested folders, teleports to them, and clicks with ClickDetector
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 
@@ -15,232 +14,211 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ========================
 local CONFIG = {
     FARM_ENABLED = false,
-    FARM_INTERVAL = 1.5, -- Seconds between farm cycles
-    PET_SCAN_PATHS = {
-        "workspace.Pets",
-        "workspace.__PETS",
-        "workspace.PlayerPets",
-        "workspace." .. player.Name .. "_Pets",
-        "workspace." .. player.Name,
-        "workspace.Live." .. player.Name .. ".Pets"
-    },
-    COIN_SCAN_PATHS = {
-        "workspace.__THINGS.Coins",
-        "workspace.__THINGS.Chests",
-        "workspace.Coins",
-        "workspace.Chests",
-        "workspace.Items.Coins",
-        "workspace.Items.Chests",
-        "workspace.Game.Coins",
-        "workspace.Game.Chests",
-        "workspace.Live.Coins",
-        "workspace.Live.Chests"
-    },
-    REMOTE_EVENT_NAMES = {
-        "PetAction", "SendPet", "MovePet", "PetTarget",
-        "CollectCoin", "CollectChest", "PetCollect",
-        "farmCoin", "farmChest", "sendPets", "usePet"
-    }
+    CLICK_DELAY = 7, -- Wait 7 seconds after clicking (5-10 range)
+    TELEPORT_OFFSET = Vector3.new(0, 5, 0), -- Teleport slightly above the coin
+    COIN_NAME = "Coin", -- Name of the coin object
+    MAX_SEARCH_DEPTH = 6, -- How deep to search in folders
+    SEARCH_WORKSPACE = true, -- Search entire workspace for coins
 }
 
 -- ========================
 -- GLOBAL VARIABLES
 -- ========================
 local autoFarmConnection
-local lastFarmTime = 0
+local isCurrentlyFarming = false
 local farmStats = {
     coinsFound = 0,
-    petsActive = 0,
-    farmCycles = 0
+    coinsClicked = 0,
+    currentCoin = nil
 }
 
 -- ========================
 -- UTILITY FUNCTIONS
 -- ========================
 
--- Safe path resolution function
-local function resolvePath(pathString)
-    local parts = {}
-    for part in pathString:gmatch("[^.]+") do
-        table.insert(parts, part)
-    end
+-- Deep search function to find all objects with specific name
+local function findAllObjectsNamed(parent, targetName, maxDepth, currentDepth)
+    if not parent then return {} end
+    if currentDepth > maxDepth then return {} end
     
-    local current = game
-    for _, part in ipairs(parts) do
-        current = current:FindFirstChild(part)
-        if not current then
-            return nil
+    local foundObjects = {}
+    
+    -- Check all children
+    for _, child in pairs(parent:GetChildren()) do
+        -- If this child matches our target name
+        if child.Name == targetName then
+            table.insert(foundObjects, child)
+        end
+        
+        -- Recursively search in this child if it's a folder/model
+        if child:IsA("Folder") or child:IsA("Model") then
+            local childResults = findAllObjectsNamed(child, targetName, maxDepth, currentDepth + 1)
+            for _, result in pairs(childResults) do
+                table.insert(foundObjects, result)
+            end
         end
     end
-    return current
+    
+    return foundObjects
 end
 
--- Get instance from multiple possible paths
-local function getInstanceFromPaths(paths)
-    for _, path in ipairs(paths) do
-        local instance = resolvePath(path)
-        if instance then
-            return instance
+-- Check if a coin is valid for farming
+local function isValidCoin(coin)
+    if not coin or not coin.Parent then
+        return false
+    end
+    
+    -- Check if it has a ClickDetector
+    local clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    if not clickDetector then
+        return false
+    end
+    
+    -- Check if coin is not broken/disabled
+    if coin:GetAttribute("Broken") or 
+       coin:GetAttribute("Collected") or
+       coin:GetAttribute("Disabled") then
+        return false
+    end
+    
+    -- Check transparency (collected coins are often transparent)
+    if coin:IsA("BasePart") and coin.Transparency >= 0.9 then
+        return false
+    end
+    
+    return true
+end
+
+-- Get position of coin (handle both BasePart and Model)
+local function getCoinPosition(coin)
+    if coin:IsA("BasePart") then
+        return coin.Position
+    elseif coin:IsA("Model") then
+        if coin.PrimaryPart then
+            return coin.PrimaryPart.Position
+        else
+            -- Find the first BasePart in the model
+            for _, child in pairs(coin:GetDescendants()) do
+                if child:IsA("BasePart") then
+                    return child.Position
+                end
+            end
         end
     end
     return nil
 end
 
--- ========================
--- CORE FARMING FUNCTIONS
--- ========================
-
--- Function 1: Detect Player's Pets
-local function detectPlayerPets()
-    local pets = {}
-    
-    -- Method 1: Scan common pet locations
-    for _, path in ipairs(CONFIG.PET_SCAN_PATHS) do
-        local petContainer = resolvePath(path)
-        if petContainer then
-            for _, child in ipairs(petContainer:GetChildren()) do
-                if child:IsA("Model") and (
-                    string.find(child.Name:lower(), "pet") or
-                    child:FindFirstChild("PetScript") or
-                    child:FindFirstChild("IsPet") or
-                    child:GetAttribute("Owner") == player.Name or
-                    child:GetAttribute("PlayerName") == player.Name
-                ) then
-                    table.insert(pets, child)
-                end
-            end
-        end
-    end
-    
-    -- Method 2: Check player's character for pets
+-- Safe teleport function
+local function teleportToPosition(position)
     local character = player.Character
-    if character then
-        for _, child in ipairs(character:GetChildren()) do
-            if child:IsA("Model") and string.find(child.Name:lower(), "pet") then
-                table.insert(pets, child)
-            end
-        end
-    end
+    if not character then return false end
     
-    -- Method 3: Check workspace for pets with player ownership
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and obj.Name:find("Pet") and 
-           (obj:GetAttribute("Owner") == player.Name or
-            obj:GetAttribute("PlayerName") == player.Name) then
-            table.insert(pets, obj)
-        end
-    end
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return false end
     
-    farmStats.petsActive = #pets
-    return pets
+    -- Teleport with offset
+    local teleportPosition = position + CONFIG.TELEPORT_OFFSET
+    humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+    
+    return true
 end
 
--- Function 2: Scan Coins or Chests
-local function scanFarmableTargets()
-    local targets = {}
+-- Click the coin using ClickDetector
+local function clickCoin(coin)
+    if not coin or not coin.Parent then return false end
     
-    -- Scan all possible coin/chest locations
-    for _, path in ipairs(CONFIG.COIN_SCAN_PATHS) do
-        local container = resolvePath(path)
-        if container then
-            for _, child in ipairs(container:GetChildren()) do
-                if child:IsA("Model") or child:IsA("BasePart") then
-                    -- Check if target is valid and not broken
-                    local isValid = true
-                    
-                    -- Skip if marked as broken or collected
-                    if child:GetAttribute("Broken") or 
-                       child:GetAttribute("Collected") or
-                       child:GetAttribute("Disabled") then
-                        isValid = false
-                    end
-                    
-                    -- Skip if transparency is too high (often indicates collected items)
-                    if child:IsA("BasePart") and child.Transparency >= 0.9 then
-                        isValid = false
-                    end
-                    
-                    -- Skip if no collision (some games disable collision on collected items)
-                    if child:IsA("BasePart") and not child.CanCollide and child.Transparency > 0.5 then
-                        isValid = false
-                    end
-                    
-                    if isValid then
-                        table.insert(targets, child)
-                    end
-                end
-            end
-        end
-    end
+    local clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    if not clickDetector then return false end
     
-    farmStats.coinsFound = #targets
-    return targets
+    -- Try to click the detector
+    pcall(function()
+        fireclickdetector(clickDetector)
+    end)
+    
+    return true
 end
 
--- Function 3: Send Pets to Targets
-local function sendPetsToTarget(pets, target)
-    if not target or not target.Parent then return end
+-- ========================
+-- MAIN FARMING FUNCTIONS
+-- ========================
+
+-- Find all coins in the workspace
+local function findAllCoins()
+    local allCoins = {}
     
-    -- Try different remote event calling methods
-    for _, eventName in ipairs(CONFIG.REMOTE_EVENT_NAMES) do
-        local remoteEvent = ReplicatedStorage:FindFirstChild(eventName)
-        if remoteEvent and remoteEvent:IsA("RemoteEvent") then
-            for _, pet in ipairs(pets) do
-                pcall(function()
-                    -- Try different argument patterns
-                    remoteEvent:FireServer(pet, target)
-                    remoteEvent:FireServer(target, pet)
-                    remoteEvent:FireServer({pet = pet, target = target})
-                    remoteEvent:FireServer({Pet = pet, Coin = target})
-                end)
+    if CONFIG.SEARCH_WORKSPACE then
+        -- Search the entire workspace for coins
+        local foundCoins = findAllObjectsNamed(workspace, CONFIG.COIN_NAME, CONFIG.MAX_SEARCH_DEPTH, 0)
+        
+        -- Filter valid coins
+        for _, coin in pairs(foundCoins) do
+            if isValidCoin(coin) then
+                table.insert(allCoins, coin)
             end
         end
     end
     
-    -- Try RemoteFunction calls
-    for _, eventName in ipairs(CONFIG.REMOTE_EVENT_NAMES) do
-        local remoteFunction = ReplicatedStorage:FindFirstChild(eventName)
-        if remoteFunction and remoteFunction:IsA("RemoteFunction") then
-            for _, pet in ipairs(pets) do
-                pcall(function()
-                    remoteFunction:InvokeServer(pet, target)
-                    remoteFunction:InvokeServer(target, pet)
-                end)
-            end
-        end
-    end
+    farmStats.coinsFound = #allCoins
+    return allCoins
 end
 
--- Function 4: Main Farm Loop Logic
+-- Main farming cycle
 local function executeFarmCycle()
-    if not CONFIG.FARM_ENABLED then return end
+    if not CONFIG.FARM_ENABLED or isCurrentlyFarming then 
+        return 
+    end
     
-    -- Check if enough time has passed
-    local currentTime = tick()
-    if currentTime - lastFarmTime < CONFIG.FARM_INTERVAL then
+    isCurrentlyFarming = true
+    
+    -- Find all available coins
+    local coins = findAllCoins()
+    
+    if #coins == 0 then
+        isCurrentlyFarming = false
         return
     end
     
-    lastFarmTime = currentTime
-    farmStats.farmCycles = farmStats.farmCycles + 1
-    
-    -- Get active pets
-    local pets = detectPlayerPets()
-    if #pets == 0 then
-        return -- No pets available
+    -- Process each coin
+    for _, coin in pairs(coins) do
+        if not CONFIG.FARM_ENABLED then break end
+        
+        -- Double-check coin is still valid
+        if not isValidCoin(coin) then
+            continue
+        end
+        
+        farmStats.currentCoin = coin
+        
+        -- Get coin position
+        local coinPosition = getCoinPosition(coin)
+        if not coinPosition then
+            continue
+        end
+        
+        -- Teleport to coin
+        if teleportToPosition(coinPosition) then
+            wait(0.5) -- Wait for teleportation to complete
+            
+            -- Click the coin
+            if clickCoin(coin) then
+                farmStats.coinsClicked = farmStats.coinsClicked + 1
+                print("✅ Clicked coin #" .. farmStats.coinsClicked .. " - Waiting " .. CONFIG.CLICK_DELAY .. " seconds...")
+                
+                -- Wait the specified delay
+                wait(CONFIG.CLICK_DELAY)
+            else
+                print("❌ Failed to click coin")
+            end
+        else
+            print("❌ Failed to teleport to coin")
+        end
+        
+        -- Small delay between coins
+        wait(0.2)
     end
     
-    -- Get farmable targets
-    local targets = scanFarmableTargets()
-    if #targets == 0 then
-        return -- No targets available
-    end
-    
-    -- Send pets to each target
-    for _, target in ipairs(targets) do
-        sendPetsToTarget(pets, target)
-        wait(0.05) -- Small delay to prevent server overload
-    end
+    farmStats.currentCoin = nil
+    isCurrentlyFarming = false
 end
 
 -- ========================
@@ -262,9 +240,9 @@ local function createAutoFarmGUI()
     -- Main frame
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 280, 0, 160)
+    mainFrame.Size = UDim2.new(0, 320, 0, 200)
     mainFrame.Position = UDim2.new(0, 20, 0, 20)
-    mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
     mainFrame.Draggable = true
@@ -272,13 +250,13 @@ local function createAutoFarmGUI()
     
     -- Frame styling
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 12)
+    corner.CornerRadius = UDim.new(0, 15)
     corner.Parent = mainFrame
     
     local gradient = Instance.new("UIGradient")
     gradient.Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 45)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(25, 25, 30))
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(35, 35, 40)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 25))
     }
     gradient.Rotation = 90
     gradient.Parent = mainFrame
@@ -287,9 +265,9 @@ local function createAutoFarmGUI()
     local titleLabel = Instance.new("TextLabel")
     titleLabel.Name = "TitleLabel"
     titleLabel.Size = UDim2.new(1, 0, 0, 35)
-    titleLabel.Position = UDim2.new(0, 0, 0, 5)
+    titleLabel.Position = UDim2.new(0, 0, 0, 10)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "🚜 Auto Farm System"
+    titleLabel.Text = "🎯 Click Farm System"
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextScaled = true
     titleLabel.Font = Enum.Font.GothamBold
@@ -298,9 +276,9 @@ local function createAutoFarmGUI()
     -- Toggle button
     local toggleButton = Instance.new("TextButton")
     toggleButton.Name = "ToggleButton"
-    toggleButton.Size = UDim2.new(0.85, 0, 0, 45)
-    toggleButton.Position = UDim2.new(0.075, 0, 0, 50)
-    toggleButton.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+    toggleButton.Size = UDim2.new(0.85, 0, 0, 50)
+    toggleButton.Position = UDim2.new(0.075, 0, 0, 55)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
     toggleButton.BorderSizePixel = 0
     toggleButton.Text = "Auto Farm: OFF"
     toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -309,20 +287,32 @@ local function createAutoFarmGUI()
     toggleButton.Parent = mainFrame
     
     local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.CornerRadius = UDim.new(0, 10)
     toggleCorner.Parent = toggleButton
     
     -- Status label
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
-    statusLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    statusLabel.Position = UDim2.new(0.05, 0, 0, 105)
+    statusLabel.Size = UDim2.new(0.9, 0, 0, 30)
+    statusLabel.Position = UDim2.new(0.05, 0, 0, 115)
     statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "Status: Inactive | Pets: 0 | Coins: 0"
+    statusLabel.Text = "Status: Inactive"
     statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
     statusLabel.TextScaled = true
     statusLabel.Font = Enum.Font.Gotham
     statusLabel.Parent = mainFrame
+    
+    -- Stats label
+    local statsLabel = Instance.new("TextLabel")
+    statsLabel.Name = "StatsLabel"
+    statsLabel.Size = UDim2.new(0.9, 0, 0, 25)
+    statsLabel.Position = UDim2.new(0.05, 0, 0, 145)
+    statsLabel.BackgroundTransparency = 1
+    statsLabel.Text = "Found: 0 | Clicked: 0"
+    statsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
+    statsLabel.TextScaled = true
+    statsLabel.Font = Enum.Font.Gotham
+    statsLabel.Parent = mainFrame
     
     -- Credit label
     local creditLabel = Instance.new("TextLabel")
@@ -330,38 +320,40 @@ local function createAutoFarmGUI()
     creditLabel.Size = UDim2.new(1, 0, 0, 20)
     creditLabel.Position = UDim2.new(0, 0, 1, -25)
     creditLabel.BackgroundTransparency = 1
-    creditLabel.Text = "Created by Advanced Farm System"
-    creditLabel.TextColor3 = Color3.fromRGB(120, 120, 120)
+    creditLabel.Text = "Created by Click Farm Pro"
+    creditLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
     creditLabel.TextScaled = true
     creditLabel.Font = Enum.Font.Gotham
     creditLabel.Parent = mainFrame
     
-    return screenGui, toggleButton, statusLabel
+    return screenGui, toggleButton, statusLabel, statsLabel
 end
 
 -- ========================
--- MAIN CONTROL FUNCTIONS
+-- CONTROL FUNCTIONS
 -- ========================
 
--- Function 5: Toggle Auto Farm
-local function toggleAutoFarm(button, statusLabel)
+-- Toggle auto farm
+local function toggleAutoFarm(button, statusLabel, statsLabel)
     CONFIG.FARM_ENABLED = not CONFIG.FARM_ENABLED
     
     if CONFIG.FARM_ENABLED then
         -- Enable farming
         button.Text = "Auto Farm: ON"
-        button.BackgroundColor3 = Color3.fromRGB(60, 220, 60)
+        button.BackgroundColor3 = Color3.fromRGB(50, 220, 50)
         
         -- Start the farming loop
         autoFarmConnection = RunService.Heartbeat:Connect(function()
-            executeFarmCycle()
+            if not isCurrentlyFarming then
+                spawn(executeFarmCycle)
+            end
         end)
         
-        print("✅ Auto Farm ENABLED")
+        print("✅ Auto Farm ENABLED - Looking for coins named '" .. CONFIG.COIN_NAME .. "'")
     else
         -- Disable farming
         button.Text = "Auto Farm: OFF"
-        button.BackgroundColor3 = Color3.fromRGB(220, 60, 60)
+        button.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
         
         -- Stop the farming loop
         if autoFarmConnection then
@@ -369,22 +361,49 @@ local function toggleAutoFarm(button, statusLabel)
             autoFarmConnection = nil
         end
         
+        isCurrentlyFarming = false
         print("❌ Auto Farm DISABLED")
     end
     
     -- Update status
-    updateStatus(statusLabel)
+    updateStatus(statusLabel, statsLabel)
 end
 
 -- Update status display
-local function updateStatus(statusLabel)
+local function updateStatus(statusLabel, statsLabel)
     if CONFIG.FARM_ENABLED then
-        statusLabel.Text = string.format("Status: Active | Pets: %d | Coins: %d", 
-            farmStats.petsActive, farmStats.coinsFound)
-        statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        if isCurrentlyFarming then
+            statusLabel.Text = "Status: Farming in progress..."
+            statusLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+        else
+            statusLabel.Text = "Status: Active - Searching for coins"
+            statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        end
     else
-        statusLabel.Text = "Status: Inactive | Pets: 0 | Coins: 0"
+        statusLabel.Text = "Status: Inactive"
         statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    
+    statsLabel.Text = string.format("Found: %d | Clicked: %d", farmStats.coinsFound, farmStats.coinsClicked)
+end
+
+-- Test function to find coins
+local function testCoinDetection()
+    print("🔍 Testing coin detection...")
+    local coins = findAllCoins()
+    print("📊 Found " .. #coins .. " coins named '" .. CONFIG.COIN_NAME .. "'")
+    
+    for i, coin in pairs(coins) do
+        if i <= 5 then -- Show first 5 coins
+            local position = getCoinPosition(coin)
+            local hasClickDetector = coin:FindFirstChildOfClass("ClickDetector") ~= nil
+            print(string.format("  Coin #%d: %s | Position: %s | ClickDetector: %s", 
+                i, coin:GetFullName(), tostring(position), tostring(hasClickDetector)))
+        end
+    end
+    
+    if #coins > 5 then
+        print("  ... and " .. (#coins - 5) .. " more coins")
     end
 end
 
@@ -393,24 +412,24 @@ end
 -- ========================
 
 -- Create and setup GUI
-local gui, toggleButton, statusLabel = createAutoFarmGUI()
+local gui, toggleButton, statusLabel, statsLabel = createAutoFarmGUI()
 
 -- Connect toggle button
 toggleButton.MouseButton1Click:Connect(function()
-    toggleAutoFarm(toggleButton, statusLabel)
+    toggleAutoFarm(toggleButton, statusLabel, statsLabel)
 end)
 
 -- Add button hover effects
 toggleButton.MouseEnter:Connect(function()
     local tween = TweenService:Create(toggleButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.9, 0, 0, 50)
+        Size = UDim2.new(0.9, 0, 0, 55)
     })
     tween:Play()
 end)
 
 toggleButton.MouseLeave:Connect(function()
     local tween = TweenService:Create(toggleButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.85, 0, 0, 45)
+        Size = UDim2.new(0.85, 0, 0, 50)
     })
     tween:Play()
 end)
@@ -418,8 +437,8 @@ end)
 -- Status update loop
 spawn(function()
     while gui.Parent do
-        wait(2)
-        updateStatus(statusLabel)
+        wait(1)
+        updateStatus(statusLabel, statsLabel)
     end
 end)
 
@@ -431,20 +450,32 @@ player.CharacterRemoving:Connect(function()
 end)
 
 -- ========================
+-- INITIAL TESTING
+-- ========================
+
+-- Test coin detection on startup
+spawn(function()
+    wait(2) -- Wait for everything to load
+    testCoinDetection()
+end)
+
+-- ========================
 -- COMPLETION MESSAGE
 -- ========================
 
-print("🎉 Advanced Auto Farm System loaded successfully!")
-print("📋 Features:")
-print("   • Smart pet detection across multiple locations")
-print("   • Comprehensive coin/chest scanning")
-print("   • Efficient pet-to-target sending")
-print("   • Configurable farm intervals")
-print("   • Clean, draggable GUI")
-print("   • Real-time status updates")
+print("🎉 Click-Based Auto Farm System loaded!")
+print("🔧 Configuration:")
+print("   • Target Name: '" .. CONFIG.COIN_NAME .. "'")
+print("   • Click Delay: " .. CONFIG.CLICK_DELAY .. " seconds")
+print("   • Search Depth: " .. CONFIG.MAX_SEARCH_DEPTH .. " levels")
+print("   • Teleport Offset: " .. tostring(CONFIG.TELEPORT_OFFSET))
 print("")
-print("🎮 Usage: Click the toggle button to start/stop farming!")
-print("🔧 The system will automatically detect your pets and available coins/chests.")
-print("📊 Status updates every 2 seconds with current stats.")
+print("🎮 Features:")
+print("   • Deep folder searching (finds coins 2-4 folders deep)")
+print("   • Teleportation to each coin")
+print("   • ClickDetector clicking")
+print("   • 5-10 second delays after clicking")
+print("   • Handles multiple coins with same name")
 print("")
-print("✨ Ready to farm! Good luck!")
+print("🚀 Ready to test! The system will automatically detect coins in 2 seconds.")
+print("📝 Use the toggle button to start farming!")
