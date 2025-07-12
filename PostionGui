@@ -196,8 +196,8 @@ local function teleportToNextCoin()
     -- Make player jump before teleporting
     makePlayerJump()
     
-    -- Wait a bit for jump to register
-    wait(0.1)
+    -- Wait longer for jump to register and look more natural
+    wait(0.3)
     
     -- Teleport to coin
     local success = pcall(function()
@@ -235,7 +235,7 @@ local function startTeleporting()
     -- Start teleporting loop
     teleportConnection = RunService.Heartbeat:Connect(function()
         teleportToNextCoin()
-        wait(0.5) -- Wait 0.5 seconds between teleports
+        wait(1.5) -- Wait 1.5 seconds between teleports for more natural timing
     end)
 end
 
@@ -291,6 +291,8 @@ toggleFrame.MouseButton1Click:Connect(toggleTeleporter)
 -- Close button event
 closeButton.MouseButton1Click:Connect(function()
     stopTeleporting()
+    screenGui.Enabled = false
+    wait(0.1)
     screenGui:Destroy()
 end)
 
