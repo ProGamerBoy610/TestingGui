@@ -11,17 +11,20 @@ local coinsFolder = workspace:WaitForChild("__THINGS"):WaitForChild("Coins")
 local petsFolder = workspace.__THINGS.__INSTANCE_CONTAINER.ActivePets
 
 -- === GUI Setup ===
-local screenGui = Instance.new("ScreenGui", playerGui)
+local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "PSXAutoFarmGUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
 
-local frame = Instance.new("Frame", screenGui)
+local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 200, 0, 100)
 frame.Position = UDim2.new(0, 20, 0, 20)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
 frame.Active = true
 frame.Draggable = true
+frame.Parent = screenGui
 
-local toggleButton = Instance.new("TextButton", frame)
+local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(1, -20, 0, 40)
 toggleButton.Position = UDim2.new(0, 10, 0, 10)
 toggleButton.Text = "Auto Farm: OFF"
@@ -29,8 +32,9 @@ toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Font = Enum.Font.GothamBold
 toggleButton.TextScaled = true
+toggleButton.Parent = frame
 
-local statusLabel = Instance.new("TextLabel", frame)
+local statusLabel = Instance.new("TextLabel")
 statusLabel.Size = UDim2.new(1, -20, 0, 25)
 statusLabel.Position = UDim2.new(0, 10, 0, 60)
 statusLabel.Text = "Status: Inactive"
@@ -38,6 +42,7 @@ statusLabel.BackgroundTransparency = 1
 statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
 statusLabel.Font = Enum.Font.Gotham
 statusLabel.TextScaled = true
+statusLabel.Parent = frame
 
 -- === Farm Logic ===
 local enabled = false
