@@ -1,459 +1,85 @@
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+-- Pet Simulator X Auto Farm GUI
+-- Made by PRO_GAMER_BOY
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local player = game.Players.LocalPlayer
+local replicatedStorage = game:GetService("ReplicatedStorage")
+local coinsFolder = workspace.__THINGS.Coins
+local petsFolder = workspace.__THINGS.__INSTANCE_CONTAINER.ActivePets
 
--- Create ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DropdownGUI"
-screenGui.ResetOnSpawn = false -- Prevent GUI from being destroyed on respawn
-screenGui.Parent = playerGui
+-- GUI Setup
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.Name = "PSXAutoFarmGUI"
 
--- Main Frame (Container)
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 250, 0, 50)
-mainFrame.Position = UDim2.new(0, 20, 0, 100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
-mainFrame.Parent = screenGui
+local Frame = Instance.new("Frame", ScreenGui)
+Frame.Size = UDim2.new(0, 220, 0, 120)
+Frame.Position = UDim2.new(0, 50, 0, 100)
+Frame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+Frame.BorderSizePixel = 0
+Frame.Active = true
+Frame.Draggable = true
 
--- Add corner radius
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 12)
-mainCorner.Parent = mainFrame
+local title = Instance.new("TextLabel", Frame)
+title.Size = UDim2.new(1, 0, 0, 25)
+title.Text = "Pet Simulator X Auto Farm"
+title.TextColor3 = Color3.new(1, 1, 1)
+title.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+title.Font = Enum.Font.Gotham
+title.TextSize = 14
 
--- Header Frame
-local headerFrame = Instance.new("Frame")
-headerFrame.Name = "Header"
-headerFrame.Size = UDim2.new(1, 0, 0, 50)
-headerFrame.Position = UDim2.new(0, 0, 0, 0)
-headerFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-headerFrame.BorderSizePixel = 0
-headerFrame.Parent = mainFrame
-
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
-headerCorner.Parent = headerFrame
-
--- Title Label
-local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "Title"
-titleLabel.Size = UDim2.new(1, -50, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Fryzer Hub"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleLabel.TextScaled = true
-titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = headerFrame
-
--- Toggle Button
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 40, 0, 40)
-toggleButton.Position = UDim2.new(1, -45, 0, 5)
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-toggleButton.BackgroundTransparency = 0
-toggleButton.BorderSizePixel = 0
-toggleButton.Text = "▼"
+local toggleButton = Instance.new("TextButton", Frame)
+toggleButton.Size = UDim2.new(0.9, 0, 0, 35)
+toggleButton.Position = UDim2.new(0.05, 0, 0.4, 0)
+toggleButton.Text = "Auto Farm: OFF"
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.TextScaled = true
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.Parent = headerFrame
+toggleButton.Font = Enum.Font.Gotham
+toggleButton.TextSize = 16
 
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 8)
-toggleCorner.Parent = toggleButton
+local credit = Instance.new("TextLabel", Frame)
+credit.Size = UDim2.new(1, 0, 0, 20)
+credit.Position = UDim2.new(0, 0, 1, -20)
+credit.BackgroundTransparency = 1
+credit.Text = "Made by PRO_GAMER_BOY"
+credit.TextColor3 = Color3.fromRGB(150, 150, 150)
+credit.Font = Enum.Font.Gotham
+credit.TextSize = 12
 
--- Content Frame (for buttons)
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, 0, 0, 200)
-contentFrame.Position = UDim2.new(0, 0, 0, 50)
-contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-contentFrame.BorderSizePixel = 0
-contentFrame.Parent = mainFrame
+-- Auto Farm Logic
+local farming = false
 
--- Credit Label
-local creditLabel = Instance.new("TextLabel")
-creditLabel.Name = "Credit"
-creditLabel.Size = UDim2.new(0, 100, 0, 20)
-creditLabel.Position = UDim2.new(0, 5, 1, -25)
-creditLabel.BackgroundTransparency = 1
-creditLabel.Text = "By: @P_G_B"
-creditLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
-creditLabel.TextScaled = true
-creditLabel.Font = Enum.Font.Gotham
-creditLabel.TextXAlignment = Enum.TextXAlignment.Left
-creditLabel.Parent = contentFrame
+local function getMyPets()
+    local myPets = {}
+    for _, v in pairs(petsFolder:GetChildren()) do
+        if v.Name == player.Name then
+            for _, pet in pairs(v:GetChildren()) do
+                table.insert(myPets, pet.Name)
+            end
+        end
+    end
+    return myPets
+end
 
--- Walkspeed functionality
-local walkspeedEnabled = false
-local walkspeedConnection = nil
-local defaultWalkspeed = 16
-local boostedWalkspeed = 45
+local function autoFarm()
+    while farming do
+        task.wait(1)
+        for _, coin in pairs(coinsFolder:GetChildren()) do
+            if not farming then break end
 
-local function updateWalkspeed()
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        if walkspeedEnabled then
-            player.Character.Humanoid.WalkSpeed = boostedWalkspeed
-        else
-            player.Character.Humanoid.WalkSpeed = defaultWalkspeed
+            local petList = getMyPets()
+            if coin and coin:IsA("Model") and #petList > 0 then
+                pcall(function()
+                    replicatedStorage.Network.Invoke:InvokeServer("Join Coin", coin.Name, petList)
+                end)
+            end
         end
     end
 end
 
-local function toggleWalkspeed()
-    walkspeedEnabled = not walkspeedEnabled
-    
-    if walkspeedEnabled then
-        -- Start the walkspeed update loop
-        walkspeedConnection = RunService.Heartbeat:Connect(function()
-            wait(0.1)
-            updateWalkspeed()
-        end)
-    else
-        -- Stop the walkspeed update loop
-        if walkspeedConnection then
-            walkspeedConnection:Disconnect()
-            walkspeedConnection = nil
-        end
-        updateWalkspeed() -- Reset to default
-    end
-    
-    return walkspeedEnabled
-end
-
--- Button configurations
-local buttonConfigs = {
-    {name = "Speed Boost", color = Color3.fromRGB(50, 50, 50), isToggle = true, action = function()
-        return toggleWalkspeed()
-    end},
-    {name = "TP Help", color = Color3.fromRGB(45, 45, 45), action = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Teleport%20gui%20for%20steal%20a%20brianrot.lua"))()
-    end},
-    {name = "GLIDE Help", color = Color3.fromRGB(40, 40, 40), action = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/GLIDE%20button%20gui%20for%20steal%20a%20brianrot.lua"))()
-    end},
-    {name = "Respawn Players", color = Color3.fromRGB(35, 35, 35), action = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Resspwn%20players"))()
-    end}
-}
-
--- Create buttons
-for i, config in ipairs(buttonConfigs) do
-    local button = Instance.new("TextButton")
-    button.Name = "Button" .. i
-    button.Size = UDim2.new(1, -20, 0, 35)
-    button.Position = UDim2.new(0, 10, 0, (i-1) * 40 + 5)
-    button.BackgroundColor3 = config.color
-    button.BorderSizePixel = 0
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextScaled = true
-    button.Font = Enum.Font.Gotham
-    button.Parent = contentFrame
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 8)
-    buttonCorner.Parent = button
-    
-    -- Handle toggle buttons with improved styling
-    if config.isToggle then
-        local toggleState = false
-        
-        -- Create checkbox icon (separate from button text)
-        local checkboxIcon = Instance.new("TextLabel")
-        checkboxIcon.Name = "CheckboxIcon"
-        checkboxIcon.Size = UDim2.new(0, 20, 0, 20)
-        checkboxIcon.Position = UDim2.new(0, 8, 0.5, -10)
-        checkboxIcon.BackgroundTransparency = 1
-        checkboxIcon.Text = "☐"
-        checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-        checkboxIcon.TextScaled = true
-        checkboxIcon.Font = Enum.Font.GothamBold
-        checkboxIcon.Parent = button
-        
-        -- Create text label for button name
-        local buttonText = Instance.new("TextLabel")
-        buttonText.Name = "ButtonText"
-        buttonText.Size = UDim2.new(1, -35, 1, 0)
-        buttonText.Position = UDim2.new(0, 35, 0, 0)
-        buttonText.BackgroundTransparency = 1
-        buttonText.Text = config.name
-        buttonText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        buttonText.TextScaled = true
-        buttonText.Font = Enum.Font.Gotham
-        buttonText.TextXAlignment = Enum.TextXAlignment.Left
-        buttonText.Parent = button
-        
-        -- Remove the original button text
-        button.Text = ""
-        
-        button.MouseButton1Click:Connect(function()
-            -- Execute the button's action if it exists and get the callback result
-            local callbackResult = false
-            if config.action then
-                local success, result = pcall(config.action)
-                if success then
-                    callbackResult = result or false
-                else
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(result))
-                end
-            end
-            
-            -- Update toggle state based on callback result
-            toggleState = callbackResult
-            
-            if toggleState then
-                checkboxIcon.Text = "✓"
-                checkboxIcon.TextColor3 = Color3.fromRGB(255, 85, 85) -- Red checkmark only
-                -- Keep button background the same
-                button.BackgroundColor3 = config.color
-            else
-                checkboxIcon.Text = "☐"
-                checkboxIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-                button.BackgroundColor3 = config.color
-            end
-        end)
-        
-    -- Handle slider buttons with much better styling
-    elseif config.isSlider then
-        local sliderValue = config.min
-        
-        -- Create text label for slider name and value
-        local sliderText = Instance.new("TextLabel")
-        sliderText.Name = "SliderText"
-        sliderText.Size = UDim2.new(1, -20, 0, 18)
-        sliderText.Position = UDim2.new(0, 10, 0, 3)
-        sliderText.BackgroundTransparency = 1
-        sliderText.Text = config.name .. ": " .. sliderValue
-        sliderText.TextColor3 = Color3.fromRGB(255, 255, 255)
-        sliderText.TextScaled = true
-        sliderText.Font = Enum.Font.Gotham
-        sliderText.TextXAlignment = Enum.TextXAlignment.Left
-        sliderText.Parent = button
-        
-        -- Remove the original button text
-        button.Text = ""
-        
-        -- Create slider track (improved design)
-        local sliderTrack = Instance.new("Frame")
-        sliderTrack.Name = "SliderTrack"
-        sliderTrack.Size = UDim2.new(0.8, 0, 0, 6)
-        sliderTrack.Position = UDim2.new(0.1, 0, 0, 22)
-        sliderTrack.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-        sliderTrack.BorderSizePixel = 0
-        sliderTrack.Parent = button
-        
-        local sliderTrackCorner = Instance.new("UICorner")
-        sliderTrackCorner.CornerRadius = UDim.new(0, 3)
-        sliderTrackCorner.Parent = sliderTrack
-        
-        -- Create slider fill (progress bar)
-        local sliderFill = Instance.new("Frame")
-        sliderFill.Name = "SliderFill"
-        sliderFill.Size = UDim2.new(0, 0, 1, 0)
-        sliderFill.Position = UDim2.new(0, 0, 0, 0)
-        sliderFill.BackgroundColor3 = Color3.fromRGB(100, 200, 255) -- Nice blue color
-        sliderFill.BorderSizePixel = 0
-        sliderFill.Parent = sliderTrack
-        
-        local sliderFillCorner = Instance.new("UICorner")
-        sliderFillCorner.CornerRadius = UDim.new(0, 3)
-        sliderFillCorner.Parent = sliderFill
-        
-        -- Create slider handle (much better looking)
-        local sliderHandle = Instance.new("Frame")
-        sliderHandle.Name = "SliderHandle"
-        sliderHandle.Size = UDim2.new(0, 16, 0, 16)
-        sliderHandle.Position = UDim2.new(0, -8, 0, -5)
-        sliderHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        sliderHandle.BorderSizePixel = 0
-        sliderHandle.Parent = sliderTrack
-        
-        local sliderHandleCorner = Instance.new("UICorner")
-        sliderHandleCorner.CornerRadius = UDim.new(0, 8)
-        sliderHandleCorner.Parent = sliderHandle
-        
-        -- Add shadow effect to handle
-        local handleShadow = Instance.new("Frame")
-        handleShadow.Name = "HandleShadow"
-        handleShadow.Size = UDim2.new(0, 18, 0, 18)
-        handleShadow.Position = UDim2.new(0, -9, 0, -6)
-        handleShadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-        handleShadow.BackgroundTransparency = 0.5
-        handleShadow.BorderSizePixel = 0
-        handleShadow.ZIndex = sliderHandle.ZIndex - 1
-        handleShadow.Parent = sliderTrack
-        
-        local handleShadowCorner = Instance.new("UICorner")
-        handleShadowCorner.CornerRadius = UDim.new(0, 9)
-        handleShadowCorner.Parent = handleShadow
-        
-        -- Slider functionality
-        local dragging = false
-        
-        local function updateSlider(input)
-            local sliderTrackAbsolutePos = sliderTrack.AbsolutePosition
-            local sliderTrackAbsoluteSize = sliderTrack.AbsoluteSize
-            local relativeX = math.clamp((input.Position.X - sliderTrackAbsolutePos.X) / sliderTrackAbsoluteSize.X, 0, 1)
-            
-            sliderValue = math.floor(config.min + (config.max - config.min) * relativeX)
-            
-            -- Update visual elements with smooth animation
-            local targetFillSize = UDim2.new(relativeX, 0, 1, 0)
-            local targetHandlePos = UDim2.new(relativeX, -8, 0, -5)
-            local targetShadowPos = UDim2.new(relativeX, -9, 0, -6)
-            
-            TweenService:Create(sliderFill, TweenInfo.new(0.1), {Size = targetFillSize}):Play()
-            TweenService:Create(sliderHandle, TweenInfo.new(0.1), {Position = targetHandlePos}):Play()
-            TweenService:Create(handleShadow, TweenInfo.new(0.1), {Position = targetShadowPos}):Play()
-            
-            sliderText.Text = config.name .. ": " .. sliderValue
-            
-            -- Execute action
-            if config.action then
-                local success, error = pcall(config.action, sliderValue)
-                if not success then
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-                end
-            end
-        end
-        
-        -- Handle mouse/touch input
-        sliderTrack.InputBegan:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = true
-                updateSlider(input)
-                
-                -- Visual feedback when dragging starts
-                TweenService:Create(sliderHandle, TweenInfo.new(0.1), {
-                    Size = UDim2.new(0, 18, 0, 18),
-                    Position = UDim2.new(sliderHandle.Position.X.Scale, -9, 0, -6)
-                }):Play()
-            end
-        end)
-        
-        sliderTrack.InputChanged:Connect(function(input)
-            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-                updateSlider(input)
-            end
-        end)
-        
-        sliderTrack.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-                dragging = false
-                
-                -- Reset handle size when dragging ends
-                TweenService:Create(sliderHandle, TweenInfo.new(0.1), {
-                    Size = UDim2.new(0, 16, 0, 16),
-                    Position = UDim2.new(sliderHandle.Position.X.Scale, -8, 0, -5)
-                }):Play()
-            end
-        end)
-        
-        -- Initialize slider at minimum value
-        sliderFill.Size = UDim2.new(0, 0, 1, 0)
-        sliderHandle.Position = UDim2.new(0, -8, 0, -5)
-        handleShadow.Position = UDim2.new(0, -9, 0, -6)
-        
-    -- Handle regular buttons
-    else
-        button.Text = config.name
-        
-        button.MouseButton1Click:Connect(function()
-            -- Execute the button's action if it exists
-            if config.action then
-                local success, error = pcall(config.action)
-                if not success then
-                    warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-                end
-            end
-            
-            -- Visual feedback with better animation
-            local originalColor = button.BackgroundColor3
-            local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-            
-            TweenService:Create(button, tweenInfo, {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
-            
-            wait(0.1)
-            
-            TweenService:Create(button, tweenInfo, {BackgroundColor3 = originalColor}):Play()
-        end)
-    end
-end
-
--- Dropdown functionality
-local isOpen = false
-local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-
-local function toggleDropdown()
-    isOpen = not isOpen
-    
-    local targetSize, targetRotation
-    if isOpen then
-        targetSize = UDim2.new(0, 250, 0, 210) -- Adjusted height for 4 buttons
-        targetRotation = 180
-    else
-        targetSize = UDim2.new(0, 250, 0, 50)
-        targetRotation = 0
-    end
-    
-    -- Animate main frame
-    local sizeTween = TweenService:Create(mainFrame, tweenInfo, {Size = targetSize})
-    sizeTween:Play()
-    
-    -- Animate toggle button rotation
-    local rotationTween = TweenService:Create(toggleButton, tweenInfo, {Rotation = targetRotation})
-    rotationTween:Play()
-end
-
-toggleButton.MouseButton1Click:Connect(toggleDropdown)
-
--- Dragging functionality
-local dragToggle = nil
-local dragSpeed = 0
-local dragStart = nil
-local startPos = nil
-
-local function updateInput(input)
-    local delta = input.Position - dragStart
-    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    TweenService:Create(mainFrame, TweenInfo.new(dragSpeed), {Position = position}):Play()
-end
-
-headerFrame.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        dragToggle = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = false
-            end
-        end)
+-- Button Toggle
+toggleButton.MouseButton1Click:Connect(function()
+    farming = not farming
+    toggleButton.Text = "Auto Farm: " .. (farming and "ON" or "OFF")
+    if farming then
+        task.spawn(autoFarm)
     end
 end)
-
-UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragToggle then
-            updateInput(input)
-        end
-    end
-end)
-
--- Mobile touch support for dragging
-headerFrame.TouchMoved:Connect(function(touch, gameProcessed)
-    if dragToggle then
-        updateInput(touch)
-    end
-end)
-
-print("Improved Dropdown GUI loaded successfully!")
