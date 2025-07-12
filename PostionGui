@@ -1,16 +1,25 @@
--- MM2 Gun Drop ESP (Detect dropped gun and highlight it)
+-- MM2 Gun Drop ESP (Working - Billboard + Drawing Box)
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 local Camera = Workspace.CurrentCamera
 
--- 🟦 Billboard ESP for Gun
-local function createGunBillboard(gun)
-    local gui = Instance.new("BillboardGui", gun)
+-- Setup Drawing Box
+local gunBox = Drawing.new("Square")
+gunBox.Thickness = 2
+gunBox.Filled = false
+gunBox.Color = Color3.fromRGB(0, 255, 255)
+gunBox.Visible = false
+
+-- Billboard creation
+local function addBillboard(target)
+    if target:FindFirstChild("GunESP") then return end
+
+    local gui = Instance.new("BillboardGui", target)
     gui.Name = "GunESP"
     gui.Size = UDim2.new(0, 100, 0, 40)
     gui.AlwaysOnTop = true
     gui.StudsOffset = Vector3.new(0, 2, 0)
-    gui.Adornee = gun
+    gui.Adornee = target
 
     local label = Instance.new("TextLabel", gui)
     label.Size = UDim2.new(1, 0, 1, 0)
@@ -22,24 +31,15 @@ local function createGunBillboard(gun)
     label.Font = Enum.Font.GothamBold
 end
 
--- 🔲 Drawing Box ESP for Gun
-local gunBox = Drawing.new("Square")
-gunBox.Thickness = 2
-gunBox.Filled = false
-gunBox.Color = Color3.fromRGB(0, 255, 255)
-gunBox.Visible = false
-
--- 🔁 Main Gun ESP Loop
+-- Loop to detect and ESP the gun
 RunService.RenderStepped:Connect(function()
     local gun = Workspace:FindFirstChild("GunDrop")
-    if gun and gun:IsA("Tool") and gun:FindFirstChild("Handle") then
-        -- Billboard
-        if not gun:FindFirstChild("GunESP") then
-            createGunBillboard(gun)
-        end
 
-        -- 3D box ESP
-        local pos, onScreen = Camera:WorldToViewportPoint(gun.Handle.Position)
+    if gun and gun:IsA("Tool") and gun:FindFirstChild("Handle") then
+        local handle = gun.Handle
+        addBillboard(gun)
+
+        local pos, onScreen = Camera:WorldToViewportPoint(handle.Position)
         if onScreen then
             gunBox.Visible = true
             gunBox.Size = Vector2.new(60, 60)
@@ -52,4 +52,4 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
-print("🔫 Gun Drop ESP loaded")
+print("🔫 Gun Drop ESP is running")
