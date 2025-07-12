@@ -14,7 +14,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ========================
 local CONFIG = {
     FARM_ENABLED = false,
-    CLICK_DELAY = 70, -- Wait 7 seconds after clicking (5-10 range)
+    CLICK_DELAY = 7, -- Wait 7 seconds after clicking (5-10 range)
     TELEPORT_OFFSET = Vector3.new(0, 3, 0), -- Teleport closer to the coin
     COIN_NAME = "Coin", -- Name of the coin object
     MAX_SEARCH_DEPTH = 8, -- Increased search depth
@@ -146,48 +146,70 @@ end
 local function clickCoin(coin)
     if not coin or not coin.Parent then return false end
     
-    -- Find ClickDetector
-    local clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    -- Find ClickDetector in coin and all its descendants
+    local clickDetector = nil
+    
+    -- Search in the coin itself first
+    clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    
+    -- If not found, search in all descendants
     if not clickDetector then
-        clickDetector = coin:FindFirstChildWhichIsA("ClickDetector", true)
-    end
-    
-    if not clickDetector then return false end
-    
-    -- Check distance
-    local character = player.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        local coinPos = getCoinPosition(coin)
-        if coinPos then
-            local distance = (character.HumanoidRootPart.Position - coinPos).Magnitude
-            if distance > CONFIG.CLICK_DISTANCE then
-                print("🔴 Coin too far away: " .. math.floor(distance) .. " studs")
-                return false
+        for _, descendant in pairs(coin:GetDescendants()) do
+            if descendant:IsA("ClickDetector") then
+                clickDetector = descendant
+                break
             end
         end
     end
     
-    -- Multiple click attempts
+    if not clickDetector then return false end
+    
+    -- Multiple click attempts with different methods
     local success = false
     
     -- Method 1: Standard fireclickdetector
-    pcall(function()
+    local s1 = pcall(function()
         fireclickdetector(clickDetector)
         success = true
     end)
     
-    -- Method 2: Direct event firing if first method fails
+    -- Method 2: With distance parameter
     if not success then
-        pcall(function()
+        local s2 = pcall(function()
+            fireclickdetector(clickDetector, 50)
+            success = true
+        end)
+    end
+    
+    -- Method 3: With player parameter
+    if not success then
+        local s3 = pcall(function()
+            fireclickdetector(clickDetector, 0, player)
+            success = true
+        end)
+    end
+    
+    -- Method 4: Direct MouseClick event
+    if not success then
+        local s4 = pcall(function()
             clickDetector.MouseClick:Fire(player)
             success = true
         end)
     end
     
-    -- Method 3: Using the detector's parent
+    -- Method 5: Using getfenv for advanced execution
     if not success then
-        pcall(function()
-            fireclickdetector(clickDetector, 0)
+        local s5 = pcall(function()
+            local env = getfenv(fireclickdetector)
+            env.fireclickdetector(clickDetector)
+            success = true
+        end)
+    end
+    
+    -- Method 6: Alternative firing method
+    if not success then
+        local s6 = pcall(function()
+            clickDetector:Fire(player)
             success = true
         end)
     end
@@ -260,16 +282,10 @@ local function executeFarmCycle()
             if clickCoin(coin) then
                 farmStats.coinsClicked = farmStats.coinsClicked + 1
                 farmStats.lastClickTime = tick()
-                print("✅ Successfully clicked coin #" .. farmStats.coinsClicked .. " at position: " .. tostring(coinPosition))
-                print("⏰ Waiting " .. CONFIG.CLICK_DELAY .. " seconds before next coin...")
                 
                 -- Wait the specified delay
                 wait(CONFIG.CLICK_DELAY)
-            else
-                print("❌ Failed to click coin at position: " .. tostring(coinPosition))
             end
-        else
-            print("❌ Failed to teleport to coin at position: " .. tostring(coinPosition))
         end
         
         -- Small delay between coins
