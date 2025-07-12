@@ -1,54 +1,112 @@
--- ✅ PSX Auto Farm Script (No GUI)
--- Sends pets to all active coins automatically using "Join Coin"
+-- MM2 ESP Script (Box + Role Detection)
+-- Works in most MM2 servers with no GUI
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer
-local coinsFolder = workspace:WaitForChild("__THINGS"):WaitForChild("Coins")
-local petsFolder = workspace.__THINGS.__INSTANCE_CONTAINER:WaitForChild("ActivePets")
+local localPlayer = Players.LocalPlayer
 
-local enabled = true -- Set to false to stop farming
-
--- Function to get all equipped pet names
-local function getEquippedPets()
-    local petNames = {}
-    local petContainer = petsFolder:FindFirstChild(player.Name)
-    if petContainer then
-        for _, pet in ipairs(petContainer:GetChildren()) do
-            table.insert(petNames, pet.Name)
-        end
+-- Cleanup old ESPs
+for _, v in pairs(workspace:GetDescendants()) do
+    if v:IsA("BillboardGui") and v.Name == "ESP" then
+        v:Destroy()
     end
-    return petNames
 end
 
--- Auto Farm loop
-spawn(function()
-    while enabled do
-        local pets = getEquippedPets()
-        if #pets == 0 then
-            warn("❌ No pets equipped.")
-            wait(1)
-            continue
+-- Create ESP
+local function createESP(player)
+    if player == localPlayer then return end
+    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+
+    local root = player.Character:FindFirstChild("HumanoidRootPart")
+
+    -- Avoid duplicates
+    if root:FindFirstChild("ESP") then return end
+
+    local esp = Instance.new("BillboardGui")
+    esp.Name = "ESP"
+    esp.Adornee = root
+    esp.Size = UDim2.new(0, 100, 0, 40)
+    esp.StudsOffset = Vector3.new(0, 3, 0)
+    esp.AlwaysOnTop = true
+    esp.Parent = root
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1, 1, 1)
+    label.TextStrokeTransparency = 0
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
+    label.Text = player.Name
+    label.Parent = esp
+end
+
+-- Detect Murderer and Sheriff
+local function getRole(player)
+    local backpack = player:FindFirstChildOfClass("Backpack")
+    local character = player.Character
+
+    if backpack then
+        if backpack:FindFirstChild("Gun") then
+            return "Sheriff"
+        elseif backpack:FindFirstChild("Knife") then
+            return "Murderer"
+        end
+    end
+
+    if character then
+        if character:FindFirstChild("Gun") then
+            return "Sheriff"
+        elseif character:FindFirstChild("Knife") then
+            return "Murderer"
+        end
+    end
+
+    return "Player"
+end
+
+-- Update ESP text and color
+local function updateESP()
+    for _, player in pairs(Players:GetPlayers()) do
+        if player == localPlayer then continue end
+
+        local char = player.Character
+        if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
+
+        local root = char.HumanoidRootPart
+        local role = getRole(player)
+        local color = Color3.fromRGB(255, 255, 255)
+
+        if role == "Sheriff" then
+            color = Color3.fromRGB(0, 200, 255)
+        elseif role == "Murderer" then
+            color = Color3.fromRGB(255, 60, 60)
         end
 
-        for _, coin in ipairs(coinsFolder:GetChildren()) do
-            if not enabled then break end
-            if coin:IsA("Model") and coin:FindFirstChild("Coin") then
-                local success = pcall(function()
-                    ReplicatedStorage.Network.Invoke:InvokeServer("Join Coin", coin.Name, pets)
-                end)
-                if success then
-                    print("✅ Sent pets to coin:", coin.Name)
-                else
-                    warn("⚠️ Failed to send pets to:", coin.Name)
-                end
-                wait(0.3) -- delay between coins
+        -- Create ESP if not exist
+        if not root:FindFirstChild("ESP") then
+            createESP(player)
+        end
+
+        -- Update label
+        local gui = root:FindFirstChild("ESP")
+        if gui and gui:IsA("BillboardGui") then
+            local label = gui:FindFirstChildOfClass("TextLabel")
+            if label then
+                label.Text = string.format("[%s] %s", role, player.Name)
+                label.TextColor3 = color
             end
         end
+    end
+end
 
-        wait(1.5) -- delay between full cycles
+-- Loop and update ESP
+spawn(function()
+    while true do
+        pcall(updateESP)
+        wait(2)
     end
 end)
 
-print("✅ PSX Auto Farm started. Pets will now auto-farm coins.")
+print("✅ MM2 ESP Loaded")
