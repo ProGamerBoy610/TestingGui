@@ -127,22 +127,19 @@ local function teleportToPosition(position)
     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
     if not humanoidRootPart then return false end
     
-    -- Teleport with offset
-    local teleportPosition = position + CONFIG.TELEPORT_OFFSET
+    -- Teleport with smaller offset (right on top of the coin)
+    local teleportPosition = position + Vector3.new(0, 1, 0)
     
-    -- Use CFrame with proper orientation
-    local lookDirection = (position - teleportPosition).Unit
-    local newCFrame = CFrame.lookAt(teleportPosition, teleportPosition + lookDirection)
-    
-    humanoidRootPart.CFrame = newCFrame
+    -- Simple CFrame positioning directly on the coin
+    humanoidRootPart.CFrame = CFrame.new(teleportPosition)
     
     -- Wait a moment for the teleport to register
-    wait(0.1)
+    wait(0.2)
     
     return true
 end
 
--- Enhanced click function with multiple methods
+-- Enhanced click function that simulates actual clicking
 local function clickCoin(coin)
     if not coin or not coin.Parent then return false end
     
@@ -164,52 +161,78 @@ local function clickCoin(coin)
     
     if not clickDetector then return false end
     
+    -- Get the part that contains the ClickDetector
+    local clickPart = clickDetector.Parent
+    
+    -- Wait a moment after teleporting
+    wait(0.3)
+    
     -- Multiple click attempts with different methods
     local success = false
     
     -- Method 1: Standard fireclickdetector
-    local s1 = pcall(function()
+    pcall(function()
         fireclickdetector(clickDetector)
         success = true
     end)
     
     -- Method 2: With distance parameter
     if not success then
-        local s2 = pcall(function()
-            fireclickdetector(clickDetector, 50)
+        pcall(function()
+            fireclickdetector(clickDetector, 0)
             success = true
         end)
     end
     
     -- Method 3: With player parameter
     if not success then
-        local s3 = pcall(function()
-            fireclickdetector(clickDetector, 0, player)
+        pcall(function()
+            fireclickdetector(clickDetector, 50, player)
             success = true
         end)
     end
     
-    -- Method 4: Direct MouseClick event
+    -- Method 4: MouseClick event with proper parameters
     if not success then
-        local s4 = pcall(function()
+        pcall(function()
             clickDetector.MouseClick:Fire(player)
             success = true
         end)
     end
     
-    -- Method 5: Using getfenv for advanced execution
+    -- Method 5: Simulate mouse interaction
     if not success then
-        local s5 = pcall(function()
-            local env = getfenv(fireclickdetector)
-            env.fireclickdetector(clickDetector)
+        pcall(function()
+            local mouse = player:GetMouse()
+            if mouse then
+                clickDetector.MouseClick:Fire(player)
+            end
             success = true
         end)
     end
     
-    -- Method 6: Alternative firing method
+    -- Method 6: Try multiple rapid clicks
     if not success then
-        local s6 = pcall(function()
-            clickDetector:Fire(player)
+        pcall(function()
+            for i = 1, 3 do
+                fireclickdetector(clickDetector)
+                wait(0.1)
+            end
+            success = true
+        end)
+    end
+    
+    -- Method 7: Use the actual part clicking
+    if not success and clickPart then
+        pcall(function()
+            local character = player.Character
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                -- Position closer to the part
+                local partPosition = clickPart.Position
+                character.HumanoidRootPart.CFrame = CFrame.new(partPosition + Vector3.new(0, 1, 0))
+                wait(0.2)
+                fireclickdetector(clickDetector)
+            end
             success = true
         end)
     end
@@ -276,10 +299,19 @@ local function executeFarmCycle()
         
         -- Teleport to coin
         if teleportToPosition(coinPosition) then
-            wait(0.5) -- Wait for teleportation to complete
+            wait(0.8) -- Wait longer for teleportation to complete
             
-            -- Click the coin
-            if clickCoin(coin) then
+            -- Click the coin multiple times to ensure it works
+            local clickSuccess = false
+            for attempt = 1, 5 do
+                if clickCoin(coin) then
+                    clickSuccess = true
+                    break
+                end
+                wait(0.2)
+            end
+            
+            if clickSuccess then
                 farmStats.coinsClicked = farmStats.coinsClicked + 1
                 farmStats.lastClickTime = tick()
                 
@@ -440,8 +472,6 @@ local function toggleAutoFarm(button, statusLabel, statsLabel)
                 spawn(executeFarmCycle)
             end
         end)
-        
-        print("✅ Auto Farm ENABLED - Looking for coins named '" .. CONFIG.COIN_NAME .. "'")
     else
         -- Disable farming
         button.Text = "Auto Farm: OFF"
@@ -454,7 +484,6 @@ local function toggleAutoFarm(button, statusLabel, statsLabel)
         end
         
         isCurrentlyFarming = false
-        print("❌ Auto Farm DISABLED")
     end
     
     -- Update status
@@ -481,29 +510,14 @@ end
 
 -- Test function to find coins
 local function testCoinDetection()
-    print("🔍 Testing coin detection...")
     local coins = findAllCoins()
-    print("📊 Found " .. #coins .. " coins named '" .. CONFIG.COIN_NAME .. "'")
     
     for i, coin in pairs(coins) do
         if i <= 5 then -- Show first 5 coins
             local position = getCoinPosition(coin)
             local clickDetector = coin:FindFirstChildOfClass("ClickDetector") or coin:FindFirstChildWhichIsA("ClickDetector", true)
             local hasClickDetector = clickDetector ~= nil
-            print(string.format("  Coin #%d: %s | Position: %s | ClickDetector: %s", 
-                i, coin:GetFullName(), tostring(position), tostring(hasClickDetector)))
         end
-    end
-    
-    if #coins > 5 then
-        print("  ... and " .. (#coins - 5) .. " more coins")
-    end
-    
-    if #coins == 0 then
-        print("❌ No coins found! Make sure:")
-        print("   • Coins are named exactly '" .. CONFIG.COIN_NAME .. "'")
-        print("   • Coins have ClickDetector objects")
-        print("   • You're in the right game/area")
     end
 end
 
@@ -563,26 +577,3 @@ spawn(function()
     wait(2) -- Wait for everything to load
     testCoinDetection()
 end)
-
--- ========================
--- COMPLETION MESSAGE
--- ========================
-
-print("🎉 Enhanced Click-Based Auto Farm System loaded!")
-print("🔧 Configuration:")
-print("   • Target Name: '" .. CONFIG.COIN_NAME .. "'")
-print("   • Click Delay: " .. CONFIG.CLICK_DELAY .. " seconds")
-print("   • Search Depth: " .. CONFIG.MAX_SEARCH_DEPTH .. " levels")
-print("   • Teleport Offset: " .. tostring(CONFIG.TELEPORT_OFFSET))
-print("   • Click Distance: " .. CONFIG.CLICK_DISTANCE .. " studs")
-print("")
-print("🎮 Enhanced Features:")
-print("   • Deeper folder searching (up to 8 levels)")
-print("   • Better teleportation positioning")
-print("   • Multiple click detection methods")
-print("   • Improved ClickDetector finding")
-print("   • Distance checking before clicking")
-print("   • Test button for coin detection")
-print("")
-print("🚀 Ready to use! Click 'Test Coin Detection' to verify coins are found.")
-print("📝 Use the toggle button to start farming!")
