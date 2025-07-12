@@ -1,4 +1,4 @@
--- Click-Based Auto Farm System with Teleportation
+-- Enhanced Click-Based Auto Farm System with Teleportation
 -- Finds coins in nested folders, teleports to them, and clicks with ClickDetector
 
 local Players = game:GetService("Players")
@@ -14,11 +14,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ========================
 local CONFIG = {
     FARM_ENABLED = false,
-    CLICK_DELAY = 70, -- Wait 7 seconds after clicking (5-10 range)
-    TELEPORT_OFFSET = Vector3.new(0, 5, 0), -- Teleport slightly above the coin
+    CLICK_DELAY = 7, -- Wait 7 seconds after clicking (5-10 range)
+    TELEPORT_OFFSET = Vector3.new(0, 3, 0), -- Teleport closer to the coin
     COIN_NAME = "Coin", -- Name of the coin object
-    MAX_SEARCH_DEPTH = 6, -- How deep to search in folders
+    MAX_SEARCH_DEPTH = 8, -- Increased search depth
     SEARCH_WORKSPACE = true, -- Search entire workspace for coins
+    CLICK_DISTANCE = 50, -- Maximum distance to attempt clicking
 }
 
 -- ========================
@@ -29,7 +30,8 @@ local isCurrentlyFarming = false
 local farmStats = {
     coinsFound = 0,
     coinsClicked = 0,
-    currentCoin = nil
+    currentCoin = nil,
+    lastClickTime = 0
 }
 
 -- ========================
@@ -51,7 +53,7 @@ local function findAllObjectsNamed(parent, targetName, maxDepth, currentDepth)
         end
         
         -- Recursively search in this child if it's a folder/model
-        if child:IsA("Folder") or child:IsA("Model") then
+        if child:IsA("Folder") or child:IsA("Model") or child:IsA("Part") then
             local childResults = findAllObjectsNamed(child, targetName, maxDepth, currentDepth + 1)
             for _, result in pairs(childResults) do
                 table.insert(foundObjects, result)
@@ -68,8 +70,12 @@ local function isValidCoin(coin)
         return false
     end
     
-    -- Check if it has a ClickDetector
+    -- Check if it has a ClickDetector (search in descendants too)
     local clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    if not clickDetector then
+        clickDetector = coin:FindFirstChildWhichIsA("ClickDetector", true)
+    end
+    
     if not clickDetector then
         return false
     end
@@ -83,6 +89,11 @@ local function isValidCoin(coin)
     
     -- Check transparency (collected coins are often transparent)
     if coin:IsA("BasePart") and coin.Transparency >= 0.9 then
+        return false
+    end
+    
+    -- Check if it's a valid part or model
+    if not (coin:IsA("BasePart") or coin:IsA("Model")) then
         return false
     end
     
@@ -108,7 +119,7 @@ local function getCoinPosition(coin)
     return nil
 end
 
--- Safe teleport function
+-- Enhanced teleport function with better positioning
 local function teleportToPosition(position)
     local character = player.Character
     if not character then return false end
@@ -118,24 +129,70 @@ local function teleportToPosition(position)
     
     -- Teleport with offset
     local teleportPosition = position + CONFIG.TELEPORT_OFFSET
-    humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+    
+    -- Use CFrame with proper orientation
+    local lookDirection = (position - teleportPosition).Unit
+    local newCFrame = CFrame.lookAt(teleportPosition, teleportPosition + lookDirection)
+    
+    humanoidRootPart.CFrame = newCFrame
+    
+    -- Wait a moment for the teleport to register
+    wait(0.1)
     
     return true
 end
 
--- Click the coin using ClickDetector
+-- Enhanced click function with multiple methods
 local function clickCoin(coin)
     if not coin or not coin.Parent then return false end
     
+    -- Find ClickDetector
     local clickDetector = coin:FindFirstChildOfClass("ClickDetector")
+    if not clickDetector then
+        clickDetector = coin:FindFirstChildWhichIsA("ClickDetector", true)
+    end
+    
     if not clickDetector then return false end
     
-    -- Try to click the detector
+    -- Check distance
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        local coinPos = getCoinPosition(coin)
+        if coinPos then
+            local distance = (character.HumanoidRootPart.Position - coinPos).Magnitude
+            if distance > CONFIG.CLICK_DISTANCE then
+                print("🔴 Coin too far away: " .. math.floor(distance) .. " studs")
+                return false
+            end
+        end
+    end
+    
+    -- Multiple click attempts
+    local success = false
+    
+    -- Method 1: Standard fireclickdetector
     pcall(function()
         fireclickdetector(clickDetector)
+        success = true
     end)
     
-    return true
+    -- Method 2: Direct event firing if first method fails
+    if not success then
+        pcall(function()
+            clickDetector.MouseClick:Fire(player)
+            success = true
+        end)
+    end
+    
+    -- Method 3: Using the detector's parent
+    if not success then
+        pcall(function()
+            fireclickdetector(clickDetector, 0)
+            success = true
+        end)
+    end
+    
+    return success
 end
 
 -- ========================
@@ -202,15 +259,17 @@ local function executeFarmCycle()
             -- Click the coin
             if clickCoin(coin) then
                 farmStats.coinsClicked = farmStats.coinsClicked + 1
-                print("✅ Clicked coin #" .. farmStats.coinsClicked .. " - Waiting " .. CONFIG.CLICK_DELAY .. " seconds...")
+                farmStats.lastClickTime = tick()
+                print("✅ Successfully clicked coin #" .. farmStats.coinsClicked .. " at position: " .. tostring(coinPosition))
+                print("⏰ Waiting " .. CONFIG.CLICK_DELAY .. " seconds before next coin...")
                 
                 -- Wait the specified delay
                 wait(CONFIG.CLICK_DELAY)
             else
-                print("❌ Failed to click coin")
+                print("❌ Failed to click coin at position: " .. tostring(coinPosition))
             end
         else
-            print("❌ Failed to teleport to coin")
+            print("❌ Failed to teleport to coin at position: " .. tostring(coinPosition))
         end
         
         -- Small delay between coins
@@ -240,7 +299,7 @@ local function createAutoFarmGUI()
     -- Main frame
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 320, 0, 200)
+    mainFrame.Size = UDim2.new(0, 320, 0, 220)
     mainFrame.Position = UDim2.new(0, 20, 0, 20)
     mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
     mainFrame.BorderSizePixel = 0
@@ -267,7 +326,7 @@ local function createAutoFarmGUI()
     titleLabel.Size = UDim2.new(1, 0, 0, 35)
     titleLabel.Position = UDim2.new(0, 0, 0, 10)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = " Auto Farm System"
+    titleLabel.Text = "🎯 Enhanced Click Farm System"
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextScaled = true
     titleLabel.Font = Enum.Font.GothamBold
@@ -290,11 +349,28 @@ local function createAutoFarmGUI()
     toggleCorner.CornerRadius = UDim.new(0, 10)
     toggleCorner.Parent = toggleButton
     
+    -- Test button
+    local testButton = Instance.new("TextButton")
+    testButton.Name = "TestButton"
+    testButton.Size = UDim2.new(0.85, 0, 0, 25)
+    testButton.Position = UDim2.new(0.075, 0, 0, 110)
+    testButton.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+    testButton.BorderSizePixel = 0
+    testButton.Text = "Test Coin Detection"
+    testButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    testButton.TextScaled = true
+    testButton.Font = Enum.Font.Gotham
+    testButton.Parent = mainFrame
+    
+    local testCorner = Instance.new("UICorner")
+    testCorner.CornerRadius = UDim.new(0, 5)
+    testCorner.Parent = testButton
+    
     -- Status label
     local statusLabel = Instance.new("TextLabel")
     statusLabel.Name = "StatusLabel"
-    statusLabel.Size = UDim2.new(0.9, 0, 0, 30)
-    statusLabel.Position = UDim2.new(0.05, 0, 0, 115)
+    statusLabel.Size = UDim2.new(0.9, 0, 0, 25)
+    statusLabel.Position = UDim2.new(0.05, 0, 0, 140)
     statusLabel.BackgroundTransparency = 1
     statusLabel.Text = "Status: Inactive"
     statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
@@ -306,7 +382,7 @@ local function createAutoFarmGUI()
     local statsLabel = Instance.new("TextLabel")
     statsLabel.Name = "StatsLabel"
     statsLabel.Size = UDim2.new(0.9, 0, 0, 25)
-    statsLabel.Position = UDim2.new(0.05, 0, 0, 145)
+    statsLabel.Position = UDim2.new(0.05, 0, 0, 165)
     statsLabel.BackgroundTransparency = 1
     statsLabel.Text = "Found: 0 | Clicked: 0"
     statsLabel.TextColor3 = Color3.fromRGB(150, 150, 150)
@@ -320,13 +396,13 @@ local function createAutoFarmGUI()
     creditLabel.Size = UDim2.new(1, 0, 0, 20)
     creditLabel.Position = UDim2.new(0, 0, 1, -25)
     creditLabel.BackgroundTransparency = 1
-    creditLabel.Text = "Created by Click Farm Pro"
+    creditLabel.Text = "Enhanced Click Farm Pro"
     creditLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
     creditLabel.TextScaled = true
     creditLabel.Font = Enum.Font.Gotham
     creditLabel.Parent = mainFrame
     
-    return screenGui, toggleButton, statusLabel, statsLabel
+    return screenGui, toggleButton, testButton, statusLabel, statsLabel
 end
 
 -- ========================
@@ -396,7 +472,8 @@ local function testCoinDetection()
     for i, coin in pairs(coins) do
         if i <= 5 then -- Show first 5 coins
             local position = getCoinPosition(coin)
-            local hasClickDetector = coin:FindFirstChildOfClass("ClickDetector") ~= nil
+            local clickDetector = coin:FindFirstChildOfClass("ClickDetector") or coin:FindFirstChildWhichIsA("ClickDetector", true)
+            local hasClickDetector = clickDetector ~= nil
             print(string.format("  Coin #%d: %s | Position: %s | ClickDetector: %s", 
                 i, coin:GetFullName(), tostring(position), tostring(hasClickDetector)))
         end
@@ -405,6 +482,13 @@ local function testCoinDetection()
     if #coins > 5 then
         print("  ... and " .. (#coins - 5) .. " more coins")
     end
+    
+    if #coins == 0 then
+        print("❌ No coins found! Make sure:")
+        print("   • Coins are named exactly '" .. CONFIG.COIN_NAME .. "'")
+        print("   • Coins have ClickDetector objects")
+        print("   • You're in the right game/area")
+    end
 end
 
 -- ========================
@@ -412,11 +496,16 @@ end
 -- ========================
 
 -- Create and setup GUI
-local gui, toggleButton, statusLabel, statsLabel = createAutoFarmGUI()
+local gui, toggleButton, testButton, statusLabel, statsLabel = createAutoFarmGUI()
 
 -- Connect toggle button
 toggleButton.MouseButton1Click:Connect(function()
     toggleAutoFarm(toggleButton, statusLabel, statsLabel)
+end)
+
+-- Connect test button
+testButton.MouseButton1Click:Connect(function()
+    testCoinDetection()
 end)
 
 -- Add button hover effects
@@ -463,19 +552,21 @@ end)
 -- COMPLETION MESSAGE
 -- ========================
 
-print("🎉 Click-Based Auto Farm System loaded!")
+print("🎉 Enhanced Click-Based Auto Farm System loaded!")
 print("🔧 Configuration:")
 print("   • Target Name: '" .. CONFIG.COIN_NAME .. "'")
 print("   • Click Delay: " .. CONFIG.CLICK_DELAY .. " seconds")
 print("   • Search Depth: " .. CONFIG.MAX_SEARCH_DEPTH .. " levels")
 print("   • Teleport Offset: " .. tostring(CONFIG.TELEPORT_OFFSET))
+print("   • Click Distance: " .. CONFIG.CLICK_DISTANCE .. " studs")
 print("")
-print("🎮 Features:")
-print("   • Deep folder searching (finds coins 2-4 folders deep)")
-print("   • Teleportation to each coin")
-print("   • ClickDetector clicking")
-print("   • 5-10 second delays after clicking")
-print("   • Handles multiple coins with same name")
+print("🎮 Enhanced Features:")
+print("   • Deeper folder searching (up to 8 levels)")
+print("   • Better teleportation positioning")
+print("   • Multiple click detection methods")
+print("   • Improved ClickDetector finding")
+print("   • Distance checking before clicking")
+print("   • Test button for coin detection")
 print("")
-print("🚀 Ready to test! The system will automatically detect coins in 2 seconds.")
+print("🚀 Ready to use! Click 'Test Coin Detection' to verify coins are found.")
 print("📝 Use the toggle button to start farming!")
