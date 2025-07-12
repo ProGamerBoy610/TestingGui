@@ -232,16 +232,18 @@ local function startTeleporting()
         return
     end
     
-    -- Start teleporting loop
-    teleportConnection = RunService.Heartbeat:Connect(function()
-        teleportToNextCoin()
-        wait(1.5) -- Wait 1.5 seconds between teleports for more natural timing
+    -- Start teleporting loop with spawn to avoid blocking
+    teleportConnection = spawn(function()
+        while isToggled do
+            teleportToNextCoin()
+            wait(3) -- Wait 3 seconds between teleports for slower, more controlled movement
+        end
     end)
 end
 
 local function stopTeleporting()
+    isToggled = false
     if teleportConnection then
-        teleportConnection:Disconnect()
         teleportConnection = nil
     end
 end
@@ -291,8 +293,6 @@ toggleFrame.MouseButton1Click:Connect(toggleTeleporter)
 -- Close button event
 closeButton.MouseButton1Click:Connect(function()
     stopTeleporting()
-    screenGui.Enabled = false
-    wait(0.1)
     screenGui:Destroy()
 end)
 
