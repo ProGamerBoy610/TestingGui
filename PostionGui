@@ -1,112 +1,85 @@
--- MM2 ESP Script (Box + Role Detection)
--- Works in most MM2 servers with no GUI
+-- MM2 Box ESP (Drawing API)
+-- Shows 3D boxes around players and color-coded by role
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
 
-local localPlayer = Players.LocalPlayer
-
--- Cleanup old ESPs
-for _, v in pairs(workspace:GetDescendants()) do
-    if v:IsA("BillboardGui") and v.Name == "ESP" then
-        v:Destroy()
-    end
-end
-
--- Create ESP
-local function createESP(player)
-    if player == localPlayer then return end
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-
-    local root = player.Character:FindFirstChild("HumanoidRootPart")
-
-    -- Avoid duplicates
-    if root:FindFirstChild("ESP") then return end
-
-    local esp = Instance.new("BillboardGui")
-    esp.Name = "ESP"
-    esp.Adornee = root
-    esp.Size = UDim2.new(0, 100, 0, 40)
-    esp.StudsOffset = Vector3.new(0, 3, 0)
-    esp.AlwaysOnTop = true
-    esp.Parent = root
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.new(1, 1, 1)
-    label.TextStrokeTransparency = 0
-    label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
-    label.Text = player.Name
-    label.Parent = esp
-end
-
--- Detect Murderer and Sheriff
 local function getRole(player)
-    local backpack = player:FindFirstChildOfClass("Backpack")
-    local character = player.Character
-
-    if backpack then
-        if backpack:FindFirstChild("Gun") then
-            return "Sheriff"
-        elseif backpack:FindFirstChild("Knife") then
-            return "Murderer"
-        end
+    local toolCheck = function(container)
+        if not container then return nil end
+        if container:FindFirstChild("Gun") then return "Sheriff" end
+        if container:FindFirstChild("Knife") then return "Murderer" end
+        return nil
     end
 
-    if character then
-        if character:FindFirstChild("Gun") then
-            return "Sheriff"
-        elseif character:FindFirstChild("Knife") then
-            return "Murderer"
-        end
-    end
-
-    return "Player"
+    return toolCheck(player:FindFirstChildOfClass("Backpack")) or toolCheck(player.Character) or "Innocent"
 end
 
--- Update ESP text and color
-local function updateESP()
-    for _, player in pairs(Players:GetPlayers()) do
-        if player == localPlayer then continue end
+-- Create Drawing Box
+local function createBox()
+    local box = Drawing.new("Square")
+    box.Thickness = 1
+    box.Filled = false
+    box.Visible = false
+    return box
+end
 
-        local char = player.Character
-        if not char or not char:FindFirstChild("HumanoidRootPart") then continue end
+-- Setup ESPs for all players
+local espTable = {}
 
-        local root = char.HumanoidRootPart
-        local role = getRole(player)
-        local color = Color3.fromRGB(255, 255, 255)
-
-        if role == "Sheriff" then
-            color = Color3.fromRGB(0, 200, 255)
-        elseif role == "Murderer" then
-            color = Color3.fromRGB(255, 60, 60)
-        end
-
-        -- Create ESP if not exist
-        if not root:FindFirstChild("ESP") then
-            createESP(player)
-        end
-
-        -- Update label
-        local gui = root:FindFirstChild("ESP")
-        if gui and gui:IsA("BillboardGui") then
-            local label = gui:FindFirstChildOfClass("TextLabel")
-            if label then
-                label.Text = string.format("[%s] %s", role, player.Name)
-                label.TextColor3 = color
-            end
-        end
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        espTable[player] = createBox()
     end
 end
 
--- Loop and update ESP
-spawn(function()
-    while true do
-        pcall(updateESP)
-        wait(2)
+Players.PlayerAdded:Connect(function(player)
+    if player ~= LocalPlayer then
+        espTable[player] = createBox()
     end
 end)
 
-print("✅ MM2 ESP Loaded")
+Players.PlayerRemoving:Connect(function(player)
+    if espTable[player] then
+        espTable[player]:Remove()
+        espTable[player] = nil
+    end
+end)
+
+-- Update loop
+RunService.RenderStepped:Connect(function()
+    for player, box in pairs(espTable) do
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Head") then
+            local hrp = character.HumanoidRootPart
+            local head = character.Head
+
+            local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
+            local headVec = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
+            local torsoVec = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 1.5, 0))
+
+            if onScreen then
+                box.Visible = true
+                box.Size = Vector2.new(math.abs(headVec.X - torsoVec.X) * 2.5, math.abs(headVec.Y - torsoVec.Y) * 2)
+                box.Position = Vector2.new(vector.X - box.Size.X / 2, vector.Y - box.Size.Y / 2)
+
+                local role = getRole(player)
+                if role == "Sheriff" then
+                    box.Color = Color3.fromRGB(0, 255, 255)
+                elseif role == "Murderer" then
+                    box.Color = Color3.fromRGB(255, 0, 0)
+                else
+                    box.Color = Color3.fromRGB(255, 255, 255)
+                end
+            else
+                box.Visible = false
+            end
+        else
+            box.Visible = false
+        end
+    end
+end)
+
+print("✅ Box ESP loaded for MM2")
