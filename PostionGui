@@ -14,7 +14,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ========================
 local CONFIG = {
     FARM_ENABLED = false,
-    CLICK_DELAY = 7, -- Wait 7 seconds after clicking (5-10 range)
+    CLICK_DELAY = 70, -- Wait 7 seconds after clicking (5-10 range)
     TELEPORT_OFFSET = Vector3.new(0, 3, 0), -- Teleport closer to the coin
     COIN_NAME = "Coin", -- Name of the coin object
     MAX_SEARCH_DEPTH = 8, -- Increased search depth
