@@ -1,55 +1,55 @@
--- MM2 Gun Drop ESP (Working - Billboard + Drawing Box)
+-- MM2 Auto Coin Collector with Simple Toggle GUI
+
+local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local Camera = Workspace.CurrentCamera
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- Setup Drawing Box
-local gunBox = Drawing.new("Square")
-gunBox.Thickness = 2
-gunBox.Filled = false
-gunBox.Color = Color3.fromRGB(0, 255, 255)
-gunBox.Visible = false
+-- SETTINGS
+local COIN_NAME = "Coin"
+local TELEPORT_DELAY = 0.2
+local FARM_ENABLED = false
 
--- Billboard creation
-local function addBillboard(target)
-    if target:FindFirstChild("GunESP") then return end
+-- GUI SETUP
+local screenGui = Instance.new("ScreenGui", game.CoreGui)
+screenGui.Name = "AutoCoinGUI"
 
-    local gui = Instance.new("BillboardGui", target)
-    gui.Name = "GunESP"
-    gui.Size = UDim2.new(0, 100, 0, 40)
-    gui.AlwaysOnTop = true
-    gui.StudsOffset = Vector3.new(0, 2, 0)
-    gui.Adornee = target
+local toggleBtn = Instance.new("TextButton", screenGui)
+toggleBtn.Size = UDim2.new(0, 160, 0, 40)
+toggleBtn.Position = UDim2.new(0, 20, 0, 100)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.TextScaled = true
+toggleBtn.Text = "Auto Coin: OFF"
+toggleBtn.Font = Enum.Font.GothamBold
 
-    local label = Instance.new("TextLabel", gui)
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = "🔫 GUN HERE"
-    label.TextColor3 = Color3.fromRGB(0, 255, 255)
-    label.TextStrokeTransparency = 0
-    label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
-end
-
--- Loop to detect and ESP the gun
-RunService.RenderStepped:Connect(function()
-    local gun = Workspace:FindFirstChild("GunDrop")
-
-    if gun and gun:IsA("Tool") and gun:FindFirstChild("Handle") then
-        local handle = gun.Handle
-        addBillboard(gun)
-
-        local pos, onScreen = Camera:WorldToViewportPoint(handle.Position)
-        if onScreen then
-            gunBox.Visible = true
-            gunBox.Size = Vector2.new(60, 60)
-            gunBox.Position = Vector2.new(pos.X - 30, pos.Y - 30)
-        else
-            gunBox.Visible = false
-        end
-    else
-        gunBox.Visible = false
-    end
+-- Toggle Function
+toggleBtn.MouseButton1Click:Connect(function()
+	FARM_ENABLED = not FARM_ENABLED
+	toggleBtn.Text = FARM_ENABLED and "Auto Coin: ON" or "Auto Coin: OFF"
+	toggleBtn.BackgroundColor3 = FARM_ENABLED and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 170, 255)
 end)
 
-print("🔫 Gun Drop ESP is running")
+-- Coin Collection Loop
+RunService.Heartbeat:Connect(function()
+	if FARM_ENABLED then
+		local coins = {}
+
+		for _, obj in pairs(workspace:GetDescendants()) do
+			if obj.Name == COIN_NAME and obj:IsA("Part") then
+				table.insert(coins, obj)
+			end
+		end
+
+		for _, coin in pairs(coins) do
+			if not FARM_ENABLED then break end
+			if humanoidRootPart and coin and coin.Parent then
+				humanoidRootPart.CFrame = coin.CFrame + Vector3.new(0, 3, 0)
+				wait(TELEPORT_DELAY)
+			end
+		end
+	end
+end)
+
+print("🍯 Auto Coin Collect GUI Loaded")
