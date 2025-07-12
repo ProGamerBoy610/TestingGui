@@ -1,10 +1,9 @@
--- MM2 Auto Coin Collector (Fixed & Improved)
-
+-- MM2 Auto Coin Collector (Using "Coin_Server")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local root = character:WaitForChild("HumanoidRootPart")
+local root = player.Character or player.CharacterAdded:Wait()
+root = root:WaitForChild("HumanoidRootPart")
 
 -- GUI
 local gui = Instance.new("ScreenGui", game.CoreGui)
@@ -29,28 +28,27 @@ end)
 
 -- Coin Finder
 local function findCoins()
-	local found = {}
+	local results = {}
 	for _, v in pairs(workspace:GetDescendants()) do
-		if v.Name == "TouchTrigger" and v:IsA("Part") and v.Parent and v.Parent.Name == "CoinContainer" then
-			table.insert(found, v)
+		if v:IsA("Part") and v.Name == "Coin_Server" then
+			table.insert(results, v)
 		end
 	end
-	return found
+	return results
 end
 
--- Farming Loop
+-- Farm Loop
 RunService.Heartbeat:Connect(function()
-	if not ENABLED then return end
-	if not root or not root.Parent then return end
+	if not ENABLED or not root or not root.Parent then return end
 
 	local coins = findCoins()
 	for _, coin in pairs(coins) do
 		if not ENABLED then break end
-		if coin and coin:IsDescendantOf(workspace) then
+		if coin and coin.Parent then
 			root.CFrame = coin.CFrame + Vector3.new(0, 3, 0)
 			wait(0.15)
 		end
 	end
 end)
 
-print("🍯 MM2 Auto Coin Collector Loaded")
+print("✅ MM2 Auto Coin Collector Loaded (Coin_Server version)")
