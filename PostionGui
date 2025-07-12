@@ -14,7 +14,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- ========================
 local CONFIG = {
     FARM_ENABLED = false,
-    CLICK_DELAY = 7, -- Wait 7 seconds after clicking (5-10 range)
+    CLICK_DELAY = 70, -- Wait 7 seconds after clicking (5-10 range)
     TELEPORT_OFFSET = Vector3.new(0, 5, 0), -- Teleport slightly above the coin
     COIN_NAME = "Coin", -- Name of the coin object
     MAX_SEARCH_DEPTH = 6, -- How deep to search in folders
@@ -267,7 +267,7 @@ local function createAutoFarmGUI()
     titleLabel.Size = UDim2.new(1, 0, 0, 35)
     titleLabel.Position = UDim2.new(0, 0, 0, 10)
     titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = "🎯 Click Farm System"
+    titleLabel.Text = " Auto Farm System"
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
     titleLabel.TextScaled = true
     titleLabel.Font = Enum.Font.GothamBold
