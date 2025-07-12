@@ -1,111 +1,690 @@
--- PSX Auto Farm GUI (Remote-based)
--- Sends all your pets to every active coin using "Join Coin"
+-- ===================================
+-- ADVANCED ROBLOX AUTO FARM SCRIPT
+-- ===================================
+-- Universal Auto Farm with Multiple Collection Methods
+-- Supports: Coins, Chests, Models, ClickDetectors, RemoteEvents
+-- Features: Smart Detection, Teleportation, GUI, Error Handling
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
-local coinsFolder = workspace:WaitForChild("__THINGS"):WaitForChild("Coins")
-local petsFolder = workspace.__THINGS.__INSTANCE_CONTAINER.ActivePets
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- === GUI Setup ===
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "PSXAutoFarmGUI"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui
+-- ========================
+-- CONFIGURATION SETTINGS
+-- ========================
+local CONFIG = {
+    -- Farm Settings
+    FARM_ENABLED = false,
+    COLLECTION_DELAY = 0.8,        -- Wait time between collections (seconds)
+    TELEPORT_OFFSET = Vector3.new(0, 2, 0),  -- Offset from object when teleporting
+    MAX_SEARCH_DEPTH = 10,         -- Maximum depth to search in workspace
+    MAX_DISTANCE = 1000,           -- Maximum distance to farm objects
+    
+    -- Object Detection
+    COLLECTIBLE_NAMES = {          -- Names of collectible objects
+        "Coin", "Coins", "Chest", "Treasure", "Orb", "Crystal",
+        "Money", "Cash", "Diamond", "Gem", "Gift", "Present",
+        "Pickup", "Collectible", "Item", "Loot", "Drop"
+    },
+    
+    CONTAINER_NAMES = {            -- Names of folders/containers to search
+        "Coins", "Chests", "Treasures", "Collectibles", "Items",
+        "Spawns", "Areas", "Drops", "Loot", "Pickups", "Money"
+    },
+    
+    -- Collection Methods
+    TRY_CLICK_DETECTOR = true,     -- Try fireclickdetector method
+    TRY_REMOTE_EVENTS = true,      -- Try RemoteEvent/RemoteFunction calls
+    TRY_PROXIMITY_PROMPTS = true,  -- Try ProximityPrompt interaction
+    
+    -- GUI Settings
+    GUI_DRAGGABLE = true,
+    SHOW_STATS = true,
+    AUTO_HIDE_GUI = false,
+}
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 100)
-frame.Position = UDim2.new(0, 20, 0, 20)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-frame.Active = true
-frame.Draggable = true
-frame.Parent = screenGui
+-- ========================
+-- GLOBAL VARIABLES
+-- ========================
+local farmConnection
+local isCurrentlyFarming = false
+local gui = {}
+local farmStats = {
+    objectsFound = 0,
+    objectsCollected = 0,
+    currentTarget = nil,
+    lastCollectionTime = 0,
+    totalRunTime = 0,
+    errors = 0
+}
 
-local toggleButton = Instance.new("TextButton")
-toggleButton.Size = UDim2.new(1, -20, 0, 40)
-toggleButton.Position = UDim2.new(0, 10, 0, 10)
-toggleButton.Text = "Auto Farm: OFF"
-toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.TextScaled = true
-toggleButton.Parent = frame
+-- Common RemoteEvent patterns found in various games
+local commonRemotePatterns = {
+    "Collect", "Pickup", "Grab", "Take", "Claim", "Get",
+    "BuyItem", "Purchase", "Buy", "Sell", "Trade",
+    "Coin", "Money", "Cash", "Diamond", "Gem",
+    "Event", "Action", "Interaction", "Touch"
+}
 
-local statusLabel = Instance.new("TextLabel")
-statusLabel.Size = UDim2.new(1, -20, 0, 25)
-statusLabel.Position = UDim2.new(0, 10, 0, 60)
-statusLabel.Text = "Status: Inactive"
-statusLabel.BackgroundTransparency = 1
-statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
-statusLabel.Font = Enum.Font.Gotham
-statusLabel.TextScaled = true
-statusLabel.Parent = frame
+-- ========================
+-- UTILITY FUNCTIONS
+-- ========================
 
--- === Farm Logic ===
-local enabled = false
-local isFarming = false
-
-local function getPetNames()
-    local names = {}
-    for _, folder in ipairs(petsFolder:GetChildren()) do
-        if folder.Name == player.Name then
-            for _, pet in ipairs(folder:GetChildren()) do
-                table.insert(names, pet.Name)
-            end
-        end
+-- Safe wait function that respects farm status
+local function safeWait(duration)
+    local startTime = tick()
+    while tick() - startTime < duration and CONFIG.FARM_ENABLED do
+        RunService.Heartbeat:Wait()
     end
-    return names
 end
 
-local function autoFarm()
-    if isFarming or not enabled then return end
-    isFarming = true
+-- Enhanced recursive search function
+local function findAllObjects(parent, targetNames, containerNames, maxDepth, currentDepth)
+    if not parent or currentDepth > maxDepth then return {} end
+    
+    local foundObjects = {}
+    
+    pcall(function()
+        for _, child in pairs(parent:GetChildren()) do
+            if not child or not child.Parent then continue end
+            
+            -- Check if this child is a collectible object
+            for _, targetName in pairs(targetNames) do
+                if string.find(string.lower(child.Name), string.lower(targetName)) then
+                    table.insert(foundObjects, child)
+                    break
+                end
+            end
+            
+            -- Check if this child is a container we should search
+            local shouldSearchDeeper = false
+            for _, containerName in pairs(containerNames) do
+                if string.find(string.lower(child.Name), string.lower(containerName)) then
+                    shouldSearchDeeper = true
+                    break
+                end
+            end
+            
+            -- Search deeper if it's a container or has potential to contain objects
+            if shouldSearchDeeper or child:IsA("Folder") or child:IsA("Model") then
+                local childResults = findAllObjects(child, targetNames, containerNames, maxDepth, currentDepth + 1)
+                for _, result in pairs(childResults) do
+                    table.insert(foundObjects, result)
+                end
+            end
+        end
+    end)
+    
+    return foundObjects
+end
 
-    local petNames = getPetNames()
-    if #petNames == 0 then
-        statusLabel.Text = "Status: No pets found"
-        isFarming = false
+-- Check if an object is valid for collection
+local function isValidCollectible(obj)
+    if not obj or not obj.Parent then return false end
+    
+    -- Basic checks
+    if obj:GetAttribute("Collected") or obj:GetAttribute("Disabled") then return false end
+    
+    -- Check transparency (collected objects are often transparent)
+    if obj:IsA("BasePart") and obj.Transparency >= 0.95 then return false end
+    
+    -- Check if object is too far
+    local objPosition = getObjectPosition(obj)
+    if objPosition then
+        local distance = (humanoidRootPart.Position - objPosition).Magnitude
+        if distance > CONFIG.MAX_DISTANCE then return false end
+    end
+    
+    return true
+end
+
+-- Get position of any object type
+function getObjectPosition(obj)
+    if not obj then return nil end
+    
+    if obj:IsA("BasePart") then
+        return obj.Position
+    elseif obj:IsA("Model") then
+        if obj.PrimaryPart then
+            return obj.PrimaryPart.Position
+        else
+            -- Find first BasePart in model
+            for _, child in pairs(obj:GetDescendants()) do
+                if child:IsA("BasePart") then
+                    return child.Position
+                end
+            end
+        end
+    elseif obj:IsA("Attachment") then
+        return obj.WorldPosition
+    end
+    
+    return nil
+end
+
+-- Enhanced teleportation with safety checks
+local function teleportToObject(obj)
+    if not obj or not humanoidRootPart then return false end
+    
+    local objPosition = getObjectPosition(obj)
+    if not objPosition then return false end
+    
+    local success = false
+    pcall(function()
+        -- Calculate teleport position with offset
+        local teleportPos = objPosition + CONFIG.TELEPORT_OFFSET
+        
+        -- Create new CFrame and teleport
+        humanoidRootPart.CFrame = CFrame.new(teleportPos)
+        success = true
+    end)
+    
+    if success then
+        safeWait(0.1) -- Small delay for teleport to register
+    end
+    
+    return success
+end
+
+-- ========================
+-- COLLECTION METHODS
+-- ========================
+
+-- Method 1: ClickDetector interaction
+local function tryClickDetector(obj)
+    local clickDetector = obj:FindFirstChildOfClass("ClickDetector")
+    if not clickDetector then
+        clickDetector = obj:FindFirstChildWhichIsA("ClickDetector", true)
+    end
+    
+    if clickDetector then
+        local success = false
+        
+        -- Try multiple click methods
+        local clickMethods = {
+            function() fireclickdetector(clickDetector) end,
+            function() fireclickdetector(clickDetector, 0) end,
+            function() fireclickdetector(clickDetector, 50, player) end,
+            function() clickDetector.MouseClick:Fire(player) end,
+        }
+        
+        for _, method in pairs(clickMethods) do
+            pcall(function()
+                method()
+                success = true
+            end)
+            if success then break end
+        end
+        
+        return success
+    end
+    
+    return false
+end
+
+-- Method 2: RemoteEvent interaction
+local function tryRemoteEvents(obj)
+    if not CONFIG.TRY_REMOTE_EVENTS then return false end
+    
+    local success = false
+    
+    -- Search for RemoteEvents in ReplicatedStorage
+    pcall(function()
+        for _, remote in pairs(ReplicatedStorage:GetDescendants()) do
+            if remote:IsA("RemoteEvent") or remote:IsA("RemoteFunction") then
+                local remoteName = string.lower(remote.Name)
+                
+                -- Check if remote name matches common patterns
+                for _, pattern in pairs(commonRemotePatterns) do
+                    if string.find(remoteName, string.lower(pattern)) then
+                        -- Try firing the remote with the object
+                        pcall(function()
+                            if remote:IsA("RemoteEvent") then
+                                remote:FireServer(obj)
+                            else
+                                remote:InvokeServer(obj)
+                            end
+                            success = true
+                        end)
+                        
+                        if success then return end
+                    end
+                end
+            end
+        end
+    end)
+    
+    return success
+end
+
+-- Method 3: ProximityPrompt interaction
+local function tryProximityPrompts(obj)
+    if not CONFIG.TRY_PROXIMITY_PROMPTS then return false end
+    
+    local proximityPrompt = obj:FindFirstChildOfClass("ProximityPrompt")
+    if not proximityPrompt then
+        proximityPrompt = obj:FindFirstChildWhichIsA("ProximityPrompt", true)
+    end
+    
+    if proximityPrompt then
+        local success = false
+        pcall(function()
+            fireproximityprompt(proximityPrompt)
+            success = true
+        end)
+        return success
+    end
+    
+    return false
+end
+
+-- Method 4: Touch/Collision detection
+local function tryTouchDetection(obj)
+    if not obj:IsA("BasePart") then return false end
+    
+    local success = false
+    pcall(function()
+        -- Simulate touching the part
+        obj.Touched:Fire(humanoidRootPart)
+        success = true
+    end)
+    
+    return success
+end
+
+-- Main collection function that tries all methods
+local function collectObject(obj)
+    if not isValidCollectible(obj) then return false end
+    
+    farmStats.currentTarget = obj
+    
+    -- Teleport to object
+    if not teleportToObject(obj) then
+        farmStats.errors = farmStats.errors + 1
+        return false
+    end
+    
+    -- Try collection methods in order
+    local methods = {
+        tryClickDetector,
+        tryRemoteEvents,
+        tryProximityPrompts,
+        tryTouchDetection
+    }
+    
+    for _, method in pairs(methods) do
+        if method(obj) then
+            farmStats.objectsCollected = farmStats.objectsCollected + 1
+            farmStats.lastCollectionTime = tick()
+            return true
+        end
+    end
+    
+    farmStats.errors = farmStats.errors + 1
+    return false
+end
+
+-- ========================
+-- MAIN FARMING LOGIC
+-- ========================
+
+-- Find all collectible objects in workspace
+local function findAllCollectibles()
+    local allObjects = findAllObjects(
+        Workspace,
+        CONFIG.COLLECTIBLE_NAMES,
+        CONFIG.CONTAINER_NAMES,
+        CONFIG.MAX_SEARCH_DEPTH,
+        0
+    )
+    
+    -- Filter valid objects
+    local validObjects = {}
+    for _, obj in pairs(allObjects) do
+        if isValidCollectible(obj) then
+            table.insert(validObjects, obj)
+        end
+    end
+    
+    farmStats.objectsFound = #validObjects
+    return validObjects
+end
+
+-- Main farming cycle
+local function executeFarmCycle()
+    if not CONFIG.FARM_ENABLED or isCurrentlyFarming then return end
+    
+    isCurrentlyFarming = true
+    
+    -- Update character references
+    character = player.Character
+    if character then
+        humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    end
+    
+    if not humanoidRootPart then
+        isCurrentlyFarming = false
         return
     end
-
-    for _, coin in ipairs(coinsFolder:GetChildren()) do
-        if not enabled then break end
-        if coin:IsA("Model") and coin:FindFirstChild("Coin") then
-            local success = pcall(function()
-                ReplicatedStorage.Network.Invoke:InvokeServer("Join Coin", coin.Name, petNames)
-            end)
-            if success then
-                statusLabel.Text = "Status: Farming..."
-            end
-            wait(0.3)
+    
+    -- Find all collectibles
+    local collectibles = findAllCollectibles()
+    
+    if #collectibles == 0 then
+        isCurrentlyFarming = false
+        return
+    end
+    
+    -- Collect each object
+    for _, obj in pairs(collectibles) do
+        if not CONFIG.FARM_ENABLED then break end
+        
+        if collectObject(obj) then
+            safeWait(CONFIG.COLLECTION_DELAY)
+        else
+            safeWait(0.1) -- Short delay on failure
         end
     end
-
-    isFarming = false
+    
+    farmStats.currentTarget = nil
+    isCurrentlyFarming = false
 end
 
--- === Toggle Logic ===
-toggleButton.MouseButton1Click:Connect(function()
-    enabled = not enabled
+-- ========================
+-- GUI CREATION
+-- ========================
 
-    if enabled then
-        toggleButton.Text = "Auto Farm: ON"
-        toggleButton.BackgroundColor3 = Color3.fromRGB(50, 220, 50)
-        statusLabel.Text = "Status: Active"
+local function createGUI()
+    -- Remove existing GUI
+    if playerGui:FindFirstChild("AutoFarmGUI") then
+        playerGui:FindFirstChild("AutoFarmGUI"):Destroy()
+    end
+    
+    -- Create ScreenGui
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AutoFarmGUI"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = playerGui
+    
+    -- Main Frame
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = UDim2.new(0, 350, 0, 280)
+    mainFrame.Position = UDim2.new(0, 20, 0, 20)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = CONFIG.GUI_DRAGGABLE
+    mainFrame.Parent = screenGui
+    
+    -- Styling
+    local mainCorner = Instance.new("UICorner")
+    mainCorner.CornerRadius = UDim.new(0, 12)
+    mainCorner.Parent = mainFrame
+    
+    local mainGradient = Instance.new("UIGradient")
+    mainGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 35)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))
+    }
+    mainGradient.Rotation = 90
+    mainGradient.Parent = mainFrame
+    
+    -- Title
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 40)
+    titleLabel.Position = UDim2.new(0, 0, 0, 0)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = "🚀 UNIVERSAL AUTO FARM"
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.Parent = mainFrame
+    
+    -- Toggle Button
+    local toggleButton = Instance.new("TextButton")
+    toggleButton.Size = UDim2.new(0.9, 0, 0, 45)
+    toggleButton.Position = UDim2.new(0.05, 0, 0, 50)
+    toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+    toggleButton.BorderSizePixel = 0
+    toggleButton.Text = "🔴 AUTO FARM: OFF"
+    toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toggleButton.TextScaled = true
+    toggleButton.Font = Enum.Font.GothamBold
+    toggleButton.Parent = mainFrame
+    
+    local toggleCorner = Instance.new("UICorner")
+    toggleCorner.CornerRadius = UDim.new(0, 8)
+    toggleCorner.Parent = toggleButton
+    
+    -- Status Label
+    local statusLabel = Instance.new("TextLabel")
+    statusLabel.Size = UDim2.new(0.9, 0, 0, 25)
+    statusLabel.Position = UDim2.new(0.05, 0, 0, 105)
+    statusLabel.BackgroundTransparency = 1
+    statusLabel.Text = "Status: Inactive"
+    statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    statusLabel.TextScaled = true
+    statusLabel.Font = Enum.Font.Gotham
+    statusLabel.Parent = mainFrame
+    
+    -- Stats Frame
+    local statsFrame = Instance.new("Frame")
+    statsFrame.Size = UDim2.new(0.9, 0, 0, 100)
+    statsFrame.Position = UDim2.new(0.05, 0, 0, 135)
+    statsFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    statsFrame.BorderSizePixel = 0
+    statsFrame.Parent = mainFrame
+    
+    local statsCorner = Instance.new("UICorner")
+    statsCorner.CornerRadius = UDim.new(0, 8)
+    statsCorner.Parent = statsFrame
+    
+    -- Stats Labels
+    local foundLabel = Instance.new("TextLabel")
+    foundLabel.Size = UDim2.new(1, 0, 0.25, 0)
+    foundLabel.Position = UDim2.new(0, 0, 0, 0)
+    foundLabel.BackgroundTransparency = 1
+    foundLabel.Text = "Objects Found: 0"
+    foundLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+    foundLabel.TextScaled = true
+    foundLabel.Font = Enum.Font.Gotham
+    foundLabel.Parent = statsFrame
+    
+    local collectedLabel = Instance.new("TextLabel")
+    collectedLabel.Size = UDim2.new(1, 0, 0.25, 0)
+    collectedLabel.Position = UDim2.new(0, 0, 0.25, 0)
+    collectedLabel.BackgroundTransparency = 1
+    collectedLabel.Text = "Objects Collected: 0"
+    collectedLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+    collectedLabel.TextScaled = true
+    collectedLabel.Font = Enum.Font.Gotham
+    collectedLabel.Parent = statsFrame
+    
+    local errorsLabel = Instance.new("TextLabel")
+    errorsLabel.Size = UDim2.new(1, 0, 0.25, 0)
+    errorsLabel.Position = UDim2.new(0, 0, 0.5, 0)
+    errorsLabel.BackgroundTransparency = 1
+    errorsLabel.Text = "Errors: 0"
+    errorsLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    errorsLabel.TextScaled = true
+    errorsLabel.Font = Enum.Font.Gotham
+    errorsLabel.Parent = statsFrame
+    
+    local rateLabel = Instance.new("TextLabel")
+    rateLabel.Size = UDim2.new(1, 0, 0.25, 0)
+    rateLabel.Position = UDim2.new(0, 0, 0.75, 0)
+    rateLabel.BackgroundTransparency = 1
+    rateLabel.Text = "Rate: 0/min"
+    rateLabel.TextColor3 = Color3.fromRGB(255, 255, 100)
+    rateLabel.TextScaled = true
+    rateLabel.Font = Enum.Font.Gotham
+    rateLabel.Parent = statsFrame
+    
+    -- Credit Label
+    local creditLabel = Instance.new("TextLabel")
+    creditLabel.Size = UDim2.new(1, 0, 0, 20)
+    creditLabel.Position = UDim2.new(0, 0, 1, -25)
+    creditLabel.BackgroundTransparency = 1
+    creditLabel.Text = "Universal Auto Farm Pro v2.0"
+    creditLabel.TextColor3 = Color3.fromRGB(100, 100, 100)
+    creditLabel.TextScaled = true
+    creditLabel.Font = Enum.Font.Gotham
+    creditLabel.Parent = mainFrame
+    
+    -- Store GUI elements
+    gui = {
+        screenGui = screenGui,
+        mainFrame = mainFrame,
+        toggleButton = toggleButton,
+        statusLabel = statusLabel,
+        foundLabel = foundLabel,
+        collectedLabel = collectedLabel,
+        errorsLabel = errorsLabel,
+        rateLabel = rateLabel
+    }
+    
+    return gui
+end
 
-        RunService.Heartbeat:Connect(function()
-            if enabled and not isFarming then
-                autoFarm()
+-- ========================
+-- GUI FUNCTIONALITY
+-- ========================
+
+-- Toggle auto farm
+local function toggleAutoFarm()
+    CONFIG.FARM_ENABLED = not CONFIG.FARM_ENABLED
+    
+    if CONFIG.FARM_ENABLED then
+        -- Start farming
+        gui.toggleButton.Text = "🟢 AUTO FARM: ON"
+        gui.toggleButton.BackgroundColor3 = Color3.fromRGB(50, 220, 50)
+        
+        -- Start farming loop
+        farmConnection = RunService.Heartbeat:Connect(function()
+            if not isCurrentlyFarming then
+                spawn(executeFarmCycle)
             end
         end)
     else
-        toggleButton.Text = "Auto Farm: OFF"
-        toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
-        statusLabel.Text = "Status: Inactive"
+        -- Stop farming
+        gui.toggleButton.Text = "🔴 AUTO FARM: OFF"
+        gui.toggleButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        
+        -- Stop farming loop
+        if farmConnection then
+            farmConnection:Disconnect()
+            farmConnection = nil
+        end
+        
+        isCurrentlyFarming = false
+    end
+end
+
+-- Update GUI status and stats
+local function updateGUI()
+    if not gui.statusLabel then return end
+    
+    -- Update status
+    if CONFIG.FARM_ENABLED then
+        if isCurrentlyFarming then
+            gui.statusLabel.Text = "Status: Farming... 🔄"
+            gui.statusLabel.TextColor3 = Color3.fromRGB(255, 165, 0)
+        else
+            gui.statusLabel.Text = "Status: Searching for objects... 🔍"
+            gui.statusLabel.TextColor3 = Color3.fromRGB(100, 255, 100)
+        end
+    else
+        gui.statusLabel.Text = "Status: Inactive ⏸️"
+        gui.statusLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+    end
+    
+    -- Update stats
+    gui.foundLabel.Text = "Objects Found: " .. farmStats.objectsFound
+    gui.collectedLabel.Text = "Objects Collected: " .. farmStats.objectsCollected
+    gui.errorsLabel.Text = "Errors: " .. farmStats.errors
+    
+    -- Calculate collection rate
+    local rate = 0
+    if farmStats.lastCollectionTime > 0 then
+        local timeElapsed = tick() - farmStats.lastCollectionTime
+        if timeElapsed > 0 then
+            rate = math.floor((farmStats.objectsCollected / (timeElapsed / 60)) * 100) / 100
+        end
+    end
+    gui.rateLabel.Text = "Rate: " .. rate .. "/min"
+end
+
+-- Add button hover effects
+local function addHoverEffects()
+    gui.toggleButton.MouseEnter:Connect(function()
+        TweenService:Create(gui.toggleButton, TweenInfo.new(0.2), {
+            Size = UDim2.new(0.95, 0, 0, 50)
+        }):Play()
+    end)
+    
+    gui.toggleButton.MouseLeave:Connect(function()
+        TweenService:Create(gui.toggleButton, TweenInfo.new(0.2), {
+            Size = UDim2.new(0.9, 0, 0, 45)
+        }):Play()
+    end)
+end
+
+-- ========================
+-- INITIALIZATION
+-- ========================
+
+-- Create GUI and connect events
+createGUI()
+addHoverEffects()
+
+-- Connect toggle button
+gui.toggleButton.MouseButton1Click:Connect(toggleAutoFarm)
+
+-- GUI update loop
+spawn(function()
+    while gui.screenGui and gui.screenGui.Parent do
+        updateGUI()
+        wait(0.5)
     end
 end)
 
-print("✅ PSX Auto Farm GUI Loaded.")
+-- Handle character respawning
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+end)
+
+-- Cleanup on player leaving
+player.CharacterRemoving:Connect(function()
+    if farmConnection then
+        farmConnection:Disconnect()
+    end
+end)
+
+-- ========================
+-- INITIAL SETUP
+-- ========================
+
+-- Wait for game to load, then start initial scan
+spawn(function()
+    wait(3)
+    if not CONFIG.FARM_ENABLED then
+        local testObjects = findAllCollectibles()
+        print("Auto Farm loaded! Found " .. #testObjects .. " potential collectibles.")
+    end
+end)
+
+-- Print load message
+print("🚀 Universal Auto Farm Script Loaded Successfully!")
+print("📋 Features: Smart Detection, Multi-Method Collection, Advanced GUI")
+print("🎯 Ready to farm coins, chests, and other collectibles!")
+print("💡 Click the GUI button to start farming!")
