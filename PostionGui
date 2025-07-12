@@ -1,54 +1,335 @@
--- MM2 Auto Coin Collector (Using "Coin_Server")
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
-local root = player.Character or player.CharacterAdded:Wait()
-root = root:WaitForChild("HumanoidRootPart")
+local playerGui = player:WaitForChild("PlayerGui")
 
--- GUI
-local gui = Instance.new("ScreenGui", game.CoreGui)
-gui.Name = "CoinCollectorGUI"
+-- Create ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CoinTeleportGui"
+screenGui.Parent = playerGui
 
-local btn = Instance.new("TextButton", gui)
-btn.Size = UDim2.new(0, 160, 0, 40)
-btn.Position = UDim2.new(0, 20, 0, 100)
-btn.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
-btn.TextColor3 = Color3.new(1, 1, 1)
-btn.TextScaled = true
-btn.Text = "Auto Coin: OFF"
-btn.Font = Enum.Font.GothamBold
+-- Create main frame
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 220, 0, 120)
+mainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
+mainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+mainFrame.BorderSizePixel = 0
+mainFrame.Active = true
+mainFrame.Draggable = true
+mainFrame.Parent = screenGui
 
--- Toggle
-local ENABLED = false
-btn.MouseButton1Click:Connect(function()
-	ENABLED = not ENABLED
-	btn.Text = ENABLED and "Auto Coin: ON" or "Auto Coin: OFF"
-	btn.BackgroundColor3 = ENABLED and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(0, 170, 255)
-end)
+-- Add corner radius
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
 
--- Coin Finder
-local function findCoins()
-	local results = {}
-	for _, v in pairs(workspace:GetDescendants()) do
-		if v:IsA("Part") and v.Name == "Coin_Server" then
-			table.insert(results, v)
-		end
-	end
-	return results
+-- Create title bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 30)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 10)
+titleCorner.Parent = titleBar
+
+-- Title text
+local titleText = Instance.new("TextLabel")
+titleText.Name = "TitleText"
+titleText.Size = UDim2.new(1, 0, 1, 0)
+titleText.Position = UDim2.new(0, 0, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "Coin Teleporter"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.TextScaled = true
+titleText.Font = Enum.Font.GothamBold
+titleText.Parent = titleBar
+
+-- Create close button
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 20, 0, 20)
+closeButton.Position = UDim2.new(1, -25, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Parent = titleBar
+
+local closeButtonCorner = Instance.new("UICorner")
+closeButtonCorner.CornerRadius = UDim.new(0, 5)
+closeButtonCorner.Parent = closeButton
+
+-- Create toggle frame
+local toggleFrame = Instance.new("Frame")
+toggleFrame.Name = "ToggleFrame"
+toggleFrame.Size = UDim2.new(0, 60, 0, 30)
+toggleFrame.Position = UDim2.new(0.5, -30, 0.5, -5)
+toggleFrame.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+toggleFrame.BorderSizePixel = 0
+toggleFrame.Parent = mainFrame
+
+local toggleFrameCorner = Instance.new("UICorner")
+toggleFrameCorner.CornerRadius = UDim.new(0, 15)
+toggleFrameCorner.Parent = toggleFrame
+
+-- Create toggle button (circle)
+local toggleButton = Instance.new("TextButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 26, 0, 26)
+toggleButton.Position = UDim2.new(0, 2, 0, 2)
+toggleButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.BorderSizePixel = 0
+toggleButton.Text = ""
+toggleButton.Parent = toggleFrame
+
+local toggleButtonCorner = Instance.new("UICorner")
+toggleButtonCorner.CornerRadius = UDim.new(0, 13)
+toggleButtonCorner.Parent = toggleButton
+
+-- Create status text
+local statusText = Instance.new("TextLabel")
+statusText.Name = "StatusText"
+statusText.Size = UDim2.new(1, 0, 0, 20)
+statusText.Position = UDim2.new(0, 0, 1, -25)
+statusText.BackgroundTransparency = 1
+statusText.Text = "OFF"
+statusText.TextColor3 = Color3.fromRGB(255, 255, 255)
+statusText.TextScaled = true
+statusText.Font = Enum.Font.Gotham
+statusText.Parent = mainFrame
+
+-- Variables
+local isToggled = false
+local teleportConnection = nil
+local currentCoinIndex = 1
+local coins = {}
+local teleportActive = false
+
+-- Callback function (can be customized)
+local function onToggleCallback(state)
+    print("Coin teleporter toggled:", state and "ON" or "OFF")
+    if state then
+        print("Started teleporting to coins!")
+    else
+        print("Stopped teleporting to coins!")
+    end
 end
 
--- Farm Loop
-RunService.Heartbeat:Connect(function()
-	if not ENABLED or not root or not root.Parent then return end
+-- Functions
+local function getCharacter()
+    return player.Character or player.CharacterAdded:Wait()
+end
 
-	local coins = findCoins()
-	for _, coin in pairs(coins) do
-		if not ENABLED then break end
-		if coin and coin.Parent then
-			root.CFrame = coin.CFrame + Vector3.new(0, 3, 0)
-			wait(0.15)
-		end
-	end
+local function getRootPart()
+    local character = getCharacter()
+    return character:FindFirstChild("HumanoidRootPart") or character:FindFirstChild("Torso") or character:FindFirstChild("UpperTorso")
+end
+
+local function getHumanoid()
+    local character = getCharacter()
+    return character:FindFirstChild("Humanoid")
+end
+
+local function findAllCoins()
+    coins = {}
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj.Name == "Coin_Server" and obj:IsA("BasePart") then
+            table.insert(coins, obj)
+        end
+    end
+    print("Found " .. #coins .. " Coin_Server objects")
+    return coins
+end
+
+local function makePlayerJump()
+    local humanoid = getHumanoid()
+    if humanoid then
+        humanoid.Jump = true
+        -- Alternative jump method
+        pcall(function()
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end)
+    end
+end
+
+local function teleportToNextCoin()
+    if teleportActive or #coins == 0 then
+        return
+    end
+    
+    teleportActive = true
+    
+    local rootPart = getRootPart()
+    if not rootPart then
+        warn("Could not find HumanoidRootPart")
+        teleportActive = false
+        return
+    end
+    
+    -- Get next coin
+    local targetCoin = coins[currentCoinIndex]
+    if not targetCoin or not targetCoin.Parent then
+        -- Coin might be destroyed, refresh coin list
+        findAllCoins()
+        if #coins == 0 then
+            print("No coins found!")
+            teleportActive = false
+            return
+        end
+        currentCoinIndex = 1
+        targetCoin = coins[currentCoinIndex]
+    end
+    
+    -- Calculate teleport position (slightly offset to avoid getting stuck)
+    local coinPosition = targetCoin.Position
+    local offsetPosition = coinPosition + Vector3.new(0, 5, 0) -- Teleport slightly above the coin
+    
+    -- Make player jump before teleporting
+    makePlayerJump()
+    
+    -- Wait a bit for jump to register
+    wait(0.1)
+    
+    -- Teleport to coin
+    local success = pcall(function()
+        rootPart.CFrame = CFrame.new(offsetPosition)
+    end)
+    
+    if success then
+        print("Teleported to coin " .. currentCoinIndex .. " at position: " .. tostring(coinPosition))
+        
+        -- Move to next coin
+        currentCoinIndex = currentCoinIndex + 1
+        if currentCoinIndex > #coins then
+            currentCoinIndex = 1
+        end
+    else
+        warn("Failed to teleport to coin")
+    end
+    
+    teleportActive = false
+end
+
+local function startTeleporting()
+    if teleportConnection then
+        return
+    end
+    
+    -- Find all coins first
+    findAllCoins()
+    
+    if #coins == 0 then
+        warn("No Coin_Server objects found!")
+        return
+    end
+    
+    -- Start teleporting loop
+    teleportConnection = RunService.Heartbeat:Connect(function()
+        teleportToNextCoin()
+        wait(0.5) -- Wait 0.5 seconds between teleports
+    end)
+end
+
+local function stopTeleporting()
+    if teleportConnection then
+        teleportConnection:Disconnect()
+        teleportConnection = nil
+    end
+end
+
+local function toggleTeleporter()
+    isToggled = not isToggled
+    
+    -- Update visual state
+    local targetPosition = isToggled and UDim2.new(0, 32, 0, 2) or UDim2.new(0, 2, 0, 2)
+    local targetColor = isToggled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 80, 80)
+    
+    -- Animate toggle button
+    local toggleTween = TweenService:Create(
+        toggleButton,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {Position = targetPosition}
+    )
+    
+    -- Animate background color
+    local frameTween = TweenService:Create(
+        toggleFrame,
+        TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        {BackgroundColor3 = targetColor}
+    )
+    
+    toggleTween:Play()
+    frameTween:Play()
+    
+    -- Update status text
+    statusText.Text = isToggled and "ON" or "OFF"
+    
+    -- Start/stop teleporting
+    if isToggled then
+        startTeleporting()
+    else
+        stopTeleporting()
+    end
+    
+    -- Call callback function
+    onToggleCallback(isToggled)
+end
+
+-- Button click event
+toggleButton.MouseButton1Click:Connect(toggleTeleporter)
+toggleFrame.MouseButton1Click:Connect(toggleTeleporter)
+
+-- Close button event
+closeButton.MouseButton1Click:Connect(function()
+    stopTeleporting()
+    screenGui:Destroy()
 end)
 
-print("✅ MM2 Auto Coin Collector Loaded (Coin_Server version)")
+-- Hover effects for toggle
+toggleFrame.MouseEnter:Connect(function()
+    toggleFrame.BackgroundTransparency = 0.1
+end)
+
+toggleFrame.MouseLeave:Connect(function()
+    toggleFrame.BackgroundTransparency = 0
+end)
+
+-- Hover effects for close button
+closeButton.MouseEnter:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(235, 60, 60)
+end)
+
+closeButton.MouseLeave:Connect(function()
+    closeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+end)
+
+-- Refresh coins periodically
+spawn(function()
+    while screenGui.Parent do
+        if isToggled then
+            findAllCoins()
+        end
+        wait(5) -- Refresh every 5 seconds
+    end
+end)
+
+-- Cleanup on player respawn
+player.CharacterAdded:Connect(function()
+    if isToggled then
+        wait(2) -- Wait for character to fully load
+        findAllCoins()
+    end
+end)
+
+print("Coin Teleporter GUI loaded successfully!")
+print("Toggle the switch to start/stop teleporting to Coin_Server objects!")
+print("The script will automatically find all Coin_Server objects and teleport to them in sequence.")
