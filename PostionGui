@@ -236,7 +236,7 @@ local function startTeleporting()
     teleportConnection = spawn(function()
         while isToggled do
             teleportToNextCoin()
-            wait(1) -- Wait 3 seconds between teleports for slower, more controlled movement
+            wait(2.5) -- Wait 3 seconds between teleports for slower, more controlled movement
         end
     end)
 end
