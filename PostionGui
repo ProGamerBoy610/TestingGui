@@ -1,85 +1,55 @@
--- MM2 Box ESP (Drawing API)
--- Shows 3D boxes around players and color-coded by role
-
-local Players = game:GetService("Players")
+-- MM2 Gun Drop ESP (Detect dropped gun and highlight it)
 local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
+local Camera = Workspace.CurrentCamera
 
-local function getRole(player)
-    local toolCheck = function(container)
-        if not container then return nil end
-        if container:FindFirstChild("Gun") then return "Sheriff" end
-        if container:FindFirstChild("Knife") then return "Murderer" end
-        return nil
-    end
+-- 🟦 Billboard ESP for Gun
+local function createGunBillboard(gun)
+    local gui = Instance.new("BillboardGui", gun)
+    gui.Name = "GunESP"
+    gui.Size = UDim2.new(0, 100, 0, 40)
+    gui.AlwaysOnTop = true
+    gui.StudsOffset = Vector3.new(0, 2, 0)
+    gui.Adornee = gun
 
-    return toolCheck(player:FindFirstChildOfClass("Backpack")) or toolCheck(player.Character) or "Innocent"
+    local label = Instance.new("TextLabel", gui)
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = "🔫 GUN HERE"
+    label.TextColor3 = Color3.fromRGB(0, 255, 255)
+    label.TextStrokeTransparency = 0
+    label.TextScaled = true
+    label.Font = Enum.Font.GothamBold
 end
 
--- Create Drawing Box
-local function createBox()
-    local box = Drawing.new("Square")
-    box.Thickness = 1
-    box.Filled = false
-    box.Visible = false
-    return box
-end
+-- 🔲 Drawing Box ESP for Gun
+local gunBox = Drawing.new("Square")
+gunBox.Thickness = 2
+gunBox.Filled = false
+gunBox.Color = Color3.fromRGB(0, 255, 255)
+gunBox.Visible = false
 
--- Setup ESPs for all players
-local espTable = {}
-
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        espTable[player] = createBox()
-    end
-end
-
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        espTable[player] = createBox()
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if espTable[player] then
-        espTable[player]:Remove()
-        espTable[player] = nil
-    end
-end)
-
--- Update loop
+-- 🔁 Main Gun ESP Loop
 RunService.RenderStepped:Connect(function()
-    for player, box in pairs(espTable) do
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Head") then
-            local hrp = character.HumanoidRootPart
-            local head = character.Head
-
-            local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-            local headVec = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
-            local torsoVec = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 1.5, 0))
-
-            if onScreen then
-                box.Visible = true
-                box.Size = Vector2.new(math.abs(headVec.X - torsoVec.X) * 2.5, math.abs(headVec.Y - torsoVec.Y) * 2)
-                box.Position = Vector2.new(vector.X - box.Size.X / 2, vector.Y - box.Size.Y / 2)
-
-                local role = getRole(player)
-                if role == "Sheriff" then
-                    box.Color = Color3.fromRGB(0, 255, 255)
-                elseif role == "Murderer" then
-                    box.Color = Color3.fromRGB(255, 0, 0)
-                else
-                    box.Color = Color3.fromRGB(255, 255, 255)
-                end
-            else
-                box.Visible = false
-            end
-        else
-            box.Visible = false
+    local gun = Workspace:FindFirstChild("GunDrop")
+    if gun and gun:IsA("Tool") and gun:FindFirstChild("Handle") then
+        -- Billboard
+        if not gun:FindFirstChild("GunESP") then
+            createGunBillboard(gun)
         end
+
+        -- 3D box ESP
+        local pos, onScreen = Camera:WorldToViewportPoint(gun.Handle.Position)
+        if onScreen then
+            gunBox.Visible = true
+            gunBox.Size = Vector2.new(60, 60)
+            gunBox.Position = Vector2.new(pos.X - 30, pos.Y - 30)
+        else
+            gunBox.Visible = false
+        end
+    else
+        gunBox.Visible = false
     end
 end)
 
-print("✅ Box ESP loaded for MM2")
+print("🔫 Gun Drop ESP loaded")
