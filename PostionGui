@@ -8,6 +8,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "DropdownGUI"
+screenGui.ResetOnSpawn = false -- This prevents GUI from being destroyed on death
 screenGui.Parent = playerGui
 
 -- Main Frame (Container)
@@ -84,39 +85,75 @@ local welcomeExecuted = false
 local function runWelcomeScript()
     if not welcomeExecuted then
         welcomeExecuted = true
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Notification-gui-custom-/refs/heads/main/Welcome%20gui"))()
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Notification-gui-custom-/refs/heads/main/Welcome%20gui"))()
+            end)
+        end)
     end
 end
+
+-- Function to handle character respawn
+local function onCharacterAdded(character)
+    -- Wait for character to fully load
+    character:WaitForChild("Humanoid")
+    character:WaitForChild("HumanoidRootPart")
+    
+    -- Recreate GUI if it was destroyed
+    if not playerGui:FindFirstChild("DropdownGUI") then
+        wait(1) -- Small delay to ensure character is fully loaded
+        -- The GUI will be recreated by the main script below
+    end
+end
+
+-- Connect to character respawn
+player.CharacterAdded:Connect(onCharacterAdded)
 
 -- Button configurations
 local buttonConfigs = {
     {name = "ESP Player", color = Color3.fromRGB(50, 50, 50), action = function()
         runWelcomeScript()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/esp%20player%20for%20(mm2)"))()
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/esp%20player%20for%20(mm2)"))()
+            end)
+        end)
     end},
     {name = "Player TP GUI", color = Color3.fromRGB(45, 45, 45), action = function()
         runWelcomeScript()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20tp%20gui%20role%20(mm2)"))()
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20tp%20gui%20role%20(mm2)"))()
+            end)
+        end)
     end},
     {name = "Coin Teleport", color = Color3.fromRGB(40, 40, 40), action = function()
         runWelcomeScript()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Coin%20teleport%20(mm2)"))()
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Coin%20teleport%20(mm2)"))()
+            end)
+        end)
     end},
     {name = "Player Controller", color = Color3.fromRGB(35, 35, 35), action = function()
         runWelcomeScript()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20controller%20(mm2)%20universal"))()
+        spawn(function()
+            pcall(function()
+                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20controller%20(mm2)%20universal"))()
+            end)
+        end)
     end},
-    {name = "Button 5", color = Color3.fromRGB(50, 50, 50), action = function()
+    {name = "Working", color = Color3.fromRGB(50, 50, 50), action = function()
         runWelcomeScript()
-        -- No function yet
+        print("Button 5: Working - No function assigned yet")
     end},
-    {name = "Button 6", color = Color3.fromRGB(45, 45, 45), action = function()
+    {name = "Beta", color = Color3.fromRGB(45, 45, 45), action = function()
         runWelcomeScript()
-        -- No function yet
+        print("Button 6: Beta - No function assigned yet")
     end},
-    {name = "Button 7", color = Color3.fromRGB(40, 40, 40), action = function()
+    {name = "Working", color = Color3.fromRGB(40, 40, 40), action = function()
         runWelcomeScript()
-        -- No function yet
+        print("Button 7: Working - No function assigned yet")
     end}
 }
 
