@@ -2,23 +2,29 @@ local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
 
--- ✅ Teleport to a tool
-local function tpToTool(tool)
+-- ✅ Teleport to a part
+local function tpToPart(part)
     local char = lp.Character or lp.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
-    hrp.CFrame = tool.Handle.CFrame + Vector3.new(0, 3, 0)
-    print("[🔫] Teleported to gun!")
+    hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
+    print("[🔫] Teleported to GunDrop!")
 end
 
--- ✅ Check workspace for gun tool and teleport to it
+-- ✅ Wait for "GunDrop" part to appear in workspace
 task.spawn(function()
-    while true do
-        for _, item in ipairs(Workspace:GetChildren()) do
-            if item:IsA("Tool") and item.Name == "Gun" and item:FindFirstChild("Handle") then
-                tpToTool(item)
-                return
-            end
+    print("[👁️] Watching for GunDrop...")
+
+    Workspace.ChildAdded:Connect(function(child)
+        if child:IsA("Part") and child.Name == "GunDrop" then
+            print("[📦] GunDrop detected!")
+            task.wait(0.1) -- Small wait to ensure it's fully spawned
+            tpToPart(child)
         end
-        task.wait(0.2)
+    end)
+
+    -- In case GunDrop already exists
+    local existing = Workspace:FindFirstChild("GunDrop")
+    if existing and existing:IsA("Part") then
+        tpToPart(existing)
     end
 end)
