@@ -5,6 +5,7 @@ local RunService = game:GetService("RunService")
 local lp = Players.LocalPlayer
 local fakeDead = false
 local humanoid
+local animationStopped = false
 
 -- ✅ Fake Death Function
 local function fakeDeath()
@@ -31,6 +32,7 @@ local function recover()
     if not humanoid then return end
 
     fakeDead = false
+    animationStopped = false
     humanoid.PlatformStand = false
     humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
@@ -53,6 +55,18 @@ RunService.Heartbeat:Connect(function()
                 part.Velocity = Vector3.zero
             end
         end
+
+        -- ❌ Stop animations once on death
+        if not animationStopped then
+            local animator = humanoid:FindFirstChildOfClass("Animator")
+            if animator then
+                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                    track:Stop()
+                end
+                animationStopped = true
+                print("[🛑] Stopped all animations on death.")
+            end
+        end
     end
 end)
 
@@ -60,13 +74,11 @@ end)
 RunService.RenderStepped:Connect(function()
     if not fakeDead or not humanoid then return end
 
-    -- Recover on joystick move
     local moveVec = humanoid.MoveDirection
     if moveVec.Magnitude > 0 then
         recover()
     end
 
-    -- Recover on jump
     if humanoid.Jump or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
         recover()
     end
