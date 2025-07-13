@@ -7,13 +7,14 @@ local fakeDead = false
 local humanoid
 local animationStopped = false
 
--- ✅ Fake Death Function
+-- ✅ FAKE DEATH
 local function fakeDeath()
     local char = lp.Character or lp.CharacterAdded:Wait()
     humanoid = char:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
 
     fakeDead = true
+    animationStopped = false
     humanoid:ChangeState(Enum.HumanoidStateType.Physics)
     humanoid.PlatformStand = true
 
@@ -27,19 +28,31 @@ local function fakeDeath()
     print("[💀] Fake death activated.")
 end
 
--- ✅ Recover Function
+-- ✅ RECOVER FROM FAKE DEATH
 local function recover()
     if not humanoid then return end
-
     fakeDead = false
     animationStopped = false
     humanoid.PlatformStand = false
     humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-
     print("[✅] Recovered from fake death.")
 end
 
--- ✅ Monitor for Real Death and Freeze
+-- ✅ AUTO-RECOVER IF JOYSTICK OR JUMP
+RunService.RenderStepped:Connect(function()
+    if not fakeDead or not humanoid then return end
+
+    local moveVec = humanoid.MoveDirection
+    if moveVec.Magnitude > 0 then
+        recover()
+    end
+
+    if humanoid.Jump or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+        recover()
+    end
+end)
+
+-- ✅ FREEZE ON REAL DEATH
 RunService.Heartbeat:Connect(function()
     local char = lp.Character
     if not char then return end
@@ -56,33 +69,35 @@ RunService.Heartbeat:Connect(function()
             end
         end
 
-        -- ❌ Stop animations once on death
         if not animationStopped then
             local animator = humanoid:FindFirstChildOfClass("Animator")
             if animator then
                 for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
                     track:Stop()
                 end
-                animationStopped = true
-                print("[🛑] Stopped all animations on death.")
             end
+            animationStopped = true
+            print("[🛑] Animations stopped on real death.")
         end
     end
 end)
 
--- ✅ Detect Joystick Movement or Jump (but NOT camera)
-RunService.RenderStepped:Connect(function()
-    if not fakeDead or not humanoid then return end
+-- ✅ UNFREEZE ON RESPAWN
+lp.CharacterAdded:Connect(function(char)
+    fakeDead = false
+    animationStopped = false
 
-    local moveVec = humanoid.MoveDirection
-    if moveVec.Magnitude > 0 then
-        recover()
+    char:WaitForChild("Humanoid").PlatformStand = false
+    char:WaitForChild("Humanoid").WalkSpeed = 16 -- default walk speed
+
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.Anchored = false
+        end
     end
 
-    if humanoid.Jump or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
-        recover()
-    end
+    print("[♻️] Respawn detected: Unfrozen and reset.")
 end)
 
--- 🚀 Activate fake death immediately
+-- 🚀 START: Trigger fake death immediately
 fakeDeath()
