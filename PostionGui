@@ -1,85 +1,46 @@
--- MM2 Box ESP (Drawing API)
--- Shows 3D boxes around players and color-coded by role
-
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Camera = workspace.CurrentCamera
-local LocalPlayer = Players.LocalPlayer
+local lp = Players.LocalPlayer
 
-local function getRole(player)
-    local toolCheck = function(container)
-        if not container then return nil end
-        if container:FindFirstChild("Gun") then return "Sheriff" end
-        if container:FindFirstChild("Knife") then return "Murderer" end
-        return nil
-    end
-
-    return toolCheck(player:FindFirstChildOfClass("Backpack")) or toolCheck(player.Character) or "Innocent"
-end
-
--- Create Drawing Box
-local function createBox()
-    local box = Drawing.new("Square")
-    box.Thickness = 1
-    box.Filled = false
-    box.Visible = false
-    return box
-end
-
--- Setup ESPs for all players
-local espTable = {}
-
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        espTable[player] = createBox()
-    end
-end
-
-Players.PlayerAdded:Connect(function(player)
-    if player ~= LocalPlayer then
-        espTable[player] = createBox()
-    end
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if espTable[player] then
-        espTable[player]:Remove()
-        espTable[player] = nil
-    end
-end)
-
--- Update loop
-RunService.RenderStepped:Connect(function()
-    for player, box in pairs(espTable) do
-        local character = player.Character
-        if character and character:FindFirstChild("HumanoidRootPart") and character:FindFirstChild("Head") then
-            local hrp = character.HumanoidRootPart
-            local head = character.Head
-
-            local vector, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-            local headVec = Camera:WorldToViewportPoint(head.Position + Vector3.new(0, 0.5, 0))
-            local torsoVec = Camera:WorldToViewportPoint(hrp.Position - Vector3.new(0, 1.5, 0))
-
-            if onScreen then
-                box.Visible = true
-                box.Size = Vector2.new(math.abs(headVec.X - torsoVec.X) * 2.5, math.abs(headVec.Y - torsoVec.Y) * 2)
-                box.Position = Vector2.new(vector.X - box.Size.X / 2, vector.Y - box.Size.Y / 2)
-
-                local role = getRole(player)
-                if role == "Sheriff" then
-                    box.Color = Color3.fromRGB(0, 255, 255)
-                elseif role == "Murderer" then
-                    box.Color = Color3.fromRGB(255, 0, 0)
-                else
-                    box.Color = Color3.fromRGB(255, 255, 255)
-                end
-            else
-                box.Visible = false
-            end
-        else
-            box.Visible = false
+local function getSheriff()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("Gun") then
+            return plr
         end
     end
-end)
+    return nil
+end
 
-print("✅ Box ESP loaded for MM2")
+local function waitForGun()
+    while true do
+        local gun = workspace:FindFirstChild("GunDrop")
+        if gun then
+            return gun
+        end
+        task.wait(0.1)
+    end
+end
+
+local function tpToGun(gun)
+    local char = lp.Character or lp.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    hrp.CFrame = gun.CFrame + Vector3.new(0, 2, 0)
+    print("[🔫] Teleported to dropped gun.")
+end
+
+-- Main Loop
+task.spawn(function()
+    while true do
+        local sheriff = getSheriff()
+        if sheriff then
+            local hum = sheriff.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health <= 0 then
+                print("[☠️] Sheriff died, waiting for gun...")
+                local gun = waitForGun()
+                task.wait(0.1)
+                tpToGun(gun)
+                break
+            end
+        end
+        task.wait(0.5)
+    end
+end)
