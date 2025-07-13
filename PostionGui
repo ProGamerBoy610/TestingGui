@@ -1,103 +1,46 @@
 local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
 local lp = Players.LocalPlayer
-local fakeDead = false
-local humanoid
-local animationStopped = false
 
--- ✅ FAKE DEATH
-local function fakeDeath()
+local function getSheriff()
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("Gun") then
+            return plr
+        end
+    end
+    return nil
+end
+
+local function waitForGun()
+    while true do
+        local gun = workspace:FindFirstChild("GunDrop")
+        if gun then
+            return gun
+        end
+        task.wait(0.1)
+    end
+end
+
+local function tpToGun(gun)
     local char = lp.Character or lp.CharacterAdded:Wait()
-    humanoid = char:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-
-    fakeDead = true
-    animationStopped = false
-    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
-    humanoid.PlatformStand = true
-
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-            part.Anchored = false
-            part.Velocity = Vector3.new(math.random(-5,5), 15, math.random(-5,5))
-        end
-    end
-
-    print("[💀] Fake death activated.")
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    hrp.CFrame = gun.CFrame + Vector3.new(0, 2, 0)
+    print("[🔫] Teleported to dropped gun.")
 end
 
--- ✅ RECOVER FROM FAKE DEATH
-local function recover()
-    if not humanoid then return end
-    fakeDead = false
-    animationStopped = false
-    humanoid.PlatformStand = false
-    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
-    print("[✅] Recovered from fake death.")
-end
-
--- ✅ AUTO-RECOVER IF JOYSTICK OR JUMP
-RunService.RenderStepped:Connect(function()
-    if not fakeDead or not humanoid then return end
-
-    local moveVec = humanoid.MoveDirection
-    if moveVec.Magnitude > 0 then
-        recover()
-    end
-
-    if humanoid.Jump or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
-        recover()
-    end
-end)
-
--- ✅ FREEZE ON REAL DEATH
-RunService.Heartbeat:Connect(function()
-    local char = lp.Character
-    if not char then return end
-    humanoid = humanoid or char:FindFirstChildOfClass("Humanoid")
-
-    if humanoid and humanoid.Health <= 0 then
-        humanoid.PlatformStand = true
-        humanoid.WalkSpeed = 0
-
-        for _, part in ipairs(char:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Anchored = true
-                part.Velocity = Vector3.zero
+-- Main Loop
+task.spawn(function()
+    while true do
+        local sheriff = getSheriff()
+        if sheriff then
+            local hum = sheriff.Character:FindFirstChildOfClass("Humanoid")
+            if hum and hum.Health <= 0 then
+                print("[☠️] Sheriff died, waiting for gun...")
+                local gun = waitForGun()
+                task.wait(0.1)
+                tpToGun(gun)
+                break
             end
         end
-
-        if not animationStopped then
-            local animator = humanoid:FindFirstChildOfClass("Animator")
-            if animator then
-                for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-                    track:Stop()
-                end
-            end
-            animationStopped = true
-            print("[🛑] Animations stopped on real death.")
-        end
+        task.wait(0.5)
     end
 end)
-
--- ✅ UNFREEZE ON RESPAWN
-lp.CharacterAdded:Connect(function(char)
-    fakeDead = false
-    animationStopped = false
-
-    char:WaitForChild("Humanoid").PlatformStand = false
-    char:WaitForChild("Humanoid").WalkSpeed = 16 -- default walk speed
-
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.Anchored = false
-        end
-    end
-
-    print("[♻️] Respawn detected: Unfrozen and reset.")
-end)
-
--- 🚀 START: Trigger fake death immediately
-fakeDeath()
