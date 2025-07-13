@@ -1,11 +1,11 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-
 local lp = Players.LocalPlayer
+
 local fakeDead = false
 
--- Function: Fake Death
+-- ✅ Fake Death Function
 local function fakeDeath()
     local char = lp.Character or lp.CharacterAdded:Wait()
     local hum = char:FindFirstChildOfClass("Humanoid")
@@ -25,7 +25,7 @@ local function fakeDeath()
     print("[💀] Fake death activated.")
 end
 
--- Function: Recover from Fake Death
+-- ✅ Recover Function
 local function recover()
     local char = lp.Character
     if not char then return end
@@ -39,33 +39,36 @@ local function recover()
     print("[✅] Recovered from fake death.")
 end
 
--- Auto-recover when player moves (WASD or Space)
+-- ✅ Detect Mobile Jump or Joystick Movement
 UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe then return end
-    if not fakeDead then return end
+    if gpe or not fakeDead then return end
 
-    local moveKeys = {
-        Enum.KeyCode.W,
-        Enum.KeyCode.A,
-        Enum.KeyCode.S,
-        Enum.KeyCode.D,
-        Enum.KeyCode.Space
-    }
-
-    if table.find(moveKeys, input.KeyCode) then
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.Gamepad1 then
+        recover()
+    elseif input.KeyCode == Enum.KeyCode.W or
+           input.KeyCode == Enum.KeyCode.A or
+           input.KeyCode == Enum.KeyCode.S or
+           input.KeyCode == Enum.KeyCode.D or
+           input.KeyCode == Enum.KeyCode.Space then
         recover()
     end
 end)
 
--- Stop all movement if player is truly dead (health = 0)
+-- ✅ Freeze if Actually Dead (Health = 0)
 RunService.Heartbeat:Connect(function()
     local char = lp.Character
     if not char then return end
     local hum = char:FindFirstChildOfClass("Humanoid")
     if hum and hum.Health <= 0 then
         hum.PlatformStand = true
+        for _, part in ipairs(char:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.Anchored = true
+                part.Velocity = Vector3.zero
+            end
+        end
     end
 end)
 
--- Start fake death immediately
+-- 🚀 Trigger Fake Death Immediately
 fakeDeath()
