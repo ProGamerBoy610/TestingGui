@@ -1,49 +1,18 @@
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
 local lp = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 
--- ✅ Teleport to any valid part
-local function teleportTo(cframe)
-	local char = lp.Character or lp.CharacterAdded:Wait()
-	local hrp = char:WaitForChild("HumanoidRootPart")
-	hrp.CFrame = cframe + Vector3.new(0, 3, 0)
-	print("[🔫] Teleported to GunDrop!")
-end
-
--- ✅ Check if GunDrop already exists
-local function checkGunDrop()
-	local gun = Workspace:FindFirstChild("GunDrop")
-	if gun then
-		if gun:IsA("Part") then
-			teleportTo(gun.CFrame)
-			return true
-		elseif gun:IsA("Model") then
-			local part = gun:FindFirstChildWhichIsA("BasePart")
-			if part then
-				teleportTo(part.CFrame)
-				return true
-			end
-		end
-	end
-	return false
-end
-
--- ✅ Watch for GunDrop appearing
 Workspace.ChildAdded:Connect(function(child)
-	if child.Name == "GunDrop" then
-		task.wait(0.2)
-		if child:IsA("Part") then
-			teleportTo(child.CFrame)
-		elseif child:IsA("Model") then
-			local part = child:FindFirstChildWhichIsA("BasePart")
-			if part then
-				teleportTo(part.CFrame)
+	if child:IsA("Part") and child.Name == "Ray" then -- MM2 bullet is usually named "Ray"
+		-- Check if bullet is near you
+		local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
+		if hrp and (child.Position - hrp.Position).Magnitude < 10 then
+			-- Disable collision between bullet and your character
+			for _, part in ipairs(lp.Character:GetChildren()) do
+				if part:IsA("BasePart") then
+					child:CanCollideWith(part, false)
+				end
 			end
 		end
 	end
 end)
-
--- 🔁 In case the gun already exists when you execute
-if not checkGunDrop() then
-	print("[👁️] Watching for GunDrop...")
-end
