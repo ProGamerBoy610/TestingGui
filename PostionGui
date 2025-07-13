@@ -1,19 +1,20 @@
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local lp = Players.LocalPlayer
 
+local lp = Players.LocalPlayer
 local fakeDead = false
+local humanoid
 
 -- ✅ Fake Death Function
 local function fakeDeath()
     local char = lp.Character or lp.CharacterAdded:Wait()
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
+    humanoid = char:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
 
     fakeDead = true
-    hum:ChangeState(Enum.HumanoidStateType.Physics)
-    hum.PlatformStand = true
+    humanoid:ChangeState(Enum.HumanoidStateType.Physics)
+    humanoid.PlatformStand = true
 
     for _, part in ipairs(char:GetDescendants()) do
         if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
@@ -27,40 +28,25 @@ end
 
 -- ✅ Recover Function
 local function recover()
-    local char = lp.Character
-    if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if not hum then return end
+    if not humanoid then return end
 
     fakeDead = false
-    hum.PlatformStand = false
-    hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+    humanoid.PlatformStand = false
+    humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
 
     print("[✅] Recovered from fake death.")
 end
 
--- ✅ Detect Mobile Jump or Joystick Movement
-UserInputService.InputBegan:Connect(function(input, gpe)
-    if gpe or not fakeDead then return end
-
-    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.Gamepad1 then
-        recover()
-    elseif input.KeyCode == Enum.KeyCode.W or
-           input.KeyCode == Enum.KeyCode.A or
-           input.KeyCode == Enum.KeyCode.S or
-           input.KeyCode == Enum.KeyCode.D or
-           input.KeyCode == Enum.KeyCode.Space then
-        recover()
-    end
-end)
-
--- ✅ Freeze if Actually Dead (Health = 0)
+-- ✅ Monitor for Real Death and Freeze
 RunService.Heartbeat:Connect(function()
     local char = lp.Character
     if not char then return end
-    local hum = char:FindFirstChildOfClass("Humanoid")
-    if hum and hum.Health <= 0 then
-        hum.PlatformStand = true
+    humanoid = humanoid or char:FindFirstChildOfClass("Humanoid")
+
+    if humanoid and humanoid.Health <= 0 then
+        humanoid.PlatformStand = true
+        humanoid.WalkSpeed = 0
+
         for _, part in ipairs(char:GetDescendants()) do
             if part:IsA("BasePart") then
                 part.Anchored = true
@@ -70,5 +56,21 @@ RunService.Heartbeat:Connect(function()
     end
 end)
 
--- 🚀 Trigger Fake Death Immediately
+-- ✅ Detect Joystick Movement or Jump (but NOT camera)
+RunService.RenderStepped:Connect(function()
+    if not fakeDead or not humanoid then return end
+
+    -- Recover on joystick move
+    local moveVec = humanoid.MoveDirection
+    if moveVec.Magnitude > 0 then
+        recover()
+    end
+
+    -- Recover on jump
+    if humanoid.Jump or humanoid:GetState() == Enum.HumanoidStateType.Jumping then
+        recover()
+    end
+end)
+
+-- 🚀 Activate fake death immediately
 fakeDeath()
