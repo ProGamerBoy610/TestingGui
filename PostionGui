@@ -1,46 +1,24 @@
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
+local Workspace = game:GetService("Workspace")
 
-local function getSheriff()
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= lp and plr.Character and plr.Character:FindFirstChild("Gun") then
-            return plr
-        end
-    end
-    return nil
-end
-
-local function waitForGun()
-    while true do
-        local gun = workspace:FindFirstChild("GunDrop")
-        if gun then
-            return gun
-        end
-        task.wait(0.1)
-    end
-end
-
-local function tpToGun(gun)
+-- ✅ Teleport to a tool
+local function tpToTool(tool)
     local char = lp.Character or lp.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
-    hrp.CFrame = gun.CFrame + Vector3.new(0, 2, 0)
-    print("[🔫] Teleported to dropped gun.")
+    hrp.CFrame = tool.Handle.CFrame + Vector3.new(0, 3, 0)
+    print("[🔫] Teleported to gun!")
 end
 
--- Main Loop
+-- ✅ Check workspace for gun tool and teleport to it
 task.spawn(function()
     while true do
-        local sheriff = getSheriff()
-        if sheriff then
-            local hum = sheriff.Character:FindFirstChildOfClass("Humanoid")
-            if hum and hum.Health <= 0 then
-                print("[☠️] Sheriff died, waiting for gun...")
-                local gun = waitForGun()
-                task.wait(0.1)
-                tpToGun(gun)
-                break
+        for _, item in ipairs(Workspace:GetChildren()) do
+            if item:IsA("Tool") and item.Name == "Gun" and item:FindFirstChild("Handle") then
+                tpToTool(item)
+                return
             end
         end
-        task.wait(0.5)
+        task.wait(0.2)
     end
 end)
