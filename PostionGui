@@ -1,18 +1,295 @@
+-- MM2 ESP GUI for Executor
 local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
-local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-Workspace.ChildAdded:Connect(function(child)
-	if child:IsA("Part") and child.Name == "Ray" then -- MM2 bullet is usually named "Ray"
-		-- Check if bullet is near you
-		local hrp = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
-		if hrp and (child.Position - hrp.Position).Magnitude < 10 then
-			-- Disable collision between bullet and your character
-			for _, part in ipairs(lp.Character:GetChildren()) do
-				if part:IsA("BasePart") then
-					child:CanCollideWith(part, false)
-				end
-			end
-		end
-	end
+-- Remove existing GUI if it exists
+if PlayerGui:FindFirstChild("MM2_ESP_GUI") then
+    PlayerGui:FindFirstChild("MM2_ESP_GUI"):Destroy()
+end
+
+-- Create main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "MM2_ESP_GUI"
+screenGui.Parent = PlayerGui
+
+-- Main frame (landscape)
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 650, 0, 400)
+mainFrame.Position = UDim2.new(0.5, -325, 0.5, -200)
+mainFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+
+-- Corner rounding
+local mainCorner = Instance.new("UICorner")
+mainCorner.CornerRadius = UDim.new(0, 8)
+mainCorner.Parent = mainFrame
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 35)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleBar
+
+-- Title text
+local titleText = Instance.new("TextLabel")
+titleText.Size = UDim2.new(1, -100, 1, 0)
+titleText.Position = UDim2.new(0, 10, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "MM2 Player ESP"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.TextScaled = true
+titleText.Font = Enum.Font.GothamBold
+titleText.Parent = titleBar
+
+-- Close button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.GothamBold
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 4)
+closeCorner.Parent = closeButton
+
+-- ScrollingFrame for players
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -20, 1, -50)
+scrollFrame.Position = UDim2.new(0, 10, 0, 40)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 5
+scrollFrame.Parent = mainFrame
+
+local scrollCorner = Instance.new("UICorner")
+scrollCorner.CornerRadius = UDim.new(0, 6)
+scrollCorner.Parent = scrollFrame
+
+-- UIListLayout for player frames
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder = Enum.SortOrder.Name
+listLayout.Padding = UDim.new(0, 5)
+listLayout.Parent = scrollFrame
+
+-- Function to get player role
+local function getRole(player)
+    local toolCheck = function(container)
+        if not container then return nil end
+        if container:FindFirstChild("Gun") then return "Sheriff" end
+        if container:FindFirstChild("Knife") then return "Murderer" end
+        return nil
+    end
+    return toolCheck(player:FindFirstChildOfClass("Backpack")) or toolCheck(player.Character) or "Innocent"
+end
+
+-- Function to get role color
+local function getRoleColor(role)
+    if role == "Sheriff" then
+        return Color3.fromRGB(0, 255, 255)
+    elseif role == "Murderer" then
+        return Color3.fromRGB(255, 0, 0)
+    else
+        return Color3.fromRGB(255, 255, 255)
+    end
+end
+
+-- Function to teleport to player
+local function teleportToPlayer(targetPlayer)
+    if targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = targetPlayer.Character.HumanoidRootPart.CFrame
+    end
+end
+
+-- Function to create player frame
+local function createPlayerFrame(player)
+    local playerFrame = Instance.new("Frame")
+    playerFrame.Size = UDim2.new(1, -10, 0, 60)
+    playerFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    playerFrame.BorderSizePixel = 0
+    playerFrame.Parent = scrollFrame
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 5)
+    frameCorner.Parent = playerFrame
+    
+    -- Player image
+    local playerImage = Instance.new("ImageLabel")
+    playerImage.Size = UDim2.new(0, 50, 0, 50)
+    playerImage.Position = UDim2.new(0, 5, 0, 5)
+    playerImage.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    playerImage.BorderSizePixel = 0
+    playerImage.Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. player.UserId .. "&width=420&height=420&format=png"
+    playerImage.Parent = playerFrame
+    
+    local imageCorner = Instance.new("UICorner")
+    imageCorner.CornerRadius = UDim.new(0, 25)
+    imageCorner.Parent = playerImage
+    
+    -- Player name
+    local playerName = Instance.new("TextLabel")
+    playerName.Size = UDim2.new(0, 200, 0, 20)
+    playerName.Position = UDim2.new(0, 65, 0, 5)
+    playerName.BackgroundTransparency = 1
+    playerName.Text = player.Name
+    playerName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    playerName.TextScaled = true
+    playerName.Font = Enum.Font.Gotham
+    playerName.TextXAlignment = Enum.TextXAlignment.Left
+    playerName.Parent = playerFrame
+    
+    -- Role label
+    local roleLabel = Instance.new("TextLabel")
+    roleLabel.Size = UDim2.new(0, 200, 0, 20)
+    roleLabel.Position = UDim2.new(0, 65, 0, 25)
+    roleLabel.BackgroundTransparency = 1
+    roleLabel.Text = "Role: " .. getRole(player)
+    roleLabel.TextColor3 = getRoleColor(getRole(player))
+    roleLabel.TextScaled = true
+    roleLabel.Font = Enum.Font.GothamBold
+    roleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    roleLabel.Parent = playerFrame
+    
+    -- Teleport button
+    local tpButton = Instance.new("TextButton")
+    tpButton.Size = UDim2.new(0, 80, 0, 25)
+    tpButton.Position = UDim2.new(1, -90, 0, 17.5)
+    tpButton.BackgroundColor3 = Color3.fromRGB(0, 162, 255)
+    tpButton.BorderSizePixel = 0
+    tpButton.Text = "Teleport"
+    tpButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    tpButton.TextScaled = true
+    tpButton.Font = Enum.Font.GothamBold
+    tpButton.Parent = playerFrame
+    
+    local tpCorner = Instance.new("UICorner")
+    tpCorner.CornerRadius = UDim.new(0, 4)
+    tpCorner.Parent = tpButton
+    
+    -- Teleport button functionality
+    tpButton.MouseButton1Click:Connect(function()
+        teleportToPlayer(player)
+    end)
+    
+    return playerFrame, roleLabel
+end
+
+-- Store player frames and role labels
+local playerFrames = {}
+local roleLabels = {}
+
+-- Function to update player list
+local function updatePlayerList()
+    -- Clear existing frames
+    for _, frame in pairs(playerFrames) do
+        frame:Destroy()
+    end
+    playerFrames = {}
+    roleLabels = {}
+    
+    -- Create frames for all players except local player
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local frame, roleLabel = createPlayerFrame(player)
+            playerFrames[player] = frame
+            roleLabels[player] = roleLabel
+        end
+    end
+    
+    -- Update canvas size
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+end
+
+-- Function to update roles
+local function updateRoles()
+    for player, roleLabel in pairs(roleLabels) do
+        if player.Parent then -- Check if player still exists
+            local role = getRole(player)
+            roleLabel.Text = "Role: " .. role
+            roleLabel.TextColor3 = getRoleColor(role)
+        end
+    end
+end
+
+-- Initial setup
+updatePlayerList()
+
+-- Update roles every 1 second
+spawn(function()
+    while screenGui.Parent do
+        updateRoles()
+        wait(1)
+    end
 end)
+
+-- Update canvas size when layout changes
+listLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+end)
+
+-- Handle player joining
+Players.PlayerAdded:Connect(function(player)
+    wait(0.1) -- Small delay to ensure player is fully loaded
+    updatePlayerList()
+end)
+
+-- Handle player leaving
+Players.PlayerRemoving:Connect(function(player)
+    if playerFrames[player] then
+        playerFrames[player]:Destroy()
+        playerFrames[player] = nil
+        roleLabels[player] = nil
+    end
+end)
+
+-- Close button functionality
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Make GUI draggable
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+titleBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+print("✅ MM2 ESP GUI loaded successfully!")
+print("📋 Features:")
+print("   • Player profile images")
+print("   • Real-time role detection")
+print("   • Teleport to players")
+print("   • Draggable interface")
+print("   • Updates every 1 second")
