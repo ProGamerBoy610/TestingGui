@@ -1,30 +1,49 @@
 local Players = game:GetService("Players")
-local lp = Players.LocalPlayer
 local Workspace = game:GetService("Workspace")
+local lp = Players.LocalPlayer
 
--- ✅ Teleport to a part
-local function tpToPart(part)
-    local char = lp.Character or lp.CharacterAdded:Wait()
-    local hrp = char:WaitForChild("HumanoidRootPart")
-    hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
-    print("[🔫] Teleported to GunDrop!")
+-- ✅ Teleport to any valid part
+local function teleportTo(cframe)
+	local char = lp.Character or lp.CharacterAdded:Wait()
+	local hrp = char:WaitForChild("HumanoidRootPart")
+	hrp.CFrame = cframe + Vector3.new(0, 3, 0)
+	print("[🔫] Teleported to GunDrop!")
 end
 
--- ✅ Wait for "GunDrop" part to appear in workspace
-task.spawn(function()
-    print("[👁️] Watching for GunDrop...")
+-- ✅ Check if GunDrop already exists
+local function checkGunDrop()
+	local gun = Workspace:FindFirstChild("GunDrop")
+	if gun then
+		if gun:IsA("Part") then
+			teleportTo(gun.CFrame)
+			return true
+		elseif gun:IsA("Model") then
+			local part = gun:FindFirstChildWhichIsA("BasePart")
+			if part then
+				teleportTo(part.CFrame)
+				return true
+			end
+		end
+	end
+	return false
+end
 
-    Workspace.ChildAdded:Connect(function(child)
-        if child:IsA("Part") and child.Name == "GunDrop" then
-            print("[📦] GunDrop detected!")
-            task.wait(0.1) -- Small wait to ensure it's fully spawned
-            tpToPart(child)
-        end
-    end)
-
-    -- In case GunDrop already exists
-    local existing = Workspace:FindFirstChild("GunDrop")
-    if existing and existing:IsA("Part") then
-        tpToPart(existing)
-    end
+-- ✅ Watch for GunDrop appearing
+Workspace.ChildAdded:Connect(function(child)
+	if child.Name == "GunDrop" then
+		task.wait(0.2)
+		if child:IsA("Part") then
+			teleportTo(child.CFrame)
+		elseif child:IsA("Model") then
+			local part = child:FindFirstChildWhichIsA("BasePart")
+			if part then
+				teleportTo(part.CFrame)
+			end
+		end
+	end
 end)
+
+-- 🔁 In case the gun already exists when you execute
+if not checkGunDrop() then
+	print("[👁️] Watching for GunDrop...")
+end
