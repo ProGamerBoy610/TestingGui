@@ -1,56 +1,42 @@
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
-local tab = library:CreateWindow("Fryzer Hub")
-local section = tab:CreateFolder("Main")
+local player = game.Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- FPS GUI setup function
-local function showFPS()
-	local player = game.Players.LocalPlayer
-	local playerGui = player:WaitForChild("PlayerGui")
+-- Prevent duplicates
+if playerGui:FindFirstChild("FPSCounterGui") then return end
 
-	-- Prevent duplicates
-	if playerGui:FindFirstChild("FPSCounterGui") then return end
+-- Create the FPS GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FPSCounterGui"
+screenGui.ResetOnSpawn = false
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = playerGui
 
-	local screenGui = Instance.new("ScreenGui")
-	screenGui.Name = "FPSCounterGui"
-	screenGui.ResetOnSpawn = false
-	screenGui.Parent = playerGui
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Name = "FPSLabel"
+fpsLabel.Size = UDim2.new(0, 120, 0, 30)
+fpsLabel.Position = UDim2.new(1, -130, 0, 10) -- Top-right
+fpsLabel.BackgroundTransparency = 0.5
+fpsLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+fpsLabel.BorderSizePixel = 0
+fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+fpsLabel.TextStrokeTransparency = 0.5
+fpsLabel.TextScaled = true
+fpsLabel.Font = Enum.Font.Code
+fpsLabel.Text = "FPS: 0"
+fpsLabel.Parent = screenGui
 
-	local fpsLabel = Instance.new("TextLabel")
-	fpsLabel.Name = "FPSLabel"
-	fpsLabel.Size = UDim2.new(0, 120, 0, 30)
-	fpsLabel.Position = UDim2.new(1, -130, 0, 10) -- Top-right
-	fpsLabel.BackgroundTransparency = 0.5
-	fpsLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-	fpsLabel.BorderSizePixel = 0
-	fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-	fpsLabel.TextStrokeTransparency = 0.5
-	fpsLabel.TextScaled = true
-	fpsLabel.Font = Enum.Font.Code
-	fpsLabel.Text = "FPS: 0"
-	fpsLabel.Parent = screenGui
+-- FPS updater
+local RunService = game:GetService("RunService")
+local lastUpdate = tick()
+local frames = 0
 
-	local RunService = game:GetService("RunService")
-	local lastUpdate = tick()
-	local frames = 0
-
-	RunService.RenderStepped:Connect(function()
-		frames += 1
-		local now = tick()
-		if now - lastUpdate >= 1 then
-			local fps = math.floor(frames / (now - lastUpdate))
-			fpsLabel.Text = "FPS: " .. fps
-			lastUpdate = now
-			frames = 0
-		end
-	end)
-end
-
--- Add button
-section:AddButton({
-	text = "Show FPS",
-	callback = function()
-		showFPS()
+RunService.RenderStepped:Connect(function()
+	frames += 1
+	local now = tick()
+	if now - lastUpdate >= 1 then
+		local fps = math.floor(frames / (now - lastUpdate))
+		fpsLabel.Text = "FPS: " .. fps
+		lastUpdate = now
+		frames = 0
 	end
-})
-
-library:Init()
+end)
