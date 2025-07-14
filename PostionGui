@@ -1,268 +1,223 @@
+-- Roblox Draggable GUI Script
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "DropdownGUI"
-screenGui.ResetOnSpawn = false -- This prevents GUI from being destroyed on death
+screenGui.Name = "StealBrainrotGui"
 screenGui.Parent = playerGui
 
--- Main Frame (Container)
+-- Create main frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 250, 0, 50)
-mainFrame.Position = UDim2.new(0, 20, 0, 100)
-mainFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+mainFrame.Size = UDim2.new(0, 220, 0, 120)
+mainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 mainFrame.BorderSizePixel = 0
-mainFrame.ClipsDescendants = true
 mainFrame.Parent = screenGui
 
--- Add corner radius
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 12)
-mainCorner.Parent = mainFrame
+-- Create gradient background
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 40)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))
+}
+gradient.Rotation = 45
+gradient.Parent = mainFrame
 
--- Header Frame
-local headerFrame = Instance.new("Frame")
-headerFrame.Name = "Header"
-headerFrame.Size = UDim2.new(1, 0, 0, 50)
-headerFrame.Position = UDim2.new(0, 0, 0, 0)
-headerFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-headerFrame.BorderSizePixel = 0
-headerFrame.Parent = mainFrame
+-- Create corner rounding
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 12)
+corner.Parent = mainFrame
 
-local headerCorner = Instance.new("UICorner")
-headerCorner.CornerRadius = UDim.new(0, 12)
-headerCorner.Parent = headerFrame
+-- Create subtle border glow
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(100, 50, 255)
+stroke.Thickness = 2
+stroke.Transparency = 0.3
+stroke.Parent = mainFrame
 
--- Title Label
+-- Create title label
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "Title"
-titleLabel.Size = UDim2.new(1, -50, 1, 0)
-titleLabel.Position = UDim2.new(0, 10, 0, 0)
-titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Fryzer Hub"
-titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleLabel.Name = "TitleLabel"
+titleLabel.Size = UDim2.new(1, 0, 0, 35)
+titleLabel.Position = UDim2.new(0, 0, 0, 0)
+titleLabel.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
+titleLabel.BorderSizePixel = 0
+titleLabel.Text = "✨ Steal a brainrot ✨"
+titleLabel.TextColor3 = Color3.fromRGB(255, 100, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
-titleLabel.Parent = headerFrame
+titleLabel.Parent = mainFrame
 
--- Toggle Button
-local toggleButton = Instance.new("TextButton")
-toggleButton.Name = "ToggleButton"
-toggleButton.Size = UDim2.new(0, 40, 0, 40)
-toggleButton.Position = UDim2.new(1, -45, 0, 5)
-toggleButton.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-toggleButton.BackgroundTransparency = 0
-toggleButton.BorderSizePixel = 0
-toggleButton.Text = "▼"
-toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-toggleButton.TextScaled = true
-toggleButton.Font = Enum.Font.GothamBold
-toggleButton.Parent = headerFrame
-
-local toggleCorner = Instance.new("UICorner")
-toggleCorner.CornerRadius = UDim.new(0, 8)
-toggleCorner.Parent = toggleButton
-
--- Content Frame (for buttons)
-local contentFrame = Instance.new("Frame")
-contentFrame.Name = "Content"
-contentFrame.Size = UDim2.new(1, 0, 0, 280)
-contentFrame.Position = UDim2.new(0, 0, 0, 50)
-contentFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-contentFrame.BorderSizePixel = 0
-contentFrame.Parent = mainFrame
-
--- Welcome script executed flag
-local welcomeExecuted = false
-
--- Function to run welcome script once
-local function runWelcomeScript()
-    if not welcomeExecuted then
-        welcomeExecuted = true
-        spawn(function()
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Notification-gui-custom-/refs/heads/main/Welcome%20gui"))()
-            end)
-        end)
-    end
-end
-
--- Function to handle character respawn
-local function onCharacterAdded(character)
-    -- Wait for character to fully load
-    character:WaitForChild("Humanoid")
-    character:WaitForChild("HumanoidRootPart")
-    
-    -- Recreate GUI if it was destroyed
-    if not playerGui:FindFirstChild("DropdownGUI") then
-        wait(1) -- Small delay to ensure character is fully loaded
-        -- The GUI will be recreated by the main script below
-    end
-end
-
--- Connect to character respawn
-player.CharacterAdded:Connect(onCharacterAdded)
-
--- Button configurations
-local buttonConfigs = {
-    {name = "ESP Player", color = Color3.fromRGB(50, 50, 50), action = function()
-        runWelcomeScript()
-        spawn(function()
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/esp%20player%20for%20(mm2)"))()
-            end)
-        end)
-    end},
-    {name = "Player TP GUI", color = Color3.fromRGB(45, 45, 45), action = function()
-        runWelcomeScript()
-        spawn(function()
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20tp%20gui%20role%20(mm2)"))()
-            end)
-        end)
-    end},
-    {name = "Coin Teleport", color = Color3.fromRGB(40, 40, 40), action = function()
-        runWelcomeScript()
-        spawn(function()
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Coin%20teleport%20(mm2)"))()
-            end)
-        end)
-    end},
-    {name = "Player Controller", color = Color3.fromRGB(35, 35, 35), action = function()
-        runWelcomeScript()
-        spawn(function()
-            pcall(function()
-                loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Player%20controller%20(mm2)%20universal"))()
-            end)
-        end)
-    end},
-    {name = "Working", color = Color3.fromRGB(50, 50, 50), action = function()
-        runWelcomeScript()
-        print("Button 5: Working - No function assigned yet")
-    end},
-    {name = "Beta", color = Color3.fromRGB(45, 45, 45), action = function()
-        runWelcomeScript()
-        print("Button 6: Beta - No function assigned yet")
-    end},
-    {name = "Working", color = Color3.fromRGB(40, 40, 40), action = function()
-        runWelcomeScript()
-        print("Button 7: Working - No function assigned yet")
-    end}
+-- Add title gradient
+local titleGradient = Instance.new("UIGradient")
+titleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(100, 200, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 100))
 }
+titleGradient.Parent = titleLabel
 
--- Create buttons
-for i, config in ipairs(buttonConfigs) do
-    local button = Instance.new("TextButton")
-    button.Name = "Button" .. i
-    button.Size = UDim2.new(1, -20, 0, 35)
-    button.Position = UDim2.new(0, 10, 0, (i-1) * 40 + 5)
-    button.BackgroundColor3 = config.color
-    button.BorderSizePixel = 0
-    button.Text = config.name
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextScaled = true
-    button.Font = Enum.Font.Gotham
-    button.Parent = contentFrame
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 8)
-    buttonCorner.Parent = button
-    
-    -- Handle button click
-    button.MouseButton1Click:Connect(function()
-        -- Execute the button's action if it exists
-        if config.action then
-            local success, error = pcall(config.action)
-            if not success then
-                warn("Error executing action for " .. config.name .. ": " .. tostring(error))
-            end
-        end
-        
-        -- Visual feedback with better animation
-        local originalColor = button.BackgroundColor3
-        local tweenInfo = TweenInfo.new(0.1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
-        
-        TweenService:Create(button, tweenInfo, {BackgroundColor3 = Color3.fromRGB(80, 80, 80)}):Play()
-        
-        wait(0.1)
-        
-        TweenService:Create(button, tweenInfo, {BackgroundColor3 = originalColor}):Play()
-    end)
-end
+-- Add title corner
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleLabel
 
--- Dropdown functionality
-local isOpen = false
-local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+-- Add title stroke
+local titleStroke = Instance.new("UIStroke")
+titleStroke.Color = Color3.fromRGB(255, 150, 255)
+titleStroke.Thickness = 1
+titleStroke.Transparency = 0.5
+titleStroke.Parent = titleLabel
 
-local function toggleDropdown()
-    isOpen = not isOpen
-    
-    local targetSize, targetRotation
-    if isOpen then
-        targetSize = UDim2.new(0, 250, 0, 330)
-        targetRotation = 180
-    else
-        targetSize = UDim2.new(0, 250, 0, 50)
-        targetRotation = 0
-    end
-    
-    -- Animate main frame
-    local sizeTween = TweenService:Create(mainFrame, tweenInfo, {Size = targetSize})
-    sizeTween:Play()
-    
-    -- Animate toggle button rotation
-    local rotationTween = TweenService:Create(toggleButton, tweenInfo, {Rotation = targetRotation})
-    rotationTween:Play()
-end
+-- Create Speed Boost button
+local speedButton = Instance.new("TextButton")
+speedButton.Name = "SpeedButton"
+speedButton.Size = UDim2.new(0.5, -5, 0, 45)
+speedButton.Position = UDim2.new(0, 5, 0, 40)
+speedButton.BackgroundColor3 = Color3.fromRGB(255, 50, 50)
+speedButton.BorderSizePixel = 0
+speedButton.Text = "⚡ Speed Boost"
+speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+speedButton.TextScaled = true
+speedButton.Font = Enum.Font.GothamBold
+speedButton.Parent = mainFrame
 
-toggleButton.MouseButton1Click:Connect(toggleDropdown)
+-- Speed button gradient
+local speedGradient = Instance.new("UIGradient")
+speedGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 80, 80)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 30, 30))
+}
+speedGradient.Rotation = 45
+speedGradient.Parent = speedButton
+
+-- Speed button corner
+local speedCorner = Instance.new("UICorner")
+speedCorner.CornerRadius = UDim.new(0, 8)
+speedCorner.Parent = speedButton
+
+-- Speed button stroke
+local speedStroke = Instance.new("UIStroke")
+speedStroke.Color = Color3.fromRGB(255, 100, 100)
+speedStroke.Thickness = 2
+speedStroke.Transparency = 0.4
+speedStroke.Parent = speedButton
+
+-- Create Glide button
+local glideButton = Instance.new("TextButton")
+glideButton.Name = "GlideButton"
+glideButton.Size = UDim2.new(0.5, -5, 0, 45)
+glideButton.Position = UDim2.new(0.5, 0, 0, 40)
+glideButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
+glideButton.BorderSizePixel = 0
+glideButton.Text = "🪶 Glide"
+glideButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+glideButton.TextScaled = true
+glideButton.Font = Enum.Font.GothamBold
+glideButton.Parent = mainFrame
+
+-- Glide button gradient
+local glideGradient = Instance.new("UIGradient")
+glideGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 180, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 100, 200))
+}
+glideGradient.Rotation = 45
+glideGradient.Parent = glideButton
+
+-- Glide button corner
+local glideCorner = Instance.new("UICorner")
+glideCorner.CornerRadius = UDim.new(0, 8)
+glideCorner.Parent = glideButton
+
+-- Glide button stroke
+local glideStroke = Instance.new("UIStroke")
+glideStroke.Color = Color3.fromRGB(100, 200, 255)
+glideStroke.Thickness = 2
+glideStroke.Transparency = 0.4
+glideStroke.Parent = glideButton
 
 -- Dragging functionality
-local dragToggle = nil
-local dragSpeed = 0
+local dragging = false
 local dragStart = nil
 local startPos = nil
 
 local function updateInput(input)
     local delta = input.Position - dragStart
-    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    TweenService:Create(mainFrame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+    mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
-headerFrame.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        dragToggle = true
+titleLabel.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
         
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = false
+                dragging = false
             end
         end)
     end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragToggle then
+titleLabel.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging then
             updateInput(input)
         end
     end
 end)
 
--- Mobile touch support for dragging
-headerFrame.TouchMoved:Connect(function(touch, gameProcessed)
-    if dragToggle then
-        updateInput(touch)
-    end
+-- Button functionality with your loadstring commands
+speedButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Speed%20Bosst%20Gui"))()
 end)
 
-print("Improved Dropdown GUI loaded successfully!")
+glideButton.MouseButton1Click:Connect(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/GLIDE%20button%20gui%20for%20steal%20a%20brianrot.lua"))()
+end)
+
+-- Enhanced hover effects for buttons
+speedButton.MouseEnter:Connect(function()
+    speedButton.Size = UDim2.new(0.5, -5, 0, 50)
+    speedStroke.Transparency = 0.1
+    speedStroke.Thickness = 3
+end)
+
+speedButton.MouseLeave:Connect(function()
+    speedButton.Size = UDim2.new(0.5, -5, 0, 45)
+    speedStroke.Transparency = 0.4
+    speedStroke.Thickness = 2
+end)
+
+glideButton.MouseEnter:Connect(function()
+    glideButton.Size = UDim2.new(0.5, -5, 0, 50)
+    glideStroke.Transparency = 0.1
+    glideStroke.Thickness = 3
+end)
+
+glideButton.MouseLeave:Connect(function()
+    glideButton.Size = UDim2.new(0.5, -5, 0, 45)
+    glideStroke.Transparency = 0.4
+    glideStroke.Thickness = 2
+end)
+
+-- Add pulsing animation to the main frame
+spawn(function()
+    while mainFrame.Parent do
+        for i = 1, 20 do
+            stroke.Transparency = 0.3 + (i * 0.01)
+            wait(0.05)
+        end
+        for i = 1, 20 do
+            stroke.Transparency = 0.5 - (i * 0.01)
+            wait(0.05)
+        end
+    end
+end)
