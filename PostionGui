@@ -1,42 +1,43 @@
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Prevent duplicates
-if playerGui:FindFirstChild("FPSCounterGui") then return end
+-- Remove old GUI if exists
+if playerGui:FindFirstChild("FPSGui") then
+    playerGui.FPSGui:Destroy()
+end
 
--- Create the FPS GUI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FPSCounterGui"
-screenGui.ResetOnSpawn = false
-screenGui.IgnoreGuiInset = true
-screenGui.Parent = playerGui
+-- Create GUI
+local fpsGui = Instance.new("ScreenGui")
+fpsGui.Name = "FPSGui"
+fpsGui.ResetOnSpawn = false
+fpsGui.IgnoreGuiInset = true
+fpsGui.Parent = playerGui
 
-local fpsLabel = Instance.new("TextLabel")
-fpsLabel.Name = "FPSLabel"
-fpsLabel.Size = UDim2.new(0, 120, 0, 30)
-fpsLabel.Position = UDim2.new(1, -130, 0, 10) -- Top-right
-fpsLabel.BackgroundTransparency = 0.5
-fpsLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-fpsLabel.BorderSizePixel = 0
-fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-fpsLabel.TextStrokeTransparency = 0.5
-fpsLabel.TextScaled = true
-fpsLabel.Font = Enum.Font.Code
-fpsLabel.Text = "FPS: 0"
-fpsLabel.Parent = screenGui
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(0, 100, 0, 25)
+label.Position = UDim2.new(1, -110, 0, 10) -- Top-right corner
+label.BackgroundTransparency = 0.4
+label.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+label.TextColor3 = Color3.fromRGB(0, 255, 0)
+label.Font = Enum.Font.Code
+label.TextSize = 20
+label.Text = "FPS: ..."
+label.Parent = fpsGui
 
--- FPS updater
-local RunService = game:GetService("RunService")
-local lastUpdate = tick()
-local frames = 0
+-- FPS counter
+local lastTime = tick()
+local frameCount = 0
 
 RunService.RenderStepped:Connect(function()
-	frames += 1
-	local now = tick()
-	if now - lastUpdate >= 1 then
-		local fps = math.floor(frames / (now - lastUpdate))
-		fpsLabel.Text = "FPS: " .. fps
-		lastUpdate = now
-		frames = 0
+	frameCount += 1
+	local currentTime = tick()
+	if currentTime - lastTime >= 1 then
+		local fps = math.floor(frameCount / (currentTime - lastTime))
+		label.Text = "FPS: " .. tostring(fps)
+		frameCount = 0
+		lastTime = currentTime
 	end
 end)
