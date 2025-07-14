@@ -85,6 +85,8 @@ speedButton.Text = "⚡ Speed Boost"
 speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 speedButton.TextScaled = true
 speedButton.Font = Enum.Font.GothamBold
+speedButton.TextStrokeTransparency = 0
+speedButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 speedButton.Parent = mainFrame
 
 -- Speed button gradient
@@ -119,6 +121,8 @@ glideButton.Text = "🪶 Glide"
 glideButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 glideButton.TextScaled = true
 glideButton.Font = Enum.Font.GothamBold
+glideButton.TextStrokeTransparency = 0
+glideButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 glideButton.Parent = mainFrame
 
 -- Glide button gradient
@@ -152,6 +156,30 @@ local function updateInput(input)
     mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
 end
 
+-- Make the entire main frame draggable
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        if dragging then
+            updateInput(input)
+        end
+    end
+end)
+
+-- Also make title draggable
 titleLabel.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 then
         dragging = true
