@@ -1,4 +1,3 @@
--- Roblox Draggable GUI Script
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -9,9 +8,10 @@ local playerGui = player:WaitForChild("PlayerGui")
 -- Create ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "StealBrainrotGui"
+screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Create main frame
+-- Main Frame
 local mainFrame = Instance.new("Frame")
 mainFrame.Name = "MainFrame"
 mainFrame.Size = UDim2.new(0, 220, 0, 120)
@@ -19,10 +19,9 @@ mainFrame.Position = UDim2.new(0.5, -110, 0.5, -60)
 mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
 mainFrame.BorderSizePixel = 0
 mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.Parent = screenGui
 
--- Create gradient background
+-- Gradient
 local gradient = Instance.new("UIGradient")
 gradient.Color = ColorSequence.new{
     ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 40)),
@@ -31,23 +30,21 @@ gradient.Color = ColorSequence.new{
 gradient.Rotation = 45
 gradient.Parent = mainFrame
 
--- Create corner rounding
+-- Corners
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 12)
 corner.Parent = mainFrame
 
--- Create subtle border glow
+-- Stroke
 local stroke = Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(100, 50, 255)
 stroke.Thickness = 2
 stroke.Transparency = 0.3
 stroke.Parent = mainFrame
 
--- Create title label
+-- Title
 local titleLabel = Instance.new("TextLabel")
-titleLabel.Name = "TitleLabel"
 titleLabel.Size = UDim2.new(1, 0, 0, 35)
-titleLabel.Position = UDim2.new(0, 0, 0, 0)
 titleLabel.BackgroundColor3 = Color3.fromRGB(10, 10, 15)
 titleLabel.BorderSizePixel = 0
 titleLabel.Text = "✨ Steal a brainrot ✨"
@@ -58,73 +55,84 @@ titleLabel.TextStrokeTransparency = 0.5
 titleLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 titleLabel.Parent = mainFrame
 
--- Add title corner
 local titleCorner = Instance.new("UICorner")
 titleCorner.CornerRadius = UDim.new(0, 8)
 titleCorner.Parent = titleLabel
 
--- Add title stroke
 local titleStroke = Instance.new("UIStroke")
 titleStroke.Color = Color3.fromRGB(255, 150, 255)
 titleStroke.Thickness = 1
 titleStroke.Transparency = 0.5
 titleStroke.Parent = titleLabel
 
--- Create Speed Boost button
+-- Close Button
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 25, 0, 25)
+closeButton.Position = UDim2.new(1, -30, 0, 5)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+closeButton.Text = "✖"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.Font = Enum.Font.GothamBold
+closeButton.TextSize = 18
+closeButton.Parent = mainFrame
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(1, 0)
+closeCorner.Parent = closeButton
+
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+-- Speed Button
 local speedButton = Instance.new("TextButton")
-speedButton.Name = "SpeedButton"
 speedButton.Size = UDim2.new(0.5, -5, 0, 45)
 speedButton.Position = UDim2.new(0, 5, 0, 40)
 speedButton.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
 speedButton.BorderSizePixel = 0
 speedButton.Text = "⚡ Speed Boost"
 speedButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-speedButton.TextSize = 14
-speedButton.Font = Enum.Font.GothamBold
+speedButton.TextSize = 16
+speedButton.Font = Enum.Font.GothamBlack
 speedButton.TextStrokeTransparency = 0
 speedButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 speedButton.Parent = mainFrame
 
--- Speed button corner
 local speedCorner = Instance.new("UICorner")
 speedCorner.CornerRadius = UDim.new(0, 8)
 speedCorner.Parent = speedButton
 
--- Speed button stroke
 local speedStroke = Instance.new("UIStroke")
 speedStroke.Color = Color3.fromRGB(255, 100, 100)
 speedStroke.Thickness = 2
 speedStroke.Transparency = 0.4
 speedStroke.Parent = speedButton
 
--- Create Glide button
+-- Glide Button
 local glideButton = Instance.new("TextButton")
-glideButton.Name = "GlideButton"
 glideButton.Size = UDim2.new(0.5, -5, 0, 45)
 glideButton.Position = UDim2.new(0.5, 0, 0, 40)
 glideButton.BackgroundColor3 = Color3.fromRGB(60, 150, 255)
 glideButton.BorderSizePixel = 0
 glideButton.Text = "🪶 Glide"
 glideButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-glideButton.TextSize = 14
-glideButton.Font = Enum.Font.GothamBold
+glideButton.TextSize = 16
+glideButton.Font = Enum.Font.GothamBlack
 glideButton.TextStrokeTransparency = 0
 glideButton.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
 glideButton.Parent = mainFrame
 
--- Glide button corner
 local glideCorner = Instance.new("UICorner")
 glideCorner.CornerRadius = UDim.new(0, 8)
 glideCorner.Parent = glideButton
 
--- Glide button stroke
 local glideStroke = Instance.new("UIStroke")
 glideStroke.Color = Color3.fromRGB(100, 200, 255)
 glideStroke.Thickness = 2
 glideStroke.Transparency = 0.4
 glideStroke.Parent = glideButton
 
--- Button functionality with your loadstring commands
+-- Button Functions
 speedButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/Speed%20Bosst%20Gui"))()
 end)
@@ -133,57 +141,72 @@ glideButton.MouseButton1Click:Connect(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/GLIDE%20button%20gui%20for%20steal%20a%20brianrot.lua"))()
 end)
 
--- Enhanced hover effects for buttons
-speedButton.MouseEnter:Connect(function()
-    local tween = TweenService:Create(speedButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.5, -5, 0, 50),
-        BackgroundColor3 = Color3.fromRGB(255, 80, 80)
-    })
-    tween:Play()
-    speedStroke.Transparency = 0.1
-    speedStroke.Thickness = 3
-end)
+-- Hover Effects
+local function createHover(button, colorHover, stroke)
+    button.MouseEnter:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            Size = UDim2.new(0.5, -5, 0, 50),
+            BackgroundColor3 = colorHover
+        }):Play()
+        stroke.Transparency = 0.1
+        stroke.Thickness = 3
+    end)
 
-speedButton.MouseLeave:Connect(function()
-    local tween = TweenService:Create(speedButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.5, -5, 0, 45),
-        BackgroundColor3 = Color3.fromRGB(255, 60, 60)
-    })
-    tween:Play()
-    speedStroke.Transparency = 0.4
-    speedStroke.Thickness = 2
-end)
+    button.MouseLeave:Connect(function()
+        TweenService:Create(button, TweenInfo.new(0.2), {
+            Size = UDim2.new(0.5, -5, 0, 45),
+            BackgroundColor3 = button.BackgroundColor3
+        }):Play()
+        stroke.Transparency = 0.4
+        stroke.Thickness = 2
+    end)
+end
 
-glideButton.MouseEnter:Connect(function()
-    local tween = TweenService:Create(glideButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.5, -5, 0, 50),
-        BackgroundColor3 = Color3.fromRGB(80, 170, 255)
-    })
-    tween:Play()
-    glideStroke.Transparency = 0.1
-    glideStroke.Thickness = 3
-end)
+createHover(speedButton, Color3.fromRGB(255, 80, 80), speedStroke)
+createHover(glideButton, Color3.fromRGB(80, 170, 255), glideStroke)
 
-glideButton.MouseLeave:Connect(function()
-    local tween = TweenService:Create(glideButton, TweenInfo.new(0.2), {
-        Size = UDim2.new(0.5, -5, 0, 45),
-        BackgroundColor3 = Color3.fromRGB(60, 150, 255)
-    })
-    tween:Play()
-    glideStroke.Transparency = 0.4
-    glideStroke.Thickness = 2
-end)
-
--- Add pulsing animation to the main frame
-spawn(function()
+-- Pulse effect
+task.spawn(function()
     while mainFrame.Parent do
         for i = 1, 20 do
             stroke.Transparency = 0.3 + (i * 0.01)
-            wait(0.05)
+            task.wait(0.05)
         end
         for i = 1, 20 do
             stroke.Transparency = 0.5 - (i * 0.01)
-            wait(0.05)
+            task.wait(0.05)
         end
+    end
+end)
+
+-- Manual Draggable
+local dragging = false
+local dragInput, dragStart, startPos
+
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement then
+        dragInput = input
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X,
+                                       startPos.Y.Scale, startPos.Y.Offset + delta.Y)
     end
 end)
