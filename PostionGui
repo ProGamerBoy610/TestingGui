@@ -2,10 +2,7 @@
 local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
 
 -- Create a main window
-local mainWindow = library:CreateWindow("Your Title")
-
--- Create a folder (tab) inside the main window
-local folder = mainWindow:AddFolder("Main Folder")
+local mainWindow = library:CreateWindow("Main")
 
 -- Add a button inside the folder
 folder:AddButton({
@@ -18,7 +15,7 @@ folder:AddButton({
 
 -- Add a label inside the folder
 folder:AddLabel({
-    text = "This Is Sick!",
+    text = "Fryzer Hub",
     type = "label"
 })
 
