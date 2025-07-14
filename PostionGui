@@ -1,43 +1,7 @@
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
-
--- Remove old GUI if exists
-if playerGui:FindFirstChild("FPSGui") then
-    playerGui.FPSGui:Destroy()
+-- Reset Local Player
+local lp = game:GetService("Players").LocalPlayer
+local char = lp.Character or lp.CharacterAdded:Wait()
+local hum = char:FindFirstChildOfClass("Humanoid")
+if hum then
+    hum.Health = 0
 end
-
--- Create GUI
-local fpsGui = Instance.new("ScreenGui")
-fpsGui.Name = "FPSGui"
-fpsGui.ResetOnSpawn = false
-fpsGui.IgnoreGuiInset = true
-fpsGui.Parent = playerGui
-
-local label = Instance.new("TextLabel")
-label.Size = UDim2.new(0, 100, 0, 25)
-label.Position = UDim2.new(1, -110, 0, 10) -- Top-right corner
-label.BackgroundTransparency = 0.4
-label.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
-label.TextColor3 = Color3.fromRGB(0, 255, 0)
-label.Font = Enum.Font.Code
-label.TextSize = 20
-label.Text = "FPS: ..."
-label.Parent = fpsGui
-
--- FPS counter
-local lastTime = tick()
-local frameCount = 0
-
-RunService.RenderStepped:Connect(function()
-	frameCount += 1
-	local currentTime = tick()
-	if currentTime - lastTime >= 1 then
-		local fps = math.floor(frameCount / (currentTime - lastTime))
-		label.Text = "FPS: " .. tostring(fps)
-		frameCount = 0
-		lastTime = currentTime
-	end
-end)
