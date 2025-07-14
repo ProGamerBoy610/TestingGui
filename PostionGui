@@ -1,7 +1,127 @@
--- Reset Local Player
+-- Load the Tora UI Library
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
+
+-- Create a main window
+local mainWindow = library:CreateWindow("Steal a brainrot")
+
+-- Create a folder (tab) inside the main window
+local folder = mainWindow:AddFolder("Visual")
+
+-- FPS Display Toggle Script for Roblox Executors
+-- Add this to your GUI framework
+
+folder:AddToggle({
+	text = "FPS Display",
+	flag = "fps_display",
+	callback = function(v)
+		if v then
+			-- Create FPS display
+			local Players = game:GetService("Players")
+			local RunService = game:GetService("RunService")
+			local CoreGui = game:GetService("CoreGui")
+			
+			local player = Players.LocalPlayer
+			
+			-- Try to use CoreGui first, fallback to PlayerGui
+			local gui
+			pcall(function()
+				gui = CoreGui
+			end)
+			if not gui then
+				gui = player.PlayerGui
+			end
+			
+			-- Create ScreenGui
+			local screenGui = Instance.new("ScreenGui")
+			screenGui.Name = "FPSDisplay_" .. math.random(1000, 9999)
+			screenGui.Parent = gui
+			
+			-- Create FPS Label (no background)
+			local fpsLabel = Instance.new("TextLabel")
+			fpsLabel.Name = "FPSLabel"
+			fpsLabel.Size = UDim2.new(0, 100, 0, 30)
+			fpsLabel.Position = UDim2.new(1, -110, 0, 10) -- Top-right corner
+			fpsLabel.BackgroundTransparency = 1 -- No background
+			fpsLabel.Text = "FPS: 0"
+			fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+			fpsLabel.TextScaled = true
+			fpsLabel.Font = Enum.Font.GothamBold
+			fpsLabel.TextStrokeTransparency = 0 -- Text outline for visibility
+			fpsLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
+			fpsLabel.Parent = screenGui
+			
+			-- FPS calculation variables
+			local lastTime = tick()
+			local frameCount = 0
+			local fps = 0
+			
+			-- Function to update FPS color based on performance
+			local function updateFPSColor(currentFPS)
+				if currentFPS >= 50 then
+					fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
+				elseif currentFPS >= 30 then
+					fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+				else
+					fpsLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red
+				end
+			end
+			
+			-- FPS calculation and display
+			local function onHeartbeat()
+				frameCount = frameCount + 1
+				local currentTime = tick()
+				
+				if currentTime - lastTime >= 1 then -- Update every second
+					fps = frameCount / (currentTime - lastTime)
+					frameCount = 0
+					lastTime = currentTime
+					
+					-- Update display
+					fpsLabel.Text = "FPS: " .. math.floor(fps)
+					updateFPSColor(fps)
+				end
+			end
+			
+			-- Connect to heartbeat
+			getgenv().fpsConnection = RunService.Heartbeat:Connect(onHeartbeat)
+			getgenv().fpsGui = screenGui
+			
+			print("FPS Display enabled")
+		else
+			-- Remove FPS display
+			if getgenv().fpsConnection then
+				getgenv().fpsConnection:Disconnect()
+				getgenv().fpsConnection = nil
+			end
+			if getgenv().fpsGui then
+				getgenv().fpsGui:Destroy()
+				getgenv().fpsGui = nil
+			end
+			print("FPS Display disabled")
+		end
+	end
+})
+
+folder:AddButton({
+	text = "Click me",
+	flag = "button",
+	callback = function()
+	-- Reset Local Player
 local lp = game:GetService("Players").LocalPlayer
 local char = lp.Character or lp.CharacterAdded:Wait()
 local hum = char:FindFirstChildOfClass("Humanoid")
 if hum then
     hum.Health = 0
 end
+
+end
+})
+
+-- Add a label inside the folder
+folder:AddLabel({
+    text = "Fryzer Hub",
+    type = "label"
+})
+
+-- Initialize and show the GUI
+library:Init()
