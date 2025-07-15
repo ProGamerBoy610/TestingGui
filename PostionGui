@@ -1,127 +1,593 @@
--- Load the Tora UI Library
-local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
+-- Roblox Fruit Stealer GUI Script
+-- Beautiful landscape GUI inspired by the image
 
--- Create a main window
-local mainWindow = library:CreateWindow("Steal a brainrot")
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
--- Create a folder (tab) inside the main window
-local folder = mainWindow:AddFolder("Visual")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- FPS Display Toggle Script for Roblox Executors
--- Add this to your GUI framework
+-- Create main GUI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "FruitStealerGUI"
+screenGui.Parent = playerGui
+screenGui.ResetOnSpawn = false
 
-folder:AddToggle({
-	text = "FPS Display",
-	flag = "fps_display",
-	callback = function(v)
-		if v then
-			-- Create FPS display
-			local Players = game:GetService("Players")
-			local RunService = game:GetService("RunService")
-			local CoreGui = game:GetService("CoreGui")
-			
-			local player = Players.LocalPlayer
-			
-			-- Try to use CoreGui first, fallback to PlayerGui
-			local gui
-			pcall(function()
-				gui = CoreGui
-			end)
-			if not gui then
-				gui = player.PlayerGui
-			end
-			
-			-- Create ScreenGui
-			local screenGui = Instance.new("ScreenGui")
-			screenGui.Name = "FPSDisplay_" .. math.random(1000, 9999)
-			screenGui.Parent = gui
-			
-			-- Create FPS Label (no background)
-			local fpsLabel = Instance.new("TextLabel")
-			fpsLabel.Name = "FPSLabel"
-			fpsLabel.Size = UDim2.new(0, 100, 0, 30)
-			fpsLabel.Position = UDim2.new(1, -110, 0, 10) -- Top-right corner
-			fpsLabel.BackgroundTransparency = 1 -- No background
-			fpsLabel.Text = "FPS: 0"
-			fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-			fpsLabel.TextScaled = true
-			fpsLabel.Font = Enum.Font.GothamBold
-			fpsLabel.TextStrokeTransparency = 0 -- Text outline for visibility
-			fpsLabel.TextStrokeColor3 = Color3.fromRGB(0, 0, 0)
-			fpsLabel.Parent = screenGui
-			
-			-- FPS calculation variables
-			local lastTime = tick()
-			local frameCount = 0
-			local fps = 0
-			
-			-- Function to update FPS color based on performance
-			local function updateFPSColor(currentFPS)
-				if currentFPS >= 50 then
-					fpsLabel.TextColor3 = Color3.fromRGB(0, 255, 0) -- Green
-				elseif currentFPS >= 30 then
-					fpsLabel.TextColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
-				else
-					fpsLabel.TextColor3 = Color3.fromRGB(255, 0, 0) -- Red
-				end
-			end
-			
-			-- FPS calculation and display
-			local function onHeartbeat()
-				frameCount = frameCount + 1
-				local currentTime = tick()
-				
-				if currentTime - lastTime >= 1 then -- Update every second
-					fps = frameCount / (currentTime - lastTime)
-					frameCount = 0
-					lastTime = currentTime
-					
-					-- Update display
-					fpsLabel.Text = "FPS: " .. math.floor(fps)
-					updateFPSColor(fps)
-				end
-			end
-			
-			-- Connect to heartbeat
-			getgenv().fpsConnection = RunService.Heartbeat:Connect(onHeartbeat)
-			getgenv().fpsGui = screenGui
-			
-			print("FPS Display enabled")
-		else
-			-- Remove FPS display
-			if getgenv().fpsConnection then
-				getgenv().fpsConnection:Disconnect()
-				getgenv().fpsConnection = nil
-			end
-			if getgenv().fpsGui then
-				getgenv().fpsGui:Destroy()
-				getgenv().fpsGui = nil
-			end
-			print("FPS Display disabled")
-		end
-	end
-})
+-- Main frame (landscape)
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 700, 0, 350)
+mainFrame.Position = UDim2.new(0.5, -350, 0.5, -175)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = screenGui
+mainFrame.Active = true
+mainFrame.Draggable = true
 
-folder:AddButton({
-	text = "Click me",
-	flag = "button",
-	callback = function()
-	-- Reset Local Player
-local lp = game:GetService("Players").LocalPlayer
-local char = lp.Character or lp.CharacterAdded:Wait()
-local hum = char:FindFirstChildOfClass("Humanoid")
-if hum then
-    hum.Health = 0
+-- Add corner rounding and glow effect
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 15)
+corner.Parent = mainFrame
+
+-- Background gradient
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 15))
+}
+gradient.Rotation = 45
+gradient.Parent = mainFrame
+
+-- Title bar
+local titleBar = Instance.new("Frame")
+titleBar.Name = "TitleBar"
+titleBar.Size = UDim2.new(1, 0, 0, 50)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 15)
+titleCorner.Parent = titleBar
+
+-- Title gradient
+local titleGradient = Instance.new("UIGradient")
+titleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 70, 70)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 40, 40))
+}
+titleGradient.Rotation = 90
+titleGradient.Parent = titleBar
+
+-- Title text
+local titleText = Instance.new("TextLabel")
+titleText.Name = "TitleText"
+titleText.Size = UDim2.new(1, -60, 1, 0)
+titleText.Position = UDim2.new(0, 20, 0, 0)
+titleText.BackgroundTransparency = 1
+titleText.Text = "FRUIT STEALER"
+titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+titleText.TextScaled = true
+titleText.TextXAlignment = Enum.TextXAlignment.Left
+titleText.Font = Enum.Font.SourceSansBold
+titleText.Parent = titleBar
+
+-- Close button
+local closeButton = Instance.new("TextButton")
+closeButton.Name = "CloseButton"
+closeButton.Size = UDim2.new(0, 40, 0, 30)
+closeButton.Position = UDim2.new(1, -50, 0, 10)
+closeButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+closeButton.BorderSizePixel = 0
+closeButton.Text = "✕"
+closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeButton.TextScaled = true
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = titleBar
+
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 8)
+closeCorner.Parent = closeButton
+
+-- Left panel (Player Selection)
+local leftPanel = Instance.new("Frame")
+leftPanel.Name = "LeftPanel"
+leftPanel.Size = UDim2.new(0, 220, 1, -60)
+leftPanel.Position = UDim2.new(0, 10, 0, 60)
+leftPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+leftPanel.BorderSizePixel = 0
+leftPanel.Parent = mainFrame
+
+local leftCorner = Instance.new("UICorner")
+leftCorner.CornerRadius = UDim.new(0, 10)
+leftCorner.Parent = leftPanel
+
+-- Player selection label
+local playerLabel = Instance.new("TextLabel")
+playerLabel.Name = "PlayerLabel"
+playerLabel.Size = UDim2.new(1, -20, 0, 30)
+playerLabel.Position = UDim2.new(0, 10, 0, 10)
+playerLabel.BackgroundTransparency = 1
+playerLabel.Text = "Select Player"
+playerLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+playerLabel.TextScaled = true
+playerLabel.TextXAlignment = Enum.TextXAlignment.Left
+playerLabel.Font = Enum.Font.SourceSansBold
+playerLabel.Parent = leftPanel
+
+-- Player dropdown
+local playerDropdown = Instance.new("TextButton")
+playerDropdown.Name = "PlayerDropdown"
+playerDropdown.Size = UDim2.new(1, -20, 0, 35)
+playerDropdown.Position = UDim2.new(0, 10, 0, 45)
+playerDropdown.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+playerDropdown.BorderSizePixel = 0
+playerDropdown.Text = "Loading... ▼"
+playerDropdown.TextColor3 = Color3.fromRGB(255, 255, 255)
+playerDropdown.TextScaled = true
+playerDropdown.Font = Enum.Font.SourceSans
+playerDropdown.Parent = leftPanel
+
+local dropdownCorner = Instance.new("UICorner")
+dropdownCorner.CornerRadius = UDim.new(0, 8)
+dropdownCorner.Parent = playerDropdown
+
+-- Player list frame (initially hidden)
+local playerList = Instance.new("ScrollingFrame")
+playerList.Name = "PlayerList"
+playerList.Size = UDim2.new(1, -20, 0, 150)
+playerList.Position = UDim2.new(0, 10, 0, 85)
+playerList.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+playerList.BorderSizePixel = 0
+playerList.ScrollBarThickness = 6
+playerList.Visible = false
+playerList.Parent = leftPanel
+
+local listCorner = Instance.new("UICorner")
+listCorner.CornerRadius = UDim.new(0, 8)
+listCorner.Parent = playerList
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.SortOrder = Enum.SortOrder.Name
+listLayout.Padding = UDim.new(0, 2)
+listLayout.Parent = playerList
+
+-- Action buttons
+local refreshButton = Instance.new("TextButton")
+refreshButton.Name = "RefreshButton"
+refreshButton.Size = UDim2.new(1, -20, 0, 35)
+refreshButton.Position = UDim2.new(0, 10, 1, -45)
+refreshButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+refreshButton.BorderSizePixel = 0
+refreshButton.Text = "Refresh Items"
+refreshButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+refreshButton.TextScaled = true
+refreshButton.Font = Enum.Font.SourceSansBold
+refreshButton.Parent = leftPanel
+
+local refreshCorner = Instance.new("UICorner")
+refreshCorner.CornerRadius = UDim.new(0, 8)
+refreshCorner.Parent = refreshButton
+
+-- Right panel (Items)
+local rightPanel = Instance.new("Frame")
+rightPanel.Name = "RightPanel"
+rightPanel.Size = UDim2.new(1, -250, 1, -60)
+rightPanel.Position = UDim2.new(0, 240, 0, 60)
+rightPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+rightPanel.BorderSizePixel = 0
+rightPanel.Parent = mainFrame
+
+local rightCorner = Instance.new("UICorner")
+rightCorner.CornerRadius = UDim.new(0, 10)
+rightCorner.Parent = rightPanel
+
+-- Items header
+local itemsHeader = Instance.new("Frame")
+itemsHeader.Name = "ItemsHeader"
+itemsHeader.Size = UDim2.new(1, 0, 0, 40)
+itemsHeader.Position = UDim2.new(0, 0, 0, 0)
+itemsHeader.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+itemsHeader.BorderSizePixel = 0
+itemsHeader.Parent = rightPanel
+
+local headerCorner = Instance.new("UICorner")
+headerCorner.CornerRadius = UDim.new(0, 10)
+headerCorner.Parent = itemsHeader
+
+-- Items title
+local itemsTitle = Instance.new("TextLabel")
+itemsTitle.Name = "ItemsTitle"
+itemsTitle.Size = UDim2.new(0.6, 0, 1, 0)
+itemsTitle.Position = UDim2.new(0, 15, 0, 0)
+itemsTitle.BackgroundTransparency = 1
+itemsTitle.Text = "Target Items"
+itemsTitle.TextColor3 = Color3.fromRGB(255, 200, 100)
+itemsTitle.TextScaled = true
+itemsTitle.TextXAlignment = Enum.TextXAlignment.Left
+itemsTitle.Font = Enum.Font.SourceSansBold
+itemsTitle.Parent = itemsHeader
+
+-- Items counter
+local itemsCounter = Instance.new("TextLabel")
+itemsCounter.Name = "ItemsCounter"
+itemsCounter.Size = UDim2.new(0.4, -15, 1, 0)
+itemsCounter.Position = UDim2.new(0.6, 0, 0, 0)
+itemsCounter.BackgroundTransparency = 1
+itemsCounter.Text = "Select player first..."
+itemsCounter.TextColor3 = Color3.fromRGB(200, 200, 200)
+itemsCounter.TextScaled = true
+itemsCounter.TextXAlignment = Enum.TextXAlignment.Right
+itemsCounter.Font = Enum.Font.SourceSans
+itemsCounter.Parent = itemsHeader
+
+-- Items scroll frame
+local itemsScrollFrame = Instance.new("ScrollingFrame")
+itemsScrollFrame.Name = "ItemsScrollFrame"
+itemsScrollFrame.Size = UDim2.new(1, -10, 1, -90)
+itemsScrollFrame.Position = UDim2.new(0, 5, 0, 45)
+itemsScrollFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+itemsScrollFrame.BorderSizePixel = 0
+itemsScrollFrame.ScrollBarThickness = 8
+itemsScrollFrame.Parent = rightPanel
+
+local itemsScrollCorner = Instance.new("UICorner")
+itemsScrollCorner.CornerRadius = UDim.new(0, 8)
+itemsScrollCorner.Parent = itemsScrollFrame
+
+local itemsListLayout = Instance.new("UIListLayout")
+itemsListLayout.SortOrder = Enum.SortOrder.Name
+itemsListLayout.Padding = UDim.new(0, 3)
+itemsListLayout.Parent = itemsScrollFrame
+
+-- Steal All button
+local stealAllButton = Instance.new("TextButton")
+stealAllButton.Name = "StealAllButton"
+stealAllButton.Size = UDim2.new(1, -10, 0, 35)
+stealAllButton.Position = UDim2.new(0, 5, 1, -40)
+stealAllButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+stealAllButton.BorderSizePixel = 0
+stealAllButton.Text = "STEAL ALL FRUITS"
+stealAllButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+stealAllButton.TextScaled = true
+stealAllButton.Font = Enum.Font.SourceSansBold
+stealAllButton.Parent = rightPanel
+
+local stealAllCorner = Instance.new("UICorner")
+stealAllCorner.CornerRadius = UDim.new(0, 8)
+stealAllCorner.Parent = stealAllButton
+
+-- Steal button gradient
+local stealGradient = Instance.new("UIGradient")
+stealGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 120, 120)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 50, 50))
+}
+stealGradient.Rotation = 90
+stealGradient.Parent = stealAllButton
+
+-- Variables
+local currentSelectedPlayer = nil
+local dropdownOpen = false
+
+-- Function to create player option
+local function createPlayerOption(targetPlayer)
+    local option = Instance.new("TextButton")
+    option.Name = "Option_" .. targetPlayer.Name
+    option.Size = UDim2.new(1, -8, 0, 30)
+    option.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    option.BorderSizePixel = 0
+    option.Text = "👤 " .. targetPlayer.Name
+    option.TextColor3 = Color3.fromRGB(255, 255, 255)
+    option.TextScaled = true
+    option.TextXAlignment = Enum.TextXAlignment.Left
+    option.Font = Enum.Font.SourceSans
+    option.Parent = playerList
+    
+    local optionCorner = Instance.new("UICorner")
+    optionCorner.CornerRadius = UDim.new(0, 6)
+    optionCorner.Parent = option
+    
+    -- Hover effect
+    option.MouseEnter:Connect(function()
+        option.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
+    end)
+    
+    option.MouseLeave:Connect(function()
+        option.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+    end)
+    
+    -- Click functionality
+    option.MouseButton1Click:Connect(function()
+        selectPlayer(targetPlayer)
+        toggleDropdown()
+    end)
+    
+    return option
 end
 
+-- Function to select player
+function selectPlayer(targetPlayer)
+    currentSelectedPlayer = targetPlayer
+    playerDropdown.Text = "👤 " .. targetPlayer.Name .. " ▼"
+    itemsTitle.Text = "🍓 " .. targetPlayer.Name .. "'s Items"
+    refreshItems()
 end
-})
 
--- Add a label inside the folder
-folder:AddLabel({
-    text = "Fryzer Hub",
-    type = "label"
-})
+-- Function to toggle dropdown
+function toggleDropdown()
+    dropdownOpen = not dropdownOpen
+    playerList.Visible = dropdownOpen
+    
+    if dropdownOpen then
+        playerDropdown.Text = playerDropdown.Text:gsub("▼", "▲")
+    else
+        playerDropdown.Text = playerDropdown.Text:gsub("▲", "▼")
+    end
+end
 
--- Initialize and show the GUI
-library:Init()
+-- Function to create item frame
+local function createItemFrame(tool, index)
+    local itemFrame = Instance.new("Frame")
+    itemFrame.Name = "ItemFrame_" .. index
+    itemFrame.Size = UDim2.new(1, -16, 0, 50)
+    itemFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    itemFrame.BorderSizePixel = 0
+    itemFrame.Parent = itemsScrollFrame
+    
+    local itemCorner = Instance.new("UICorner")
+    itemCorner.CornerRadius = UDim.new(0, 8)
+    itemCorner.Parent = itemFrame
+    
+    -- Item gradient
+    local itemGradient = Instance.new("UIGradient")
+    itemGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 60, 60)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(40, 40, 40))
+    }
+    itemGradient.Rotation = 90
+    itemGradient.Parent = itemFrame
+    
+    -- Tool icon/emoji
+    local toolIcon = Instance.new("TextLabel")
+    toolIcon.Name = "ToolIcon"
+    toolIcon.Size = UDim2.new(0, 40, 0, 40)
+    toolIcon.Position = UDim2.new(0, 5, 0, 5)
+    toolIcon.BackgroundTransparency = 1
+    toolIcon.Text = "🍎" -- Default fruit emoji
+    toolIcon.TextColor3 = Color3.fromRGB(255, 200, 100)
+    toolIcon.TextScaled = true
+    toolIcon.Font = Enum.Font.SourceSans
+    toolIcon.Parent = itemFrame
+    
+    -- Tool name
+    local toolName = Instance.new("TextLabel")
+    toolName.Name = "ToolName"
+    toolName.Size = UDim2.new(1, -130, 0, 25)
+    toolName.Position = UDim2.new(0, 50, 0, 5)
+    toolName.BackgroundTransparency = 1
+    toolName.Text = tool.Name
+    toolName.TextColor3 = Color3.fromRGB(255, 255, 255)
+    toolName.TextScaled = true
+    toolName.TextXAlignment = Enum.TextXAlignment.Left
+    toolName.Font = Enum.Font.SourceSansBold
+    toolName.Parent = itemFrame
+    
+    -- Tool class
+    local toolClass = Instance.new("TextLabel")
+    toolClass.Name = "ToolClass"
+    toolClass.Size = UDim2.new(1, -130, 0, 20)
+    toolClass.Position = UDim2.new(0, 50, 0, 25)
+    toolClass.BackgroundTransparency = 1
+    toolClass.Text = "[" .. tool.ClassName .. "]"
+    toolClass.TextColor3 = Color3.fromRGB(150, 150, 150)
+    toolClass.TextScaled = true
+    toolClass.TextXAlignment = Enum.TextXAlignment.Left
+    toolClass.Font = Enum.Font.SourceSansItalic
+    toolClass.Parent = itemFrame
+    
+    -- Steal button
+    local stealButton = Instance.new("TextButton")
+    stealButton.Name = "StealButton"
+    stealButton.Size = UDim2.new(0, 70, 0, 30)
+    stealButton.Position = UDim2.new(1, -80, 0, 10)
+    stealButton.BackgroundColor3 = Color3.fromRGB(255, 150, 50)
+    stealButton.BorderSizePixel = 0
+    stealButton.Text = "Steal It"
+    stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    stealButton.TextScaled = true
+    stealButton.Font = Enum.Font.SourceSansBold
+    stealButton.Parent = itemFrame
+    
+    local stealButtonCorner = Instance.new("UICorner")
+    stealButtonCorner.CornerRadius = UDim.new(0, 6)
+    stealButtonCorner.Parent = stealButton
+    
+    -- Steal button gradient
+    local stealButtonGradient = Instance.new("UIGradient")
+    stealButtonGradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 170, 70)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 120, 30))
+    }
+    stealButtonGradient.Rotation = 90
+    stealButtonGradient.Parent = stealButton
+    
+    -- Steal button functionality
+    stealButton.MouseButton1Click:Connect(function()
+        local success, err = pcall(function()
+            local clonedTool = tool:Clone()
+            clonedTool.Parent = player.Backpack
+        end)
+        
+        if success then
+            stealButton.Text = "Stolen!"
+            stealButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+            wait(1.5)
+            stealButton.Text = "Steal It"
+            stealButton.BackgroundColor3 = Color3.fromRGB(255, 150, 50)
+        else
+            stealButton.Text = "Failed"
+            stealButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
+            wait(1.5)
+            stealButton.Text = "Steal It"
+            stealButton.BackgroundColor3 = Color3.fromRGB(255, 150, 50)
+        end
+    end)
+    
+    return itemFrame
+end
+
+-- Function to refresh items
+function refreshItems()
+    -- Clear existing items
+    for _, child in pairs(itemsScrollFrame:GetChildren()) do
+        if child:IsA("Frame") and child.Name:match("ItemFrame_") then
+            child:Destroy()
+        end
+    end
+    
+    if not currentSelectedPlayer then
+        itemsCounter.Text = "Select player first..."
+        return
+    end
+    
+    local backpack = currentSelectedPlayer:FindFirstChild("Backpack")
+    if not backpack then
+        itemsCounter.Text = "No backpack found"
+        return
+    end
+    
+    -- Get all tools
+    local tools = {}
+    for _, item in pairs(backpack:GetChildren()) do
+        if item:IsA("Tool") or item:IsA("HopperBin") then
+            table.insert(tools, item)
+        end
+    end
+    
+    -- Create item frames
+    for i, tool in ipairs(tools) do
+        createItemFrame(tool, i)
+    end
+    
+    -- Update counter
+    itemsCounter.Text = "Items: " .. #tools
+    
+    -- Update canvas size
+    itemsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, #tools * 53)
+end
+
+-- Function to refresh player list
+local function refreshPlayerList()
+    -- Clear existing options
+    for _, child in pairs(playerList:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
+    end
+    
+    -- Create options for all players
+    local players = Players:GetPlayers()
+    for _, p in ipairs(players) do
+        createPlayerOption(p)
+    end
+    
+    -- Update canvas size
+    playerList.CanvasSize = UDim2.new(0, 0, 0, #players * 32)
+    
+    -- Update dropdown text
+    if #players > 0 then
+        playerDropdown.Text = "Select Player ▼"
+    else
+        playerDropdown.Text = "No players found ▼"
+    end
+end
+
+-- Function to steal all items
+local function stealAllItems()
+    if not currentSelectedPlayer then return end
+    
+    local backpack = currentSelectedPlayer:FindFirstChild("Backpack")
+    if not backpack then return end
+    
+    local tools = {}
+    for _, item in pairs(backpack:GetChildren()) do
+        if item:IsA("Tool") or item:IsA("HopperBin") then
+            table.insert(tools, item)
+        end
+    end
+    
+    local stolenCount = 0
+    for _, tool in ipairs(tools) do
+        local success, err = pcall(function()
+            local clonedTool = tool:Clone()
+            clonedTool.Parent = player.Backpack
+            stolenCount = stolenCount + 1
+        end)
+    end
+    
+    -- Update button
+    stealAllButton.Text = " STOLEN " .. stolenCount .. " ITEMS! "
+    stealAllButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+    wait(3)
+    stealAllButton.Text = "STEAL ALL FRUITS"
+    stealAllButton.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+end
+
+-- Connect events
+closeButton.MouseButton1Click:Connect(function()
+    screenGui:Destroy()
+end)
+
+playerDropdown.MouseButton1Click:Connect(function()
+    toggleDropdown()
+end)
+
+refreshButton.MouseButton1Click:Connect(function()
+    refreshPlayerList()
+    refreshItems()
+end)
+
+stealAllButton.MouseButton1Click:Connect(function()
+    stealAllItems()
+end)
+
+-- Close dropdown when clicking outside
+screenGui.MouseButton1Click:Connect(function()
+    if dropdownOpen then
+        toggleDropdown()
+    end
+end)
+
+-- Player events
+Players.PlayerAdded:Connect(function()
+    wait(1)
+    refreshPlayerList()
+end)
+
+Players.PlayerRemoving:Connect(function(leavingPlayer)
+    if currentSelectedPlayer == leavingPlayer then
+        currentSelectedPlayer = nil
+        itemsCounter.Text = "Select player first..."
+        itemsTitle.Text = "Target Items"
+        refreshItems()
+    end
+    refreshPlayerList()
+end)
+
+-- Initial setup
+refreshPlayerList()
+
+-- Toggle with F3
+UserInputService.InputBegan:Connect(function(input, gameProcessed)
+    if gameProcessed then return end
+    
+    if input.KeyCode == Enum.KeyCode.F3 then
+        mainFrame.Visible = not mainFrame.Visible
+    end
+end)
+
+print("🍎")
+print("🎯 Select a player and steal their fruits!")
