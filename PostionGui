@@ -1,90 +1,17 @@
--- Roblox Script to Tween to location first, then check for MaximGun VehicleSeat
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+-- Load the Tora Library
+local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebertsx/Tora-Library/main/src/librarynew", true))()
 
--- Target position
-local targetPosition = Vector3.new(-428.75, 28.07, -49040.91)
+-- Create main tab window
+local tab = library:CreateWindow("Your Title")
 
--- Function to check if VehicleSeat is loaded
-local function checkForVehicleSeat()
-    local baseplates = workspace:FindFirstChild("Baseplates")
-    if not baseplates then return nil end
-    
-    local finalBasePlate = baseplates:FindFirstChild("FinalBasePlate")
-    if not finalBasePlate then return nil end
-    
-    local outlawbase = finalBasePlate:FindFirstChild("Outlawbase")
-    if not outlawbase then return nil end
-    
-    local turretSpot = outlawbase:FindFirstChild("TurretSpot")
-    if not turretSpot then return nil end
-    
-    local maximGun = turretSpot:FindFirstChild("MaximGun")
-    if not maximGun then return nil end
-    
-    local vehicleSeat = maximGun:FindFirstChild("VehicleSeat")
-    return vehicleSeat
-end
+-- Add a button to the folder
+folder:AddButton({
+	text = "Click me",
+	flag = "button",
+	callback = function()
+		print("Hello, world!")
+	end
+})
 
--- Function to tween to target location
-local function tweenToTarget()
-    -- Create tween info (slow movement over 8 seconds)
-    local tweenInfo = TweenInfo.new(
-        8, -- Duration
-        Enum.EasingStyle.Linear,
-        Enum.EasingDirection.InOut,
-        0, -- Repeat count
-        false, -- Reverse
-        0 -- Delay
-    )
-    
-    -- Create tween
-    local targetCFrame = CFrame.new(targetPosition)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetCFrame})
-    
-    -- Start tween
-    tween:Play()
-    print("Tweening to target position...")
-    
-    -- When tween completes, start checking for VehicleSeat
-    tween.Completed:Connect(function()
-        print("Reached target position, now checking for VehicleSeat...")
-        
-        -- Check repeatedly for VehicleSeat
-        local checkConnection
-        checkConnection = RunService.Heartbeat:Connect(function()
-            local vehicleSeat = checkForVehicleSeat()
-            if vehicleSeat then
-                print("VehicleSeat found! Teleporting...")
-                
-                -- Disconnect the check
-                checkConnection:Disconnect()
-                
-                -- Teleport to VehicleSeat and sit
-                local seatPosition = vehicleSeat.Position
-                humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
-                
-                -- Wait a moment then sit
-                wait(0.2)
-                vehicleSeat:Sit(humanoid)
-                
-                print("Successfully teleported to and sat in MaximGun VehicleSeat!")
-            end
-        end)
-        
-        -- Stop checking after 15 seconds if not found
-        wait(15)
-        if checkConnection then
-            checkConnection:Disconnect()
-            warn("VehicleSeat not found after 15 seconds of checking!")
-        end
-    end)
-end
-
--- Execute the function
-tweenToTarget()
+-- Initialize and show the GUI
+library:Init()
