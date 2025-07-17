@@ -1,4 +1,4 @@
--- Roblox Script to continuously teleport to MaximGun VehicleSeat (for killing NPCs)
+-- Roblox Script to stay at MaximGun location and keep trying to sit
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -9,6 +9,7 @@ local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
 -- Target position
 local targetPosition = Vector3.new(-428.75, 28.07, -49040.91)
+local hasReachedTarget = false
 
 -- Function to check if VehicleSeat is loaded
 local function checkForVehicleSeat()
@@ -31,27 +32,23 @@ local function checkForVehicleSeat()
     return vehicleSeat
 end
 
--- Function to teleport to VehicleSeat and sit
-local function teleportAndSit()
+-- Function to try sitting in VehicleSeat (without teleporting)
+local function trySitting()
     local vehicleSeat = checkForVehicleSeat()
     if vehicleSeat then
-        -- Teleport to VehicleSeat and sit
-        local seatPosition = vehicleSeat.Position
-        humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
-        
-        -- Wait a moment then sit
-        wait(0.2)
+        -- Just try to sit, don't teleport
         vehicleSeat:Sit(humanoid)
-        
-        print("Successfully teleported to and sat in MaximGun VehicleSeat!")
+        print("Attempting to sit in MaximGun VehicleSeat...")
         return true
     end
     return false
 end
 
--- Function to tween to target location
+-- Function to tween to target location (only once)
 local function tweenToTarget()
-    -- Create tween info (quick movement over 3 seconds)
+    if hasReachedTarget then return end
+    
+    -- Create tween info
     local tweenInfo = TweenInfo.new(
         3, -- Duration
         Enum.EasingStyle.Linear,
@@ -69,32 +66,31 @@ local function tweenToTarget()
     tween:Play()
     print("Tweening to target position...")
     
-    -- When tween completes, try to sit
+    -- When tween completes, mark as reached and start sitting attempts
     tween.Completed:Connect(function()
-        print("Reached target position, attempting to sit...")
-        teleportAndSit()
+        hasReachedTarget = true
+        print("Reached target position, now staying here and trying to sit...")
+        trySitting()
     end)
 end
 
--- Main continuous loop
-local function startContinuousLoop()
+-- Main function
+local function startScript()
     -- Initial tween to location
     tweenToTarget()
     
-    -- Continuous loop every 5 seconds
+    -- Continuous loop to try sitting (only after reaching target)
     spawn(function()
         while true do
-            wait(5) -- Wait 5 seconds between attempts
+            wait(2) -- Wait 2 seconds between attempts
             
-            -- Check if player is already in a seat
-            if humanoid.Sit then
-                print("Player is already seated, continuing...")
-            else
-                print("Player not seated, attempting to teleport and sit...")
-                -- Try direct teleport first
-                if not teleportAndSit() then
-                    -- If failed, do a quick tween
-                    tweenToTarget()
+            if hasReachedTarget then
+                -- Check if player is already in a seat
+                if humanoid.Sit then
+                    print("Player is seated in MaximGun!")
+                else
+                    print("Player not seated, trying to sit...")
+                    trySitting()
                 end
             end
         end
@@ -102,4 +98,4 @@ local function startContinuousLoop()
 end
 
 -- Execute the function
-startContinuousLoop()
+startScript()
