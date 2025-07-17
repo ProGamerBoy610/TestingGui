@@ -5,46 +5,42 @@ local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- Function to recursively search for MaximGun model in nested folders
-local function findMaximGun(parent)
-    for _, child in pairs(parent:GetChildren()) do
-        if child.Name == "MaximGun" and child:IsA("Model") then
-            return child
-        elseif child:IsA("Folder") or child:IsA("Model") then
-            local found = findMaximGun(child)
-            if found then
-                return found
-            end
-        end
-    end
-    return nil
-end
-
--- Function to find VehicleSeat inside MaximGun model
-local function findVehicleSeat(model)
-    for _, child in pairs(model:GetDescendants()) do
-        if child:IsA("VehicleSeat") then
-            return child
-        end
-    end
-    return nil
-end
-
--- Main teleport and sit function
+-- Function to teleport and sit in MaximGun VehicleSeat
 local function teleportAndSit()
-    -- Find MaximGun model
-    local maximGun = findMaximGun(workspace)
+    -- Navigate through the specific folder structure
+    local baseplates = workspace:FindFirstChild("Baseplates")
+    if not baseplates then
+        warn("Baseplates folder not found!")
+        return
+    end
     
+    local finalBasePlate = baseplates:FindFirstChild("FinalBasePlate")
+    if not finalBasePlate then
+        warn("FinalBasePlate model not found!")
+        return
+    end
+    
+    local outlawbase = finalBasePlate:FindFirstChild("Outlawbase")
+    if not outlawbase then
+        warn("Outlawbase model not found!")
+        return
+    end
+    
+    local turretSpot = outlawbase:FindFirstChild("TurretSpot")
+    if not turretSpot then
+        warn("TurretSpot model not found!")
+        return
+    end
+    
+    local maximGun = turretSpot:FindFirstChild("MaximGun")
     if not maximGun then
         warn("MaximGun model not found!")
         return
     end
     
-    -- Find VehicleSeat inside MaximGun
-    local vehicleSeat = findVehicleSeat(maximGun)
-    
+    local vehicleSeat = maximGun:FindFirstChild("VehicleSeat")
     if not vehicleSeat then
-        warn("VehicleSeat not found in MaximGun model!")
+        warn("VehicleSeat not found in MaximGun!")
         return
     end
     
