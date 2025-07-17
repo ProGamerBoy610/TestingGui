@@ -1,13 +1,28 @@
--- Roblox Script to Teleport to MaximGun VehicleSeat and sit in it
+-- Roblox Script to Teleport to MaximGun VehicleSeat (handles render distance)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
+-- Function to wait for object to load
+local function waitForChild(parent, childName, timeout)
+    local startTime = tick()
+    timeout = timeout or 10
+    
+    while tick() - startTime < timeout do
+        local child = parent:FindFirstChild(childName)
+        if child then
+            return child
+        end
+        wait(0.1)
+    end
+    return nil
+end
+
 -- Function to teleport and sit in MaximGun VehicleSeat
 local function teleportAndSit()
-    -- Navigate through the specific folder structure
+    -- First, find and teleport to the base area to load the objects
     local baseplates = workspace:FindFirstChild("Baseplates")
     if not baseplates then
         warn("Baseplates folder not found!")
@@ -20,31 +35,48 @@ local function teleportAndSit()
         return
     end
     
-    local outlawbase = finalBasePlate:FindFirstChild("Outlawbase")
+    -- Teleport to FinalBasePlate area to load the objects
+    if finalBasePlate:FindFirstChild("HumanoidRootPart") then
+        humanoidRootPart.CFrame = finalBasePlate.HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
+    elseif finalBasePlate.PrimaryPart then
+        humanoidRootPart.CFrame = finalBasePlate.PrimaryPart.CFrame + Vector3.new(0, 10, 0)
+    else
+        -- Find any part in FinalBasePlate to teleport near
+        local firstPart = finalBasePlate:FindFirstChildOfClass("BasePart")
+        if firstPart then
+            humanoidRootPart.CFrame = firstPart.CFrame + Vector3.new(0, 10, 0)
+        end
+    end
+    
+    print("Teleported to base area, waiting for objects to load...")
+    wait(2) -- Wait for objects to load
+    
+    -- Now navigate through the structure with waiting
+    local outlawbase = waitForChild(finalBasePlate, "Outlawbase", 10)
     if not outlawbase then
-        warn("Outlawbase model not found!")
+        warn("Outlawbase model not found or didn't load!")
         return
     end
     
-    local turretSpot = outlawbase:FindFirstChild("TurretSpot")
+    local turretSpot = waitForChild(outlawbase, "TurretSpot", 10)
     if not turretSpot then
-        warn("TurretSpot model not found!")
+        warn("TurretSpot model not found or didn't load!")
         return
     end
     
-    local maximGun = turretSpot:FindFirstChild("MaximGun")
+    local maximGun = waitForChild(turretSpot, "MaximGun", 10)
     if not maximGun then
-        warn("MaximGun model not found!")
+        warn("MaximGun model not found or didn't load!")
         return
     end
     
-    local vehicleSeat = maximGun:FindFirstChild("VehicleSeat")
+    local vehicleSeat = waitForChild(maximGun, "VehicleSeat", 10)
     if not vehicleSeat then
-        warn("VehicleSeat not found in MaximGun!")
+        warn("VehicleSeat not found or didn't load!")
         return
     end
     
-    -- Teleport player to the VehicleSeat position
+    -- Final teleport to the VehicleSeat position
     local seatPosition = vehicleSeat.Position
     humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
     
