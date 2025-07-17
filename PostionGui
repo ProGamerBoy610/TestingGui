@@ -1,93 +1,97 @@
--- Roblox Script to Teleport to MaximGun VehicleSeat (handles render distance)
+-- Roblox Script to Tween to MaximGun VehicleSeat with loading check
 local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
 
--- Function to wait for object to load
-local function waitForChild(parent, childName, timeout)
-    local startTime = tick()
-    timeout = timeout or 10
-    
-    while tick() - startTime < timeout do
-        local child = parent:FindFirstChild(childName)
-        if child then
-            return child
-        end
-        wait(0.1)
-    end
-    return nil
-end
+-- Target position
+local targetPosition = Vector3.new(-428.75, 28.07, -49040.91)
 
--- Function to teleport and sit in MaximGun VehicleSeat
-local function teleportAndSit()
-    -- First, find and teleport to the base area to load the objects
+-- Function to check if VehicleSeat is loaded
+local function checkForVehicleSeat()
     local baseplates = workspace:FindFirstChild("Baseplates")
-    if not baseplates then
-        warn("Baseplates folder not found!")
-        return
-    end
+    if not baseplates then return nil end
     
     local finalBasePlate = baseplates:FindFirstChild("FinalBasePlate")
-    if not finalBasePlate then
-        warn("FinalBasePlate model not found!")
-        return
-    end
+    if not finalBasePlate then return nil end
     
-    -- Teleport to FinalBasePlate area to load the objects
-    if finalBasePlate:FindFirstChild("HumanoidRootPart") then
-        humanoidRootPart.CFrame = finalBasePlate.HumanoidRootPart.CFrame + Vector3.new(0, 10, 0)
-    elseif finalBasePlate.PrimaryPart then
-        humanoidRootPart.CFrame = finalBasePlate.PrimaryPart.CFrame + Vector3.new(0, 10, 0)
-    else
-        -- Find any part in FinalBasePlate to teleport near
-        local firstPart = finalBasePlate:FindFirstChildOfClass("BasePart")
-        if firstPart then
-            humanoidRootPart.CFrame = firstPart.CFrame + Vector3.new(0, 10, 0)
+    local outlawbase = finalBasePlate:FindFirstChild("Outlawbase")
+    if not outlawbase then return nil end
+    
+    local turretSpot = outlawbase:FindFirstChild("TurretSpot")
+    if not turretSpot then return nil end
+    
+    local maximGun = turretSpot:FindFirstChild("MaximGun")
+    if not maximGun then return nil end
+    
+    local vehicleSeat = maximGun:FindFirstChild("VehicleSeat")
+    return vehicleSeat
+end
+
+-- Function to tween to target and check for VehicleSeat
+local function tweenToTarget()
+    -- Create tween info (slow movement over 10 seconds)
+    local tweenInfo = TweenInfo.new(
+        10, -- Duration
+        Enum.EasingStyle.Linear,
+        Enum.EasingDirection.InOut,
+        0, -- Repeat count
+        false, -- Reverse
+        0 -- Delay
+    )
+    
+    -- Create tween
+    local targetCFrame = CFrame.new(targetPosition)
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetCFrame})
+    
+    -- Start tween
+    tween:Play()
+    print("Tweening to target position...")
+    
+    -- Connection to check for VehicleSeat while tweening
+    local connection
+    connection = RunService.Heartbeat:Connect(function()
+        local vehicleSeat = checkForVehicleSeat()
+        if vehicleSeat then
+            print("VehicleSeat found! Stopping tween and teleporting...")
+            
+            -- Stop the tween
+            tween:Cancel()
+            
+            -- Disconnect the check
+            connection:Disconnect()
+            
+            -- Teleport to VehicleSeat and sit
+            local seatPosition = vehicleSeat.Position
+            humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
+            
+            -- Wait a moment then sit
+            wait(0.2)
+            vehicleSeat:Sit(humanoid)
+            
+            print("Successfully teleported to and sat in MaximGun VehicleSeat!")
         end
-    end
+    end)
     
-    print("Teleported to base area, waiting for objects to load...")
-    wait(2) -- Wait for objects to load
-    
-    -- Now navigate through the structure with waiting
-    local outlawbase = waitForChild(finalBasePlate, "Outlawbase", 10)
-    if not outlawbase then
-        warn("Outlawbase model not found or didn't load!")
-        return
-    end
-    
-    local turretSpot = waitForChild(outlawbase, "TurretSpot", 10)
-    if not turretSpot then
-        warn("TurretSpot model not found or didn't load!")
-        return
-    end
-    
-    local maximGun = waitForChild(turretSpot, "MaximGun", 10)
-    if not maximGun then
-        warn("MaximGun model not found or didn't load!")
-        return
-    end
-    
-    local vehicleSeat = waitForChild(maximGun, "VehicleSeat", 10)
-    if not vehicleSeat then
-        warn("VehicleSeat not found or didn't load!")
-        return
-    end
-    
-    -- Final teleport to the VehicleSeat position
-    local seatPosition = vehicleSeat.Position
-    humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
-    
-    -- Wait a moment for teleportation to complete
-    wait(0.1)
-    
-    -- Sit the player in the VehicleSeat
-    vehicleSeat:Sit(humanoid)
-    
-    print("Successfully teleported to and sat in MaximGun VehicleSeat!")
+    -- If tween completes without finding VehicleSeat
+    tween.Completed:Connect(function()
+        connection:Disconnect()
+        local vehicleSeat = checkForVehicleSeat()
+        if vehicleSeat then
+            -- Final attempt to sit
+            local seatPosition = vehicleSeat.Position
+            humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
+            wait(0.2)
+            vehicleSeat:Sit(humanoid)
+            print("Successfully teleported to and sat in MaximGun VehicleSeat!")
+        else
+            warn("Reached target position but VehicleSeat still not found!")
+        end
+    end)
 end
 
 -- Execute the function
-teleportAndSit()
+tweenToTarget()
