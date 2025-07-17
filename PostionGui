@@ -44,34 +44,18 @@ local function trySitting()
     return false
 end
 
--- Function to tween to target location (only once)
-local function tweenToTarget()
+-- Function to teleport to target location (only once)
+local function teleportToTarget()
     if hasReachedTarget then return end
     
-    -- Create tween info
-    local tweenInfo = TweenInfo.new(
-        3, -- Duration
-        Enum.EasingStyle.Linear,
-        Enum.EasingDirection.InOut,
-        0, -- Repeat count
-        false, -- Reverse
-        0 -- Delay
-    )
+    -- Direct teleport to target position
+    humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    hasReachedTarget = true
+    print("Teleported to target position, now staying here and trying to sit...")
     
-    -- Create tween
-    local targetCFrame = CFrame.new(targetPosition)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetCFrame})
-    
-    -- Start tween
-    tween:Play()
-    print("Tweening to target position...")
-    
-    -- When tween completes, mark as reached and start sitting attempts
-    tween.Completed:Connect(function()
-        hasReachedTarget = true
-        print("Reached target position, now staying here and trying to sit...")
-        trySitting()
-    end)
+    -- Wait a moment then try sitting
+    wait(0.5)
+    trySitting()
 end
 
 -- Main function
