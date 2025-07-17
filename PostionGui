@@ -4,7 +4,7 @@ local library = loadstring(game:HttpGet("https://raw.githubusercontent.com/liebe
 -- Create main tab window
 local tab = library:CreateWindow("Your Title")
 
--- Add a button to the folder
+-- Add a button directly to the tab
 tab:AddButton({
 	text = "Click me",
 	flag = "button",
