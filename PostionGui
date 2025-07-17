@@ -1,4 +1,4 @@
--- Roblox Script to Tween to MaximGun VehicleSeat with loading check
+-- Roblox Script to Tween to location first, then check for MaximGun VehicleSeat
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -31,11 +31,11 @@ local function checkForVehicleSeat()
     return vehicleSeat
 end
 
--- Function to tween to target and check for VehicleSeat
+-- Function to tween to target location
 local function tweenToTarget()
-    -- Create tween info (slow movement over 10 seconds)
+    -- Create tween info (slow movement over 8 seconds)
     local tweenInfo = TweenInfo.new(
-        10, -- Duration
+        8, -- Duration
         Enum.EasingStyle.Linear,
         Enum.EasingDirection.InOut,
         0, -- Repeat count
@@ -51,44 +51,37 @@ local function tweenToTarget()
     tween:Play()
     print("Tweening to target position...")
     
-    -- Connection to check for VehicleSeat while tweening
-    local connection
-    connection = RunService.Heartbeat:Connect(function()
-        local vehicleSeat = checkForVehicleSeat()
-        if vehicleSeat then
-            print("VehicleSeat found! Stopping tween and teleporting...")
-            
-            -- Stop the tween
-            tween:Cancel()
-            
-            -- Disconnect the check
-            connection:Disconnect()
-            
-            -- Teleport to VehicleSeat and sit
-            local seatPosition = vehicleSeat.Position
-            humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
-            
-            -- Wait a moment then sit
-            wait(0.2)
-            vehicleSeat:Sit(humanoid)
-            
-            print("Successfully teleported to and sat in MaximGun VehicleSeat!")
-        end
-    end)
-    
-    -- If tween completes without finding VehicleSeat
+    -- When tween completes, start checking for VehicleSeat
     tween.Completed:Connect(function()
-        connection:Disconnect()
-        local vehicleSeat = checkForVehicleSeat()
-        if vehicleSeat then
-            -- Final attempt to sit
-            local seatPosition = vehicleSeat.Position
-            humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
-            wait(0.2)
-            vehicleSeat:Sit(humanoid)
-            print("Successfully teleported to and sat in MaximGun VehicleSeat!")
-        else
-            warn("Reached target position but VehicleSeat still not found!")
+        print("Reached target position, now checking for VehicleSeat...")
+        
+        -- Check repeatedly for VehicleSeat
+        local checkConnection
+        checkConnection = RunService.Heartbeat:Connect(function()
+            local vehicleSeat = checkForVehicleSeat()
+            if vehicleSeat then
+                print("VehicleSeat found! Teleporting...")
+                
+                -- Disconnect the check
+                checkConnection:Disconnect()
+                
+                -- Teleport to VehicleSeat and sit
+                local seatPosition = vehicleSeat.Position
+                humanoidRootPart.CFrame = CFrame.new(seatPosition + Vector3.new(0, 5, 0))
+                
+                -- Wait a moment then sit
+                wait(0.2)
+                vehicleSeat:Sit(humanoid)
+                
+                print("Successfully teleported to and sat in MaximGun VehicleSeat!")
+            end
+        end)
+        
+        -- Stop checking after 15 seconds if not found
+        wait(15)
+        if checkConnection then
+            checkConnection:Disconnect()
+            warn("VehicleSeat not found after 15 seconds of checking!")
         end
     end)
 end
