@@ -1,85 +1,352 @@
--- Roblox Script to stay at MaximGun location and keep trying to sit
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
-local character = player.Character or player.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+-- ===== CUSTOMIZATION SECTION - EDIT THESE VALUES =====
+local MAIN_TITLE = "Fryzer Hub"                        -- Main title text
+local SUBTITLE = "Loading scripts..."           -- Subtitle text
+local LOADING_TEXT = "Initializing"                    -- Loading text
+local LOADING_DURATION = 3                             -- How long loading takes (seconds) - reduced for testing
+local WAIT_AFTER_LOADING = 1                           -- Wait time after loading (seconds)
 
--- Target position
-local targetPosition = Vector3.new(-428.75, 28.07, -49040.91)
-local hasReachedTarget = false
+-- Colors (Neon blue theme to match Fryzer Hub)
+local BACKGROUND_COLOR = Color3.fromRGB(15, 25, 45)          -- Dark blue
+local ACCENT_COLOR = Color3.fromRGB(0, 191, 255)             -- Neon blue
+local TEXT_COLOR = Color3.fromRGB(255, 255, 255)             -- White
+local PROGRESS_COLOR = Color3.fromRGB(0, 191, 255)           -- Neon blue
+local GLOW_COLOR = Color3.fromRGB(0, 191, 255)               -- Neon blue glow
 
--- Function to check if VehicleSeat is loaded
-local function checkForVehicleSeat()
-    local baseplates = workspace:FindFirstChild("Baseplates")
-    if not baseplates then return nil end
-    
-    local finalBasePlate = baseplates:FindFirstChild("FinalBasePlate")
-    if not finalBasePlate then return nil end
-    
-    local outlawbase = finalBasePlate:FindFirstChild("Outlawbase")
-    if not outlawbase then return nil end
-    
-    local turretSpot = outlawbase:FindFirstChild("TurretSpot")
-    if not turretSpot then return nil end
-    
-    local maximGun = turretSpot:FindFirstChild("MaximGun")
-    if not maximGun then return nil end
-    
-    local vehicleSeat = maximGun:FindFirstChild("VehicleSeat")
-    return vehicleSeat
-end
+-- Window settings (smaller size)
+local WINDOW_SIZE = UDim2.new(0, 400, 0, 250)
+local CORNER_RADIUS = 16
 
--- Function to try sitting in VehicleSeat (without teleporting)
-local function trySitting()
-    local vehicleSeat = checkForVehicleSeat()
-    if vehicleSeat then
-        -- Just try to sit, don't teleport
-        vehicleSeat:Sit(humanoid)
-        print("Attempting to sit in MaximGun VehicleSeat...")
-        return true
+-- Your loadstring to execute after loading
+local YOUR_LOADSTRING = [[
+   loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/grow%20a%20arden%20v1"))()
+]]-- ===== END CUSTOMIZATION SECTION =====
+-- Create the main GUI
+local ScreenGui = Instance.new("ScreenGui")
+local MainFrame = Instance.new("Frame")
+local UICorner = Instance.new("UICorner")
+local UIStroke = Instance.new("UIStroke")
+local BackgroundGlow = Instance.new("Frame")
+local BackgroundGlowCorner = Instance.new("UICorner")
+local BackgroundGlowStroke = Instance.new("UIStroke")
+
+-- Logo and text elements
+local LogoFrame = Instance.new("Frame")
+local LogoCorner = Instance.new("UICorner")
+local LogoStroke = Instance.new("UIStroke")
+local LogoLabel = Instance.new("TextLabel")
+
+local TitleLabel = Instance.new("TextLabel")
+local SubtitleLabel = Instance.new("TextLabel")
+local LoadingLabel = Instance.new("TextLabel")
+
+-- Progress elements
+local ProgressFrame = Instance.new("Frame")
+local ProgressCorner = Instance.new("UICorner")
+local ProgressStroke = Instance.new("UIStroke")
+local ProgressBar = Instance.new("Frame")
+local ProgressBarCorner = Instance.new("UICorner")
+local ProgressBarStroke = Instance.new("UIStroke")
+
+-- Status indicator
+local StatusDot = Instance.new("Frame")
+local StatusDotCorner = Instance.new("UICorner")
+local StatusDotStroke = Instance.new("UIStroke")
+
+-- Percentage Label
+local PercentageLabel = Instance.new("TextLabel")
+
+-- Variables for controlling animations
+local isLoading = true
+local shouldDestroy = false
+
+-- Configure ScreenGui
+ScreenGui.Name = "FryzerHubLoader"
+ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+-- Background glow effect
+BackgroundGlow.Name = "BackgroundGlow"
+BackgroundGlow.Parent = ScreenGui
+BackgroundGlow.BackgroundColor3 = BACKGROUND_COLOR
+BackgroundGlow.BorderSizePixel = 0
+BackgroundGlow.Position = UDim2.new(0.5, -205, 0.5, -130)
+BackgroundGlow.Size = UDim2.new(0, 410, 0, 260)
+BackgroundGlow.BackgroundTransparency = 0.3
+
+BackgroundGlowCorner.CornerRadius = UDim.new(0, CORNER_RADIUS + 5)
+BackgroundGlowCorner.Parent = BackgroundGlow
+
+BackgroundGlowStroke.Color = GLOW_COLOR
+BackgroundGlowStroke.Thickness = 3
+BackgroundGlowStroke.Transparency = 0.5
+BackgroundGlowStroke.Parent = BackgroundGlow
+
+-- Configure Main Frame
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = BACKGROUND_COLOR
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -125)
+MainFrame.Size = WINDOW_SIZE
+
+UICorner.CornerRadius = UDim.new(0, CORNER_RADIUS)
+UICorner.Parent = MainFrame
+
+UIStroke.Color = ACCENT_COLOR
+UIStroke.Thickness = 2
+UIStroke.Parent = MainFrame
+
+-- Logo Frame
+LogoFrame.Name = "LogoFrame"
+LogoFrame.Parent = MainFrame
+LogoFrame.BackgroundColor3 = Color3.fromRGB(25, 35, 55)
+LogoFrame.BorderSizePixel = 0
+LogoFrame.Position = UDim2.new(0.05, 0, 0.08, 0)
+LogoFrame.Size = UDim2.new(0, 60, 0, 60)
+
+LogoCorner.CornerRadius = UDim.new(0, 12)
+LogoCorner.Parent = LogoFrame
+
+LogoStroke.Color = ACCENT_COLOR
+LogoStroke.Thickness = 1
+LogoStroke.Parent = LogoFrame
+
+-- Logo Text (Fryzer Hub style)
+LogoLabel.Name = "Logo"
+LogoLabel.Parent = LogoFrame
+LogoLabel.BackgroundTransparency = 1
+LogoLabel.Size = UDim2.new(1, 0, 1, 0)
+LogoLabel.Font = Enum.Font.GothamBold
+LogoLabel.Text = "FH"
+LogoLabel.TextColor3 = ACCENT_COLOR
+LogoLabel.TextScaled = true
+LogoLabel.TextStrokeTransparency = 0.5
+LogoLabel.TextStrokeColor3 = GLOW_COLOR
+
+-- Title with neon effect
+TitleLabel.Name = "Title"
+TitleLabel.Parent = MainFrame
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Position = UDim2.new(0.22, 0, 0.08, 0)
+TitleLabel.Size = UDim2.new(0.73, 0, 0.25, 0)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = MAIN_TITLE
+TitleLabel.TextColor3 = ACCENT_COLOR
+TitleLabel.TextScaled = true
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+TitleLabel.TextStrokeTransparency = 0.7
+TitleLabel.TextStrokeColor3 = GLOW_COLOR
+
+-- Subtitle
+SubtitleLabel.Name = "Subtitle"
+SubtitleLabel.Parent = MainFrame
+SubtitleLabel.BackgroundTransparency = 1
+SubtitleLabel.Position = UDim2.new(0.05, 0, 0.38, 0)
+SubtitleLabel.Size = UDim2.new(0.9, 0, 0.12, 0)
+SubtitleLabel.Font = Enum.Font.Gotham
+SubtitleLabel.Text = SUBTITLE
+SubtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+SubtitleLabel.TextScaled = true
+
+-- Loading Text
+LoadingLabel.Name = "LoadingText"
+LoadingLabel.Parent = MainFrame
+LoadingLabel.BackgroundTransparency = 1
+LoadingLabel.Position = UDim2.new(0.05, 0, 0.55, 0)
+LoadingLabel.Size = UDim2.new(0.7, 0, 0.1, 0)
+LoadingLabel.Font = Enum.Font.Gotham
+LoadingLabel.Text = LOADING_TEXT
+LoadingLabel.TextColor3 = TEXT_COLOR
+LoadingLabel.TextScaled = true
+LoadingLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Status Dot
+StatusDot.Name = "StatusDot"
+StatusDot.Parent = MainFrame
+StatusDot.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+StatusDot.BorderSizePixel = 0
+StatusDot.Position = UDim2.new(0.85, 0, 0.57, 0)
+StatusDot.Size = UDim2.new(0, 8, 0, 8)
+
+StatusDotCorner.CornerRadius = UDim.new(0, 4)
+StatusDotCorner.Parent = StatusDot
+
+StatusDotStroke.Color = Color3.fromRGB(255, 165, 0)
+StatusDotStroke.Thickness = 1
+StatusDotStroke.Transparency = 0.3
+StatusDotStroke.Parent = StatusDot
+
+-- Progress Frame
+ProgressFrame.Name = "ProgressFrame"
+ProgressFrame.Parent = MainFrame
+ProgressFrame.BackgroundColor3 = Color3.fromRGB(35, 45, 65)
+ProgressFrame.BorderSizePixel = 0
+ProgressFrame.Position = UDim2.new(0.05, 0, 0.72, 0)
+ProgressFrame.Size = UDim2.new(0.9, 0, 0.08, 0)
+
+ProgressCorner.CornerRadius = UDim.new(0, 8)
+ProgressCorner.Parent = ProgressFrame
+
+ProgressStroke.Color = ACCENT_COLOR
+ProgressStroke.Thickness = 1
+ProgressStroke.Transparency = 0.6
+ProgressStroke.Parent = ProgressFrame
+
+-- Progress Bar
+ProgressBar.Name = "ProgressBar"
+ProgressBar.Parent = ProgressFrame
+ProgressBar.BackgroundColor3 = PROGRESS_COLOR
+ProgressBar.BorderSizePixel = 0
+ProgressBar.Position = UDim2.new(0, 0, 0, 0)
+ProgressBar.Size = UDim2.new(0, 0, 1, 0)
+
+ProgressBarCorner.CornerRadius = UDim.new(0, 8)
+ProgressBarCorner.Parent = ProgressBar
+
+ProgressBarStroke.Color = GLOW_COLOR
+ProgressBarStroke.Thickness = 1
+ProgressBarStroke.Transparency = 0.3
+ProgressBarStroke.Parent = ProgressBar
+
+-- Percentage Label
+PercentageLabel.Name = "Percentage"
+PercentageLabel.Parent = MainFrame
+PercentageLabel.BackgroundTransparency = 1
+PercentageLabel.Position = UDim2.new(0.05, 0, 0.85, 0)
+PercentageLabel.Size = UDim2.new(0.9, 0, 0.08, 0)
+PercentageLabel.Font = Enum.Font.GothamMedium
+PercentageLabel.Text = "0%"
+PercentageLabel.TextColor3 = ACCENT_COLOR
+PercentageLabel.TextScaled = true
+
+-- Function to safely destroy the GUI
+local function destroyGUI()
+    shouldDestroy = true
+    isLoading = false
+    
+    if ScreenGui and ScreenGui.Parent then
+        ScreenGui:Destroy()
+        print("🔥 Fryzer Hub Loading Screen Destroyed! 🔥")
     end
-    return false
 end
 
--- Function to teleport to target location (only once)
-local function teleportToTarget()
-    if hasReachedTarget then return end
+-- Loading animation with enhanced effects
+local function animateLoading()
+    local startTime = tick()
+    local totalDuration = LOADING_DURATION
     
-    -- Direct teleport to target position
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    hasReachedTarget = true
-    print("Teleported to target position, now staying here and trying to sit...")
-    
-    -- Wait a moment then try sitting
-    wait(0.5)
-    trySitting()
-end
-
--- Main function
-local function startScript()
-    -- Initial tween to location
-    tweenToTarget()
-    
-    -- Continuous loop to try sitting (only after reaching target)
     spawn(function()
-        while true do
-            wait(2) -- Wait 2 seconds between attempts
+        while isLoading and not shouldDestroy and tick() - startTime < totalDuration do
+            local progress = (tick() - startTime) / totalDuration
+            local percentage = math.floor(progress * 100)
             
-            if hasReachedTarget then
-                -- Check if player is already in a seat
-                if humanoid.Sit then
-                    print("Player is seated in MaximGun!")
-                else
-                    print("Player not seated, trying to sit...")
-                    trySitting()
-                end
+            -- Update progress bar
+            ProgressBar.Size = UDim2.new(progress, 0, 1, 0)
+            PercentageLabel.Text = percentage .. "%"
+            
+            -- Animate loading text dots
+            local dots = math.floor((tick() - startTime) * 3) % 4
+            LoadingLabel.Text = LOADING_TEXT .. string.rep(".", dots)
+            
+            -- Pulse status dot
+            local pulseSize = 8 + math.sin((tick() - startTime) * 10) * 2
+            StatusDot.Size = UDim2.new(0, pulseSize, 0, pulseSize)
+            
+            -- Change status dot color based on progress
+            if progress < 0.3 then
+                StatusDot.BackgroundColor3 = Color3.fromRGB(255, 165, 0) -- Orange
+            elseif progress < 0.7 then
+                StatusDot.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+            else
+                StatusDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
             end
+            
+            wait(0.05)
+        end
+        
+        -- Check if we should still continue (GUI wasn't destroyed)
+        if not shouldDestroy and isLoading then
+            -- Loading complete
+            ProgressBar.Size = UDim2.new(1, 0, 1, 0)
+            PercentageLabel.Text = "100%"
+            LoadingLabel.Text = "Complete!"
+            LoadingLabel.TextColor3 = ACCENT_COLOR
+            StatusDot.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+            
+            -- Success glow effect
+            UIStroke.Color = Color3.fromRGB(0, 255, 0)
+            
+            wait(WAIT_AFTER_LOADING)
+            
+            -- Execute your script (with error handling)
+            local success, error = pcall(function()
+                loadstring(YOUR_LOADSTRING)()
+            end)
+            
+            if not success then
+                warn("Error executing loadstring: " .. tostring(error))
+            end
+            
+            -- Smooth exit animation
+            local exitTween1 = MainFrame:TweenPosition(
+                UDim2.new(0.5, -200, -1, 0),
+                Enum.EasingDirection.In,
+                Enum.EasingStyle.Back,
+                0.5,
+                true
+            )
+            
+            local exitTween2 = BackgroundGlow:TweenPosition(
+                UDim2.new(0.5, -205, -1, 0),
+                Enum.EasingDirection.In,
+                Enum.EasingStyle.Back,
+                0.5,
+                true
+            )
+            
+            -- Wait for animation to complete then destroy
+            wait(0.6)
+            destroyGUI()
         end
     end)
 end
 
--- Execute the function
-startScript()
+-- Add pulsing glow effect
+spawn(function()
+    while not shouldDestroy and ScreenGui and ScreenGui.Parent do
+        local pulse = 0.3 + math.sin(tick() * 2) * 0.2
+        if BackgroundGlowStroke then
+            BackgroundGlowStroke.Transparency = pulse
+        end
+        if UIStroke then
+            UIStroke.Transparency = pulse * 0.5
+        end
+        wait(0.1)
+    end
+end)
+
+-- Entrance animation
+MainFrame.Position = UDim2.new(0.5, -200, 1.5, 0)
+BackgroundGlow.Position = UDim2.new(0.5, -205, 1.5, 0)
+
+MainFrame:TweenPosition(
+    UDim2.new(0.5, -200, 0.5, -125),
+    Enum.EasingDirection.Out,
+    Enum.EasingStyle.Back,
+    0.8,
+    true
+)
+
+BackgroundGlow:TweenPosition(
+    UDim2.new(0.5, -205, 0.5, -130),
+    Enum.EasingDirection.Out,
+    Enum.EasingStyle.Back,
+    0.8,
+    true
+)
+
+-- Start loading after entrance
+wait(0.8)
+animateLoading()
+
+print("🔥 Fryzer Hub Loading Screen Initialized! 🔥")
