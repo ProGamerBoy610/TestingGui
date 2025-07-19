@@ -1,4 +1,4 @@
--- Fryzer Hub GUI System
+-- Fryzer Hub GUI System - Fixed Version
 -- Easy to customize like Rayfield
 
 local Players = game:GetService("Players")
@@ -8,6 +8,11 @@ local RunService = game:GetService("RunService")
 
 local Player = Players.LocalPlayer
 local PlayerGui = Player:WaitForChild("PlayerGui")
+
+-- Remove existing GUI if it exists
+if PlayerGui:FindFirstChild("FryzerHub") then
+    PlayerGui:FindFirstChild("FryzerHub"):Destroy()
+end
 
 -- Configuration
 local Config = {
@@ -25,15 +30,13 @@ local Config = {
     
     -- Animation
     AnimationSpeed = 0.3,
-    EasingStyle = Enum.EasingStyle.Quad,
-    EasingDirection = Enum.EasingDirection.Out
 }
 
 -- Create main ScreenGui
 local FryzerHub = Instance.new("ScreenGui")
 FryzerHub.Name = "FryzerHub"
 FryzerHub.Parent = PlayerGui
-FryzerHub.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+FryzerHub.ResetOnSpawn = false
 
 -- Main Frame
 local MainFrame = Instance.new("Frame")
@@ -82,7 +85,7 @@ TitleLabel.Text = "Fryzer Hub"
 TitleLabel.TextColor3 = Config.TextColor
 TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Font = Enum.Font.SourceSansBold
 
 -- Close Button
 local CloseButton = Instance.new("TextButton")
@@ -91,10 +94,10 @@ CloseButton.Parent = TitleBar
 CloseButton.Size = UDim2.new(0, 30, 0, 30)
 CloseButton.Position = UDim2.new(1, -35, 0, 5)
 CloseButton.BackgroundColor3 = Color3.fromRGB(255, 85, 85)
-CloseButton.Text = "×"
+CloseButton.Text = "X"
 CloseButton.TextColor3 = Color3.white
-CloseButton.TextSize = 18
-CloseButton.Font = Enum.Font.GothamBold
+CloseButton.TextSize = 16
+CloseButton.Font = Enum.Font.SourceSansBold
 CloseButton.BorderSizePixel = 0
 
 local CloseCorner = Instance.new("UICorner")
@@ -108,22 +111,31 @@ MinimizeButton.Parent = TitleBar
 MinimizeButton.Size = UDim2.new(0, 30, 0, 30)
 MinimizeButton.Position = UDim2.new(1, -70, 0, 5)
 MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
-MinimizeButton.Text = "−"
+MinimizeButton.Text = "-"
 MinimizeButton.TextColor3 = Color3.white
-MinimizeButton.TextSize = 18
-MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.TextSize = 20
+MinimizeButton.Font = Enum.Font.SourceSansBold
 MinimizeButton.BorderSizePixel = 0
 
 local MinimizeCorner = Instance.new("UICorner")
 MinimizeCorner.CornerRadius = UDim.new(0, 4)
 MinimizeCorner.Parent = MinimizeButton
 
+-- Content Area (Everything below title bar)
+local ContentArea = Instance.new("Frame")
+ContentArea.Name = "ContentArea"
+ContentArea.Parent = MainFrame
+ContentArea.Size = UDim2.new(1, 0, 1, -40)
+ContentArea.Position = UDim2.new(0, 0, 0, 40)
+ContentArea.BackgroundTransparency = 1
+ContentArea.BorderSizePixel = 0
+
 -- Tab Container (Left Side)
 local TabContainer = Instance.new("Frame")
 TabContainer.Name = "TabContainer"
-TabContainer.Parent = MainFrame
-TabContainer.Size = UDim2.new(0, Config.TabWidth, 1, -40)
-TabContainer.Position = UDim2.new(0, 0, 0, 40)
+TabContainer.Parent = ContentArea
+TabContainer.Size = UDim2.new(0, Config.TabWidth, 1, 0)
+TabContainer.Position = UDim2.new(0, 0, 0, 0)
 TabContainer.BackgroundColor3 = Config.SecondaryColor
 TabContainer.BorderSizePixel = 0
 
@@ -131,24 +143,30 @@ TabContainer.BorderSizePixel = 0
 local TabScrollFrame = Instance.new("ScrollingFrame")
 TabScrollFrame.Name = "TabScrollFrame"
 TabScrollFrame.Parent = TabContainer
-TabScrollFrame.Size = UDim2.new(1, 0, 1, 0)
-TabScrollFrame.Position = UDim2.new(0, 0, 0, 0)
+TabScrollFrame.Size = UDim2.new(1, -5, 1, -10)
+TabScrollFrame.Position = UDim2.new(0, 5, 0, 5)
 TabScrollFrame.BackgroundTransparency = 1
 TabScrollFrame.ScrollBarThickness = 4
 TabScrollFrame.ScrollBarImageColor3 = Config.AccentColor
 TabScrollFrame.BorderSizePixel = 0
+TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 local TabLayout = Instance.new("UIListLayout")
 TabLayout.Parent = TabScrollFrame
 TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
 TabLayout.Padding = UDim.new(0, 5)
 
+-- Update tab scroll size when content changes
+TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y + 10)
+end)
+
 -- Content Container (Right Side)
 local ContentContainer = Instance.new("Frame")
 ContentContainer.Name = "ContentContainer"
-ContentContainer.Parent = MainFrame
-ContentContainer.Size = UDim2.new(1, -Config.TabWidth, 1, -40)
-ContentContainer.Position = UDim2.new(0, Config.TabWidth, 0, 40)
+ContentContainer.Parent = ContentArea
+ContentContainer.Size = UDim2.new(1, -Config.TabWidth, 1, 0)
+ContentContainer.Position = UDim2.new(0, Config.TabWidth, 0, 0)
 ContentContainer.BackgroundTransparency = 1
 ContentContainer.BorderSizePixel = 0
 
@@ -162,11 +180,7 @@ ContentScrollFrame.BackgroundTransparency = 1
 ContentScrollFrame.ScrollBarThickness = 4
 ContentScrollFrame.ScrollBarImageColor3 = Config.AccentColor
 ContentScrollFrame.BorderSizePixel = 0
-
-local ContentLayout = Instance.new("UIListLayout")
-ContentLayout.Parent = ContentScrollFrame
-ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ContentLayout.Padding = UDim.new(0, 10)
+ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 
 -- GUI Library
 local FryzerLibrary = {}
@@ -183,7 +197,7 @@ function FryzerLibrary:CreateTab(name, icon)
     TabButton.Text = (icon and icon .. " " or "") .. name
     TabButton.TextColor3 = Config.SecondaryTextColor
     TabButton.TextSize = 14
-    TabButton.Font = Enum.Font.Gotham
+    TabButton.Font = Enum.Font.SourceSans
     TabButton.BorderSizePixel = 0
     TabButton.TextXAlignment = Enum.TextXAlignment.Left
     
@@ -208,6 +222,14 @@ function FryzerLibrary:CreateTab(name, icon)
     TabContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabContentLayout.Padding = UDim.new(0, 8)
     
+    -- Update content size when elements are added
+    TabContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContent.Size = UDim2.new(1, 0, 0, TabContentLayout.AbsoluteContentSize.Y)
+        if TabContent.Visible then
+            ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabContentLayout.AbsoluteContentSize.Y + 20)
+        end
+    end)
+    
     -- Tab object
     local Tab = {}
     Tab.Button = TabButton
@@ -216,6 +238,7 @@ function FryzerLibrary:CreateTab(name, icon)
     
     -- Switch to this tab
     function Tab:Select()
+        -- Hide current tab
         if FryzerLibrary.CurrentTab then
             FryzerLibrary.CurrentTab.Content.Visible = false
             TweenService:Create(FryzerLibrary.CurrentTab.Button, TweenInfo.new(Config.AnimationSpeed), {
@@ -224,6 +247,7 @@ function FryzerLibrary:CreateTab(name, icon)
             }):Play()
         end
         
+        -- Show new tab
         FryzerLibrary.CurrentTab = Tab
         Tab.Content.Visible = true
         TweenService:Create(Tab.Button, TweenInfo.new(Config.AnimationSpeed), {
@@ -245,12 +269,21 @@ function FryzerLibrary:CreateTab(name, icon)
         Button.Text = name
         Button.TextColor3 = Config.TextColor
         Button.TextSize = 14
-        Button.Font = Enum.Font.Gotham
+        Button.Font = Enum.Font.SourceSans
         Button.BorderSizePixel = 0
         
         local ButtonCorner = Instance.new("UICorner")
         ButtonCorner.CornerRadius = UDim.new(0, 6)
         ButtonCorner.Parent = Button
+        
+        -- Button hover effects
+        Button.MouseEnter:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(45, 45, 55)}):Play()
+        end)
+        
+        Button.MouseLeave:Connect(function()
+            TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Config.SecondaryColor}):Play()
+        end)
         
         Button.MouseButton1Click:Connect(function()
             TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Config.AccentColor}):Play()
@@ -258,13 +291,9 @@ function FryzerLibrary:CreateTab(name, icon)
             TweenService:Create(Button, TweenInfo.new(0.1), {BackgroundColor3 = Config.SecondaryColor}):Play()
             
             if callback then
-                callback()
+                pcall(callback)
             end
         end)
-        
-        -- Update layout
-        Tab.Content.Size = UDim2.new(1, 0, 0, TabContentLayout.AbsoluteContentSize.Y)
-        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabContentLayout.AbsoluteContentSize.Y + 20)
         
         return Button
     end
@@ -290,7 +319,7 @@ function FryzerLibrary:CreateTab(name, icon)
         ToggleLabel.Text = name
         ToggleLabel.TextColor3 = Config.TextColor
         ToggleLabel.TextSize = 14
-        ToggleLabel.Font = Enum.Font.Gotham
+        ToggleLabel.Font = Enum.Font.SourceSans
         ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
         
         local ToggleButton = Instance.new("TextButton")
@@ -330,13 +359,11 @@ function FryzerLibrary:CreateTab(name, icon)
             end
             
             if callback then
-                callback(toggled)
+                pcall(function()
+                    callback(toggled)
+                end)
             end
         end)
-        
-        -- Update layout
-        Tab.Content.Size = UDim2.new(1, 0, 0, TabContentLayout.AbsoluteContentSize.Y)
-        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabContentLayout.AbsoluteContentSize.Y + 20)
         
         return ToggleFrame
     end
@@ -346,13 +373,11 @@ function FryzerLibrary:CreateTab(name, icon)
         Tab:Select()
     end)
     
-    -- Update tab scroll frame size
-    TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y + 10)
-    
+    -- Store tab
     FryzerLibrary.Tabs[name] = Tab
     
     -- Select first tab automatically
-    if #FryzerLibrary.Tabs == 1 then
+    if not FryzerLibrary.CurrentTab then
         Tab:Select()
     end
     
@@ -376,12 +401,16 @@ local originalSize = Config.MainSize
 
 MinimizeButton.MouseButton1Click:Connect(function()
     if minimized then
+        -- Restore
         TweenService:Create(MainFrame, TweenInfo.new(Config.AnimationSpeed), {
             Size = originalSize
         }):Play()
+        ContentArea.Visible = true
         minimized = false
-        MinimizeButton.Text = "−"
+        MinimizeButton.Text = "-"
     else
+        -- Minimize
+        ContentArea.Visible = false
         TweenService:Create(MainFrame, TweenInfo.new(Config.AnimationSpeed), {
             Size = UDim2.new(0, originalSize.X.Offset, 0, 40)
         }):Play()
@@ -436,11 +465,17 @@ end)
 
 -- Player Tab Elements
 PlayerTab:CreateButton("Speed Boost", function()
-    game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 50
+        print("Speed boosted!")
+    end
 end)
 
 PlayerTab:CreateButton("Jump Boost", function()
-    game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.JumpPower = 100
+        print("Jump boosted!")
+    end
 end)
 
 PlayerTab:CreateToggle("Infinite Jump", false, function(state)
@@ -456,4 +491,5 @@ WorldTab:CreateToggle("No Clip", false, function(state)
     print("No Clip:", state)
 end)
 
+print("Fryzer Hub loaded successfully!")
 return FryzerLibrary
