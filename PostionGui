@@ -8,19 +8,8 @@ tab.newButton("Button", "", function()
     print('Hello!')
 end)
 
-tab.newToggle("Toggle", "Toggle! (prints the state)", true, function(toggleState)
-    if toggleState then
-        print("On")
-    else
-        print("Off")
-    end
-end)
-
-local tab = DrRayLibrary.newTab("Beta", "ImageIdHere")
-
-
-tab.newSlider("Slider", "Epic slider", 1000, false, function(num)
-    print(num)
+tab.newDropdown("Dropdown", "Select one of these options!", {"water", "dog", "air", "bb", "airplane", "wohhho", "yeay", "delete"}, function(selectedOption)
+    print(selectedOption)
 end)
 
 window:Toggle()
