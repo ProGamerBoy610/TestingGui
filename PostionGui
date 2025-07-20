@@ -8,10 +8,7 @@ local tab = DrRayLibrary.newTab("Fruit Stealer", "ImageIdHere")
 -- Variables to store current selections
 local currentSelectedPlayer = nil
 local currentSelectedItem = nil
-local playerNames = {}
-local itemNames = {}
-local playerDropdown = nil
-local itemDropdown = nil
+local currentPlayerItems = {}
 
 -- Function to get all player names
 local function getPlayerNames()
@@ -22,6 +19,10 @@ local function getPlayerNames()
         if p ~= player then -- Exclude local player
             table.insert(names, p.Name)
         end
+    end
+    
+    if #names == 0 then
+        table.insert(names, "No other players")
     end
     
     return names
@@ -45,6 +46,27 @@ local function getPlayerItems(playerName)
     return items
 end
 
+-- Function to get all possible items from all players (for dropdown population)
+local function getAllPossibleItems()
+    local allItems = {"Select player first"}
+    local itemSet = {}
+    
+    local players = Players:GetPlayers()
+    for _, p in ipairs(players) do
+        if p ~= player and p:FindFirstChild("Backpack") then
+            local backpack = p.Backpack
+            for _, item in pairs(backpack:GetChildren()) do
+                if (item:IsA("Tool") or item:IsA("HopperBin")) and not itemSet[item.Name] then
+                    itemSet[item.Name] = true
+                    table.insert(allItems, item.Name)
+                end
+            end
+        end
+    end
+    
+    return allItems
+end
+
 -- Function to steal/copy selected item
 local function stealItem(playerName, itemName)
     local targetPlayer = Players:FindFirstChild(playerName)
@@ -64,14 +86,14 @@ local function stealItem(playerName, itemName)
         end)
         
         if success then
-            print("Successfully copied: " .. itemName)
+            print("Successfully copied: " .. itemName .. " from " .. playerName)
             return true
         else
             print("Error copying item: " .. tostring(err))
             return false
         end
     else
-        print("Item not found: " .. itemName)
+        print("Item '" .. itemName .. "' not found in " .. playerName .. "'s backpack")
         return false
     end
 end
@@ -106,119 +128,184 @@ local function stealAllItems(playerName)
     return stolenCount
 end
 
--- Initialize player names
-playerNames = getPlayerNames()
-if #playerNames == 0 then
-    table.insert(playerNames, "No other players")
-end
-
--- Create Player Selection Dropdown
-playerDropdown = tab.newDropdown("Select Player", "Choose a player to view their items", playerNames, function(selectedPlayer)
-    currentSelectedPlayer = selectedPlayer
-    print("Selected player: " .. selectedPlayer)
+-- Function to display player's items
+local function displayPlayerItems(playerName)
+    local items = getPlayerItems(playerName)
     
-    -- Update items dropdown when player is selected
-    if selectedPlayer ~= "No other players" then
-        itemNames = getPlayerItems(selectedPlayer)
-        
-        if #itemNames == 0 then
-            itemNames = {"No items found"}
-        end
-        
-        -- Note: DrRay UI Library might not support updating dropdown options dynamically
-        -- You may need to refresh the UI or use a different approach
-        print("Player " .. selectedPlayer .. " has " .. #itemNames .. " items")
-        for i, item in ipairs(itemNames) do
-            print(i .. ". " .. item)
-        end
-    end
-end)
-
--- Create Items Dropdown (initially empty)
-itemNames = {"Select a player first"}
-itemDropdown = tab.newDropdown("Select Item", "Choose an item to steal", itemNames, function(selectedItem)
-    currentSelectedItem = selectedItem
-    print("Selected item: " .. selectedItem)
-end)
-
--- Create Steal Selected Item Button
-tab.newButton("Steal Selected Item", "Copy the selected item to your backpack", function()
-    if not currentSelectedPlayer or currentSelectedPlayer == "No other players" then
-        print("Please select a valid player first!")
+    if #items == 0 then
+        print(playerName .. " has no items in their backpack")
         return
     end
     
-    if not currentSelectedItem or currentSelectedItem == "Select a player first" or currentSelectedItem == "No items found" then
-        print("Please select a valid item first!")
+    print("=== " .. playerName .. "'s Backpack Items ===")
+    for i, itemName in ipairs(items) do
+        print(i .. ". " .. itemName)
+    end
+    print("Total items: " .. #items)
+    print("=====================================")
+end
+
+-- Initialize data
+local playerNames = getPlayerNames()
+local allPossibleItems = getAllPossibleItems()
+
+-- Create Player Selection Dropdown
+tab.newDropdown("Select Player", "Choose a player to steal from", playerNames, function(selectedPlayer)
+    if selectedPlayer == "No other players" then
+        print("No other players available")
+        return
+    end
+    
+    currentSelectedPlayer = selectedPlayer
+    print("Selected player: " .. selectedPlayer)
+    
+    -- Display their items
+    displayPlayerItems(selectedPlayer)
+    
+    -- Get their current items for validation
+    currentPlayerItems = getPlayerItems(selectedPlayer)
+    
+    print("Now select an item from the second dropdown")
+    print("Available items for " .. selectedPlayer .. ":")
+    for i, item in ipairs(currentPlayerItems) do
+        print("- " .. item)
+    end
+end)
+
+-- Create Item Selection Dropdown
+tab.newDropdown("Select Item", "Choose an item to steal", allPossibleItems, function(selectedItem)
+    if selectedItem == "Select player first" then
+        print("Please select a player first!")
+        return
+    end
+    
+    currentSelectedItem = selectedItem
+    print("Selected item: " .. selectedItem)
+    
+    -- Check if the selected player actually has this item
+    if currentSelectedPlayer and currentPlayerItems then
+        local hasItem = false
+        for _, item in ipairs(currentPlayerItems) do
+            if item == selectedItem then
+                hasItem = true
+                break
+            end
+        end
+        
+        if hasItem then
+            print("✓ " .. currentSelectedPlayer .. " has " .. selectedItem)
+        else
+            print("⚠ " .. currentSelectedPlayer .. " does NOT have " .. selectedItem)
+            print("This item might be from another player's backpack")
+        end
+    end
+end)
+
+-- Create buttons
+tab.newButton("Show Player Items", "Refresh and show selected player's backpack", function()
+    if not currentSelectedPlayer then
+        print("Please select a player first!")
+        return
+    end
+    
+    currentPlayerItems = getPlayerItems(currentSelectedPlayer)
+    displayPlayerItems(currentSelectedPlayer)
+end)
+
+tab.newButton("Steal Selected Item", "Copy the selected item to your backpack", function()
+    if not currentSelectedPlayer then
+        print("Please select a player first!")
+        return
+    end
+    
+    if not currentSelectedItem or currentSelectedItem == "Select player first" then
+        print("Please select an item first!")
         return
     end
     
     local success = stealItem(currentSelectedPlayer, currentSelectedItem)
     if success then
-        print("Item stolen successfully!")
+        print("✓ Successfully stole: " .. currentSelectedItem)
     else
-        print("Failed to steal item!")
+        print("✗ Failed to steal: " .. currentSelectedItem)
     end
 end)
 
--- Create Steal All Items Button
 tab.newButton("Steal All Items", "Copy all items from selected player", function()
-    if not currentSelectedPlayer or currentSelectedPlayer == "No other players" then
-        print("Please select a valid player first!")
+    if not currentSelectedPlayer then
+        print("Please select a player first!")
         return
     end
     
     local count = stealAllItems(currentSelectedPlayer)
-    print("Stole " .. count .. " items!")
+    print("Stole " .. count .. " items from " .. currentSelectedPlayer)
 end)
 
--- Create Refresh Button
-tab.newButton("Refresh Players", "Update the player list", function()
-    playerNames = getPlayerNames()
-    if #playerNames == 0 then
-        playerNames = {"No other players"}
-    end
+tab.newButton("Refresh Dropdowns", "Update player and item lists", function()
+    print("=== REFRESHING ===")
     
-    print("Player list refreshed!")
-    print("Available players:")
-    for i, name in ipairs(playerNames) do
+    -- Get updated data
+    local newPlayerNames = getPlayerNames()
+    local newItemsList = getAllPossibleItems()
+    
+    print("Updated Players:")
+    for i, name in ipairs(newPlayerNames) do
         print(i .. ". " .. name)
     end
     
-    -- Reset selections
-    currentSelectedPlayer = nil
-    currentSelectedItem = nil
+    print("Updated Available Items:")
+    for i, item in ipairs(newItemsList) do
+        if item ~= "Select player first" then
+            print("- " .. item)
+        end
+    end
     
-    -- Note: You might need to recreate the dropdowns or find a way to update them
-    -- depending on the DrRay UI Library's capabilities
+    print("Note: You may need to recreate the GUI to see updated dropdown options")
+    print("==================")
+    
+    -- Refresh current player's items if selected
+    if currentSelectedPlayer then
+        currentPlayerItems = getPlayerItems(currentSelectedPlayer)
+        displayPlayerItems(currentSelectedPlayer)
+    end
 end)
 
--- Auto-refresh when players join/leave
+tab.newButton("Recreate GUI", "Restart the GUI with fresh data", function()
+    print("Recreating GUI with fresh data...")
+    screenGui = player.PlayerGui:FindFirstChild("DrRay")
+    if screenGui then
+        screenGui:Destroy()
+    end
+    wait(0.5)
+    
+    -- This will restart the script (you might need to run it again manually)
+    print("GUI destroyed. Please run the script again for updated dropdowns.")
+end)
+
+-- Auto-refresh events
 Players.PlayerAdded:Connect(function(newPlayer)
-    wait(1) -- Wait for player to fully load
-    playerNames = getPlayerNames()
-    print(newPlayer.Name .. " joined the game!")
+    wait(1)
+    print(newPlayer.Name .. " joined! Use 'Refresh Dropdowns' to update lists.")
 end)
 
 Players.PlayerRemoving:Connect(function(leavingPlayer)
     if currentSelectedPlayer == leavingPlayer.Name then
         currentSelectedPlayer = nil
         currentSelectedItem = nil
-        print("Selected player left the game!")
+        currentPlayerItems = {}
+        print("Your selected player left the game!")
     end
-    
-    playerNames = getPlayerNames()
-    print(leavingPlayer.Name .. " left the game!")
+    print(leavingPlayer.Name .. " left! Use 'Refresh Dropdowns' to update lists.")
 end)
 
--- Window controls
+-- Initialize window
 window:Toggle()
 window:Open()
 
-print("Fruit Stealer loaded successfully!")
-print("Available commands:")
-print("- Select a player from the dropdown")
-print("- Select an item from their backpack")
-print("- Click 'Steal Selected Item' to copy it")
-print("- Click 'Steal All Items' to copy everything")
-print("- Click 'Refresh Players' to update the list")
+print("=== Fruit Stealer with 2 Dropdowns ===")
+print("1. Select a player from first dropdown")
+print("2. Select an item from second dropdown")
+print("3. Click 'Steal Selected Item' or 'Steal All Items'")
+print("4. Use 'Refresh Dropdowns' to update lists")
+print("5. Use 'Recreate GUI' if dropdowns don't update")
+print("=======================================")
