@@ -1,5 +1,13 @@
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+-- Test
+
+
+
+-- Set theme:
+--WindUI:SetTheme("Light")
+
+--- EXAMPLE !!!
 
 function gradient(text, startColor, endColor)
     local result = ""
@@ -52,7 +60,7 @@ local Window = WindUI:CreateWindow({
     IconThemed = true,
     Author = "Example UI",
     Folder = "CloudHub",
-    Size = UDim2.fromOffset(480, 460),
+    Size = UDim2.fromOffset(580, 460),
     Transparent = true,
     Theme = "Dark",
     User = {
@@ -77,6 +85,41 @@ local Window = WindUI:CreateWindow({
         SaveKey = true, -- saves key : optional
     },
 })
+
+
+-- Window:SetBackgroundImage("rbxassetid://13511292247")
+-- Window:SetBackgroundImageTransparency(0.9)
+
+
+-- TopBar Edit
+
+-- Disable Topbar Buttons
+-- Window:DisableTopbarButtons({
+--     "Close", 
+--     "Minimize", 
+--     "Fullscreen",
+-- })
+
+-- Create Custom Topbar Buttons
+--                        ↓ Name             ↓ Icon          ↓ Callback                           ↓ LayoutOrder
+Window:CreateTopbarButton("MyCustomButton1", "bird",         function() print("clicked 1!") end,  990)
+Window:CreateTopbarButton("MyCustomButton2", "droplet-off",  function() print("clicked 2!") end,  989)
+Window:CreateTopbarButton("MyCustomButton3", "battery-plus", function() Window:ToggleFullscreen() end, 988)
+
+
+Window:EditOpenButton({
+    Title = "Open Example UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new( -- gradient
+        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("F89B29")
+    ),
+    --Enabled = false,
+    Draggable = true,
+})
+
 
 local Tabs = {}
 
@@ -118,3 +161,9 @@ do
     })
     Tabs.CreateThemeTab = Tabs.WindowSection:Tab({ Title = "Create Theme", Icon = "palette", Desc = "Design and apply custom themes." })
     
+    Tabs.LongTab = Tabs.OtherSection:Tab({ 
+        Title = "Long and empty tab. with custom icon", 
+        Icon = "rbxassetid://129260712070622", 
+        IconThemed = true, 
+        Desc = "Long Description" 
+    })
