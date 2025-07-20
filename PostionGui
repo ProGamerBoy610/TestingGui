@@ -16,6 +16,9 @@ tab.newToggle("Toggle", "Toggle! (prints the state)", true, function(toggleState
     end
 end)
 
+local tab = DrRayLibrary.newTab("Beta", "ImageIdHere")
+
+
 tab.newSlider("Slider", "Epic slider", 1000, false, function(num)
     print(num)
 end)
