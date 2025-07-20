@@ -1,10 +1,10 @@
 local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
 
-local window = DrRayLibrary:Load("DrRay", "Default")
+local window = DrRayLibrary:Load("Fryzer Hub", "Default")
 
-local tab = DrRayLibrary.newTab("My Tab", "ImageIdHere")
+local tab = DrRayLibrary.newTab("Main", "ImageIdHere")
 
-tab.newButton("Button", "Prints Hello!", function()
+tab.newButton("Button", "", function()
     print('Hello!')
 end)
 
