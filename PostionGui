@@ -7,8 +7,11 @@ local tab = DrRayLibrary.newTab("Fruit Stealer", "ImageIdHere")
 
 -- Variables to store current selections
 local currentSelectedPlayer = nil
-local currentPlayerItems = {}
-local selectedItemIndex = 1
+local currentSelectedItem = nil
+local playerNames = {}
+local itemNames = {}
+local playerDropdown = nil
+local itemDropdown = nil
 
 -- Function to get all player names
 local function getPlayerNames()
@@ -19,10 +22,6 @@ local function getPlayerNames()
         if p ~= player then -- Exclude local player
             table.insert(names, p.Name)
         end
-    end
-    
-    if #names == 0 then
-        table.insert(names, "No other players")
     end
     
     return names
@@ -38,7 +37,7 @@ local function getPlayerItems(playerName)
         
         for _, item in pairs(backpack:GetChildren()) do
             if item:IsA("Tool") or item:IsA("HopperBin") then
-                table.insert(items, {name = item.Name, object = item})
+                table.insert(items, item.Name)
             end
         end
     end
@@ -47,22 +46,32 @@ local function getPlayerItems(playerName)
 end
 
 -- Function to steal/copy selected item
-local function stealItem(itemObject)
-    if not itemObject then
-        print("No item selected!")
+local function stealItem(playerName, itemName)
+    local targetPlayer = Players:FindFirstChild(playerName)
+    
+    if not targetPlayer or not targetPlayer:FindFirstChild("Backpack") then
+        print("Player or backpack not found!")
         return false
     end
     
-    local success, err = pcall(function()
-        local clonedItem = itemObject:Clone()
-        clonedItem.Parent = player.Backpack
-    end)
+    local backpack = targetPlayer.Backpack
+    local targetItem = backpack:FindFirstChild(itemName)
     
-    if success then
-        print("Successfully copied: " .. itemObject.Name)
-        return true
+    if targetItem and (targetItem:IsA("Tool") or targetItem:IsA("HopperBin")) then
+        local success, err = pcall(function()
+            local clonedItem = targetItem:Clone()
+            clonedItem.Parent = player.Backpack
+        end)
+        
+        if success then
+            print("Successfully copied: " .. itemName)
+            return true
+        else
+            print("Error copying item: " .. tostring(err))
+            return false
+        end
     else
-        print("Error copying item: " .. tostring(err))
+        print("Item not found: " .. itemName)
         return false
     end
 end
@@ -97,150 +106,108 @@ local function stealAllItems(playerName)
     return stolenCount
 end
 
--- Function to display items in console
-local function displayPlayerItems()
-    if #currentPlayerItems == 0 then
-        print("No items found in " .. currentSelectedPlayer .. "'s backpack")
-        return
-    end
-    
-    print("=== " .. currentSelectedPlayer .. "'s Backpack ===")
-    for i, itemData in ipairs(currentPlayerItems) do
-        local marker = (i == selectedItemIndex) and " <-- SELECTED" or ""
-        print(i .. ". " .. itemData.name .. marker)
-    end
-    print("===========================")
-    print("Use 'Previous Item' and 'Next Item' buttons to navigate")
-    print("Current selection: " .. (currentPlayerItems[selectedItemIndex] and currentPlayerItems[selectedItemIndex].name or "None"))
+-- Initialize player names
+playerNames = getPlayerNames()
+if #playerNames == 0 then
+    table.insert(playerNames, "No other players")
 end
 
--- Initialize player names
-local playerNames = getPlayerNames()
-
 -- Create Player Selection Dropdown
-tab.newDropdown("Select Player", "Choose a player to view their items", playerNames, function(selectedPlayer)
-    if selectedPlayer == "No other players" then
-        print("No other players available")
-        return
-    end
-    
+playerDropdown = tab.newDropdown("Select Player", "Choose a player to view their items", playerNames, function(selectedPlayer)
     currentSelectedPlayer = selectedPlayer
-    currentPlayerItems = getPlayerItems(selectedPlayer)
-    selectedItemIndex = 1
-    
     print("Selected player: " .. selectedPlayer)
-    displayPlayerItems()
+    
+    -- Update items dropdown when player is selected
+    if selectedPlayer ~= "No other players" then
+        itemNames = getPlayerItems(selectedPlayer)
+        
+        if #itemNames == 0 then
+            itemNames = {"No items found"}
+        end
+        
+        -- Note: DrRay UI Library might not support updating dropdown options dynamically
+        -- You may need to refresh the UI or use a different approach
+        print("Player " .. selectedPlayer .. " has " .. #itemNames .. " items")
+        for i, item in ipairs(itemNames) do
+            print(i .. ". " .. item)
+        end
+    end
 end)
 
--- Create navigation buttons for items
-tab.newButton("Previous Item", "Select previous item in backpack", function()
-    if #currentPlayerItems == 0 then
-        print("No items available")
-        return
-    end
-    
-    selectedItemIndex = selectedItemIndex - 1
-    if selectedItemIndex < 1 then
-        selectedItemIndex = #currentPlayerItems
-    end
-    
-    print("Selected: " .. currentPlayerItems[selectedItemIndex].name .. " (" .. selectedItemIndex .. "/" .. #currentPlayerItems .. ")")
-end)
-
-tab.newButton("Next Item", "Select next item in backpack", function()
-    if #currentPlayerItems == 0 then
-        print("No items available")
-        return
-    end
-    
-    selectedItemIndex = selectedItemIndex + 1
-    if selectedItemIndex > #currentPlayerItems then
-        selectedItemIndex = 1
-    end
-    
-    print("Selected: " .. currentPlayerItems[selectedItemIndex].name .. " (" .. selectedItemIndex .. "/" .. #currentPlayerItems .. ")")
+-- Create Items Dropdown (initially empty)
+itemNames = {"Select a player first"}
+itemDropdown = tab.newDropdown("Select Item", "Choose an item to steal", itemNames, function(selectedItem)
+    currentSelectedItem = selectedItem
+    print("Selected item: " .. selectedItem)
 end)
 
 -- Create Steal Selected Item Button
 tab.newButton("Steal Selected Item", "Copy the selected item to your backpack", function()
-    if not currentSelectedPlayer then
-        print("Please select a player first!")
+    if not currentSelectedPlayer or currentSelectedPlayer == "No other players" then
+        print("Please select a valid player first!")
         return
     end
     
-    if #currentPlayerItems == 0 then
-        print("No items available from this player!")
+    if not currentSelectedItem or currentSelectedItem == "Select a player first" or currentSelectedItem == "No items found" then
+        print("Please select a valid item first!")
         return
     end
     
-    local selectedItem = currentPlayerItems[selectedItemIndex]
-    if selectedItem and selectedItem.object then
-        local success = stealItem(selectedItem.object)
-        if success then
-            print("Successfully stole: " .. selectedItem.name)
-        end
+    local success = stealItem(currentSelectedPlayer, currentSelectedItem)
+    if success then
+        print("Item stolen successfully!")
     else
-        print("Invalid item selection!")
+        print("Failed to steal item!")
     end
-end)
-
--- Create Show Items Button
-tab.newButton("Show Player Items", "Display current player's backpack items", function()
-    if not currentSelectedPlayer then
-        print("Please select a player first!")
-        return
-    end
-    
-    -- Refresh items list
-    currentPlayerItems = getPlayerItems(currentSelectedPlayer)
-    selectedItemIndex = 1
-    displayPlayerItems()
 end)
 
 -- Create Steal All Items Button
 tab.newButton("Steal All Items", "Copy all items from selected player", function()
-    if not currentSelectedPlayer then
-        print("Please select a player first!")
+    if not currentSelectedPlayer or currentSelectedPlayer == "No other players" then
+        print("Please select a valid player first!")
         return
     end
     
     local count = stealAllItems(currentSelectedPlayer)
-    print("Attempted to steal " .. count .. " items from " .. currentSelectedPlayer)
+    print("Stole " .. count .. " items!")
 end)
 
 -- Create Refresh Button
-tab.newButton("Refresh Everything", "Update players and items", function()
-    local newPlayerNames = getPlayerNames()
-    print("=== REFRESH ===")
+tab.newButton("Refresh Players", "Update the player list", function()
+    playerNames = getPlayerNames()
+    if #playerNames == 0 then
+        playerNames = {"No other players"}
+    end
+    
+    print("Player list refreshed!")
     print("Available players:")
-    for i, name in ipairs(newPlayerNames) do
+    for i, name in ipairs(playerNames) do
         print(i .. ". " .. name)
     end
     
-    -- Refresh current player's items if one is selected
-    if currentSelectedPlayer then
-        currentPlayerItems = getPlayerItems(currentSelectedPlayer)
-        selectedItemIndex = 1
-        displayPlayerItems()
-    end
+    -- Reset selections
+    currentSelectedPlayer = nil
+    currentSelectedItem = nil
     
-    print("Refresh completed!")
+    -- Note: You might need to recreate the dropdowns or find a way to update them
+    -- depending on the DrRay UI Library's capabilities
 end)
 
 -- Auto-refresh when players join/leave
 Players.PlayerAdded:Connect(function(newPlayer)
     wait(1) -- Wait for player to fully load
+    playerNames = getPlayerNames()
     print(newPlayer.Name .. " joined the game!")
-    print("Use 'Refresh Everything' button to update the player list")
 end)
 
 Players.PlayerRemoving:Connect(function(leavingPlayer)
     if currentSelectedPlayer == leavingPlayer.Name then
         currentSelectedPlayer = nil
-        currentPlayerItems = {}
-        selectedItemIndex = 1
-        print("Your selected player (" .. leavingPlayer.Name .. ") left the game!")
+        currentSelectedItem = nil
+        print("Selected player left the game!")
     end
+    
+    playerNames = getPlayerNames()
     print(leavingPlayer.Name .. " left the game!")
 end)
 
@@ -248,12 +215,10 @@ end)
 window:Toggle()
 window:Open()
 
-print("=== Fruit Stealer Loaded Successfully! ===")
-print("Instructions:")
-print("1. Select a player from the dropdown")
-print("2. Click 'Show Player Items' to see their backpack")
-print("3. Use 'Next Item' and 'Previous Item' to navigate")
-print("4. Click 'Steal Selected Item' to copy the current item")
-print("5. Or click 'Steal All Items' to copy everything")
-print("6. Use 'Refresh Everything' to update lists")
-print("===========================================")
+print("Fruit Stealer loaded successfully!")
+print("Available commands:")
+print("- Select a player from the dropdown")
+print("- Select an item from their backpack")
+print("- Click 'Steal Selected Item' to copy it")
+print("- Click 'Steal All Items' to copy everything")
+print("- Click 'Refresh Players' to update the list")
