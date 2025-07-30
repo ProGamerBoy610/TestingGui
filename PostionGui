@@ -451,7 +451,7 @@ local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
 -- UI Toggle
-Tab:Toggle({
+EspTab:Toggle({
     Title = "Enable ESP",
     Value = false,
     Callback = function(state)
