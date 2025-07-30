@@ -1,288 +1,556 @@
-local DrRayLibrary = loadstring(game:HttpGet("https://raw.githubusercontent.com/AZYsGithub/DrRay-UI-Library/main/DrRay.lua"))()
+--99 Nights in forest
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
 local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
 
--- Global variables
-local window = nil
-local tab = nil
-local currentSelectedPlayer = nil
-local currentSelectedItem = nil
-local screenGui = nil
+-- Gradient text function (used in popup)
+local function gradient(text, startColor, endColor)
+    local result = ""
+    for i = 1, #text do
+        local t = (i - 1) / math.max(#text - 1, 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+        result = result .. string.format('<font color="rgb(%d, %d, %d)">%s</font>', r, g, b, text:sub(i, i))
+    end
+    return result
+end
 
--- Function to get all player names
-local function getPlayerNames()
-    local names = {}
-    local players = Players:GetPlayers()
-    
-    for _, p in ipairs(players) do
-        if p ~= player then
-            table.insert(names, p.Name)
+-- Popup before loading
+local Confirmed = false
+WindUI:Popup({
+    Title = "Confirmation",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Content = "Fryzer Hub " .. gradient("FH", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")),
+    Buttons = {
+        {
+            Title = "Cancel",
+            Variant = "Secondary",
+        },
+        {
+            Title = "Continue",
+            Icon = "arrow-right",
+            Callback = function() Confirmed = true end,
+            Variant = "Primary",
+        }
+    }
+})
+repeat task.wait() until Confirmed
+
+-- Window creation WITHOUT Key System
+local Window = WindUI:CreateWindow({
+    Title = "Fryzer Hub",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Author = "Grow a garden",
+    Folder = "YourHub",
+    Size = UDim2.fromOffset(580, 360),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Username = LocalPlayer.DisplayName,
+        UserId = LocalPlayer.UserId,
+        Callback = function()
+            print("User icon clicked:", LocalPlayer.Name)
         end
-    end
-    
-    if #names == 0 then
-        table.insert(names, "No other players")
-    end
-    
-    return names
-end
+    }
+})
 
--- Function to get items from selected player's backpack
-local function getPlayerItems(playerName)
-    local items = {}
-    local targetPlayer = Players:FindFirstChild(playerName)
-    
-    if targetPlayer and targetPlayer:FindFirstChild("Backpack") then
-        local backpack = targetPlayer.Backpack
-        
-        for _, item in pairs(backpack:GetChildren()) do
-            if item:IsA("Tool") or item:IsA("HopperBin") then
-                table.insert(items, item.Name)
-            end
-        end
-    end
-    
-    return items
-end
+-- UI open button
+Window:EditOpenButton({
+    Title = "Open UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
+    Draggable = true,
+})
 
--- Function to get current items from selected player (fresh data)
-local function getCurrentPlayerItems()
-    if not currentSelectedPlayer or currentSelectedPlayer == "No other players" then
-        return {"Select a player first"}
-    end
-    
-    local items = getPlayerItems(currentSelectedPlayer)
-    
-    if #items == 0 then
-        return {"Player has no items"}
-    end
-    
-    return items
-end
+-- Main Tab
+local Tab = Window:Tab({ Title = "Main", Icon = "user" })
 
--- Function to steal item
-local function stealItem(playerName, itemName)
-    local targetPlayer = Players:FindFirstChild(playerName)
-    
-    if not targetPlayer or not targetPlayer:FindFirstChild("Backpack") then
-        print("❌ Player or backpack not found!")
-        return false
-    end
-    
-    local backpack = targetPlayer.Backpack
-    local targetItem = backpack:FindFirstChild(itemName)
-    
-    if targetItem and (targetItem:IsA("Tool") or targetItem:IsA("HopperBin")) then
-        local success, err = pcall(function()
-            local clonedItem = targetItem:Clone()
-            clonedItem.Parent = player.Backpack
-        end)
-        
-        if success then
-            print("✅ Successfully copied: " .. itemName .. " from " .. playerName)
-            return true
+-- WalkSpeed Variables
+local WalkSpeedToggle = false
+local WalkSpeedSliderValue = 16
+
+local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+local humanoid = character:WaitForChild("Humanoid")
+
+-- WalkSpeed Toggle
+Tab:Toggle({
+    Title = "WalkSpeed Toggle", 
+    Value = false,
+    Callback = function(state)
+        WalkSpeedToggle = state
+        if state then
+            humanoid.WalkSpeed = WalkSpeedSliderValue
         else
-            print("❌ Error copying item: " .. tostring(err))
-            return false
+            humanoid.WalkSpeed = 16
         end
-    else
-        print("❌ Item '" .. itemName .. "' not found in " .. playerName .. "'s backpack")
-        return false
+        print("WalkSpeed Toggle is now:", state)
     end
-end
+})
 
--- Function to steal all items
-local function stealAllItems(playerName)
-    local targetPlayer = Players:FindFirstChild(playerName)
-    
-    if not targetPlayer or not targetPlayer:FindFirstChild("Backpack") then
-        print("❌ Player or backpack not found!")
-        return 0
-    end
-    
-    local backpack = targetPlayer.Backpack
-    local stolenCount = 0
-    
-    for _, item in pairs(backpack:GetChildren()) do
-        if item:IsA("Tool") or item:IsA("HopperBin") then
-            local success, err = pcall(function()
-                local clonedItem = item:Clone()
-                clonedItem.Parent = player.Backpack
-                stolenCount = stolenCount + 1
-            end)
-            
-            if not success then
-                print("❌ Error copying " .. item.Name .. ": " .. tostring(err))
-            end
+-- WalkSpeed Slider
+Tab:Slider({
+    Title = "WalkSpeed Value",
+    Value = {
+        Min = 16,
+        Max = 200,
+        Default = 16
+    },
+    Callback = function(val)
+        WalkSpeedSliderValue = val
+        if WalkSpeedToggle then
+            humanoid.WalkSpeed = val
         end
+        print("WalkSpeed value:", val)
     end
-    
-    print("✅ Successfully copied " .. stolenCount .. " items from " .. playerName)
-    return stolenCount
-end
+})
 
--- Function to create/recreate the GUI
-local function createGUI()
-    -- Destroy existing GUI
-    if screenGui then
-        screenGui:Destroy()
+-- JumpPower Variables
+local JumpPowerToggle = false
+local JumpPowerSliderValue = 7.2
+
+-- JumpPower Toggle
+Tab:Toggle({
+    Title = "JumpPower Toggle", 
+    Value = false,
+    Callback = function(state)
+        JumpPowerToggle = state
+        if state then
+            humanoid.JumpHeight = JumpPowerSliderValue
+        else
+            humanoid.JumpHeight = 7.2
+        end
+        print("JumpPower Toggle is now:", state)
     end
-    
-    -- Create fresh GUI
-    window = DrRayLibrary:Load("Fryzer Hub", "Default")
-    tab = DrRayLibrary.newTab("Fruit Stealer", "ImageIdHere")
-    
-    -- Get fresh data
-    local playerNames = getPlayerNames()
-    local currentItems = getCurrentPlayerItems()
-    
-    -- Create Player Selection Dropdown
-    tab.newDropdown("Select Player", "Choose a player to steal from", playerNames, function(selectedPlayer)
-        if selectedPlayer == "No other players" then
-            print("❌ No other players available")
-            return
+})
+
+-- JumpPower Slider
+Tab:Slider({
+    Title = "JumpPower Value",
+    Value = {
+        Min = 7.2,
+        Max = 50,
+        Default = 7.2
+    },
+    Callback = function(val)
+        JumpPowerSliderValue = val
+        if JumpPowerToggle then
+            humanoid.JumpHeight = val
         end
+        print("JumpPower value:", val)
+    end
+})
+
+-- FLY SCRIPT VARIABLES (from your original script)
+local speeds = 1
+local speaker = game:GetService("Players").LocalPlayer
+local nowe = false
+local tpwalking = false
+
+-- Fly Speed Slider Variable
+local flySpeedMultiplier = 1
+
+-- FLY SCRIPT FUNCTIONS (your original script)
+local function toggleFly()
+    local chr = game.Players.LocalPlayer.Character
+    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+    
+    if nowe == true then
+        nowe = false
+
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,true)
+        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
         
-        currentSelectedPlayer = selectedPlayer
-        print("👤 Selected player: " .. selectedPlayer)
-        
-        -- Show their items in console
-        local items = getPlayerItems(selectedPlayer)
-        if #items > 0 then
-            print("📦 " .. selectedPlayer .. "'s items:")
-            for i, item in ipairs(items) do
-                print("  " .. i .. ". " .. item)
-            end
-            print("💡 Now refresh the GUI to see updated items in the dropdown!")
+        -- Restore WalkSpeed and JumpHeight after disabling fly
+        if WalkSpeedToggle then
+            speaker.Character.Humanoid.WalkSpeed = WalkSpeedSliderValue
         else
-            print("📦 " .. selectedPlayer .. " has no items")
+            speaker.Character.Humanoid.WalkSpeed = 16
         end
-    end)
-    
-    -- Create Item Selection Dropdown (with current player's items)
-    tab.newDropdown("Select Item", "Choose item to steal (refresh GUI after selecting player)", currentItems, function(selectedItem)
-        if selectedItem == "Select a player first" or selectedItem == "Player has no items" then
-            print("❌ Please select a valid player first!")
-            return
-        end
-        
-        currentSelectedItem = selectedItem
-        print("🎯 Selected item: " .. selectedItem)
-        
-        if currentSelectedPlayer then
-            print("Ready to steal '" .. selectedItem .. "' from " .. currentSelectedPlayer)
-        end
-    end)
-    
-    -- Buttons
-    tab.newButton("🔄 Refresh GUI", "Update dropdowns with fresh data", function()
-        print("🔄 Refreshing GUI with latest data...")
-        createGUI()
-        window:Open()
-        print("✅ GUI refreshed! Dropdowns now show current data.")
-    end)
-    
-    tab.newButton("📋 Show Player Items", "Display selected player's current items", function()
-        if not currentSelectedPlayer then
-            print("❌ Please select a player first!")
-            return
-        end
-        
-        local items = getPlayerItems(currentSelectedPlayer)
-        if #items > 0 then
-            print("📦 " .. currentSelectedPlayer .. "'s current items:")
-            for i, item in ipairs(items) do
-                print("  " .. i .. ". " .. item)
-            end
+        if JumpPowerToggle then
+            speaker.Character.Humanoid.JumpHeight = JumpPowerSliderValue
         else
-            print("📦 " .. currentSelectedPlayer .. " has no items")
+            speaker.Character.Humanoid.JumpHeight = 7.2
         end
-    end)
-    
-    tab.newButton("🎯 Steal Selected Item", "Copy selected item to your backpack", function()
-        if not currentSelectedPlayer then
-            print("❌ Please select a player first!")
-            return
-        end
-        
-        if not currentSelectedItem or currentSelectedItem == "Select a player first" or currentSelectedItem == "Player has no items" then
-            print("❌ Please select a valid item first!")
-            return
-        end
-        
-        stealItem(currentSelectedPlayer, currentSelectedItem)
-    end)
-    
-    tab.newButton("💰 Steal All Items", "Copy all items from selected player", function()
-        if not currentSelectedPlayer then
-            print("❌ Please select a player first!")
-            return
-        end
-        
-        stealAllItems(currentSelectedPlayer)
-    end)
-    
-    tab.newButton("👥 List All Players", "Show all available players and their items", function()
-        local players = Players:GetPlayers()
-        print("🌐 === ALL PLAYERS AND THEIR ITEMS ===")
-        
-        for _, p in ipairs(players) do
-            if p ~= player then
-                local items = getPlayerItems(p.Name)
-                print("👤 " .. p.Name .. " (" .. #items .. " items):")
-                if #items > 0 then
-                    for i, item in ipairs(items) do
-                        print("  • " .. item)
+    else 
+        nowe = true
+
+        for i = 1, speeds do
+            spawn(function()
+                local hb = game:GetService("RunService").Heartbeat
+                tpwalking = true
+                local chr = game.Players.LocalPlayer.Character
+                local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+                while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+                    if hum.MoveDirection.Magnitude > 0 then
+                        chr:TranslateBy(hum.MoveDirection)
                     end
-                else
-                    print("  (no items)")
                 end
-                print("")
+            end)
+        end
+        game.Players.LocalPlayer.Character.Animate.Disabled = true
+        local Char = game.Players.LocalPlayer.Character
+        local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
+
+        for i,v in next, Hum:GetPlayingAnimationTracks() do
+            v:AdjustSpeed(0)
+        end
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
+        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
+        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
+    end
+
+    if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
+        local plr = game.Players.LocalPlayer
+        local torso = plr.Character.Torso
+        local flying = true
+        local deb = true
+        local ctrl = {f = 0, b = 0, l = 0, r = 0}
+        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        local maxspeed = 50 * flySpeedMultiplier
+        local speed = 0
+
+        local bg = Instance.new("BodyGyro", torso)
+        bg.P = 9e4
+        bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.cframe = torso.CFrame
+        local bv = Instance.new("BodyVelocity", torso)
+        bv.velocity = Vector3.new(0,0.1,0)
+        bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        if nowe == true then
+            plr.Character.Humanoid.PlatformStand = true
+        end
+        while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+            game:GetService("RunService").RenderStepped:Wait()
+
+            if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+                speed = speed+.5+(speed/maxspeed)
+                if speed > maxspeed then
+                    speed = maxspeed
+                end
+            elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+                speed = speed-1
+                if speed < 0 then
+                    speed = 0
+                end
+            end
+            if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+                lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+            elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+            else
+                bv.velocity = Vector3.new(0,0,0)
+            end
+            bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+        end
+        ctrl = {f = 0, b = 0, l = 0, r = 0}
+        lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        speed = 0
+        bg:Destroy()
+        bv:Destroy()
+        plr.Character.Humanoid.PlatformStand = false
+        game.Players.LocalPlayer.Character.Animate.Disabled = false
+        tpwalking = false
+    else
+        local plr = game.Players.LocalPlayer
+        local UpperTorso = plr.Character.UpperTorso
+        local flying = true
+        local deb = true
+        local ctrl = {f = 0, b = 0, l = 0, r = 0}
+        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        local maxspeed = 50 * flySpeedMultiplier
+        local speed = 0
+
+        local bg = Instance.new("BodyGyro", UpperTorso)
+        bg.P = 9e4
+        bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
+        bg.cframe = UpperTorso.CFrame
+        local bv = Instance.new("BodyVelocity", UpperTorso)
+        bv.velocity = Vector3.new(0,0.1,0)
+        bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
+        if nowe == true then
+            plr.Character.Humanoid.PlatformStand = true
+        end
+        while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
+            wait()
+
+            if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
+                speed = speed+.5+(speed/maxspeed)
+                if speed > maxspeed then
+                    speed = maxspeed
+                end
+            elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
+                speed = speed-1
+                if speed < 0 then
+                    speed = 0
+                end
+            end
+            if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
+                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+                lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
+            elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
+                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
+            else
+                bv.velocity = Vector3.new(0,0,0)
+            end
+
+            bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
+        end
+        ctrl = {f = 0, b = 0, l = 0, r = 0}
+        lastctrl = {f = 0, b = 0, l = 0, r = 0}
+        speed = 0
+        bg:Destroy()
+        bv:Destroy()
+        plr.Character.Humanoid.PlatformStand = false
+        game.Players.LocalPlayer.Character.Animate.Disabled = false
+        tpwalking = false
+    end
+end
+
+-- Fly Toggle
+Tab:Toggle({
+    Title = "Fly Toggle", 
+    Value = false,
+    Callback = function(state)
+        if state and not nowe then
+            -- Turn ON fly
+            toggleFly()
+        elseif not state and nowe then
+            -- Turn OFF fly
+            toggleFly()
+        end
+        print("Fly Toggle is now:", state)
+    end
+})
+
+-- Fly Speed Slider
+Tab:Slider({
+    Title = "Fly Speed",
+    Value = {
+        Min = 1,
+        Max = 10,
+        Default = 1
+    },
+    Callback = function(val)
+        flySpeedMultiplier = val
+        speeds = val
+        print("Fly Speed multiplier:", val)
+        
+        -- Update speed if fly is currently active
+        if nowe == true then
+            tpwalking = false
+            for i = 1, speeds do
+                spawn(function()
+                    local hb = game:GetService("RunService").Heartbeat
+                    tpwalking = true
+                    local chr = game.Players.LocalPlayer.Character
+                    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
+                    while tpwalking and hb:Wait() and chr and hum and hum.Parent do
+                        if hum.MoveDirection.Magnitude > 0 then
+                            chr:TranslateBy(hum.MoveDirection)
+                        end
+                    end
+                end)
             end
         end
-        print("=====================================")
-    end)
-    
-    -- Store reference to GUI
-    screenGui = player.PlayerGui:FindFirstChild("DrRay")
-    
-    print("✅ GUI Created Successfully!")
-end
-
--- Auto-refresh on player changes
-Players.PlayerAdded:Connect(function(newPlayer)
-    wait(1)
-    print("👋 " .. newPlayer.Name .. " joined! Click '🔄 Refresh GUI' to update dropdowns.")
-end)
-
-Players.PlayerRemoving:Connect(function(leavingPlayer)
-    if currentSelectedPlayer == leavingPlayer.Name then
-        currentSelectedPlayer = nil
-        currentSelectedItem = nil
-        print("😢 Your selected player (" .. leavingPlayer.Name .. ") left the game!")
     end
-    print("👋 " .. leavingPlayer.Name .. " left! Click '🔄 Refresh GUI' to update dropdowns.")
+})
+
+-- Handle character respawn (from your original script)
+game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
+    wait(0.7)
+    character = char
+    humanoid = char:WaitForChild("Humanoid")
+    
+    game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
+    game.Players.LocalPlayer.Character.Animate.Disabled = false
+    
+    -- Reapply walkspeed and jumppower if they were enabled
+    if WalkSpeedToggle then
+        humanoid.WalkSpeed = WalkSpeedSliderValue
+    end
+    if JumpPowerToggle then
+        humanoid.JumpHeight = JumpPowerSliderValue
+    end
 end)
 
--- Initial GUI creation
-createGUI()
-window:Toggle()
-window:Open()
+PlayerTab:Toggle({
+    Title = "NoClip",
+    Value = false,
+    Callback = function(state)
+        NoClipToggle = state
+        if state then
+            connections.noclip = RunService.Heartbeat:Connect(function()
+                if NoClipToggle and character then
+                    for _, part in pairs(character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+            end)
+        else
+            if connections.noclip then connections.noclip:Disconnect() end
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end
+    end
+})
 
-print("🚀 === FRUIT STEALER LOADED ===")
-print("📋 HOW TO USE:")
-print("1️⃣ Select a player from the first dropdown")
-print("2️⃣ Click '🔄 Refresh GUI' to update the items dropdown")
-print("3️⃣ Select an item from the second dropdown")
-print("4️⃣ Click '🎯 Steal Selected Item' or '💰 Steal All Items'")
-print("💡 TIP: Always refresh GUI after selecting a new player!")
-print("===============================")
 
--- Utility function to manually refresh (you can call this)
-_G.refreshFruitStealer = function()
-    createGUI()
-    window:Open()
-    print("✅ Fruit Stealer GUI manually refreshed!")
-end
+local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 
-print("🔧 You can also manually refresh by typing: _G.refreshFruitStealer()")
+-- Required Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+-- UI Toggle
+Tab:Toggle({
+    Title = "Enable ESP",
+    Value = false,
+    Callback = function(state)
+        local folder = workspace:FindFirstChild("Items")
+        if not folder then
+            warn("Folder 'Items' not found in workspace.")
+            return
+        end
+
+        -- Storage
+        local added = {}
+        local connections = {}
+
+        -- Clear ESP from all models
+        local function clearESP()
+            for _, model in pairs(folder:GetDescendants()) do
+                if model:IsA("Model") or model:IsA("BasePart") then
+                    local parent = model:IsA("BasePart") and model:FindFirstAncestorWhichIsA("Model") or model
+                    if parent and parent:FindFirstChild("ESP_Highlight") then
+                        parent:FindFirstChild("ESP_Highlight"):Destroy()
+                    end
+                    if parent and parent:FindFirstChild("ESP_Name") then
+                        parent:FindFirstChild("ESP_Name"):Destroy()
+                    end
+                end
+            end
+            -- Clear connections
+            for _, conn in ipairs(connections) do
+                conn:Disconnect()
+            end
+            table.clear(connections)
+            table.clear(added)
+        end
+
+        -- Create ESP
+        local function createESP(target)
+            if added[target] then return end
+
+            local adornee = target:IsA("Model") and target or target:IsA("BasePart") and target:FindFirstAncestorWhichIsA("Model") or nil
+            if not adornee then return end
+
+            -- Highlight
+            local hl = Instance.new("Highlight")
+            hl.Name = "ESP_Highlight"
+            hl.FillTransparency = 1
+            hl.OutlineColor = Color3.fromRGB(255, 0, 0)
+            hl.OutlineTransparency = 0
+            hl.Adornee = adornee
+            hl.Parent = adornee
+
+            -- BillboardGui
+            local gui = Instance.new("BillboardGui")
+            gui.Name = "ESP_Name"
+            gui.Size = UDim2.new(0, 200, 0, 50)
+            gui.StudsOffset = Vector3.new(0, 4, 0)
+            gui.AlwaysOnTop = true
+            gui.Adornee = adornee
+
+            local label = Instance.new("TextLabel")
+            label.Size = UDim2.new(1, 0, 1, 0)
+            label.BackgroundTransparency = 1
+            label.Text = adornee.Name
+            label.TextScaled = true
+            label.Font = Enum.Font.SourceSansBold
+            label.TextColor3 = Color3.new(1, 1, 1)
+            label.TextStrokeColor3 = Color3.new(0, 0, 0)
+            label.TextStrokeTransparency = 0
+            label.Parent = gui
+
+            gui.Parent = adornee
+            added[target] = true
+        end
+
+        if state then
+            -- Enable ESP
+            for _, child in pairs(folder:GetDescendants()) do
+                if child:IsA("Model") or child:IsA("BasePart") then
+                    createESP(child)
+                end
+            end
+
+            local conn = folder.DescendantAdded:Connect(function(desc)
+                if desc:IsA("Model") or desc:IsA("BasePart") then
+                    task.wait(0.1)
+                    createESP(desc)
+                end
+            end)
+            table.insert(connections, conn)
+        else
+            -- Disable ESP
+            clearESP()
+        end
+
+        print("ESP Toggle is now:", state)
+    end
+})
+
+
+-- Window close callback
+Window:OnClose(function()
+    print("Window closed.")
+end)
