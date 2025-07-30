@@ -46,7 +46,7 @@ local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
-    Author = "Grow a garden",
+    Author = "99 Nights in forest",
     Folder = "YourHub",
     Size = UDim2.fromOffset(580, 360),
     Transparent = true,
@@ -153,296 +153,6 @@ Tab:Slider({
     end
 })
 
--- FLY SCRIPT VARIABLES (from your original script)
-local speeds = 1
-local speaker = game:GetService("Players").LocalPlayer
-local nowe = false
-local tpwalking = false
-
--- Fly Speed Slider Variable
-local flySpeedMultiplier = 1
-
--- FLY SCRIPT FUNCTIONS (your original script)
-local function toggleFly()
-    local chr = game.Players.LocalPlayer.Character
-    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-    
-    if nowe == true then
-        nowe = false
-
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,true)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,true)
-        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.RunningNoPhysics)
-        
-        -- Restore WalkSpeed and JumpHeight after disabling fly
-        if WalkSpeedToggle then
-            speaker.Character.Humanoid.WalkSpeed = WalkSpeedSliderValue
-        else
-            speaker.Character.Humanoid.WalkSpeed = 16
-        end
-        if JumpPowerToggle then
-            speaker.Character.Humanoid.JumpHeight = JumpPowerSliderValue
-        else
-            speaker.Character.Humanoid.JumpHeight = 7.2
-        end
-    else 
-        nowe = true
-
-        for i = 1, speeds do
-            spawn(function()
-                local hb = game:GetService("RunService").Heartbeat
-                tpwalking = true
-                local chr = game.Players.LocalPlayer.Character
-                local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-                while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-                    if hum.MoveDirection.Magnitude > 0 then
-                        chr:TranslateBy(hum.MoveDirection)
-                    end
-                end
-            end)
-        end
-        game.Players.LocalPlayer.Character.Animate.Disabled = true
-        local Char = game.Players.LocalPlayer.Character
-        local Hum = Char:FindFirstChildOfClass("Humanoid") or Char:FindFirstChildOfClass("AnimationController")
-
-        for i,v in next, Hum:GetPlayingAnimationTracks() do
-            v:AdjustSpeed(0)
-        end
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Climbing,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Flying,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Landed,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Physics,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Running,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Seated,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.StrafingNoPhysics,false)
-        speaker.Character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming,false)
-        speaker.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Swimming)
-    end
-
-    if game:GetService("Players").LocalPlayer.Character:FindFirstChildOfClass("Humanoid").RigType == Enum.HumanoidRigType.R6 then
-        local plr = game.Players.LocalPlayer
-        local torso = plr.Character.Torso
-        local flying = true
-        local deb = true
-        local ctrl = {f = 0, b = 0, l = 0, r = 0}
-        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-        local maxspeed = 50 * flySpeedMultiplier
-        local speed = 0
-
-        local bg = Instance.new("BodyGyro", torso)
-        bg.P = 9e4
-        bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bg.cframe = torso.CFrame
-        local bv = Instance.new("BodyVelocity", torso)
-        bv.velocity = Vector3.new(0,0.1,0)
-        bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-        if nowe == true then
-            plr.Character.Humanoid.PlatformStand = true
-        end
-        while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
-            game:GetService("RunService").RenderStepped:Wait()
-
-            if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-                speed = speed+.5+(speed/maxspeed)
-                if speed > maxspeed then
-                    speed = maxspeed
-                end
-            elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-                speed = speed-1
-                if speed < 0 then
-                    speed = 0
-                end
-            end
-            if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-                lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-            elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-            else
-                bv.velocity = Vector3.new(0,0,0)
-            end
-            bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
-        end
-        ctrl = {f = 0, b = 0, l = 0, r = 0}
-        lastctrl = {f = 0, b = 0, l = 0, r = 0}
-        speed = 0
-        bg:Destroy()
-        bv:Destroy()
-        plr.Character.Humanoid.PlatformStand = false
-        game.Players.LocalPlayer.Character.Animate.Disabled = false
-        tpwalking = false
-    else
-        local plr = game.Players.LocalPlayer
-        local UpperTorso = plr.Character.UpperTorso
-        local flying = true
-        local deb = true
-        local ctrl = {f = 0, b = 0, l = 0, r = 0}
-        local lastctrl = {f = 0, b = 0, l = 0, r = 0}
-        local maxspeed = 50 * flySpeedMultiplier
-        local speed = 0
-
-        local bg = Instance.new("BodyGyro", UpperTorso)
-        bg.P = 9e4
-        bg.maxTorque = Vector3.new(9e9, 9e9, 9e9)
-        bg.cframe = UpperTorso.CFrame
-        local bv = Instance.new("BodyVelocity", UpperTorso)
-        bv.velocity = Vector3.new(0,0.1,0)
-        bv.maxForce = Vector3.new(9e9, 9e9, 9e9)
-        if nowe == true then
-            plr.Character.Humanoid.PlatformStand = true
-        end
-        while nowe == true or game:GetService("Players").LocalPlayer.Character.Humanoid.Health == 0 do
-            wait()
-
-            if ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0 then
-                speed = speed+.5+(speed/maxspeed)
-                if speed > maxspeed then
-                    speed = maxspeed
-                end
-            elseif not (ctrl.l + ctrl.r ~= 0 or ctrl.f + ctrl.b ~= 0) and speed ~= 0 then
-                speed = speed-1
-                if speed < 0 then
-                    speed = 0
-                end
-            end
-            if (ctrl.l + ctrl.r) ~= 0 or (ctrl.f + ctrl.b) ~= 0 then
-                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (ctrl.f+ctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(ctrl.l+ctrl.r,(ctrl.f+ctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-                lastctrl = {f = ctrl.f, b = ctrl.b, l = ctrl.l, r = ctrl.r}
-            elseif (ctrl.l + ctrl.r) == 0 and (ctrl.f + ctrl.b) == 0 and speed ~= 0 then
-                bv.velocity = ((game.Workspace.CurrentCamera.CoordinateFrame.lookVector * (lastctrl.f+lastctrl.b)) + ((game.Workspace.CurrentCamera.CoordinateFrame * CFrame.new(lastctrl.l+lastctrl.r,(lastctrl.f+lastctrl.b)*.2,0).p) - game.Workspace.CurrentCamera.CoordinateFrame.p))*speed
-            else
-                bv.velocity = Vector3.new(0,0,0)
-            end
-
-            bg.cframe = game.Workspace.CurrentCamera.CoordinateFrame * CFrame.Angles(-math.rad((ctrl.f+ctrl.b)*50*speed/maxspeed),0,0)
-        end
-        ctrl = {f = 0, b = 0, l = 0, r = 0}
-        lastctrl = {f = 0, b = 0, l = 0, r = 0}
-        speed = 0
-        bg:Destroy()
-        bv:Destroy()
-        plr.Character.Humanoid.PlatformStand = false
-        game.Players.LocalPlayer.Character.Animate.Disabled = false
-        tpwalking = false
-    end
-end
-
--- Fly Toggle
-Tab:Toggle({
-    Title = "Fly Toggle", 
-    Value = false,
-    Callback = function(state)
-        if state and not nowe then
-            -- Turn ON fly
-            toggleFly()
-        elseif not state and nowe then
-            -- Turn OFF fly
-            toggleFly()
-        end
-        print("Fly Toggle is now:", state)
-    end
-})
-
--- Fly Speed Slider
-Tab:Slider({
-    Title = "Fly Speed",
-    Value = {
-        Min = 1,
-        Max = 10,
-        Default = 1
-    },
-    Callback = function(val)
-        flySpeedMultiplier = val
-        speeds = val
-        print("Fly Speed multiplier:", val)
-        
-        -- Update speed if fly is currently active
-        if nowe == true then
-            tpwalking = false
-            for i = 1, speeds do
-                spawn(function()
-                    local hb = game:GetService("RunService").Heartbeat
-                    tpwalking = true
-                    local chr = game.Players.LocalPlayer.Character
-                    local hum = chr and chr:FindFirstChildWhichIsA("Humanoid")
-                    while tpwalking and hb:Wait() and chr and hum and hum.Parent do
-                        if hum.MoveDirection.Magnitude > 0 then
-                            chr:TranslateBy(hum.MoveDirection)
-                        end
-                    end
-                end)
-            end
-        end
-    end
-})
-
--- Handle character respawn (from your original script)
-game:GetService("Players").LocalPlayer.CharacterAdded:Connect(function(char)
-    wait(0.7)
-    character = char
-    humanoid = char:WaitForChild("Humanoid")
-    
-    game.Players.LocalPlayer.Character.Humanoid.PlatformStand = false
-    game.Players.LocalPlayer.Character.Animate.Disabled = false
-    
-    -- Reapply walkspeed and jumppower if they were enabled
-    if WalkSpeedToggle then
-        humanoid.WalkSpeed = WalkSpeedSliderValue
-    end
-    if JumpPowerToggle then
-        humanoid.JumpHeight = JumpPowerSliderValue
-    end
-end)
-
-PlayerTab:Toggle({
-    Title = "NoClip",
-    Value = false,
-    Callback = function(state)
-        NoClipToggle = state
-        if state then
-            connections.noclip = RunService.Heartbeat:Connect(function()
-                if NoClipToggle and character then
-                    for _, part in pairs(character:GetDescendants()) do
-                        if part:IsA("BasePart") then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-            end)
-        else
-            if connections.noclip then connections.noclip:Disconnect() end
-            if character then
-                for _, part in pairs(character:GetDescendants()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end
-    end
-})
-
-
 local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
 
 -- Required Services
@@ -548,6 +258,231 @@ EspTab:Toggle({
         print("ESP Toggle is now:", state)
     end
 })
+
+local TpTab = Window:Tab({ Title = "Tp", Icon = "map-pin" })
+
+-- Test Button with Teleport
+TpTab:Button({
+    Title = "Tp to camp",
+    Desc = "",
+    Callback = function()
+        print("Button clicked!")
+        
+        -- Notify
+        WindUI:Notify({
+            Title = "Button Pressed",
+            Content = "Teleporting...",
+            Duration = 3
+        })
+
+        -- Teleport the player
+        local char = game.Players.LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if hrp then
+            hrp.CFrame = CFrame.new(7.423537731170654, 3.999999761581421, 1.1104077100753784)
+        else
+            warn("HumanoidRootPart not found.")
+        end
+    end
+})
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local ItemsFolder = workspace:FindFirstChild("Items")
+
+if not ItemsFolder then
+    warn("Items folder not found!")
+    return
+end
+
+-- UI State
+local uniqueModelNames = {}
+local modelMap = {}  -- Stores list of models by name
+local selectedModelName = nil
+local dropdown = nil
+
+-- Refresh model list
+local function refreshModelList()
+    uniqueModelNames = {}
+    modelMap = {}
+
+    for _, item in pairs(ItemsFolder:GetDescendants()) do
+        if item:IsA("Model") then
+            local name = item.Name
+            if not modelMap[name] then
+                modelMap[name] = {}
+                table.insert(uniqueModelNames, name)
+            end
+            table.insert(modelMap[name], item)
+        end
+    end
+
+    if dropdown then
+        dropdown:SetValues(uniqueModelNames)
+    end
+end
+
+-- Run refresh every 5 seconds
+task.spawn(function()
+    while true do
+        refreshModelList()
+        task.wait(5)
+    end
+end)
+
+-- Initial load
+refreshModelList()
+
+-- Create Dropdown
+dropdown = TpTab:Dropdown({
+    Title = "Select Item",
+    Values = uniqueModelNames,
+    Value = uniqueModelNames[1] or "None",
+    Multi = false,
+    AllowNone = false,
+    Callback = function(selected)
+        selectedModelName = selected
+        print("Selected:", selected)
+    end
+})
+
+-- Find closest model
+local function getClosestModel(modelList)
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not modelList then return nil end
+
+    local closest, minDist = nil, math.huge
+    for _, model in pairs(modelList) do
+        local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+        if primary then
+            local dist = (hrp.Position - primary.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = primary
+            end
+        end
+    end
+    return closest
+end
+
+-- Teleport Button
+TpTab:Button({
+    Title = "Teleport to Item",
+    Desc = "Teleport to closest model of selected name",
+    Callback = function()
+        if not selectedModelName or not modelMap[selectedModelName] then
+            warn("No model selected.")
+            return
+        end
+
+        local closestPart = getClosestModel(modelMap[selectedModelName])
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        if closestPart and hrp then
+            hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
+            WindUI:Notify({
+                Title = "Teleported!",
+                Content = "Teleported to nearest: " .. selectedModelName,
+                Duration = 3
+            })
+        else
+            warn("Could not find valid part to teleport.")
+        end
+    end
+})
+
+local BTab = Window:Tab({ Title = "Bring", Icon = "package" })
+
+local folder = workspace:FindFirstChild("Items")
+if not folder then
+    warn("Folder 'Items' not found in workspace.")
+    return
+end
+
+local selectedModelName = nil
+local modelMap = {}
+local targetPosition = Vector3.new(-18.27810287475586, 15.070045471191406, -8.770061492919922)
+
+-- UI Setup
+local uniqueNames = {}
+local dropdown = BTab:Dropdown({
+    Title = "Select Model Name",
+    Values = {},
+    Value = nil,
+    Multi = false,
+    AllowNone = false,
+    Callback = function(selected)
+        selectedModelName = selected
+        print("Selected model name:", selected)
+    end
+})
+
+-- Refresh model list every 5 seconds
+task.spawn(function()
+    while true do
+        modelMap = {}
+        uniqueNames = {}
+
+        for _, obj in pairs(folder:GetDescendants()) do
+            local model = obj:IsA("Model") and obj or obj:IsA("BasePart") and obj:FindFirstAncestorOfClass("Model")
+            if model and not modelMap[model.Name] then
+                modelMap[model.Name] = {}
+                table.insert(uniqueNames, model.Name)
+            end
+            if model then
+                table.insert(modelMap[model.Name], model)
+            end
+        end
+
+        dropdown:SetValues(uniqueNames)
+        task.wait(5)
+    end
+end)
+
+-- Button to move selected models and unanchor them
+BTab:Button({
+    Title = "Move & Unanchor Models",
+    Desc = "Teleport selected models and make them fall",
+    Callback = function()
+        if not selectedModelName or not modelMap[selectedModelName] then
+            warn("No model selected.")
+            return
+        end
+
+        local moved = 0
+        for _, model in pairs(modelMap[selectedModelName]) do
+            local parts = {}
+            for _, obj in pairs(model:GetDescendants()) do
+                if obj:IsA("BasePart") then
+                    table.insert(parts, obj)
+                end
+            end
+
+            if #parts > 0 then
+                -- Unanchor all parts and enable physics
+                for _, part in pairs(parts) do
+                    part.Anchored = false
+                    part.Massless = false
+                    part.CanCollide = true
+                end
+
+                -- Move model to target position with vertical offset
+                local offsetPos = targetPosition + Vector3.new(0, moved * 3, 0)
+                model:PivotTo(CFrame.new(offsetPos))
+                moved += 1
+            end
+        end
+
+        WindUI:Notify({
+            Title = "Models Moved",
+            Content = "Moved and unanchored " .. tostring(moved) .. " model(s).",
+            Duration = 3
+        })
+    end
+})
+
 
 
 -- Window close callback
