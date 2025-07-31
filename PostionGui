@@ -1,82 +1,48 @@
---99 Nights in forest
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+--99 Nights in forest - Rayfield Version
+local Rayfield = loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 local RunService = game:GetService("RunService")
 
--- Gradient text function (used in popup)
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d, %d, %d)">%s</font>', r, g, b, text:sub(i, i))
-    end
-    return result
-end
-
--- Popup before loading
-local Confirmed = false
-WindUI:Popup({
-    Title = "Confirmation",
-    Icon = "rbxassetid://129260712070622",
-    IconThemed = true,
-    Content = "Fryzer Hub " .. gradient("FH", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")),
-    Buttons = {
-        {
-            Title = "Cancel",
-            Variant = "Secondary",
-        },
-        {
-            Title = "Continue",
-            Icon = "arrow-right",
-            Callback = function() Confirmed = true end,
-            Variant = "Primary",
-        }
-    }
-})
-repeat task.wait() until Confirmed
-
--- Window creation WITHOUT Key System
-local Window = WindUI:CreateWindow({
-    Title = "Fryzer Hub",
-    Icon = "rbxassetid://129260712070622",
-    IconThemed = true,
-    Author = "99 Nights in forest",
-    Folder = "YourHub",
-    Size = UDim2.fromOffset(580, 360),
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 200,
-    ScrollBarEnabled = true,
-
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            print("User icon clicked:", LocalPlayer.Name)
-        end
-    }
+-- Create Window
+local Window = Rayfield:CreateWindow({
+   Name = "Fryzer Hub",
+   LoadingTitle = "99 Nights in forest",
+   LoadingSubtitle = "by Fryzer Hub",
+   ConfigurationSaving = {
+      Enabled = true,
+      FolderName = "YourHub",
+      FileName = "FryzerHub"
+   },
+   Discord = {
+      Enabled = false,
+      Invite = "noinvitelink",
+      RememberJoins = true
+   },
+   KeySystem = false
 })
 
--- UI open button
-Window:EditOpenButton({
-    Title = "Open UI",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 16),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
-    Draggable = true,
+-- Notification
+Rayfield:Notify({
+   Title = "Fryzer Hub Loaded",
+   Content = "Welcome to Fryzer Hub!",
+   Duration = 6.5,
+   Image = 4483362458,
+   Actions = {
+      Ignore = {
+         Name = "Okay!",
+         Callback = function()
+            print("The user tapped Okay!")
+         end
+      },
+   },
 })
 
 -- Main Tab
-local Tab = Window:Tab({ Title = "Main", Icon = "user" })
+local MainTab = Window:CreateTab("Main", 4483362458) -- Icon ID
+local MainSection = MainTab:CreateSection("Character Settings")
 
 -- WalkSpeed Variables
 local WalkSpeedToggle = false
@@ -86,35 +52,36 @@ local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local humanoid = character:WaitForChild("Humanoid")
 
 -- WalkSpeed Toggle
-Tab:Toggle({
-    Title = "WalkSpeed Toggle", 
-    Value = false,
-    Callback = function(state)
-        WalkSpeedToggle = state
-        if state then
-            humanoid.WalkSpeed = WalkSpeedSliderValue
-        else
-            humanoid.WalkSpeed = 16
-        end
-        print("WalkSpeed Toggle is now:", state)
-    end
+local WalkSpeedToggleUI = MainTab:CreateToggle({
+   Name = "WalkSpeed Toggle",
+   CurrentValue = false,
+   Flag = "WalkSpeedToggle",
+   Callback = function(Value)
+      WalkSpeedToggle = Value
+      if Value then
+         humanoid.WalkSpeed = WalkSpeedSliderValue
+      else
+         humanoid.WalkSpeed = 16
+      end
+      print("WalkSpeed Toggle is now:", Value)
+   end,
 })
 
 -- WalkSpeed Slider
-Tab:Slider({
-    Title = "WalkSpeed Value",
-    Value = {
-        Min = 16,
-        Max = 200,
-        Default = 16
-    },
-    Callback = function(val)
-        WalkSpeedSliderValue = val
-        if WalkSpeedToggle then
-            humanoid.WalkSpeed = val
-        end
-        print("WalkSpeed value:", val)
-    end
+local WalkSpeedSliderUI = MainTab:CreateSlider({
+   Name = "WalkSpeed Value",
+   Range = {16, 200},
+   Increment = 1,
+   Suffix = "Speed",
+   CurrentValue = 16,
+   Flag = "WalkSpeedSlider",
+   Callback = function(Value)
+      WalkSpeedSliderValue = Value
+      if WalkSpeedToggle then
+         humanoid.WalkSpeed = Value
+      end
+      print("WalkSpeed value:", Value)
+   end,
 })
 
 -- JumpPower Variables
@@ -122,168 +89,169 @@ local JumpPowerToggle = false
 local JumpPowerSliderValue = 7.2
 
 -- JumpPower Toggle
-Tab:Toggle({
-    Title = "JumpPower Toggle", 
-    Value = false,
-    Callback = function(state)
-        JumpPowerToggle = state
-        if state then
-            humanoid.JumpHeight = JumpPowerSliderValue
-        else
-            humanoid.JumpHeight = 7.2
-        end
-        print("JumpPower Toggle is now:", state)
-    end
+local JumpPowerToggleUI = MainTab:CreateToggle({
+   Name = "JumpPower Toggle",
+   CurrentValue = false,
+   Flag = "JumpPowerToggle",
+   Callback = function(Value)
+      JumpPowerToggle = Value
+      if Value then
+         humanoid.JumpHeight = JumpPowerSliderValue
+      else
+         humanoid.JumpHeight = 7.2
+      end
+      print("JumpPower Toggle is now:", Value)
+   end,
 })
 
 -- JumpPower Slider
-Tab:Slider({
-    Title = "JumpPower Value",
-    Value = {
-        Min = 7.2,
-        Max = 50,
-        Default = 7.2
-    },
-    Callback = function(val)
-        JumpPowerSliderValue = val
-        if JumpPowerToggle then
-            humanoid.JumpHeight = val
-        end
-        print("JumpPower value:", val)
-    end
+local JumpPowerSliderUI = MainTab:CreateSlider({
+   Name = "JumpPower Value",
+   Range = {7.2, 50},
+   Increment = 0.1,
+   Suffix = "Power",
+   CurrentValue = 7.2,
+   Flag = "JumpPowerSlider",
+   Callback = function(Value)
+      JumpPowerSliderValue = Value
+      if JumpPowerToggle then
+         humanoid.JumpHeight = Value
+      end
+      print("JumpPower value:", Value)
+   end,
 })
 
-local EspTab = Window:Tab({ Title = "Esp", Icon = "eye" })
+-- ESP Tab
+local EspTab = Window:CreateTab("ESP", 4483362458)
+local EspSection = EspTab:CreateSection("ESP Settings")
 
--- Required Services
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Camera = workspace.CurrentCamera
+-- ESP Toggle
+local EspToggle = EspTab:CreateToggle({
+   Name = "Enable ESP",
+   CurrentValue = false,
+   Flag = "ESPToggle",
+   Callback = function(Value)
+      local folder = workspace:FindFirstChild("Items")
+      if not folder then
+         warn("Folder 'Items' not found in workspace.")
+         return
+      end
 
--- UI Toggle
-EspTab:Toggle({
-    Title = "Enable ESP",
-    Value = false,
-    Callback = function(state)
-        local folder = workspace:FindFirstChild("Items")
-        if not folder then
-            warn("Folder 'Items' not found in workspace.")
-            return
-        end
+      -- Storage
+      local added = {}
+      local connections = {}
 
-        -- Storage
-        local added = {}
-        local connections = {}
-
-        -- Clear ESP from all models
-        local function clearESP()
-            for _, model in pairs(folder:GetDescendants()) do
-                if model:IsA("Model") or model:IsA("BasePart") then
-                    local parent = model:IsA("BasePart") and model:FindFirstAncestorWhichIsA("Model") or model
-                    if parent and parent:FindFirstChild("ESP_Highlight") then
-                        parent:FindFirstChild("ESP_Highlight"):Destroy()
-                    end
-                    if parent and parent:FindFirstChild("ESP_Name") then
-                        parent:FindFirstChild("ESP_Name"):Destroy()
-                    end
-                end
+      -- Clear ESP from all models
+      local function clearESP()
+         for _, model in pairs(folder:GetDescendants()) do
+            if model:IsA("Model") or model:IsA("BasePart") then
+               local parent = model:IsA("BasePart") and model:FindFirstAncestorWhichIsA("Model") or model
+               if parent and parent:FindFirstChild("ESP_Highlight") then
+                  parent:FindFirstChild("ESP_Highlight"):Destroy()
+               end
+               if parent and parent:FindFirstChild("ESP_Name") then
+                  parent:FindFirstChild("ESP_Name"):Destroy()
+               end
             end
-            -- Clear connections
-            for _, conn in ipairs(connections) do
-                conn:Disconnect()
+         end
+         -- Clear connections
+         for _, conn in ipairs(connections) do
+            conn:Disconnect()
+         end
+         table.clear(connections)
+         table.clear(added)
+      end
+
+      -- Create ESP
+      local function createESP(target)
+         if added[target] then return end
+
+         local adornee = target:IsA("Model") and target or target:IsA("BasePart") and target:FindFirstAncestorWhichIsA("Model") or nil
+         if not adornee then return end
+
+         -- Highlight
+         local hl = Instance.new("Highlight")
+         hl.Name = "ESP_Highlight"
+         hl.FillTransparency = 1
+         hl.OutlineColor = Color3.fromRGB(255, 0, 0)
+         hl.OutlineTransparency = 0
+         hl.Adornee = adornee
+         hl.Parent = adornee
+
+         -- BillboardGui
+         local gui = Instance.new("BillboardGui")
+         gui.Name = "ESP_Name"
+         gui.Size = UDim2.new(0, 200, 0, 50)
+         gui.StudsOffset = Vector3.new(0, 4, 0)
+         gui.AlwaysOnTop = true
+         gui.Adornee = adornee
+
+         local label = Instance.new("TextLabel")
+         label.Size = UDim2.new(1, 0, 1, 0)
+         label.BackgroundTransparency = 1
+         label.Text = adornee.Name
+         label.TextScaled = true
+         label.Font = Enum.Font.SourceSansBold
+         label.TextColor3 = Color3.new(1, 1, 1)
+         label.TextStrokeColor3 = Color3.new(0, 0, 0)
+         label.TextStrokeTransparency = 0
+         label.Parent = gui
+
+         gui.Parent = adornee
+         added[target] = true
+      end
+
+      if Value then
+         -- Enable ESP
+         for _, child in pairs(folder:GetDescendants()) do
+            if child:IsA("Model") or child:IsA("BasePart") then
+               createESP(child)
             end
-            table.clear(connections)
-            table.clear(added)
-        end
+         end
 
-        -- Create ESP
-        local function createESP(target)
-            if added[target] then return end
-
-            local adornee = target:IsA("Model") and target or target:IsA("BasePart") and target:FindFirstAncestorWhichIsA("Model") or nil
-            if not adornee then return end
-
-            -- Highlight
-            local hl = Instance.new("Highlight")
-            hl.Name = "ESP_Highlight"
-            hl.FillTransparency = 1
-            hl.OutlineColor = Color3.fromRGB(255, 0, 0)
-            hl.OutlineTransparency = 0
-            hl.Adornee = adornee
-            hl.Parent = adornee
-
-            -- BillboardGui
-            local gui = Instance.new("BillboardGui")
-            gui.Name = "ESP_Name"
-            gui.Size = UDim2.new(0, 200, 0, 50)
-            gui.StudsOffset = Vector3.new(0, 4, 0)
-            gui.AlwaysOnTop = true
-            gui.Adornee = adornee
-
-            local label = Instance.new("TextLabel")
-            label.Size = UDim2.new(1, 0, 1, 0)
-            label.BackgroundTransparency = 1
-            label.Text = adornee.Name
-            label.TextScaled = true
-            label.Font = Enum.Font.SourceSansBold
-            label.TextColor3 = Color3.new(1, 1, 1)
-            label.TextStrokeColor3 = Color3.new(0, 0, 0)
-            label.TextStrokeTransparency = 0
-            label.Parent = gui
-
-            gui.Parent = adornee
-            added[target] = true
-        end
-
-        if state then
-            -- Enable ESP
-            for _, child in pairs(folder:GetDescendants()) do
-                if child:IsA("Model") or child:IsA("BasePart") then
-                    createESP(child)
-                end
+         local conn = folder.DescendantAdded:Connect(function(desc)
+            if desc:IsA("Model") or desc:IsA("BasePart") then
+               task.wait(0.1)
+               createESP(desc)
             end
+         end)
+         table.insert(connections, conn)
+      else
+         -- Disable ESP
+         clearESP()
+      end
 
-            local conn = folder.DescendantAdded:Connect(function(desc)
-                if desc:IsA("Model") or desc:IsA("BasePart") then
-                    task.wait(0.1)
-                    createESP(desc)
-                end
-            end)
-            table.insert(connections, conn)
-        else
-            -- Disable ESP
-            clearESP()
-        end
-
-        print("ESP Toggle is now:", state)
-    end
+      print("ESP Toggle is now:", Value)
+   end,
 })
 
-local TpTab = Window:Tab({ Title = "Tp", Icon = "map-pin" })
+-- Teleport Tab
+local TpTab = Window:CreateTab("Teleport", 4483362458)
+local TpSection = TpTab:CreateSection("Teleport Options")
 
--- Test Button with Teleport
-TpTab:Button({
-    Title = "Tp to camp",
-    Desc = "",
-    Callback = function()
-        print("Button clicked!")
-        
-        -- Notify
-        WindUI:Notify({
-            Title = "Button Pressed",
-            Content = "Teleporting...",
-            Duration = 3
-        })
+-- Camp Teleport Button
+local CampTpButton = TpTab:CreateButton({
+   Name = "Teleport to Camp",
+   Callback = function()
+      print("Button clicked!")
+      
+      -- Notify
+      Rayfield:Notify({
+         Title = "Teleporting",
+         Content = "Teleporting to camp...",
+         Duration = 3,
+         Image = 4483362458,
+      })
 
-        -- Teleport the player
-        local char = game.Players.LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if hrp then
-            hrp.CFrame = CFrame.new(7.423537731170654, 3.999999761581421, 1.1104077100753784)
-        else
-            warn("HumanoidRootPart not found.")
-        end
-    end
+      -- Teleport the player
+      local char = game.Players.LocalPlayer.Character
+      local hrp = char and char:FindFirstChild("HumanoidRootPart")
+      if hrp then
+         hrp.CFrame = CFrame.new(7.423537731170654, 3.999999761581421, 1.1104077100753784)
+      else
+         warn("HumanoidRootPart not found.")
+      end
+   end,
 })
 
 local Players = game:GetService("Players")
@@ -292,8 +260,8 @@ local RunService = game:GetService("RunService")
 local ItemsFolder = workspace:FindFirstChild("Items")
 
 if not ItemsFolder then
-    warn("Items folder not found!")
-    return
+   warn("Items folder not found!")
+   return
 end
 
 -- UI State
@@ -304,188 +272,208 @@ local dropdown = nil
 
 -- Refresh model list
 local function refreshModelList()
-    uniqueModelNames = {}
-    modelMap = {}
+   uniqueModelNames = {}
+   modelMap = {}
 
-    for _, item in pairs(ItemsFolder:GetDescendants()) do
-        if item:IsA("Model") then
-            local name = item.Name
-            if not modelMap[name] then
-                modelMap[name] = {}
-                table.insert(uniqueModelNames, name)
-            end
-            table.insert(modelMap[name], item)
-        end
-    end
+   for _, item in pairs(ItemsFolder:GetDescendants()) do
+      if item:IsA("Model") then
+         local name = item.Name
+         if not modelMap[name] then
+            modelMap[name] = {}
+            table.insert(uniqueModelNames, name)
+         end
+         table.insert(modelMap[name], item)
+      end
+   end
 
-    if dropdown then
-        dropdown:SetValues(uniqueModelNames)
-    end
+   if dropdown then
+      dropdown:Set(uniqueModelNames)
+   end
 end
 
 -- Run refresh every 5 seconds
 task.spawn(function()
-    while true do
-        refreshModelList()
-        task.wait(5)
-    end
+   while true do
+      refreshModelList()
+      task.wait(5)
+   end
 end)
 
 -- Initial load
 refreshModelList()
 
 -- Create Dropdown
-dropdown = TpTab:Dropdown({
-    Title = "Select Item",
-    Values = uniqueModelNames,
-    Value = uniqueModelNames[1] or "None",
-    Multi = false,
-    AllowNone = false,
-    Callback = function(selected)
-        selectedModelName = selected
-        print("Selected:", selected)
-    end
+dropdown = TpTab:CreateDropdown({
+   Name = "Select Item",
+   Options = uniqueModelNames,
+   CurrentOption = uniqueModelNames[1] or "None",
+   Flag = "ItemDropdown",
+   Callback = function(Option)
+      selectedModelName = Option
+      print("Selected:", Option)
+   end,
 })
 
 -- Find closest model
 local function getClosestModel(modelList)
-    local char = LocalPlayer.Character
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if not hrp or not modelList then return nil end
+   local char = LocalPlayer.Character
+   local hrp = char and char:FindFirstChild("HumanoidRootPart")
+   if not hrp or not modelList then return nil end
 
-    local closest, minDist = nil, math.huge
-    for _, model in pairs(modelList) do
-        local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-        if primary then
-            local dist = (hrp.Position - primary.Position).Magnitude
-            if dist < minDist then
-                minDist = dist
-                closest = primary
-            end
-        end
-    end
-    return closest
+   local closest, minDist = nil, math.huge
+   for _, model in pairs(modelList) do
+      local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+      if primary then
+         local dist = (hrp.Position - primary.Position).Magnitude
+         if dist < minDist then
+            minDist = dist
+            closest = primary
+         end
+      end
+   end
+   return closest
 end
 
--- Teleport Button
-TpTab:Button({
-    Title = "Teleport to Item",
-    Desc = "Teleport to closest model of selected name",
-    Callback = function()
-        if not selectedModelName or not modelMap[selectedModelName] then
-            warn("No model selected.")
-            return
-        end
+-- Teleport to Item Button
+local ItemTpButton = TpTab:CreateButton({
+   Name = "Teleport to Item",
+   Callback = function()
+      if not selectedModelName or not modelMap[selectedModelName] then
+         warn("No model selected.")
+         return
+      end
 
-        local closestPart = getClosestModel(modelMap[selectedModelName])
-        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+      local closestPart = getClosestModel(modelMap[selectedModelName])
+      local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
 
-        if closestPart and hrp then
-            hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
-            WindUI:Notify({
-                Title = "Teleported!",
-                Content = "Teleported to nearest: " .. selectedModelName,
-                Duration = 3
-            })
-        else
-            warn("Could not find valid part to teleport.")
-        end
-    end
+      if closestPart and hrp then
+         hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
+         Rayfield:Notify({
+            Title = "Teleported!",
+            Content = "Teleported to nearest: " .. selectedModelName,
+            Duration = 3,
+            Image = 4483362458,
+         })
+      else
+         warn("Could not find valid part to teleport.")
+      end
+   end,
 })
 
-local BTab = Window:Tab({ Title = "Bring", Icon = "package" })
+-- Bring Items Tab
+local BTab = Window:CreateTab("Bring", 4483362458)
+local BSection = BTab:CreateSection("Bring Items")
 
 local folder = workspace:FindFirstChild("Items")
 if not folder then
-    warn("Folder 'Items' not found in workspace.")
-    return
+   warn("Folder 'Items' not found in workspace.")
+   return
 end
 
-local selectedModelName = nil
-local modelMap = {}
-local targetPosition = Vector3.new(-18.27810287475586, 15.070045471191406, -8.770061492919922)
+local selectedModelName2 = nil
+local modelMap2 = {}
+local uniqueNames2 = {}
 
--- UI Setup
-local uniqueNames = {}
-local dropdown = BTab:Dropdown({
-    Title = "Select Model Name",
-    Values = {},
-    Value = nil,
-    Multi = false,
-    AllowNone = false,
-    Callback = function(selected)
-        selectedModelName = selected
-        print("Selected model name:", selected)
-    end
+-- Temporary support baseplate (optional invisible platform)
+local function createSupportUnder(model)
+   local primaryPart = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+   if primaryPart then
+      local support = Instance.new("Part")
+      support.Size = Vector3.new(10, 1, 10)
+      support.Anchored = true
+      support.Transparency = 1
+      support.CanCollide = false
+      support.Position = Vector3.new(-18.278, 14, -8.77) -- slightly below teleport position
+      support.Parent = workspace
+      game:GetService("Debris"):AddItem(support, 5)
+   end
+end
+
+-- Refresh model list
+local function refreshModels2()
+   modelMap2 = {}
+   uniqueNames2 = {}
+
+   for _, obj in pairs(folder:GetDescendants()) do
+      local model = obj:IsA("Model") and obj or obj:IsA("BasePart") and obj:FindFirstAncestorOfClass("Model")
+      if model and not modelMap2[model.Name] then
+         modelMap2[model.Name] = {}
+         table.insert(uniqueNames2, model.Name)
+      end
+      if model then
+         table.insert(modelMap2[model.Name], model)
+      end
+   end
+end
+
+-- Initial refresh
+refreshModels2()
+
+-- Create Dropdown for Bring tab
+local dropdown2 = BTab:CreateDropdown({
+   Name = "Select Model",
+   Options = uniqueNames2,
+   CurrentOption = uniqueNames2[1] or "None",
+   Flag = "BringDropdown",
+   Callback = function(Option)
+      selectedModelName2 = Option
+      print("Selected:", Option)
+   end,
 })
 
--- Refresh model list every 5 seconds
+-- Refresh every 5 seconds
 task.spawn(function()
-    while true do
-        modelMap = {}
-        uniqueNames = {}
-
-        for _, obj in pairs(folder:GetDescendants()) do
-            local model = obj:IsA("Model") and obj or obj:IsA("BasePart") and obj:FindFirstAncestorOfClass("Model")
-            if model and not modelMap[model.Name] then
-                modelMap[model.Name] = {}
-                table.insert(uniqueNames, model.Name)
-            end
-            if model then
-                table.insert(modelMap[model.Name], model)
-            end
-        end
-
-        dropdown:SetValues(uniqueNames)
-        task.wait(5)
-    end
+   while true do
+      refreshModels2()
+      dropdown2:Set(uniqueNames2)
+      task.wait(5)
+   end
 end)
 
--- Button to move selected models and unanchor them
-BTab:Button({
-    Title = "Move & Unanchor Models",
-    Desc = "Teleport selected models and make them fall",
-    Callback = function()
-        if not selectedModelName or not modelMap[selectedModelName] then
-            warn("No model selected.")
-            return
-        end
+-- Button to move & unanchor models
+local targetPosition = Vector3.new(-18.278, 15.07, -8.77)
 
-        local moved = 0
-        for _, model in pairs(modelMap[selectedModelName]) do
-            local parts = {}
-            for _, obj in pairs(model:GetDescendants()) do
-                if obj:IsA("BasePart") then
-                    table.insert(parts, obj)
-                end
+local BringButton = BTab:CreateButton({
+   Name = "Teleport Items",
+   Callback = function()
+      if not selectedModelName2 or not modelMap2[selectedModelName2] then
+         warn("No model selected.")
+         return
+      end
+
+      local offsetY = 0
+      for _, model in pairs(modelMap2[selectedModelName2]) do
+         -- Set PrimaryPart if not already set
+         if not model.PrimaryPart then
+            local primary = model:FindFirstChildWhichIsA("BasePart")
+            if primary then model.PrimaryPart = primary end
+         end
+
+         if model.PrimaryPart then
+            -- Unanchor parts
+            for _, obj in ipairs(model:GetDescendants()) do
+               if obj:IsA("BasePart") then
+                  obj.Anchored = false
+                  obj.Massless = false
+                  obj.CanCollide = true
+               end
             end
 
-            if #parts > 0 then
-                -- Unanchor all parts and enable physics
-                for _, part in pairs(parts) do
-                    part.Anchored = false
-                    part.Massless = false
-                    part.CanCollide = true
-                end
+            -- Create support platform below to prevent floating
+            createSupportUnder(model)
 
-                -- Move model to target position with vertical offset
-                local offsetPos = targetPosition + Vector3.new(0, moved * 3, 0)
-                model:PivotTo(CFrame.new(offsetPos))
-                moved += 1
-            end
-        end
-
-        WindUI:Notify({
-            Title = "Models Moved",
-            Content = "Moved and unanchored " .. tostring(moved) .. " model(s).",
-            Duration = 3
-        })
-    end
+            -- Move model to stacked position
+            local positionOffset = Vector3.new(0, offsetY, 0)
+            model:SetPrimaryPartCFrame(CFrame.new(targetPosition + positionOffset))
+            offsetY += 3 -- stack space
+         end
+      end
+      
+      Rayfield:Notify({
+         Title = "Items Teleported",
+         Content = "Selected items have been moved!",
+         Duration = 3,
+         Image = 4483362458,
+      })
+   end,
 })
-
-
-
--- Window close callback
-Window:OnClose(function()
-    print("Window closed.")
-end)
