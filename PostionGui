@@ -386,21 +386,25 @@ MiniTab:Button({
     end
 })
 
-local MiniTab = Window:Tab({ Title = "Money", Icon = "send" })
+-- Fixed Money Tab section
+local MTab = Window:Tab({ Title = "Money", Icon = "send" })
 
 -- Variable to hold the user input
 local userInputValue = "0"
 
-Tabs.InputTab:Input({
+-- Input field for money amount
+MTab:Input({
     Title = "Money Giver", 
     Value = "0", 
     Placeholder = "How much you want (type number only)", 
     Callback = function(input)
         userInputValue = input
+        print("Money input set to:", input)
     end
 })
 
-Tabs.InputTab:Button({
+-- Button to give money
+MTab:Button({
     Title = "Give Money",
     Desc = "Fires remote with entered value",
     Callback = function()
@@ -408,9 +412,16 @@ Tabs.InputTab:Button({
             tostring(userInputValue)
         }
         game:GetService("ReplicatedStorage"):WaitForChild("CratesUtilities"):WaitForChild("Remotes"):WaitForChild("GiveReward"):FireServer(unpack(args))
+        
+        WindUI:Notify({
+            Title = "Money Given",
+            Content = "Attempted to give " .. userInputValue .. " money",
+            Duration = 3
+        })
+        
+        print("Money remote fired with value:", userInputValue)
     end
 })
-
 
 -- Info Tab
 local FTab = Window:Tab({
@@ -420,6 +431,11 @@ local FTab = Window:Tab({
 
 FTab:Paragraph({
     Title = "WE CAN SEE YOUR FEEDBACK FR PRESS THE DOWN BUTTON TO OPEN FEEDBACK GUI YOU CAN SENT US FEEDBACK AND WE ATUCALLY SEE IT",
+    Content = "OPEN"
+})
+
+FTab:Paragraph({
+    Title = "V2.78",
     Content = "OPEN"
 })
 
