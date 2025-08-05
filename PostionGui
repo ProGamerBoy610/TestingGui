@@ -1,458 +1,511 @@
--- jump rop game
-
---  "home", "settings", "search", "play", "pause", "stop", "user", "trash", "folder", "lock", "unlock", "edit", "save", "upload", "download", "refresh", "info", "warning", "check","x", "plus", "minus", "eye", "eye-off", "bell", "calendar", "camera", "cloud", "code","cpu", "database", "file", "globe", "grid", "heart", "image", "key", "link", "list",
-           -- "map", "menu", "message-square", "mic", "moon", "sun", "music", "phone", "printer",
-        --"radio", "repeat", "rewind", "send", "settings", "share", "shield", "star", "terminal",
-        --    "tool", "tv", "type", "video", "wifi", "zap"
-
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
+-- Modern Inventory Stealer GUI
+-- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 
--- Gradient text function (used in popup)
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d, %d, %d)">%s</font>', r, g, b, text:sub(i, i))
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+
+-- Variables
+local selectedPlayer = nil
+local selectedTool = nil
+local dragToggle = nil
+local dragSpeed = 0.25
+local dragStart = nil
+local startPos = nil
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InventoryStealerGUI"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Main Frame (Dark modern design)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+MainFrame.BorderSizePixel = 0
+MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
+MainFrame.Size = UDim2.new(0, 400, 0, 300)
+MainFrame.Active = true
+MainFrame.Draggable = false
+
+-- Add corner radius
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+-- Add shadow effect
+local Shadow = Instance.new("Frame")
+Shadow.Name = "Shadow"
+Shadow.Parent = ScreenGui
+Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+Shadow.BackgroundTransparency = 0.7
+Shadow.BorderSizePixel = 0
+Shadow.Position = UDim2.new(0.5, -198, 0.5, -148)
+Shadow.Size = UDim2.new(0, 404, 0, 304)
+Shadow.ZIndex = MainFrame.ZIndex - 1
+
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0, 12)
+ShadowCorner.Parent = Shadow
+
+-- Title Bar
+local TitleBar = Instance.new("Frame")
+TitleBar.Name = "TitleBar"
+TitleBar.Parent = MainFrame
+TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+TitleBar.BorderSizePixel = 0
+TitleBar.Size = UDim2.new(1, 0, 0, 35)
+
+local TitleCorner = Instance.new("UICorner")
+TitleCorner.CornerRadius = UDim.new(0, 12)
+TitleCorner.Parent = TitleBar
+
+-- Fix title bar corners
+local TitleFix = Instance.new("Frame")
+TitleFix.Parent = TitleBar
+TitleFix.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
+TitleFix.BorderSizePixel = 0
+TitleFix.Position = UDim2.new(0, 0, 0.5, 0)
+TitleFix.Size = UDim2.new(1, 0, 0.5, 0)
+
+-- Title Text
+local TitleText = Instance.new("TextLabel")
+TitleText.Name = "TitleText"
+TitleText.Parent = TitleBar
+TitleText.BackgroundTransparency = 1
+TitleText.Position = UDim2.new(0, 10, 0, 0)
+TitleText.Size = UDim2.new(1, -80, 1, 0)
+TitleText.Font = Enum.Font.GothamBold
+TitleText.Text = "Inventory Manager"
+TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleText.TextSize = 14
+TitleText.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Minimize Button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = TitleBar
+MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 193, 7)
+MinimizeButton.BorderSizePixel = 0
+MinimizeButton.Position = UDim2.new(1, -60, 0.5, -8)
+MinimizeButton.Size = UDim2.new(0, 16, 0, 16)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Text = "-"
+MinimizeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
+MinimizeButton.TextSize = 12
+
+local MinCorner = Instance.new("UICorner")
+MinCorner.CornerRadius = UDim.new(0, 8)
+MinCorner.Parent = MinimizeButton
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = TitleBar
+CloseButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
+CloseButton.BorderSizePixel = 0
+CloseButton.Position = UDim2.new(1, -35, 0.5, -8)
+CloseButton.Size = UDim2.new(0, 16, 0, 16)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 12
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 8)
+CloseCorner.Parent = CloseButton
+
+-- Content Area
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "ContentFrame"
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Position = UDim2.new(0, 0, 0, 35)
+ContentFrame.Size = UDim2.new(1, 0, 1, -35)
+
+-- Left Panel (Player Dropdown)
+local LeftPanel = Instance.new("Frame")
+LeftPanel.Name = "LeftPanel"
+LeftPanel.Parent = ContentFrame
+LeftPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+LeftPanel.BorderSizePixel = 0
+LeftPanel.Size = UDim2.new(0, 130, 1, 0)
+
+local LeftCorner = Instance.new("UICorner")
+LeftCorner.CornerRadius = UDim.new(0, 8)
+LeftCorner.Parent = LeftPanel
+
+-- Player Dropdown
+local PlayerDropdown = Instance.new("TextButton")
+PlayerDropdown.Name = "PlayerDropdown"
+PlayerDropdown.Parent = LeftPanel
+PlayerDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+PlayerDropdown.BorderSizePixel = 0
+PlayerDropdown.Position = UDim2.new(0, 10, 0, 15)
+PlayerDropdown.Size = UDim2.new(1, -20, 0, 30)
+PlayerDropdown.Font = Enum.Font.Gotham
+PlayerDropdown.Text = "Select Player"
+PlayerDropdown.TextColor3 = Color3.fromRGB(200, 200, 200)
+PlayerDropdown.TextSize = 12
+PlayerDropdown.TextXAlignment = Enum.TextXAlignment.Left
+
+local DropdownCorner = Instance.new("UICorner")
+DropdownCorner.CornerRadius = UDim.new(0, 6)
+DropdownCorner.Parent = PlayerDropdown
+
+-- Dropdown Arrow
+local DropdownArrow = Instance.new("TextLabel")
+DropdownArrow.Parent = PlayerDropdown
+DropdownArrow.BackgroundTransparency = 1
+DropdownArrow.Position = UDim2.new(1, -20, 0, 0)
+DropdownArrow.Size = UDim2.new(0, 20, 1, 0)
+DropdownArrow.Font = Enum.Font.Gotham
+DropdownArrow.Text = "▼"
+DropdownArrow.TextColor3 = Color3.fromRGB(150, 150, 150)
+DropdownArrow.TextSize = 10
+
+-- Dropdown List
+local DropdownList = Instance.new("ScrollingFrame")
+DropdownList.Name = "DropdownList"
+DropdownList.Parent = LeftPanel
+DropdownList.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
+DropdownList.BorderSizePixel = 0
+DropdownList.Position = UDim2.new(0, 10, 0, 50)
+DropdownList.Size = UDim2.new(1, -20, 1, -65)
+DropdownList.ScrollBarThickness = 4
+DropdownList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+DropdownList.Visible = false
+
+local ListCorner = Instance.new("UICorner")
+ListCorner.CornerRadius = UDim.new(0, 6)
+ListCorner.Parent = DropdownList
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.Parent = DropdownList
+ListLayout.SortOrder = Enum.SortOrder.Name
+
+-- Right Panel (Inventory Display)
+local RightPanel = Instance.new("Frame")
+RightPanel.Name = "RightPanel"
+RightPanel.Parent = ContentFrame
+RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
+RightPanel.BorderSizePixel = 0
+RightPanel.Position = UDim2.new(0, 140, 0, 0)
+RightPanel.Size = UDim2.new(1, -140, 1, 0)
+
+local RightCorner = Instance.new("UICorner")
+RightCorner.CornerRadius = UDim.new(0, 8)
+RightCorner.Parent = RightPanel
+
+-- Inventory Label
+local InventoryLabel = Instance.new("TextLabel")
+InventoryLabel.Name = "InventoryLabel"
+InventoryLabel.Parent = RightPanel
+InventoryLabel.BackgroundTransparency = 1
+InventoryLabel.Position = UDim2.new(0, 10, 0, 10)
+InventoryLabel.Size = UDim2.new(1, -20, 0, 25)
+InventoryLabel.Font = Enum.Font.GothamBold
+InventoryLabel.Text = "Player Inventory"
+InventoryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+InventoryLabel.TextSize = 14
+InventoryLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Inventory Scroll Frame
+local InventoryScroll = Instance.new("ScrollingFrame")
+InventoryScroll.Name = "InventoryScroll"
+InventoryScroll.Parent = RightPanel
+InventoryScroll.BackgroundTransparency = 1
+InventoryScroll.Position = UDim2.new(0, 10, 0, 40)
+InventoryScroll.Size = UDim2.new(1, -20, 1, -50)
+InventoryScroll.ScrollBarThickness = 4
+InventoryScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
+
+local InventoryLayout = Instance.new("UIListLayout")
+InventoryLayout.Parent = InventoryScroll
+InventoryLayout.Padding = UDim.new(0, 5)
+InventoryLayout.SortOrder = Enum.SortOrder.Name
+
+-- Functions
+local function updateDropdownList()
+    -- Clear existing items
+    for _, child in pairs(DropdownList:GetChildren()) do
+        if child:IsA("TextButton") then
+            child:Destroy()
+        end
     end
-    return result
+    
+    -- Add players to dropdown
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local playerButton = Instance.new("TextButton")
+            playerButton.Name = player.Name
+            playerButton.Parent = DropdownList
+            playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+            playerButton.BorderSizePixel = 0
+            playerButton.Size = UDim2.new(1, 0, 0, 25)
+            playerButton.Font = Enum.Font.Gotham
+            playerButton.Text = player.Name
+            playerButton.TextColor3 = Color3.fromRGB(200, 200, 200)
+            playerButton.TextSize = 11
+            playerButton.TextXAlignment = Enum.TextXAlignment.Left
+            
+            local buttonCorner = Instance.new("UICorner")
+            buttonCorner.CornerRadius = UDim.new(0, 4)
+            buttonCorner.Parent = playerButton
+            
+            -- Add padding
+            local padding = Instance.new("UIPadding")
+            padding.PaddingLeft = UDim.new(0, 8)
+            padding.Parent = playerButton
+            
+            playerButton.MouseButton1Click:Connect(function()
+                selectedPlayer = player
+                PlayerDropdown.Text = player.Name
+                DropdownList.Visible = false
+                DropdownArrow.Text = "▼"
+                updateInventoryDisplay()
+            end)
+            
+            -- Hover effects
+            playerButton.MouseEnter:Connect(function()
+                playerButton.BackgroundColor3 = Color3.fromRGB(60, 60, 68)
+            end)
+            
+            playerButton.MouseLeave:Connect(function()
+                playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+            end)
+        end
+    end
+    
+    -- Update canvas size
+    DropdownList.CanvasSize = UDim2.new(0, 0, 0, InventoryLayout.AbsoluteContentSize.Y)
 end
 
--- Popup before loading
-local Confirmed = false
-WindUI:Popup({
-    Title = "Confirmation",
-    Icon = "rbxassetid://129260712070622",
-    IconThemed = true,
-    Content = "Fryzer Hub " .. gradient("FH", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")),
-    Buttons = {
-        {
-            Title = "Cancel",
-            Variant = "Secondary",
-        },
-        {
-            Title = "Continue",
-            Icon = "arrow-right",
-            Callback = function() Confirmed = true end,
-            Variant = "Primary",
-        }
-    }
-})
-repeat task.wait() until Confirmed
-
--- Window creation WITHOUT Key System
-local Window = WindUI:CreateWindow({
-    Title = "Fryzer Hub",
-    Icon = "rbxassetid://129260712070622",
-    IconThemed = true,
-    Author = "The 1,000,000$ Jump Rope",
-    Folder = "YourHub",
-    Size = UDim2.fromOffset(580, 360),
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 200,
-    ScrollBarEnabled = true,
-
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            print("User icon clicked:", LocalPlayer.Name)
+local function updateInventoryDisplay()
+    -- Clear existing items
+    for _, child in pairs(InventoryScroll:GetChildren()) do
+        if child:IsA("Frame") then
+            child:Destroy()
         end
-    }
-})
-
--- UI open button
-Window:EditOpenButton({
-    Title = "Open UI",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0, 16),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
-    Draggable = true,
-})
-
--- Main Tab
-local Tab = Window:Tab({ Title = "Main", Icon = "user" })
-
--- Welcome Paragraph
-Tab:Paragraph({
-    Title = "Welcome to Fryzer Hub!",
-    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
-})
-
-
--- WalkSpeed Variables
-local WalkSpeedToggle = false
-local WalkSpeedSliderValue = 16
-
-local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
-
--- WalkSpeed Toggle
-Tab:Toggle({
-    Title = "WalkSpeed Toggle", 
-    Value = false,
-    Callback = function(state)
-        WalkSpeedToggle = state
-        if state then
-            humanoid.WalkSpeed = WalkSpeedSliderValue
-        else
-            humanoid.WalkSpeed = 16
-        end
-        print("WalkSpeed Toggle is now:", state)
     end
-})
-
--- WalkSpeed Slider
-Tab:Slider({
-    Title = "WalkSpeed Value",
-    Value = {
-        Min = 16,
-        Max = 200,
-        Default = 16
-    },
-    Callback = function(val)
-        WalkSpeedSliderValue = val
-        if WalkSpeedToggle then
-            humanoid.WalkSpeed = val
-        end
-        print("WalkSpeed value:", val)
+    
+    if not selectedPlayer then
+        return
     end
-})
-
--- JumpPower Variables
-local JumpPowerToggle = false
-local JumpPowerSliderValue = 7.2
-
--- JumpPower Toggle
-Tab:Toggle({
-    Title = "JumpPower Toggle", 
-    Value = false,
-    Callback = function(state)
-        JumpPowerToggle = state
-        if state then
-            humanoid.JumpHeight = JumpPowerSliderValue
-        else
-            humanoid.JumpHeight = 7.2
+    
+    -- Get tools from both backpack and character
+    local backpack = selectedPlayer:FindFirstChild("Backpack")
+    local character = selectedPlayer.Character
+    
+    local tools = {}
+    
+    -- Get tools from backpack
+    if backpack then
+        for _, tool in pairs(backpack:GetChildren()) do
+            if tool:IsA("Tool") then
+                table.insert(tools, tool)
+            end
         end
-        print("JumpPower Toggle is now:", state)
     end
-})
-
--- JumpPower Slider
-Tab:Slider({
-    Title = "JumpPower Value",
-    Value = {
-        Min = 7.2,
-        Max = 50,
-        Default = 7.2
-    },
-    Callback = function(val)
-        JumpPowerSliderValue = val
-        if JumpPowerToggle then
-            humanoid.JumpHeight = val
+    
+    -- Get equipped tools from character
+    if character then
+        for _, tool in pairs(character:GetChildren()) do
+            if tool:IsA("Tool") then
+                table.insert(tools, tool)
+            end
         end
-        print("JumpPower value:", val)
     end
-})
-
-local MainTab = Window:Tab({ Title = "Main", Icon = "menu" })
-
--- Toggle
-MainTab:Toggle({
-    Title = "Enable Invisible Spin Rope", 
-    Value = false,
-    Callback = function(state)
-        local spinRope = workspace:FindFirstChild("Spin_Rope")
-        if spinRope then
-            for _, part in ipairs(spinRope:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    if state then
-                        -- Hide and disable collisions
-                        part.Transparency = 1
-                        part.CanCollide = false
-                        part.CanTouch = false
-                        part.CanQuery = false
-                    else
-                        -- Revert changes (make visible and collidable)
-                        part.Transparency = 0
-                        part.CanCollide = true
-                        part.CanTouch = true
-                        part.CanQuery = true
+    
+    -- Display all tools
+    for _, tool in pairs(tools) do
+            local itemFrame = Instance.new("Frame")
+            itemFrame.Name = tool.Name
+            itemFrame.Parent = InventoryScroll
+            itemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+            itemFrame.BorderSizePixel = 0
+            itemFrame.Size = UDim2.new(1, 0, 0, 35)
+            
+            local itemCorner = Instance.new("UICorner")
+            itemCorner.CornerRadius = UDim.new(0, 6)
+            itemCorner.Parent = itemFrame
+            
+            local itemName = Instance.new("TextLabel")
+            itemName.Parent = itemFrame
+            itemName.BackgroundTransparency = 1
+            itemName.Position = UDim2.new(0, 10, 0, 0)
+            itemName.Size = UDim2.new(1, -80, 1, 0)
+            itemName.Font = Enum.Font.Gotham
+            itemName.Text = tool.Name
+            itemName.TextColor3 = Color3.fromRGB(200, 200, 200)
+            itemName.TextSize = 11
+            itemName.TextXAlignment = Enum.TextXAlignment.Left
+            
+            local stealButton = Instance.new("TextButton")
+            stealButton.Name = "StealButton"
+            stealButton.Parent = itemFrame
+            stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
+            stealButton.BorderSizePixel = 0
+            stealButton.Position = UDim2.new(1, -65, 0.5, -10)
+            stealButton.Size = UDim2.new(0, 55, 0, 20)
+            stealButton.Font = Enum.Font.GothamBold
+            stealButton.Text = "Steal"
+            stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+            stealButton.TextSize = 10
+            
+            local stealCorner = Instance.new("UICorner")
+            stealCorner.CornerRadius = UDim.new(0, 4)
+            stealCorner.Parent = stealButton
+            
+            stealButton.MouseButton1Click:Connect(function()
+                -- Clone the tool to local player's backpack
+                local clonedTool = tool:Clone()
+                clonedTool.Parent = LocalPlayer.Backpack
+                
+                -- Visual feedback
+                stealButton.Text = "✓"
+                stealButton.BackgroundColor3 = Color3.fromRGB(40, 167, 69)
+                
+                -- Use spawn instead of wait to prevent yielding
+                task.spawn(function()
+                    task.wait(1)
+                    if stealButton and stealButton.Parent then
+                        stealButton.Text = "Steal"
+                        stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
                     end
+                end)
+            end)
+            
+            -- Hover effects
+            stealButton.MouseEnter:Connect(function()
+                stealButton.BackgroundColor3 = Color3.fromRGB(200, 35, 51)
+            end)
+            
+            stealButton.MouseLeave:Connect(function()
+                if stealButton.Text == "Steal" then
+                    stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
                 end
-            end
+            end)
         end
-        print("Toggle is now:", state)
     end
-})
+    
+    -- Update canvas size
+    InventoryScroll.CanvasSize = UDim2.new(0, 0, 0, InventoryLayout.AbsoluteContentSize.Y + 10)
+end
 
-MainTab:Button({
-    Title = "Teleport to Location",
-    Desc = "Instantly teleports you to a set position",
-    Callback = function()
-        print("Button clicked!")
+-- Drag functionality
+local function updateDrag(input)
+    local delta = input.Position - dragStart
+    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    game:GetService('TweenService'):Create(MainFrame, TweenInfo.new(dragSpeed), {Position = position}):Play()
+    game:GetService('TweenService'):Create(Shadow, TweenInfo.new(dragSpeed), {Position = UDim2.new(position.X.Scale, position.X.Offset - 2, position.Y.Scale, position.Y.Offset - 2)}):Play()
+end
 
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-
-        -- Wait for HumanoidRootPart
-        local hrp = character:WaitForChild("HumanoidRootPart")
-
-        -- Teleport location
-        local targetPosition = Vector3.new(4.099920749664307, 29.99999237060547, 447.0458068847656)
-        hrp.CFrame = CFrame.new(targetPosition)
-
-        WindUI:Notify({
-            Title = "Teleported!",
-            Content = "You have been moved to the target location.",
-            Duration = 3
-        })
-    end
-})
-
-
-MainTab:Button({
-    Title = "Stop rope",
-    Desc = "This button stop spining rop FR (Not visual)",
-    Callback = function()
-        -- Fire the remote
-        game:GetService("ReplicatedStorage"):WaitForChild("Frontman_Remotes"):WaitForChild("green"):FireServer()
-
-        -- Show a notification
-        WindUI:Notify({
-            Title = "Stop rope",
-            Content = "",
-            Duration = 1
-        })
-
-        print("")
-    end
-})
-
--- Red Button
-MainTab:Button({
-    Title = "Powerup rope",
-    Desc = "It incress the power of the rope (Not visual)",
-    Callback = function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Frontman_Remotes"):WaitForChild("red"):FireServer()
-        
-        WindUI:Notify({
-            Title = "Add more power to rope",
-            Content = "This will last short",
-            Duration = 1
-        })
-    end
-})
-
--- Morph Toggle
-MainTab:Toggle({
-    Title = "Morph To Frontman",
-    Value = false,
-    Callback = function(state)
-        local args = {
-            state and "ON" or "OFF"
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("Frontman_Remotes"):WaitForChild("morph"):FireServer(unpack(args))
-
-        WindUI:Notify({
-            Title = "Morph Status",
-            Content = "Morph turned " .. (state and "ON" or "OFF"),
-            Duration = 1
-        })
-    end
-})
-
-local VTab = Window:Tab({ Title = "vehicle", Icon = "send" })
-
--- Equip Car Button
-VTab:Button({
-    Title = "Drive Car",
-    Desc = "Drive Car",
-    Callback = function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Car_Remotes"):WaitForChild("Equip"):FireServer()
-    end
-})
-
--- Equip Helicopter Button
-VTab:Button({
-    Title = "Drive Helicopter",
-    Desc = "Drive helicopter",
-    Callback = function()
-        game:GetService("ReplicatedStorage"):WaitForChild("Heli_Remotes"):WaitForChild("Equip"):FireServer()
-    end
-})
-
---Auto Farm
-local ATab = Window:Tab({ Title = "Auto", Icon = "repeat" })
-
-local running = false
-
-ATab:Toggle({
-    Title = "Auto Farm Win",
-    Value = false,
-    Callback = function(state)
-        running = state
-        task.spawn(function()
-            while running do
-                local args = {
-                    false
-                }
-                game:GetService("ReplicatedStorage"):WaitForChild("RestartRemotes"):WaitForChild("Loader"):FireServer(unpack(args))
-                task.wait(1.5) -- Adjust delay as needed
+TitleBar.InputBegan:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+        dragToggle = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragToggle = false
             end
         end)
     end
-})
-
-local redLoopActive = false
-
-ATab:Toggle({
-    Title = "Repeat adding more power to rope",
-    Value = false,
-    Callback = function(state)
-        redLoopActive = state
-        task.spawn(function()
-            while redLoopActive do
-                game:GetService("ReplicatedStorage"):WaitForChild("Frontman_Remotes"):WaitForChild("red"):FireServer()
-                task.wait(1) -- Adjust the repeat delay if needed
-            end
-        end)
-    end
-})
-
-local greenLoopActive = false
-
-ATab:Toggle({
-    Title = "Repeat stoping rope spin",
-    Value = false,
-    Callback = function(state)
-        greenLoopActive = state
-        task.spawn(function()
-            while greenLoopActive do
-                game:GetService("ReplicatedStorage"):WaitForChild("Frontman_Remotes"):WaitForChild("green"):FireServer()
-                task.wait(1) -- Adjust delay if needed
-            end
-        end)
-    end
-})
-
-
---mini games glass brigh
-local MiniTab = Window:Tab({ Title = "Mini games", Icon = "send" })
-
-MiniTab:Button({
-    Title = "Highlight Correct Glass",
-    Desc = "Colors correct glass green",
-    Callback = function()
-        local correctFolder = workspace:FindFirstChild("FunArea")
-            and workspace.FunArea:FindFirstChild("Minigame_glass")
-            and workspace.FunArea.Minigame_glass:FindFirstChild("Mini_glass_bridge")
-            and workspace.FunArea.Minigame_glass.Mini_glass_bridge:FindFirstChild("correct")
-
-        if not correctFolder then
-            warn("Correct glass folder not found!")
-            WindUI:Notify({
-                Title = "Error",
-                Content = "Correct glass folder not found!",
-                Duration = 1
-            })
-            return
-        end
-
-        for _, part in pairs(correctFolder:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.Color = Color3.fromRGB(0, 255, 0)
-                part.Material = Enum.Material.Neon
-            end
-        end
-
-        WindUI:Notify({
-            Title = "Glass Highlighted",
-            Content = "Correct glass parts are now neon green!",
-            Duration = 1
-        })
-    end
-})
-
--- Fixed Money Tab section
-local MTab = Window:Tab({ Title = "Money", Icon = "send" })
-
--- Variable to hold the user input
-local userInputValue = "0"
-
--- Input field for money amount
-MTab:Input({
-    Title = "Money Giver", 
-    Value = "0", 
-    Placeholder = "How much you want (type number only)", 
-    Callback = function(input)
-        userInputValue = input
-        print("Money input set to:", input)
-    end
-})
-
--- Button to give money
-MTab:Button({
-    Title = "Give Money",
-    Desc = "Fires remote with entered value",
-    Callback = function()
-        local args = {
-            tostring(userInputValue)
-        }
-        game:GetService("ReplicatedStorage"):WaitForChild("CratesUtilities"):WaitForChild("Remotes"):WaitForChild("GiveReward"):FireServer(unpack(args))
-        
-        WindUI:Notify({
-            Title = "Money Given",
-            Content = "Attempted to give " .. userInputValue .. " money",
-            Duration = 3
-        })
-        
-        print("Money remote fired with value:", userInputValue)
-    end
-})
-
--- Info Tab
-local FTab = Window:Tab({
-    Title = "INFO",
-    Icon = "info"
-})
-
-FTab:Paragraph({
-    Title = "WE CAN SEE YOUR FEEDBACK FR PRESS THE DOWN BUTTON TO OPEN FEEDBACK GUI YOU CAN SENT US FEEDBACK AND WE ATUCALLY SEE IT",
-    Content = "OPEN"
-})
-
-FTab:Paragraph({
-    Title = "V2.78",
-    Content = "OPEN"
-})
-
-FTab:Button({
-    Title = "FEEDBACK GUI",
-    Desc = "Open the feedback interface",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/FeedBack-Gui/refs/heads/main/Feedback%20gui"))()
-        WindUI:Notify({
-            Title = "Feedback GUI Loaded",
-            Content = "Feedback interface has been opened!",
-            Duration = 3
-        })
-    end
-})
-
--- Window close callback
-Window:OnClose(function()
-    print("Window closed.")
 end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggle then
+        updateDrag(input)
+    end
+end)
+
+-- Button Events
+local isMinimized = false
+
+MinimizeButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    local targetSize = isMinimized and UDim2.new(0, 400, 0, 35) or UDim2.new(0, 400, 0, 300)
+    local shadowSize = isMinimized and UDim2.new(0, 404, 0, 39) or UDim2.new(0, 404, 0, 304)
+    
+    -- Hide/show content frame instead of just resizing
+    ContentFrame.Visible = not isMinimized
+    
+    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = targetSize}):Play()
+    TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = shadowSize}):Play()
+    
+    MinimizeButton.Text = isMinimized and "+" or "-"
+end)
+
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+PlayerDropdown.MouseButton1Click:Connect(function()
+    DropdownList.Visible = not DropdownList.Visible
+    DropdownArrow.Text = DropdownList.Visible and "▲" or "▼"
+    if DropdownList.Visible then
+        updateDropdownList()
+    end
+end)
+
+-- Initial setup
+updateDropdownList()
+
+-- Auto-refresh inventory when player's backpack changes
+local function setupPlayerConnection(player)
+    if player.Backpack then
+        player.Backpack.ChildAdded:Connect(function()
+            if selectedPlayer == player then
+                updateInventoryDisplay()
+            end
+        end)
+        
+        player.Backpack.ChildRemoved:Connect(function()
+            if selectedPlayer == player then
+                updateInventoryDisplay()
+            end
+        end)
+    end
+    
+    -- Also monitor character changes
+    player.CharacterAdded:Connect(function(character)
+        task.wait(1) -- Wait for character to fully load
+        if selectedPlayer == player then
+            updateInventoryDisplay()
+        end
+        
+        -- Monitor equipped tools in character
+        character.ChildAdded:Connect(function(child)
+            if child:IsA("Tool") and selectedPlayer == player then
+                updateInventoryDisplay()
+            end
+        end)
+        
+        character.ChildRemoved:Connect(function(child)
+            if child:IsA("Tool") and selectedPlayer == player then
+                updateInventoryDisplay()
+            end
+        end)
+    end)
+end
+
+-- Setup connections for existing players
+for _, player in pairs(Players:GetPlayers()) do
+    if player ~= LocalPlayer then
+        setupPlayerConnection(player)
+    end
+end
+
+-- Setup connections for new players
+Players.PlayerAdded:Connect(function(player)
+    updateDropdownList()
+    setupPlayerConnection(player)
+end)
+Players.PlayerRemoving:Connect(updateDropdownList)
