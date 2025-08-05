@@ -1,482 +1,323 @@
--- Modern Inventory Stealer GUI
--- Services
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local player = Players.LocalPlayer
+local gui = Instance.new("ScreenGui")
+gui.Name = "StealGUI"
+gui.IgnoreGuiInset = true
+gui.Parent = player.PlayerGui
+
+-- Adjust for mobile scaling
+local scale = math.min(1, math.min(UserInputService:GetDeviceScreenSize().X, UserInputService:GetDeviceScreenSize().Y) / 800)
+local guiSize = UDim2.new(0, 200 * scale, 0, 250 * scale)
+local buttonSize = UDim2.new(0, 25 * scale, 0, 25 * scale)
+
+-- Main Frame
+local frame = Instance.new("Frame")
+frame.Size = guiSize
+frame.Position = UDim2.new(0.5, -100 * scale, 0.5, -125 * scale)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.ClipsDescendants = true
+frame.Parent = gui
+
+-- Draggable
+local dragging, dragStart, startPos
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+    end
+end)
+
+frame.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+frame.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = false
+    end
+end)
+
+-- Top Bar
+local topBar = Instance.new("Frame")
+topBar.Size = UDim2.new(1, 0, 0, 25 * scale)
+topBar.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+topBar.BorderSizePixel = 0
+topBar.Parent = frame
+
+-- Title
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(0.6, 0, 1, 0)
+title.Position = UDim2.new(0.05, 0, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Steal Tools"
+title.TextColor3 = Color3.fromRGB(180, 180, 180)
+title.TextSize = 14 * scale
+title.Font = Enum.Font.Gotham
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = topBar
+
+-- Minimize Button
+local minimize = Instance.new("TextButton")
+minimize.Size = buttonSize
+minimize.Position = UDim2.new(0.8, 0, 0, 0)
+minimize.BackgroundTransparency = 1
+minimize.Text = "-"
+minimize.TextColor3 = Color3.fromRGB(180, 180, 180)
+minimize.TextSize = 16 * scale
+minimize.Font = Enum.Font.Gotham
+minimize.Parent = topBar
+
+-- Close Button
+local close = Instance.new("TextButton")
+close.Size = buttonSize
+close.Position = UDim2.new(0.9, 0, 0, 0)
+close.BackgroundTransparency = 1
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(180, 180, 180)
+close.TextSize = 14 * scale
+close.Font = Enum.Font.Gotham
+close.Parent = topBar
+
+-- Notification Label
+local notification = Instance.new("TextLabel")
+notification.Size = UDim2.new(1, 0, 0, 20 * scale)
+notification.Position = UDim2.new(0, 0, 0, 25 * scale)
+notification.BackgroundTransparency = 0.5
+notification.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+notification.Text = ""
+notification.TextColor3 = Color3.fromRGB(255, 100, 100)
+notification.TextSize = 12 * scale
+notification.Font = Enum.Font.Gotham
+notification.TextTransparency = 1
+notification.Parent = frame
+
+local function showNotification(message, color)
+    notification.Text = message
+    notification.TextColor3 = color or Color3.fromRGB(255, 100, 100)
+    notification.TextTransparency = 0
+    spawn(function()
+        wait(2)
+        local tween = TweenService:Create(notification, TweenInfo.new(0.5), {TextTransparency = 1})
+        tween:Play()
+        tween.Completed:Wait()
+        notification.Text = ""
+    end)
+end
+
+-- Minimize Functionality
+local minimized = false
+minimize.MouseButton1Click:Connect(function()
+    minimized = not minimized
+    local tweenInfo = TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut)
+    local goal = minimized and {Size = UDim2.new(0, 200 * scale, 0, 25 * scale)} or {Size = guiSize}
+    TweenService:Create(frame, tweenInfo, goal):Play()
+    minimize.Text = minimized and "+" or "-"
+end)
+
+-- Close Functionality
+close.MouseButton1Click:Connect(function()
+    gui:Destroy()
+end)
+
+-- Player Dropdown
+local dropdown = Instance.new("TextButton")
+dropdown.Size = UDim2.new(0.5, 0, 0, 25 * scale)
+dropdown.Position = UDim2.new(0, 0, 0, 45 * scale)
+dropdown.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+dropdown.Text = "Select Player"
+dropdown.TextColor3 = Color3.fromRGB(180, 180, 180)
+dropdown.TextSize = 12 * scale
+dropdown.Font = Enum.Font.Gotham
+dropdown.Parent = frame
+
+local dropdownFrame = Instance.new("Frame")
+dropdownFrame.Size = UDim2.new(0.5, 0, 0, 100 * scale)
+dropdownFrame.Position = UDim2.new(0, 0, 0, 70 * scale)
+dropdownFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+dropdownFrame.Visible = false
+dropdownFrame.ClipsDescendants = true
+dropdownFrame.Parent = frame
+
+local dropdownList = Instance.new("ScrollingFrame")
+dropdownList.Size = UDim2.new(1, 0, 1, 0)
+dropdownList.BackgroundTransparency = 1
+dropdownList.ScrollBarThickness = 3
+dropdownList.Parent = dropdownFrame
+
+local dropdownUIList = Instance.new("UIListLayout")
+dropdownUIList.SortOrder = Enum.SortOrder.LayoutOrder
+dropdownUIList.Parent = dropdownList
+
+-- Inventory Display
+local inventoryFrame = Instance.new("ScrollingFrame")
+inventoryFrame.Size = UDim2.new(0.5, 0, 1, -70 * scale)
+inventoryFrame.Position = UDim2.new(0.5, 0, 0, 45 * scale)
+inventoryFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+inventoryFrame.ScrollBarThickness = 3
+inventoryFrame.Parent = frame
+
+local inventoryList = Instance.new("UIListLayout")
+inventoryList.SortOrder = Enum.SortOrder.LayoutOrder
+inventoryList.Padding = UDim.new(0, 3 * scale)
+inventoryList.Parent = inventoryFrame
+
+-- Steal Button
+local stealButton = Instance.new("TextButton")
+stealButton.Size = UDim2.new(0.5, 0, 0, 25 * scale)
+stealButton.Position = UDim2.new(0.5, 0, 1, -25 * scale)
+stealButton.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+stealButton.Text = "Steal Selected"
+stealButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+stealButton.TextSize = 12 * scale
+stealButton.Font = Enum.Font.Gotham
+stealButton.Parent = frame
 
 -- Variables
 local selectedPlayer = nil
-local selectedTool = nil
-local dragToggle = nil
-local dragSpeed = 0.25
-local dragStart = nil
-local startPos = nil
+local selectedItems = {} -- Table to store multiple selected items
+local dropdownOpen = false
 
--- Create ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "InventoryStealerGUI"
-ScreenGui.Parent = PlayerGui
-ScreenGui.ResetOnSpawn = false
-ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Main Frame (Dark modern design)
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Parent = ScreenGui
-MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-MainFrame.BorderSizePixel = 0
-MainFrame.Position = UDim2.new(0.5, -200, 0.5, -150)
-MainFrame.Size = UDim2.new(0, 400, 0, 300)
-MainFrame.Active = true
-MainFrame.Draggable = false
-
--- Add corner radius
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainFrame
-
--- Add shadow effect
-local Shadow = Instance.new("Frame")
-Shadow.Name = "Shadow"
-Shadow.Parent = ScreenGui
-Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-Shadow.BackgroundTransparency = 0.7
-Shadow.BorderSizePixel = 0
-Shadow.Position = UDim2.new(0.5, -198, 0.5, -148)
-Shadow.Size = UDim2.new(0, 404, 0, 304)
-Shadow.ZIndex = MainFrame.ZIndex - 1
-
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 12)
-ShadowCorner.Parent = Shadow
-
--- Title Bar
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Parent = MainFrame
-TitleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-TitleBar.BorderSizePixel = 0
-TitleBar.Size = UDim2.new(1, 0, 0, 35)
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 12)
-TitleCorner.Parent = TitleBar
-
--- Fix title bar corners
-local TitleFix = Instance.new("Frame")
-TitleFix.Parent = TitleBar
-TitleFix.BackgroundColor3 = Color3.fromRGB(35, 35, 42)
-TitleFix.BorderSizePixel = 0
-TitleFix.Position = UDim2.new(0, 0, 0.5, 0)
-TitleFix.Size = UDim2.new(1, 0, 0.5, 0)
-
--- Title Text
-local TitleText = Instance.new("TextLabel")
-TitleText.Name = "TitleText"
-TitleText.Parent = TitleBar
-TitleText.BackgroundTransparency = 1
-TitleText.Position = UDim2.new(0, 10, 0, 0)
-TitleText.Size = UDim2.new(1, -80, 1, 0)
-TitleText.Font = Enum.Font.GothamBold
-TitleText.Text = "Inventory Manager"
-TitleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleText.TextSize = 14
-TitleText.TextXAlignment = Enum.TextXAlignment.Left
-
--- Minimize Button
-local MinimizeButton = Instance.new("TextButton")
-MinimizeButton.Name = "MinimizeButton"
-MinimizeButton.Parent = TitleBar
-MinimizeButton.BackgroundColor3 = Color3.fromRGB(255, 193, 7)
-MinimizeButton.BorderSizePixel = 0
-MinimizeButton.Position = UDim2.new(1, -60, 0.5, -8)
-MinimizeButton.Size = UDim2.new(0, 16, 0, 16)
-MinimizeButton.Font = Enum.Font.GothamBold
-MinimizeButton.Text = "-"
-MinimizeButton.TextColor3 = Color3.fromRGB(0, 0, 0)
-MinimizeButton.TextSize = 12
-
-local MinCorner = Instance.new("UICorner")
-MinCorner.CornerRadius = UDim.new(0, 8)
-MinCorner.Parent = MinimizeButton
-
--- Close Button
-local CloseButton = Instance.new("TextButton")
-CloseButton.Name = "CloseButton"
-CloseButton.Parent = TitleBar
-CloseButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
-CloseButton.BorderSizePixel = 0
-CloseButton.Position = UDim2.new(1, -35, 0.5, -8)
-CloseButton.Size = UDim2.new(0, 16, 0, 16)
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "×"
-CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-CloseButton.TextSize = 12
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 8)
-CloseCorner.Parent = CloseButton
-
--- Content Area
-local ContentFrame = Instance.new("Frame")
-ContentFrame.Name = "ContentFrame"
-ContentFrame.Parent = MainFrame
-ContentFrame.BackgroundTransparency = 1
-ContentFrame.Position = UDim2.new(0, 0, 0, 35)
-ContentFrame.Size = UDim2.new(1, 0, 1, -35)
-
--- Left Panel (Player Dropdown)
-local LeftPanel = Instance.new("Frame")
-LeftPanel.Name = "LeftPanel"
-LeftPanel.Parent = ContentFrame
-LeftPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-LeftPanel.BorderSizePixel = 0
-LeftPanel.Size = UDim2.new(0, 130, 1, 0)
-
-local LeftCorner = Instance.new("UICorner")
-LeftCorner.CornerRadius = UDim.new(0, 8)
-LeftCorner.Parent = LeftPanel
-
--- Player Dropdown
-local PlayerDropdown = Instance.new("TextButton")
-PlayerDropdown.Name = "PlayerDropdown"
-PlayerDropdown.Parent = LeftPanel
-PlayerDropdown.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-PlayerDropdown.BorderSizePixel = 0
-PlayerDropdown.Position = UDim2.new(0, 10, 0, 15)
-PlayerDropdown.Size = UDim2.new(1, -20, 0, 30)
-PlayerDropdown.Font = Enum.Font.Gotham
-PlayerDropdown.Text = "Select Player"
-PlayerDropdown.TextColor3 = Color3.fromRGB(200, 200, 200)
-PlayerDropdown.TextSize = 12
-PlayerDropdown.TextXAlignment = Enum.TextXAlignment.Left
-
-local DropdownCorner = Instance.new("UICorner")
-DropdownCorner.CornerRadius = UDim.new(0, 6)
-DropdownCorner.Parent = PlayerDropdown
-
--- Add padding to dropdown
-local DropdownPadding = Instance.new("UIPadding")
-DropdownPadding.PaddingLeft = UDim.new(0, 8)
-DropdownPadding.Parent = PlayerDropdown
-
--- Dropdown Arrow
-local DropdownArrow = Instance.new("TextLabel")
-DropdownArrow.Parent = PlayerDropdown
-DropdownArrow.BackgroundTransparency = 1
-DropdownArrow.Position = UDim2.new(1, -20, 0, 0)
-DropdownArrow.Size = UDim2.new(0, 20, 1, 0)
-DropdownArrow.Font = Enum.Font.Gotham
-DropdownArrow.Text = "▼"
-DropdownArrow.TextColor3 = Color3.fromRGB(150, 150, 150)
-DropdownArrow.TextSize = 10
-
--- Dropdown List
-local DropdownList = Instance.new("ScrollingFrame")
-DropdownList.Name = "DropdownList"
-DropdownList.Parent = LeftPanel
-DropdownList.BackgroundColor3 = Color3.fromRGB(40, 40, 48)
-DropdownList.BorderSizePixel = 0
-DropdownList.Position = UDim2.new(0, 10, 0, 50)
-DropdownList.Size = UDim2.new(1, -20, 1, -65)
-DropdownList.ScrollBarThickness = 4
-DropdownList.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-DropdownList.Visible = false
-
-local ListCorner = Instance.new("UICorner")
-ListCorner.CornerRadius = UDim.new(0, 6)
-ListCorner.Parent = DropdownList
-
-local ListLayout = Instance.new("UIListLayout")
-ListLayout.Parent = DropdownList
-ListLayout.SortOrder = Enum.SortOrder.Name
-ListLayout.Padding = UDim.new(0, 2)
-
--- Right Panel (Inventory Display)
-local RightPanel = Instance.new("Frame")
-RightPanel.Name = "RightPanel"
-RightPanel.Parent = ContentFrame
-RightPanel.BackgroundColor3 = Color3.fromRGB(30, 30, 36)
-RightPanel.BorderSizePixel = 0
-RightPanel.Position = UDim2.new(0, 140, 0, 0)
-RightPanel.Size = UDim2.new(1, -140, 1, 0)
-
-local RightCorner = Instance.new("UICorner")
-RightCorner.CornerRadius = UDim.new(0, 8)
-RightCorner.Parent = RightPanel
-
--- Inventory Label
-local InventoryLabel = Instance.new("TextLabel")
-InventoryLabel.Name = "InventoryLabel"
-InventoryLabel.Parent = RightPanel
-InventoryLabel.BackgroundTransparency = 1
-InventoryLabel.Position = UDim2.new(0, 10, 0, 10)
-InventoryLabel.Size = UDim2.new(1, -20, 0, 25)
-InventoryLabel.Font = Enum.Font.GothamBold
-InventoryLabel.Text = "Player Inventory"
-InventoryLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-InventoryLabel.TextSize = 14
-InventoryLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Inventory Scroll Frame
-local InventoryScroll = Instance.new("ScrollingFrame")
-InventoryScroll.Name = "InventoryScroll"
-InventoryScroll.Parent = RightPanel
-InventoryScroll.BackgroundTransparency = 1
-InventoryScroll.Position = UDim2.new(0, 10, 0, 40)
-InventoryScroll.Size = UDim2.new(1, -20, 1, -50)
-InventoryScroll.ScrollBarThickness = 4
-InventoryScroll.ScrollBarImageColor3 = Color3.fromRGB(100, 100, 100)
-
-local InventoryLayout = Instance.new("UIListLayout")
-InventoryLayout.Parent = InventoryScroll
-InventoryLayout.Padding = UDim.new(0, 5)
-InventoryLayout.SortOrder = Enum.SortOrder.Name
-
--- Functions
-local function updateDropdownList()
-    -- Clear existing items
-    for _, child in pairs(DropdownList:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
+-- Populate Dropdown
+local function updateDropdown()
+    for _, v in pairs(dropdownList:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
     end
-    
-    -- Add players to dropdown
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            local playerButton = Instance.new("TextButton")
-            playerButton.Name = player.Name
-            playerButton.Parent = DropdownList
-            playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
-            playerButton.BorderSizePixel = 0
-            playerButton.Size = UDim2.new(1, 0, 0, 25)
-            playerButton.Font = Enum.Font.Gotham
-            playerButton.Text = player.Name
-            playerButton.TextColor3 = Color3.fromRGB(200, 200, 200)
-            playerButton.TextSize = 11
-            playerButton.TextXAlignment = Enum.TextXAlignment.Left
-            
-            local buttonCorner = Instance.new("UICorner")
-            buttonCorner.CornerRadius = UDim.new(0, 4)
-            buttonCorner.Parent = playerButton
-            
-            -- Add padding
-            local padding = Instance.new("UIPadding")
-            padding.PaddingLeft = UDim.new(0, 8)
-            padding.Parent = playerButton
-            
-            playerButton.MouseButton1Click:Connect(function()
-                selectedPlayer = player
-                PlayerDropdown.Text = player.Name
-                DropdownList.Visible = false
-                DropdownArrow.Text = "▼"
-                updateInventoryDisplay()
-            end)
-            
-            -- Hover effects
-            playerButton.MouseEnter:Connect(function()
-                playerButton.BackgroundColor3 = Color3.fromRGB(60, 60, 68)
-            end)
-            
-            playerButton.MouseLeave:Connect(function()
-                playerButton.BackgroundColor3 = Color3.fromRGB(50, 50, 58)
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player then
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, 0, 0, 25 * scale)
+            button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            button.Text = p.Name
+            button.TextColor3 = Color3.fromRGB(180, 180, 180)
+            button.TextSize = 12 * scale
+            button.Font = Enum.Font.Gotham
+            button.Parent = dropdownList
+            button.MouseButton1Click:Connect(function()
+                selectedPlayer = p
+                dropdown.Text = p.Name
+                dropdownFrame.Visible = false
+                dropdownOpen = false
+                selectedItems = {} -- Reset selected items
+                updateInventory()
             end)
         end
     end
-    
-    -- Update canvas size
-    DropdownList.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
+    dropdownList.CanvasSize = UDim2.new(0, 0, 0, dropdownUIList.AbsoluteContentSize.Y)
 end
 
-local function updateInventoryDisplay()
-    -- Clear existing items
-    for _, child in pairs(InventoryScroll:GetChildren()) do
-        if child:IsA("Frame") then
-            child:Destroy()
-        end
+-- Update Inventory Display
+local function updateInventory()
+    for _, v in pairs(inventoryFrame:GetChildren()) do
+        if v:IsA("TextButton") then v:Destroy() end
     end
-    
-    if not selectedPlayer then
-        return
-    end
-    
-    -- Get tools from both backpack and character
-    local backpack = selectedPlayer:FindFirstChild("Backpack")
-    local character = selectedPlayer.Character
-    
-    local tools = {}
-    
-    -- Get tools from backpack
-    if backpack then
-        for _, tool in pairs(backpack:GetChildren()) do
-            if tool:IsA("Tool") then
-                table.insert(tools, tool)
+    if selectedPlayer then
+        local items = {}
+        local backpack = selectedPlayer:FindFirstChild("Backpack")
+        local character = selectedPlayer.Character
+        if backpack then
+            for _, item in pairs(backpack:GetChildren()) do
+                if item:IsA("Tool") then
+                    table.insert(items, item)
+                end
             end
         end
-    end
-    
-    -- Get equipped tools from character
-    if character then
-        for _, tool in pairs(character:GetChildren()) do
-            if tool:IsA("Tool") then
-                table.insert(tools, tool)
+        if character then
+            for _, item in pairs(character:GetChildren()) do
+                if item:IsA("Tool") then
+                    table.insert(items, item)
+                end
             end
         end
-    end
-    
-    -- Display all tools
-    for _, tool in pairs(tools) do
-        local itemFrame = Instance.new("Frame")
-        itemFrame.Name = tool.Name
-        itemFrame.Parent = InventoryScroll
-        itemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-        itemFrame.BorderSizePixel = 0
-        itemFrame.Size = UDim2.new(1, 0, 0, 35)
-        
-        local itemCorner = Instance.new("UICorner")
-        itemCorner.CornerRadius = UDim.new(0, 6)
-        itemCorner.Parent = itemFrame
-        
-        local itemName = Instance.new("TextLabel")
-        itemName.Parent = itemFrame
-        itemName.BackgroundTransparency = 1
-        itemName.Position = UDim2.new(0, 10, 0, 0)
-        itemName.Size = UDim2.new(1, -80, 1, 0)
-        itemName.Font = Enum.Font.Gotham
-        itemName.Text = tool.Name
-        itemName.TextColor3 = Color3.fromRGB(200, 200, 200)
-        itemName.TextSize = 11
-        itemName.TextXAlignment = Enum.TextXAlignment.Left
-        
-        local stealButton = Instance.new("TextButton")
-        stealButton.Name = "StealButton"
-        stealButton.Parent = itemFrame
-        stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
-        stealButton.BorderSizePixel = 0
-        stealButton.Position = UDim2.new(1, -65, 0.5, -10)
-        stealButton.Size = UDim2.new(0, 55, 0, 20)
-        stealButton.Font = Enum.Font.GothamBold
-        stealButton.Text = "Steal"
-        stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-        stealButton.TextSize = 10
-        
-        local stealCorner = Instance.new("UICorner")
-        stealCorner.CornerRadius = UDim.new(0, 4)
-        stealCorner.Parent = stealButton
-        
-        stealButton.MouseButton1Click:Connect(function()
-            -- Clone the tool to local player's backpack
-            local clonedTool = tool:Clone()
-            clonedTool.Parent = LocalPlayer.Backpack
-            
-            -- Visual feedback
-            stealButton.Text = "✓"
-            stealButton.BackgroundColor3 = Color3.fromRGB(40, 167, 69)
-            
-            -- Use spawn instead of wait to prevent yielding
-            task.spawn(function()
-                task.wait(1)
-                if stealButton and stealButton.Parent then
-                    stealButton.Text = "Steal"
-                    stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
+        if #items == 0 then
+            showNotification("No tools found in player's inventory!")
+            return
+        end
+        for _, item in pairs(items) do
+            local button = Instance.new("TextButton")
+            button.Size = UDim2.new(1, -6, 0, 25 * scale)
+            button.Position = UDim2.new(0, 3, 0, 0)
+            button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+            button.Text = item.Name
+            button.TextColor3 = Color3.fromRGB(180, 180, 180)
+            button.TextSize = 12 * scale
+            button.Font = Enum.Font.Gotham
+            button.Parent = inventoryFrame
+            button.MouseButton1Click:Connect(function()
+                if table.find(selectedItems, item) then
+                    table.remove(selectedItems, table.find(selectedItems, item))
+                    button.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+                else
+                    table.insert(selectedItems, item)
+                    button.BackgroundColor3 = Color3.fromRGB(55, 55, 55)
                 end
             end)
-        end)
-        
-        -- Hover effects
-        stealButton.MouseEnter:Connect(function()
-            if stealButton.Text == "Steal" then
-                stealButton.BackgroundColor3 = Color3.fromRGB(200, 35, 51)
-            end
-        end)
-        
-        stealButton.MouseLeave:Connect(function()
-            if stealButton.Text == "Steal" then
-                stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
-            end
-        end)
+        end
+    else
+        showNotification("No player selected!")
     end
-    
-    -- Update canvas size
-    InventoryScroll.CanvasSize = UDim2.new(0, 0, 0, InventoryLayout.AbsoluteContentSize.Y + 10)
+    inventoryFrame.CanvasSize = UDim2.new(0, 0, 0, inventoryList.AbsoluteContentSize.Y)
 end
 
--- Drag functionality
-local function updateDrag(input)
-    local delta = input.Position - dragStart
-    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    game:GetService('TweenService'):Create(MainFrame, TweenInfo.new(dragSpeed), {Position = position}):Play()
-    game:GetService('TweenService'):Create(Shadow, TweenInfo.new(dragSpeed), {Position = UDim2.new(position.X.Scale, position.X.Offset - 2, position.Y.Scale, position.Y.Offset - 2)}):Play()
-end
-
-TitleBar.InputBegan:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        dragToggle = true
-        dragStart = input.Position
-        startPos = MainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = false
+-- Steal Functionality
+stealButton.MouseButton1Click:Connect(function()
+    if selectedPlayer and #selectedItems > 0 then
+        local success = false
+        for _, item in pairs(selectedItems) do
+            local success, err = pcall(function()
+                local newItem = item:Clone()
+                newItem.Parent = player.Backpack
+            end)
+            if success then
+                success = true
+            else
+                showNotification("Failed to steal " .. item.Name .. ": " .. err)
             end
-        end)
+        end
+        if success then
+            showNotification("Successfully stole " .. #selectedItems .. " item(s)!", Color3.fromRGB(100, 255, 100))
+            selectedItems = {} -- Clear selection
+            updateInventory()
+        end
+    else
+        showNotification("Select a player and at least one item!")
     end
 end)
 
-UserInputService.InputChanged:Connect(function(input)
-    if (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) and dragToggle then
-        updateDrag(input)
-    end
+-- Dropdown Toggle
+dropdown.MouseButton1Click:Connect(function()
+    dropdownOpen = not dropdownOpen
+    dropdownFrame.Visible = dropdownOpen
 end)
 
--- Button Events
-local isMinimized = false
+-- Update on Player Changes
+Players.PlayerAdded:Connect(updateDropdown)
+Players.PlayerRemoving:Connect(updateDropdown)
+updateDropdown()
 
-MinimizeButton.MouseButton1Click:Connect(function()
-    isMinimized = not isMinimized
-    local targetSize = isMinimized and UDim2.new(0, 400, 0, 35) or UDim2.new(0, 400, 0, 300)
-    local shadowSize = isMinimized and UDim2.new(0, 404, 0, 39) or UDim2.new(0, 404, 0, 304)
-    
-    -- Hide/show content frame instead of just resizing
-    ContentFrame.Visible = not isMinimized
-    
-    TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = targetSize}):Play()
-    TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {Size = shadowSize}):Play()
-    
-    MinimizeButton.Text = isMinimized and "+" or "-"
-end)
-
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
-PlayerDropdown.MouseButton1Click:Connect(function()
-    DropdownList.Visible = not DropdownList.Visible
-    DropdownArrow.Text = DropdownList.Visible and "▲" or "▼"
-    if DropdownList.Visible then
-        updateDropdownList()
-    end
-end)
-
--- Initial setup
-updateDropdownList()
-
--- Update player list when players join/leave
-Players.PlayerAdded:Connect(function(player)
-    updateDropdownList()
-end)
-
-Players.PlayerRemoving:Connect(function(player)
-    if selectedPlayer == player then
-        selectedPlayer = nil
-        PlayerDropdown.Text = "Select Player"
-        updateInventoryDisplay()
-    end
-    updateDropdownList()
-end)
-
-print("Inventory Stealer GUI loaded successfully!")
+-- Modern Look
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 6 * scale)
+corner.Parent = frame
+local topCorner = Instance.new("UICorner")
+topCorner.CornerRadius = UDim.new(0, 6 * scale)
+topCorner.Parent = topBar
+local dropdownCorner = Instance.new("UICorner")
+dropdownCorner.CornerRadius = UDim.new(0, 4 * scale)
+dropdownCorner.Parent = dropdown
+local dropdownFrameCorner = Instance.new("UICorner")
+dropdownFrameCorner.CornerRadius = UDim.new(0, 4 * scale)
+dropdownFrameCorner.Parent = dropdownFrame
+local inventoryCorner = Instance.new("UICorner")
+inventoryCorner.CornerRadius = UDim.new(0, 4 * scale)
+inventoryCorner.Parent = inventoryFrame
+local stealCorner = Instance.new("UICorner")
+stealCorner.CornerRadius = UDim.new(0, 4 * scale)
+stealCorner.Parent = stealButton
