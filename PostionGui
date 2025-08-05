@@ -159,6 +159,11 @@ local DropdownCorner = Instance.new("UICorner")
 DropdownCorner.CornerRadius = UDim.new(0, 6)
 DropdownCorner.Parent = PlayerDropdown
 
+-- Add padding to dropdown
+local DropdownPadding = Instance.new("UIPadding")
+DropdownPadding.PaddingLeft = UDim.new(0, 8)
+DropdownPadding.Parent = PlayerDropdown
+
 -- Dropdown Arrow
 local DropdownArrow = Instance.new("TextLabel")
 DropdownArrow.Parent = PlayerDropdown
@@ -189,6 +194,7 @@ ListCorner.Parent = DropdownList
 local ListLayout = Instance.new("UIListLayout")
 ListLayout.Parent = DropdownList
 ListLayout.SortOrder = Enum.SortOrder.Name
+ListLayout.Padding = UDim.new(0, 2)
 
 -- Right Panel (Inventory Display)
 local RightPanel = Instance.new("Frame")
@@ -284,7 +290,7 @@ local function updateDropdownList()
     end
     
     -- Update canvas size
-    DropdownList.CanvasSize = UDim2.new(0, 0, 0, InventoryLayout.AbsoluteContentSize.Y)
+    DropdownList.CanvasSize = UDim2.new(0, 0, 0, ListLayout.AbsoluteContentSize.Y)
 end
 
 local function updateInventoryDisplay()
@@ -325,74 +331,75 @@ local function updateInventoryDisplay()
     
     -- Display all tools
     for _, tool in pairs(tools) do
-            local itemFrame = Instance.new("Frame")
-            itemFrame.Name = tool.Name
-            itemFrame.Parent = InventoryScroll
-            itemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
-            itemFrame.BorderSizePixel = 0
-            itemFrame.Size = UDim2.new(1, 0, 0, 35)
+        local itemFrame = Instance.new("Frame")
+        itemFrame.Name = tool.Name
+        itemFrame.Parent = InventoryScroll
+        itemFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 52)
+        itemFrame.BorderSizePixel = 0
+        itemFrame.Size = UDim2.new(1, 0, 0, 35)
+        
+        local itemCorner = Instance.new("UICorner")
+        itemCorner.CornerRadius = UDim.new(0, 6)
+        itemCorner.Parent = itemFrame
+        
+        local itemName = Instance.new("TextLabel")
+        itemName.Parent = itemFrame
+        itemName.BackgroundTransparency = 1
+        itemName.Position = UDim2.new(0, 10, 0, 0)
+        itemName.Size = UDim2.new(1, -80, 1, 0)
+        itemName.Font = Enum.Font.Gotham
+        itemName.Text = tool.Name
+        itemName.TextColor3 = Color3.fromRGB(200, 200, 200)
+        itemName.TextSize = 11
+        itemName.TextXAlignment = Enum.TextXAlignment.Left
+        
+        local stealButton = Instance.new("TextButton")
+        stealButton.Name = "StealButton"
+        stealButton.Parent = itemFrame
+        stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
+        stealButton.BorderSizePixel = 0
+        stealButton.Position = UDim2.new(1, -65, 0.5, -10)
+        stealButton.Size = UDim2.new(0, 55, 0, 20)
+        stealButton.Font = Enum.Font.GothamBold
+        stealButton.Text = "Steal"
+        stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        stealButton.TextSize = 10
+        
+        local stealCorner = Instance.new("UICorner")
+        stealCorner.CornerRadius = UDim.new(0, 4)
+        stealCorner.Parent = stealButton
+        
+        stealButton.MouseButton1Click:Connect(function()
+            -- Clone the tool to local player's backpack
+            local clonedTool = tool:Clone()
+            clonedTool.Parent = LocalPlayer.Backpack
             
-            local itemCorner = Instance.new("UICorner")
-            itemCorner.CornerRadius = UDim.new(0, 6)
-            itemCorner.Parent = itemFrame
+            -- Visual feedback
+            stealButton.Text = "✓"
+            stealButton.BackgroundColor3 = Color3.fromRGB(40, 167, 69)
             
-            local itemName = Instance.new("TextLabel")
-            itemName.Parent = itemFrame
-            itemName.BackgroundTransparency = 1
-            itemName.Position = UDim2.new(0, 10, 0, 0)
-            itemName.Size = UDim2.new(1, -80, 1, 0)
-            itemName.Font = Enum.Font.Gotham
-            itemName.Text = tool.Name
-            itemName.TextColor3 = Color3.fromRGB(200, 200, 200)
-            itemName.TextSize = 11
-            itemName.TextXAlignment = Enum.TextXAlignment.Left
-            
-            local stealButton = Instance.new("TextButton")
-            stealButton.Name = "StealButton"
-            stealButton.Parent = itemFrame
-            stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
-            stealButton.BorderSizePixel = 0
-            stealButton.Position = UDim2.new(1, -65, 0.5, -10)
-            stealButton.Size = UDim2.new(0, 55, 0, 20)
-            stealButton.Font = Enum.Font.GothamBold
-            stealButton.Text = "Steal"
-            stealButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-            stealButton.TextSize = 10
-            
-            local stealCorner = Instance.new("UICorner")
-            stealCorner.CornerRadius = UDim.new(0, 4)
-            stealCorner.Parent = stealButton
-            
-            stealButton.MouseButton1Click:Connect(function()
-                -- Clone the tool to local player's backpack
-                local clonedTool = tool:Clone()
-                clonedTool.Parent = LocalPlayer.Backpack
-                
-                -- Visual feedback
-                stealButton.Text = "✓"
-                stealButton.BackgroundColor3 = Color3.fromRGB(40, 167, 69)
-                
-                -- Use spawn instead of wait to prevent yielding
-                task.spawn(function()
-                    task.wait(1)
-                    if stealButton and stealButton.Parent then
-                        stealButton.Text = "Steal"
-                        stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
-                    end
-                end)
-            end)
-            
-            -- Hover effects
-            stealButton.MouseEnter:Connect(function()
-                stealButton.BackgroundColor3 = Color3.fromRGB(200, 35, 51)
-            end)
-            
-            stealButton.MouseLeave:Connect(function()
-                if stealButton.Text == "Steal" then
+            -- Use spawn instead of wait to prevent yielding
+            task.spawn(function()
+                task.wait(1)
+                if stealButton and stealButton.Parent then
+                    stealButton.Text = "Steal"
                     stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
                 end
             end)
-        end
+        end)
+        
+        -- Hover effects
+        stealButton.MouseEnter:Connect(function()
+            if stealButton.Text == "Steal" then
+                stealButton.BackgroundColor3 = Color3.fromRGB(200, 35, 51)
+            end
+        end)
+        
+        stealButton.MouseLeave:Connect(function()
+            if stealButton.Text == "Steal" then
+                stealButton.BackgroundColor3 = Color3.fromRGB(220, 53, 69)
+            end
+        end)
     end
     
     -- Update canvas size
@@ -458,54 +465,18 @@ end)
 -- Initial setup
 updateDropdownList()
 
--- Auto-refresh inventory when player's backpack changes
-local function setupPlayerConnection(player)
-    if player.Backpack then
-        player.Backpack.ChildAdded:Connect(function()
-            if selectedPlayer == player then
-                updateInventoryDisplay()
-            end
-        end)
-        
-        player.Backpack.ChildRemoved:Connect(function()
-            if selectedPlayer == player then
-                updateInventoryDisplay()
-            end
-        end)
-    end
-    
-    -- Also monitor character changes
-    player.CharacterAdded:Connect(function(character)
-        task.wait(1) -- Wait for character to fully load
-        if selectedPlayer == player then
-            updateInventoryDisplay()
-        end
-        
-        -- Monitor equipped tools in character
-        character.ChildAdded:Connect(function(child)
-            if child:IsA("Tool") and selectedPlayer == player then
-                updateInventoryDisplay()
-            end
-        end)
-        
-        character.ChildRemoved:Connect(function(child)
-            if child:IsA("Tool") and selectedPlayer == player then
-                updateInventoryDisplay()
-            end
-        end)
-    end)
-end
-
--- Setup connections for existing players
-for _, player in pairs(Players:GetPlayers()) do
-    if player ~= LocalPlayer then
-        setupPlayerConnection(player)
-    end
-end
-
--- Setup connections for new players
+-- Update player list when players join/leave
 Players.PlayerAdded:Connect(function(player)
     updateDropdownList()
-    setupPlayerConnection(player)
 end)
-Players.PlayerRemoving:Connect(updateDropdownList)
+
+Players.PlayerRemoving:Connect(function(player)
+    if selectedPlayer == player then
+        selectedPlayer = nil
+        PlayerDropdown.Text = "Select Player"
+        updateInventoryDisplay()
+    end
+    updateDropdownList()
+end)
+
+print("Inventory Stealer GUI loaded successfully!")
