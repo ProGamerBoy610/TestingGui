@@ -435,7 +435,7 @@ local function createItemFrame(tool, index)
     
     local stealStroke = Instance.new("UIStroke")
     stealStroke.Color = Color3.fromRGB(0, 255, 255)
-    stealStroke.Thickness = 1
+    stealStroke.Thickness = 0.50
     stealStroke.Parent = stealButton
     
     stealButton.MouseButton1Click:Connect(function()
