@@ -427,7 +427,7 @@ local function createItemFrame(tool, index)
     stealButton.Position = UDim2.new(1, -65, 0, 3)
     stealButton.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
     stealButton.BorderSizePixel = 0
-    stealButton.Text = "COPY"
+    stealButton.Text = "STEAL"
     stealButton.TextColor3 = Color3.fromRGB(0, 255, 255)
     stealButton.TextSize = 9
     stealButton.Font = Enum.Font.Code
