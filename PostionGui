@@ -191,9 +191,11 @@ componentsScrollFrame.Size = UDim2.new(1, -10, 1, -10)
 componentsScrollFrame.Position = UDim2.new(0, 5, 0, 5)
 componentsScrollFrame.BackgroundTransparency = 1
 componentsScrollFrame.BorderSizePixel = 0
-componentsScrollFrame.ScrollBarThickness = 6
+componentsScrollFrame.ScrollBarThickness = 8
 componentsScrollFrame.ScrollBarImageColor3 = HubConfig.Colors.Primary
 componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+componentsScrollFrame.ScrollingEnabled = true
+componentsScrollFrame.ElasticBehavior = Enum.ElasticBehavior.Always
 componentsScrollFrame.Parent = rightSection
 
 local componentsLayout = Instance.new("UIListLayout")
@@ -687,6 +689,10 @@ function Hub:CreateTab(name, icon)
             existingTab.Active = false
             existingTab.TabButton.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
             existingTab.TabButton.TextColor3 = Color3.fromRGB(180, 180, 180)
+            -- Hide all components of other tabs
+            for _, comp in pairs(existingTab.Components) do
+                comp.Visible = false
+            end
         end
         
         -- Activate current tab
@@ -695,23 +701,14 @@ function Hub:CreateTab(name, icon)
         tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
         Hub.CurrentTab = tab
         
-        -- Clear components scroll frame
-        for _, child in pairs(componentsScrollFrame:GetChildren()) do
-            if child:IsA("GuiObject") and child ~= componentsLayout then
-                child:Destroy()
-            end
-        end
-        
-        -- Add tab components
+        -- Show current tab components
         for _, component in pairs(tab.Components) do
-            component.Parent = componentsScrollFrame
+            component.Visible = true
         end
         
         -- Update scroll frame canvas size
-        componentsLayout.Changed:Connect(function()
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end)
-        componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
+        wait(0.1) -- Small delay to ensure layout updates
+        componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 20)
     end
     
     tabButton.MouseButton1Click:Connect(selectTab)
@@ -719,55 +716,43 @@ function Hub:CreateTab(name, icon)
     -- Tab creation functions
     function tab:AddButton(config)
         local button = Hub:CreateButton(componentsScrollFrame, config)
+        button.Visible = false -- Start hidden
         table.insert(self.Components, button)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return button
     end
     
     function tab:AddToggle(config)
         local toggle = Hub:CreateToggle(componentsScrollFrame, config)
+        toggle.Visible = false -- Start hidden
         table.insert(self.Components, toggle)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return toggle
     end
     
     function tab:AddSlider(config)
         local slider = Hub:CreateSlider(componentsScrollFrame, config)
+        slider.Visible = false -- Start hidden
         table.insert(self.Components, slider)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return slider
     end
     
     function tab:AddTextBox(config)
         local textbox = Hub:CreateTextBox(componentsScrollFrame, config)
+        textbox.Visible = false -- Start hidden
         table.insert(self.Components, textbox)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return textbox
     end
     
     function tab:AddDropdown(config)
         local dropdown = Hub:CreateDropdown(componentsScrollFrame, config)
+        dropdown.Visible = false -- Start hidden
         table.insert(self.Components, dropdown)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return dropdown
     end
     
     function tab:AddSection(config)
         local section = Hub:CreateSection(componentsScrollFrame, config)
+        section.Visible = false -- Start hidden
         table.insert(self.Components, section)
-        if self.Active then
-            componentsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, componentsLayout.AbsoluteContentSize.Y + 10)
-        end
         return section
     end
     
@@ -778,6 +763,7 @@ function Hub:CreateTab(name, icon)
     
     -- Select first tab automatically
     if #Hub.Tabs == 1 then
+        wait(0.1) -- Small delay to ensure everything is created
         selectTab()
     end
     
