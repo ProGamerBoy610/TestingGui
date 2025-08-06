@@ -814,8 +814,7 @@ UserInputService.InputBegan:Connect(function(input, gameProcessed)
     end
 end)
 
--- Example Usage:
---[[
+-- Create Example Tabs and Components
 local mainTab = Hub:CreateTab("Main", "⚡")
 mainTab:AddSection({Text = "Player"})
 mainTab:AddButton({
@@ -863,7 +862,41 @@ mainTab:AddDropdown({
 
 local settingsTab = Hub:CreateTab("Settings", "⚙️")
 settingsTab:AddSection({Text = "Configuration"})
--- Add more components to settings tab...
---]]
+settingsTab:AddToggle({
+    Text = "Dark Mode",
+    Default = true,
+    Callback = function(value)
+        print("Dark Mode:", value)
+    end
+})
+
+settingsTab:AddSlider({
+    Text = "GUI Scale",
+    Min = 50,
+    Max = 150,
+    Default = 100,
+    Callback = function(value)
+        print("GUI Scale:", value)
+    end
+})
+
+local combatTab = Hub:CreateTab("Combat", "⚔️")
+combatTab:AddSection({Text = "Auto Combat"})
+combatTab:AddButton({
+    Text = "Start Auto Attack",
+    Color = HubConfig.Colors.Danger,
+    Callback = function()
+        print("Auto Attack Started!")
+    end
+})
+
+combatTab:AddDropdown({
+    Text = "Target Priority",
+    Options = {"Nearest", "Lowest HP", "Highest Level"},
+    Default = "Nearest",
+    Callback = function(option)
+        print("Target Priority:", option)
+    end
+})
 
 return Hub
