@@ -1,10 +1,6 @@
--- Enhanced Phantom Hub - Easy to Edit Structure
--- Similar to Rayfield but with custom styling
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
@@ -16,19 +12,24 @@ PhantomHub.__index = PhantomHub
 -- Configuration
 local Config = {
     HubName = "PHANTOM HUB",
-    Version = "v2.0.0",
+    Version = "v2.1.0",
     Colors = {
-        Background = Color3.fromRGB(25, 25, 35),
-        Sidebar = Color3.fromRGB(20, 20, 30),
-        Primary = Color3.fromRGB(45, 45, 60),
-        Secondary = Color3.fromRGB(35, 35, 50),
-        Accent = Color3.fromRGB(88, 101, 242),
-        Success = Color3.fromRGB(67, 181, 129),
-        Warning = Color3.fromRGB(250, 166, 26),
-        Error = Color3.fromRGB(240, 71, 71),
+        Background = Color3.fromRGB(30, 30, 40),
+        Sidebar = Color3.fromRGB(25, 25, 35),
+        Primary = Color3.fromRGB(50, 50, 65),
+        Secondary = Color3.fromRGB(40, 40, 55),
+        Accent = Color3.fromRGB(100, 110, 255),
+        Success = Color3.fromRGB(80, 200, 120),
+        Warning = Color3.fromRGB(255, 170, 30),
+        Error = Color3.fromRGB(255, 80, 80),
         Text = Color3.fromRGB(255, 255, 255),
-        TextDark = Color3.fromRGB(180, 180, 190),
-        Border = Color3.fromRGB(60, 60, 75)
+        TextDark = Color3.fromRGB(200, 200, 210),
+        Border = Color3.fromRGB(70, 70, 85)
+    },
+    Fonts = {
+        Regular = Enum.Font.Gotham,
+        Bold = Enum.Font.GothamBold,
+        Medium = Enum.Font.GothamMedium
     }
 }
 
@@ -58,13 +59,12 @@ function PhantomHub:CreateWindow(config)
     MainFrame.Parent = ScreenGui
     MainFrame.BackgroundColor3 = Config.Colors.Background
     MainFrame.BorderSizePixel = 0
-    MainFrame.Position = UDim2.new(0.5, -350, 0.5, -225)
-    MainFrame.Size = UDim2.new(0, 700, 0, 450)
+    MainFrame.Position = UDim2.new(0.5, -350, 0.5, -250)
+    MainFrame.Size = UDim2.new(0, 700, 0, 500)
     MainFrame.ClipsDescendants = true
     
-    -- Rounded corners
     local MainCorner = Instance.new("UICorner")
-    MainCorner.CornerRadius = UDim.new(0, 8)
+    MainCorner.CornerRadius = UDim.new(0, 10)
     MainCorner.Parent = MainFrame
     
     -- Drop shadow
@@ -72,14 +72,14 @@ function PhantomHub:CreateWindow(config)
     Shadow.Name = "Shadow"
     Shadow.Parent = ScreenGui
     Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Shadow.BackgroundTransparency = 0.5
+    Shadow.BackgroundTransparency = 0.4
     Shadow.BorderSizePixel = 0
-    Shadow.Position = UDim2.new(0.5, -355, 0.5, -220)
-    Shadow.Size = UDim2.new(0, 710, 0, 460)
+    Shadow.Position = UDim2.new(0.5, -355, 0.5, -245)
+    Shadow.Size = UDim2.new(0, 710, 0, 510)
     Shadow.ZIndex = MainFrame.ZIndex - 1
     
     local ShadowCorner = Instance.new("UICorner")
-    ShadowCorner.CornerRadius = UDim.new(0, 8)
+    ShadowCorner.CornerRadius = UDim.new(0, 10)
     ShadowCorner.Parent = Shadow
     
     -- Title Bar
@@ -88,31 +88,30 @@ function PhantomHub:CreateWindow(config)
     TitleBar.Parent = MainFrame
     TitleBar.BackgroundColor3 = Config.Colors.Sidebar
     TitleBar.BorderSizePixel = 0
-    TitleBar.Size = UDim2.new(1, 0, 0, 40)
+    TitleBar.Size = UDim2.new(1, 0, 0, 50)
     
     local TitleCorner = Instance.new("UICorner")
-    TitleCorner.CornerRadius = UDim.new(0, 8)
+    TitleCorner.CornerRadius = UDim.new(0, 10)
     TitleCorner.Parent = TitleBar
     
-    -- Fix title bar bottom
     local TitleFix = Instance.new("Frame")
     TitleFix.Parent = TitleBar
     TitleFix.BackgroundColor3 = Config.Colors.Sidebar
     TitleFix.BorderSizePixel = 0
-    TitleFix.Position = UDim2.new(0, 0, 0.7, 0)
-    TitleFix.Size = UDim2.new(1, 0, 0.3, 0)
+    TitleFix.Position = UDim2.new(0, 0, 0.8, 0)
+    TitleFix.Size = UDim2.new(1, 0, 0.2, 0)
     
     -- Hub Title
     local HubTitle = Instance.new("TextLabel")
     HubTitle.Name = "HubTitle"
     HubTitle.Parent = TitleBar
     HubTitle.BackgroundTransparency = 1
-    HubTitle.Position = UDim2.new(0, 15, 0, 0)
+    HubTitle.Position = UDim2.new(0, 20, 0, 0)
     HubTitle.Size = UDim2.new(0, 200, 1, 0)
-    HubTitle.Font = Enum.Font.GothamBold
+    HubTitle.Font = Config.Fonts.Bold
     HubTitle.Text = config.HubName or Config.HubName
     HubTitle.TextColor3 = Config.Colors.Text
-    HubTitle.TextSize = 16
+    HubTitle.TextSize = 18
     HubTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     -- Version Label
@@ -120,25 +119,25 @@ function PhantomHub:CreateWindow(config)
     VersionLabel.Name = "VersionLabel"
     VersionLabel.Parent = TitleBar
     VersionLabel.BackgroundTransparency = 1
-    VersionLabel.Position = UDim2.new(0, 220, 0, 0)
+    VersionLabel.Position = UDim2.new(0, 230, 0, 0)
     VersionLabel.Size = UDim2.new(0, 100, 1, 0)
-    VersionLabel.Font = Enum.Font.Gotham
+    VersionLabel.Font = Config.Fonts.Regular
     VersionLabel.Text = Config.Version
     VersionLabel.TextColor3 = Config.Colors.TextDark
-    VersionLabel.TextSize = 12
+    VersionLabel.TextSize = 14
     VersionLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Game Name (fixed positioning)
+    -- Game Name
     local GameName = Instance.new("TextLabel")
     GameName.Name = "GameName"
     GameName.Parent = TitleBar
     GameName.BackgroundTransparency = 1
     GameName.Position = UDim2.new(1, -200, 0, 0)
-    GameName.Size = UDim2.new(0, 140, 1, 0) -- Reduced width to avoid overlap
-    GameName.Font = Enum.Font.Gotham
-    GameName.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name:upper():sub(1, 20) .. "..."
+    GameName.Size = UDim2.new(0, 180, 1, 0)
+    GameName.Font = Config.Fonts.Regular
+    GameName.Text = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name:upper():sub(1, 25) .. "..."
     GameName.TextColor3 = Config.Colors.TextDark
-    GameName.TextSize = 10
+    GameName.TextSize = 12
     GameName.TextXAlignment = Enum.TextXAlignment.Right
     GameName.TextTruncate = Enum.TextTruncate.AtEnd
     
@@ -148,15 +147,15 @@ function PhantomHub:CreateWindow(config)
     MinimizeButton.Parent = TitleBar
     MinimizeButton.BackgroundColor3 = Config.Colors.Warning
     MinimizeButton.BorderSizePixel = 0
-    MinimizeButton.Position = UDim2.new(1, -55, 0, 8)
-    MinimizeButton.Size = UDim2.new(0, 22, 0, 22)
-    MinimizeButton.Font = Enum.Font.GothamBold
+    MinimizeButton.Position = UDim2.new(1, -65, 0, 10)
+    MinimizeButton.Size = UDim2.new(0, 28, 0, 28)
+    MinimizeButton.Font = Config.Fonts.Bold
     MinimizeButton.Text = "–"
     MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    MinimizeButton.TextSize = 12
+    MinimizeButton.TextSize = 14
     
     local MinCorner = Instance.new("UICorner")
-    MinCorner.CornerRadius = UDim.new(0, 4)
+    MinCorner.CornerRadius = UDim.new(0, 6)
     MinCorner.Parent = MinimizeButton
     
     -- Close Button
@@ -165,15 +164,15 @@ function PhantomHub:CreateWindow(config)
     CloseButton.Parent = TitleBar
     CloseButton.BackgroundColor3 = Config.Colors.Error
     CloseButton.BorderSizePixel = 0
-    CloseButton.Position = UDim2.new(1, -30, 0, 8)
-    CloseButton.Size = UDim2.new(0, 22, 0, 22)
-    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.Position = UDim2.new(1, -35, 0, 10)
+    CloseButton.Size = UDim2.new(0, 28, 0, 28)
+    CloseButton.Font = Config.Fonts.Bold
     CloseButton.Text = "✕"
     CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-    CloseButton.TextSize = 12
+    CloseButton.TextSize = 14
     
     local CloseCorner = Instance.new("UICorner")
-    CloseCorner.CornerRadius = UDim.new(0, 4)
+    CloseCorner.CornerRadius = UDim.new(0, 6)
     CloseCorner.Parent = CloseButton
     
     -- Sidebar
@@ -182,8 +181,8 @@ function PhantomHub:CreateWindow(config)
     Sidebar.Parent = MainFrame
     Sidebar.BackgroundColor3 = Config.Colors.Sidebar
     Sidebar.BorderSizePixel = 0
-    Sidebar.Position = UDim2.new(0, 0, 0, 40)
-    Sidebar.Size = UDim2.new(0, 180, 1, -40)
+    Sidebar.Position = UDim2.new(0, 0, 0, 50)
+    Sidebar.Size = UDim2.new(0, 200, 1, -50)
     
     -- Tab Container
     local TabContainer = Instance.new("ScrollingFrame")
@@ -191,9 +190,15 @@ function PhantomHub:CreateWindow(config)
     TabContainer.Parent = Sidebar
     TabContainer.BackgroundTransparency = 1
     TabContainer.BorderSizePixel = 0
-    TabContainer.Size = UDim2.new(1, 0, 1, 0)
+    TabContainer.Position = UDim2.new(0, 0, 0, 10)
+    TabContainer.Size = UDim2.new(1, 0, 1, -10)
     TabContainer.ScrollBarThickness = 0
     TabContainer.CanvasSize = UDim2.new(0, 0, 0, 0)
+    
+    local TabListLayout = Instance.new("UIListLayout")
+    TabListLayout.Parent = TabContainer
+    TabListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabListLayout.Padding = UDim.new(0, 5)
     
     -- Content Area
     local ContentArea = Instance.new("Frame")
@@ -201,8 +206,8 @@ function PhantomHub:CreateWindow(config)
     ContentArea.Parent = MainFrame
     ContentArea.BackgroundColor3 = Config.Colors.Background
     ContentArea.BorderSizePixel = 0
-    ContentArea.Position = UDim2.new(0, 180, 0, 40)
-    ContentArea.Size = UDim2.new(1, -180, 1, -40)
+    ContentArea.Position = UDim2.new(0, 200, 0, 50)
+    ContentArea.Size = UDim2.new(1, -200, 1, -50)
     
     -- Content Header
     local ContentHeader = Instance.new("Frame")
@@ -210,10 +215,10 @@ function PhantomHub:CreateWindow(config)
     ContentHeader.Parent = ContentArea
     ContentHeader.BackgroundColor3 = Config.Colors.Primary
     ContentHeader.BorderSizePixel = 0
-    ContentHeader.Size = UDim2.new(1, 0, 0, 50)
+    ContentHeader.Size = UDim2.new(1, 0, 0, 60)
     
     local HeaderCorner = Instance.new("UICorner")
-    HeaderCorner.CornerRadius = UDim.new(0, 6)
+    HeaderCorner.CornerRadius = UDim.new(0, 8)
     HeaderCorner.Parent = ContentHeader
     
     local HeaderTitle = Instance.new("TextLabel")
@@ -222,10 +227,10 @@ function PhantomHub:CreateWindow(config)
     HeaderTitle.BackgroundTransparency = 1
     HeaderTitle.Position = UDim2.new(0, 20, 0, 0)
     HeaderTitle.Size = UDim2.new(1, -20, 1, 0)
-    HeaderTitle.Font = Enum.Font.GothamBold
+    HeaderTitle.Font = Config.Fonts.Bold
     HeaderTitle.Text = "HOME"
     HeaderTitle.TextColor3 = Config.Colors.Text
-    HeaderTitle.TextSize = 18
+    HeaderTitle.TextSize = 20
     HeaderTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     -- Content Scroll Frame
@@ -240,6 +245,17 @@ function PhantomHub:CreateWindow(config)
     ContentScroll.ScrollBarImageColor3 = Config.Colors.Accent
     ContentScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
     
+    local ContentListLayout = Instance.new("UIListLayout")
+    ContentListLayout.Parent = ContentScroll
+    ContentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentListLayout.Padding = UDim.new(0, 10)
+    
+    local ContentPadding = Instance.new("UIPadding")
+    ContentPadding.Parent = ContentScroll
+    ContentPadding.PaddingLeft = UDim.new(0, 15)
+    ContentPadding.PaddingRight = UDim.new(0, 15)
+    ContentPadding.PaddingTop = UDim.new(0, 15)
+    
     -- Store references
     Window.ScreenGui = ScreenGui
     Window.MainFrame = MainFrame
@@ -253,37 +269,23 @@ function PhantomHub:CreateWindow(config)
         ScreenGui:Destroy()
     end)
     
-    -- Minimize functionality (improved)
+    -- Minimize functionality
     MinimizeButton.MouseButton1Click:Connect(function()
         Window.Minimized = not Window.Minimized
         
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+        
         if Window.Minimized then
-            -- Hide everything except title bar
             Sidebar.Visible = false
             ContentArea.Visible = false
-            
-            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                Size = UDim2.new(0, 700, 0, 40)
-            }):Play()
-            
-            TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                Size = UDim2.new(0, 710, 0, 50)
-            }):Play()
-            
+            TweenService:Create(MainFrame, tweenInfo, {Size = UDim2.new(0, 700, 0, 50)}):Play()
+            TweenService:Create(Shadow, tweenInfo, {Size = UDim2.new(0, 710, 0, 60)}):Play()
             MinimizeButton.Text = "+"
         else
-            -- Show everything
             Sidebar.Visible = true
             ContentArea.Visible = true
-            
-            TweenService:Create(MainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                Size = UDim2.new(0, 700, 0, 450)
-            }):Play()
-            
-            TweenService:Create(Shadow, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                Size = UDim2.new(0, 710, 0, 460)
-            }):Play()
-            
+            TweenService:Create(MainFrame, tweenInfo, {Size = UDim2.new(0, 700, 0, 500)}):Play()
+            TweenService:Create(Shadow, tweenInfo, {Size = UDim2.new(0, 710, 0, 510)}):Play()
             MinimizeButton.Text = "–"
         end
     end)
@@ -334,53 +336,58 @@ function PhantomHub:CreateTab(Window, config)
     TabButton.Parent = Window.TabContainer
     TabButton.BackgroundColor3 = Config.Colors.Secondary
     TabButton.BorderSizePixel = 0
-    TabButton.Position = UDim2.new(0, 0, 0, (tabCount - 1) * 45)
-    TabButton.Size = UDim2.new(1, 0, 0, 40)
+    TabButton.Size = UDim2.new(1, -10, 0, 45)
+    TabButton.Position = UDim2.new(0, 5, 0, 0)
     TabButton.AutoButtonColor = false
     TabButton.Text = ""
     
     local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 6)
+    TabCorner.CornerRadius = UDim.new(0, 8)
     TabCorner.Parent = TabButton
     
-    -- Tab Icon
     local TabIcon = Instance.new("TextLabel")
     TabIcon.Name = "TabIcon"
     TabIcon.Parent = TabButton
     TabIcon.BackgroundTransparency = 1
     TabIcon.Position = UDim2.new(0, 15, 0, 0)
-    TabIcon.Size = UDim2.new(0, 25, 1, 0)
-    TabIcon.Font = Enum.Font.GothamBold
+    TabIcon.Size = UDim2.new(0, 30, 1, 0)
+    TabIcon.Font = Config.Fonts.Bold
     TabIcon.Text = Tab.Icon
     TabIcon.TextColor3 = Config.Colors.TextDark
-    TabIcon.TextSize = 16
+    TabIcon.TextSize = 18
     TabIcon.TextXAlignment = Enum.TextXAlignment.Center
     
-    -- Tab Name
     local TabName = Instance.new("TextLabel")
     TabName.Name = "TabName"
     TabName.Parent = TabButton
     TabName.BackgroundTransparency = 1
-    TabName.Position = UDim2.new(0, 45, 0, 0)
-    TabName.Size = UDim2.new(1, -50, 1, 0)
-    TabName.Font = Enum.Font.GothamMedium
+    TabName.Position = UDim2.new(0, 50, 0, 0)
+    TabName.Size = UDim2.new(1, -60, 1, 0)
+    TabName.Font = Config.Fonts.Medium
     TabName.Text = Tab.Name:upper()
     TabName.TextColor3 = Config.Colors.TextDark
-    TabName.TextSize = 12
+    TabName.TextSize = 14
     TabName.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Tab Content Container
     local TabContent = Instance.new("Frame")
     TabContent.Name = "TabContent_" .. Tab.Name
     TabContent.Parent = Window.ContentScroll
     TabContent.BackgroundTransparency = 1
-    TabContent.BorderSizePixel = 0
     TabContent.Size = UDim2.new(1, 0, 1, 0)
     TabContent.Visible = false
     
-    -- Tab functionality
+    local ContentListLayout = Instance.new("UIListLayout")
+    ContentListLayout.Parent = TabContent
+    ContentListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    ContentListLayout.Padding = UDim.new(0, 10)
+    
+    local ContentPadding = Instance.new("UIPadding")
+    ContentPadding.Parent = TabContent
+    ContentPadding.PaddingLeft = UDim.new(0, 5)
+    ContentPadding.PaddingRight = UDim.new(0, 5)
+    ContentPadding.PaddingTop = UDim.new(0, 5)
+    
     local function SelectTab()
-        -- Deselect all tabs
         for _, tab in pairs(Window.Tabs) do
             tab.Button.BackgroundColor3 = Config.Colors.Secondary
             tab.Icon.TextColor3 = Config.Colors.TextDark
@@ -389,17 +396,15 @@ function PhantomHub:CreateTab(Window, config)
             tab.Active = false
         end
         
-        -- Select this tab
         TabButton.BackgroundColor3 = Config.Colors.Accent
-        TabIcon.TextColor3 = Color3.fromRGB(255, 255, 255)
-        TabName.TextColor3 = Color3.fromRGB(255, 255, 255)
+        TabIcon.TextColor3 = Config.Colors.Text
+        TabName.TextColor3 = Config.Colors.Text
         TabContent.Visible = true
         Tab.Active = true
         Window.CurrentTab = Tab
         Window.HeaderTitle.Text = Tab.Name:upper()
     end
     
-    -- Tab button events
     TabButton.MouseButton1Click:Connect(SelectTab)
     
     TabButton.MouseEnter:Connect(function()
@@ -414,51 +419,47 @@ function PhantomHub:CreateTab(Window, config)
         end
     end)
     
-    -- Store references
     Tab.Button = TabButton
     Tab.Icon = TabIcon
     Tab.Name = TabName
     Tab.Content = TabContent
     
-    -- Add to window
     table.insert(Window.Tabs, Tab)
     
-    -- Auto-select first tab
     if #Window.Tabs == 1 then
         SelectTab()
     end
     
-    -- Update canvas size
-    Window.TabContainer.CanvasSize = UDim2.new(0, 0, 0, #Window.Tabs * 45)
+    Window.TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabListLayout.AbsoluteContentSize.Y)
+    
+    TabListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        Window.TabContainer.CanvasSize = UDim2.new(0, 0, 0, TabListLayout.AbsoluteContentSize.Y)
+    end)
     
     return Tab
 end
 
 -- Create Label
 function PhantomHub:CreateLabel(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
-    
     local Label = Instance.new("TextLabel")
     Label.Name = "Label"
     Label.Parent = Tab.Content
     Label.BackgroundTransparency = 1
-    Label.Position = UDim2.new(0, 20, 0, yPos)
-    Label.Size = UDim2.new(1, -40, 0, 25)
-    Label.Font = Enum.Font.GothamMedium
+    Label.Size = UDim2.new(1, -10, 0, 30)
+    Label.Font = Config.Fonts.Medium
     Label.Text = config.Text or "Label"
     Label.TextColor3 = config.Color or Config.Colors.Text
-    Label.TextSize = config.Size or 14
+    Label.TextSize = config.Size or 16
     Label.TextXAlignment = Enum.TextXAlignment.Left
     
     table.insert(Tab.Elements, Label)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 55 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return Label
 end
 
--- Create Button (toggle style)
+-- Create Button
 function PhantomHub:CreateButton(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
     local active = false
     
     local ButtonFrame = Instance.new("Frame")
@@ -466,11 +467,10 @@ function PhantomHub:CreateButton(Tab, config)
     ButtonFrame.Parent = Tab.Content
     ButtonFrame.BackgroundColor3 = Config.Colors.Secondary
     ButtonFrame.BorderSizePixel = 0
-    ButtonFrame.Position = UDim2.new(0, 20, 0, yPos)
-    ButtonFrame.Size = UDim2.new(1, -40, 0, 45)
+    ButtonFrame.Size = UDim2.new(1, -10, 0, 50)
     
     local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.CornerRadius = UDim.new(0, 8)
     ButtonCorner.Parent = ButtonFrame
     
     local Button = Instance.new("TextButton")
@@ -485,11 +485,11 @@ function PhantomHub:CreateButton(Tab, config)
     ButtonTitle.Parent = ButtonFrame
     ButtonTitle.BackgroundTransparency = 1
     ButtonTitle.Position = UDim2.new(0, 15, 0, 5)
-    ButtonTitle.Size = UDim2.new(1, -70, 0, 20)
-    ButtonTitle.Font = Enum.Font.GothamMedium
+    ButtonTitle.Size = UDim2.new(1, -80, 0, 20)
+    ButtonTitle.Font = Config.Fonts.Medium
     ButtonTitle.Text = config.Name or "Button"
     ButtonTitle.TextColor3 = Config.Colors.Text
-    ButtonTitle.TextSize = 13
+    ButtonTitle.TextSize = 14
     ButtonTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     local ButtonDesc = Instance.new("TextLabel")
@@ -497,24 +497,23 @@ function PhantomHub:CreateButton(Tab, config)
     ButtonDesc.Parent = ButtonFrame
     ButtonDesc.BackgroundTransparency = 1
     ButtonDesc.Position = UDim2.new(0, 15, 0, 25)
-    ButtonDesc.Size = UDim2.new(1, -70, 0, 15)
-    ButtonDesc.Font = Enum.Font.Gotham
+    ButtonDesc.Size = UDim2.new(1, -80, 0, 20)
+    ButtonDesc.Font = Config.Fonts.Regular
     ButtonDesc.Text = config.Description or ""
     ButtonDesc.TextColor3 = Config.Colors.TextDark
-    ButtonDesc.TextSize = 10
+    ButtonDesc.TextSize = 11
     ButtonDesc.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Status indicator
     local StatusBox = Instance.new("Frame")
     StatusBox.Name = "StatusBox"
     StatusBox.Parent = ButtonFrame
     StatusBox.BackgroundColor3 = Config.Colors.Primary
     StatusBox.BorderSizePixel = 0
-    StatusBox.Position = UDim2.new(1, -50, 0.5, -10)
-    StatusBox.Size = UDim2.new(0, 35, 0, 20)
+    StatusBox.Position = UDim2.new(1, -50, 0.5, -12)
+    StatusBox.Size = UDim2.new(0, 40, 0, 24)
     
     local StatusCorner = Instance.new("UICorner")
-    StatusCorner.CornerRadius = UDim.new(0, 4)
+    StatusCorner.CornerRadius = UDim.new(0, 6)
     StatusCorner.Parent = StatusBox
     
     local StatusText = Instance.new("TextLabel")
@@ -522,37 +521,27 @@ function PhantomHub:CreateButton(Tab, config)
     StatusText.Parent = StatusBox
     StatusText.BackgroundTransparency = 1
     StatusText.Size = UDim2.new(1, 0, 1, 0)
-    StatusText.Font = Enum.Font.GothamBold
+    StatusText.Font = Config.Fonts.Bold
     StatusText.Text = "OFF"
     StatusText.TextColor3 = Config.Colors.TextDark
-    StatusText.TextSize = 10
+    StatusText.TextSize = 12
     
-    -- Button events
     Button.MouseButton1Click:Connect(function()
         active = not active
-        
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
         if active then
-            -- Activate
-            TweenService:Create(StatusBox, TweenInfo.new(0.3), {BackgroundColor3 = Config.Colors.Success}):Play()
-            TweenService:Create(StatusText, TweenInfo.new(0.3), {TextColor3 = Color3.fromRGB(255, 255, 255)}):Play()
+            TweenService:Create(StatusBox, tweenInfo, {BackgroundColor3 = Config.Colors.Success}):Play()
+            TweenService:Create(StatusText, tweenInfo, {TextColor3 = Config.Colors.Text}):Play()
             StatusText.Text = "ON"
-            
-            if config.Callback then
-                config.Callback(true)
-            end
+            if config.Callback then config.Callback(true) end
         else
-            -- Deactivate
-            TweenService:Create(StatusBox, TweenInfo.new(0.3), {BackgroundColor3 = Config.Colors.Primary}):Play()
-            TweenService:Create(StatusText, TweenInfo.new(0.3), {TextColor3 = Config.Colors.TextDark}):Play()
+            TweenService:Create(StatusBox, tweenInfo, {BackgroundColor3 = Config.Colors.Primary}):Play()
+            TweenService:Create(StatusText, tweenInfo, {TextColor3 = Config.Colors.TextDark}):Play()
             StatusText.Text = "OFF"
-            
-            if config.Callback then
-                config.Callback(false)
-            end
+            if config.Callback then config.Callback(false) end
         end
     end)
     
-    -- Hover effects
     Button.MouseEnter:Connect(function()
         TweenService:Create(ButtonFrame, TweenInfo.new(0.2), {BackgroundColor3 = Config.Colors.Primary}):Play()
     end)
@@ -562,28 +551,21 @@ function PhantomHub:CreateButton(Tab, config)
     end)
     
     table.insert(Tab.Elements, ButtonFrame)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 55 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return {
         Frame = ButtonFrame,
         SetActive = function(state)
             active = state
-            if active then
-                StatusBox.BackgroundColor3 = Config.Colors.Success
-                StatusText.TextColor3 = Color3.fromRGB(255, 255, 255)
-                StatusText.Text = "ON"
-            else
-                StatusBox.BackgroundColor3 = Config.Colors.Primary
-                StatusText.TextColor3 = Config.Colors.TextDark
-                StatusText.Text = "OFF"
-            end
+            StatusBox.BackgroundColor3 = active and Config.Colors.Success or Config.Colors.Primary
+            StatusText.TextColor3 = active and Config.Colors.Text or Config.Colors.TextDark
+            StatusText.Text = active and "ON" or "OFF"
         end
     }
 end
 
 -- Create Toggle
 function PhantomHub:CreateToggle(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
     local enabled = config.Default or false
     
     local ToggleFrame = Instance.new("Frame")
@@ -591,11 +573,10 @@ function PhantomHub:CreateToggle(Tab, config)
     ToggleFrame.Parent = Tab.Content
     ToggleFrame.BackgroundColor3 = Config.Colors.Secondary
     ToggleFrame.BorderSizePixel = 0
-    ToggleFrame.Position = UDim2.new(0, 20, 0, yPos)
-    ToggleFrame.Size = UDim2.new(1, -40, 0, 45)
+    ToggleFrame.Size = UDim2.new(1, -10, 0, 50)
     
     local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 6)
+    ToggleCorner.CornerRadius = UDim.new(0, 8)
     ToggleCorner.Parent = ToggleFrame
     
     local ToggleButton = Instance.new("TextButton")
@@ -611,10 +592,10 @@ function PhantomHub:CreateToggle(Tab, config)
     ToggleTitle.BackgroundTransparency = 1
     ToggleTitle.Position = UDim2.new(0, 15, 0, 5)
     ToggleTitle.Size = UDim2.new(1, -80, 0, 20)
-    ToggleTitle.Font = Enum.Font.GothamMedium
+    ToggleTitle.Font = Config.Fonts.Medium
     ToggleTitle.Text = config.Name or "Toggle"
     ToggleTitle.TextColor3 = Config.Colors.Text
-    ToggleTitle.TextSize = 13
+    ToggleTitle.TextSize = 14
     ToggleTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     local ToggleDesc = Instance.new("TextLabel")
@@ -622,24 +603,23 @@ function PhantomHub:CreateToggle(Tab, config)
     ToggleDesc.Parent = ToggleFrame
     ToggleDesc.BackgroundTransparency = 1
     ToggleDesc.Position = UDim2.new(0, 15, 0, 25)
-    ToggleDesc.Size = UDim2.new(1, -80, 0, 15)
-    ToggleDesc.Font = Enum.Font.Gotham
+    ToggleDesc.Size = UDim2.new(1, -80, 0, 20)
+    ToggleDesc.Font = Config.Fonts.Regular
     ToggleDesc.Text = config.Description or ""
     ToggleDesc.TextColor3 = Config.Colors.TextDark
-    ToggleDesc.TextSize = 10
+    ToggleDesc.TextSize = 11
     ToggleDesc.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Toggle Switch
     local ToggleSwitch = Instance.new("Frame")
     ToggleSwitch.Name = "ToggleSwitch"
     ToggleSwitch.Parent = ToggleFrame
-    ToggleSwitch.BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(60, 60, 70)
+    ToggleSwitch.BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(70, 70, 80)
     ToggleSwitch.BorderSizePixel = 0
-    ToggleSwitch.Position = UDim2.new(1, -55, 0.5, -10)
-    ToggleSwitch.Size = UDim2.new(0, 40, 0, 20)
+    ToggleSwitch.Position = UDim2.new(1, -60, 0.5, -12)
+    ToggleSwitch.Size = UDim2.new(0, 45, 0, 24)
     
     local SwitchCorner = Instance.new("UICorner")
-    SwitchCorner.CornerRadius = UDim.new(0, 10)
+    SwitchCorner.CornerRadius = UDim.new(0, 12)
     SwitchCorner.Parent = ToggleSwitch
     
     local ToggleKnob = Instance.new("Frame")
@@ -647,31 +627,25 @@ function PhantomHub:CreateToggle(Tab, config)
     ToggleKnob.Parent = ToggleSwitch
     ToggleKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     ToggleKnob.BorderSizePixel = 0
-    ToggleKnob.Position = enabled and UDim2.new(0, 22, 0, 2) or UDim2.new(0, 2, 0, 2)
-    ToggleKnob.Size = UDim2.new(0, 16, 0, 16)
+    ToggleKnob.Position = enabled and UDim2.new(0, 25, 0, 3) or UDim2.new(0, 3, 0, 3)
+    ToggleKnob.Size = UDim2.new(0, 18, 0, 18)
     
     local KnobCorner = Instance.new("UICorner")
-    KnobCorner.CornerRadius = UDim.new(0, 8)
+    KnobCorner.CornerRadius = UDim.new(0, 9)
     KnobCorner.Parent = ToggleKnob
     
-    -- Toggle functionality
     ToggleButton.MouseButton1Click:Connect(function()
         enabled = not enabled
-        
-        TweenService:Create(ToggleSwitch, TweenInfo.new(0.3), {
-            BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(60, 60, 70)
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
+        TweenService:Create(ToggleSwitch, tweenInfo, {
+            BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(70, 70, 80)
         }):Play()
-        
-        TweenService:Create(ToggleKnob, TweenInfo.new(0.3), {
-            Position = enabled and UDim2.new(0, 22, 0, 2) or UDim2.new(0, 2, 0, 2)
+        TweenService:Create(ToggleKnob, tweenInfo, {
+            Position = enabled and UDim2.new(0, 25, 0, 3) or UDim2.new(0, 3, 0, 3)
         }):Play()
-        
-        if config.Callback then
-            config.Callback(enabled)
-        end
+        if config.Callback then config.Callback(enabled) end
     end)
     
-    -- Hover effects
     ToggleButton.MouseEnter:Connect(function()
         TweenService:Create(ToggleFrame, TweenInfo.new(0.2), {BackgroundColor3 = Config.Colors.Primary}):Play()
     end)
@@ -681,21 +655,20 @@ function PhantomHub:CreateToggle(Tab, config)
     end)
     
     table.insert(Tab.Elements, ToggleFrame)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 55 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return {
         Frame = ToggleFrame,
         SetValue = function(value)
             enabled = value
-            ToggleSwitch.BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(60, 60, 70)
-            ToggleKnob.Position = enabled and UDim2.new(0, 22, 0, 2) or UDim2.new(0, 2, 0, 2)
+            ToggleSwitchiglianoSwitch.BackgroundColor3 = enabled and Config.Colors.Success or Color3.fromRGB(70, 70, 80)
+            ToggleKnob.Position = enabled and UDim2.new(0, 25, 0, 3) or UDim2.new(0, 3, 0, 3)
         end
     }
 end
 
 -- Create Slider
 function PhantomHub:CreateSlider(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
     local min = config.Min or 0
     local max = config.Max or 100
     local default = config.Default or min
@@ -706,11 +679,10 @@ function PhantomHub:CreateSlider(Tab, config)
     SliderFrame.Parent = Tab.Content
     SliderFrame.BackgroundColor3 = Config.Colors.Secondary
     SliderFrame.BorderSizePixel = 0
-    SliderFrame.Position = UDim2.new(0, 20, 0, yPos)
-    SliderFrame.Size = UDim2.new(1, -40, 0, 60)
+    SliderFrame.Size = UDim2.new(1, -10, 0, 70)
     
     local SliderCorner = Instance.new("UICorner")
-    SliderCorner.CornerRadius = UDim.new(0, 6)
+    SliderCorner.CornerRadius = UDim.new(0, 8)
     SliderCorner.Parent = SliderFrame
     
     local SliderTitle = Instance.new("TextLabel")
@@ -718,11 +690,11 @@ function PhantomHub:CreateSlider(Tab, config)
     SliderTitle.Parent = SliderFrame
     SliderTitle.BackgroundTransparency = 1
     SliderTitle.Position = UDim2.new(0, 15, 0, 5)
-    SliderTitle.Size = UDim2.new(0.6, 0, 0, 20)
-    SliderTitle.Font = Enum.Font.GothamMedium
+    SliderTitle.Size = UDim2.new(0.6, 0, 0, 25)
+    SliderTitle.Font = Config.Fonts.Medium
     SliderTitle.Text = config.Name or "Slider"
     SliderTitle.TextColor3 = Config.Colors.Text
-    SliderTitle.TextSize = 13
+    SliderTitle.TextSize = 14
     SliderTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     local ValueLabel = Instance.new("TextLabel")
@@ -730,39 +702,39 @@ function PhantomHub:CreateSlider(Tab, config)
     ValueLabel.Parent = SliderFrame
     ValueLabel.BackgroundTransparency = 1
     ValueLabel.Position = UDim2.new(0.6, 0, 0, 5)
-    ValueLabel.Size = UDim2.new(0.4, -15, 0, 20)
-    ValueLabel.Font = Enum.Font.GothamBold
+    ValueLabel.Size = UDim2.new(0.4, -15, 0, 25)
+    ValueLabel.Font = Config.Fonts.Bold
     ValueLabel.Text = tostring(currentValue)
     ValueLabel.TextColor3 = Config.Colors.Accent
-    ValueLabel.TextSize = 13
+    ValueLabel.TextSize = 14
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
     
     local SliderDesc = Instance.new("TextLabel")
     SliderDesc.Name = "SliderDesc"
     SliderDesc.Parent = SliderFrame
-    SliderDesc.BackgroundTransparency = 1
-    SliderDesc.Position = UDim2.new(0, 15, 0, 25)
-    SliderDesc.Size = UDim2.new(1, -15, 0, 15)
-    SliderDesc.Font = Enum.Font.Gotham
+    SliderDesc.Background不支持
+
+    BackgroundTransparency = 1
+    SliderDesc.Position = UDim2.new(0, 15, 0, 30)
+    SliderDesc.Size = UDim2.new(1, -15, 0, 20)
+    SliderDesc.Font = Config.Fonts.Regular
     SliderDesc.Text = config.Description or ""
     SliderDesc.TextColor3 = Config.Colors.TextDark
-    SliderDesc.TextSize = 10
+    SliderDesc.TextSize = 11
     SliderDesc.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Slider Track
     local SliderTrack = Instance.new("Frame")
     SliderTrack.Name = "SliderTrack"
     SliderTrack.Parent = SliderFrame
-    SliderTrack.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+    SliderTrack.BackgroundColor3 = Color3.fromRGB(70, 70, 80)
     SliderTrack.BorderSizePixel = 0
-    SliderTrack.Position = UDim2.new(0, 15, 1, -15)
-    SliderTrack.Size = UDim2.new(1, -30, 0, 6)
+    SliderTrack.Position = UDim2.new(0, 15, 1, -20)
+    SliderTrack.Size = UDim2.new(1, -30, 0, 8)
     
     local TrackCorner = Instance.new("UICorner")
-    TrackCorner.CornerRadius = UDim.new(0, 3)
+    TrackCorner.CornerRadius = UDim.new(0, 4)
     TrackCorner.Parent = SliderTrack
     
-    -- Slider Fill
     local SliderFill = Instance.new("Frame")
     SliderFill.Name = "SliderFill"
     SliderFill.Parent = SliderTrack
@@ -771,24 +743,22 @@ function PhantomHub:CreateSlider(Tab, config)
     SliderFill.Size = UDim2.new((currentValue - min) / (max - min), 0, 1, 0)
     
     local FillCorner = Instance.new("UICorner")
-    FillCorner.CornerRadius = UDim.new(0, 3)
+    FillCorner.CornerRadius = UDim.new(0, 4)
     FillCorner.Parent = SliderFill
     
-    -- Slider Button
     local SliderButton = Instance.new("TextButton")
     SliderButton.Name = "SliderButton"
     SliderButton.Parent = SliderTrack
     SliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     SliderButton.BorderSizePixel = 0
-    SliderButton.Position = UDim2.new((currentValue - min) / (max - min), -8, 0.5, -8)
-    SliderButton.Size = UDim2.new(0, 16, 0, 16)
+    SliderButton.Position = UDim2.new((currentValue - min) / (max - min), -10, 0.5, -10)
+    SliderButton.Size = UDim2.new(0, 20, 0, 20)
     SliderButton.Text = ""
     
     local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.CornerRadius = UDim.new(0, 10)
     ButtonCorner.Parent = SliderButton
     
-    -- Slider functionality
     local dragging = false
     
     SliderButton.InputBegan:Connect(function(input)
@@ -806,23 +776,18 @@ function PhantomHub:CreateSlider(Tab, config)
     UserInputService.InputChanged:Connect(function(input)
         if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
             local mousePos = UserInputService:GetMouseLocation()
-            local relativePos = mousePos.X - SliderTrack.AbsolutePosition.X
+            local relativePos = mousePos.X - SliderTrack.AbsoluteBrandonPosition.X
             local percentage = math.clamp(relativePos / SliderTrack.AbsoluteSize.X, 0, 1)
-            
-            currentValue = math.floor(min + (max - min) * percentage)
+            currentValue = min + (max - min) * percentage
             ValueLabel.Text = tostring(currentValue)
-            
-            SliderButton.Position = UDim2.new(percentage, -8, 0.5, -8)
+            SliderButton.Position = UDim2.new(percentage, -10, 0.5, -10)
             SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
-            
-            if config.Callback then
-                config.Callback(currentValue)
-            end
+            if config.Callback then config.Callback(currentValue) end
         end
     end)
     
     table.insert(Tab.Elements, SliderFrame)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 70 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return {
         Frame = SliderFrame,
@@ -830,7 +795,7 @@ function PhantomHub:CreateSlider(Tab, config)
             currentValue = math.clamp(value, min, max)
             ValueLabel.Text = tostring(currentValue)
             local percentage = (currentValue - min) / (max - min)
-            SliderButton.Position = UDim2.new(percentage, -8, 0.5, -8)
+            SliderButton.Position = UDim2.new(percentage, -10, 0.5, -10)
             SliderFill.Size = UDim2.new(percentage, 0, 1, 0)
         end
     }
@@ -838,18 +803,15 @@ end
 
 -- Create TextBox
 function PhantomHub:CreateTextBox(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
-    
     local TextBoxFrame = Instance.new("Frame")
     TextBoxFrame.Name = "TextBoxFrame"
     TextBoxFrame.Parent = Tab.Content
     TextBoxFrame.BackgroundColor3 = Config.Colors.Secondary
     TextBoxFrame.BorderSizePixel = 0
-    TextBoxFrame.Position = UDim2.new(0, 20, 0, yPos)
-    TextBoxFrame.Size = UDim2.new(1, -40, 0, 60)
+    TextBoxFrame.Size = UDim2.new(1, -10, 0, 50)
     
     local TextBoxCorner = Instance.new("UICorner")
-    TextBoxCorner.CornerRadius = UDim.new(0, 6)
+    TextBoxCorner.CornerRadius = UDim.new(0, 8)
     TextBoxCorner.Parent = TextBoxFrame
     
     local TextBoxTitle = Instance.new("TextLabel")
@@ -858,10 +820,10 @@ function PhantomHub:CreateTextBox(Tab, config)
     TextBoxTitle.BackgroundTransparency = 1
     TextBoxTitle.Position = UDim2.new(0, 15, 0, 5)
     TextBoxTitle.Size = UDim2.new(1, -15, 0, 20)
-    TextBoxTitle.Font = Enum.Font.GothamMedium
+    TextBoxTitle.Font = Config.Fonts.Medium
     TextBoxTitle.Text = config.Name or "TextBox"
     TextBoxTitle.TextColor3 = Config.Colors.Text
-    TextBoxTitle.TextSize = 13
+    TextBoxTitle.TextSize = 14
     TextBoxTitle.TextXAlignment = Enum.TextXAlignment.Left
     
     local TextBox = Instance.new("TextBox")
@@ -869,9 +831,9 @@ function PhantomHub:CreateTextBox(Tab, config)
     TextBox.Parent = TextBoxFrame
     TextBox.BackgroundColor3 = Config.Colors.Primary
     TextBox.BorderSizePixel = 0
-    TextBox.Position = UDim2.new(0, 15, 0, 30)
-    TextBox.Size = UDim2.new(1, -30, 0, 25)
-    TextBox.Font = Enum.Font.Gotham
+    TextBox.Position = UDim2.new(0, 15, 0, 25)
+    TextBox.Size = UDim2.new(1, -30, 0, 20)
+    TextBox.Font = Config.Fonts.Regular
     TextBox.PlaceholderText = config.PlaceholderText or "Enter text..."
     TextBox.Text = config.Default or ""
     TextBox.TextColor3 = Config.Colors.Text
@@ -880,18 +842,15 @@ function PhantomHub:CreateTextBox(Tab, config)
     TextBox.ClearTextOnFocus = false
     
     local TextBoxInputCorner = Instance.new("UICorner")
-    TextBoxInputCorner.CornerRadius = UDim.new(0, 4)
+    TextBoxInputCorner.CornerRadius = UDim.new(0, 6)
     TextBoxInputCorner.Parent = TextBox
     
-    -- TextBox events
     TextBox.FocusLost:Connect(function(enterPressed)
-        if config.Callback then
-            config.Callback(TextBox.Text)
-        end
+        if config.Callback then config.Callback(TextBox.Text) end
     end)
     
     table.insert(Tab.Elements, TextBoxFrame)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 70 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return {
         Frame = TextBoxFrame,
@@ -906,7 +865,6 @@ end
 
 -- Create Dropdown
 function PhantomHub:CreateDropdown(Tab, config)
-    local yPos = #Tab.Elements * 55 + 20
     local options = config.Options or {"Option 1", "Option 2"}
     local selected = config.Default or options[1]
     local isOpen = false
@@ -916,12 +874,11 @@ function PhantomHub:CreateDropdown(Tab, config)
     DropdownFrame.Parent = Tab.Content
     DropdownFrame.BackgroundColor3 = Config.Colors.Secondary
     DropdownFrame.BorderSizePixel = 0
-    DropdownFrame.Position = UDim2.new(0, 20, 0, yPos)
-    DropdownFrame.Size = UDim2.new(1, -40, 0, 60)
+    DropdownFrame.Size = UDim2.new(1, -10, 0, 50)
     DropdownFrame.ClipsDescendants = true
     
     local DropdownCorner = Instance.new("UICorner")
-    DropdownCorner.CornerRadius = UDim.new(0, 6)
+    DropdownCorner.CornerRadius = UDim.new(0, 8)
     DropdownCorner.Parent = DropdownFrame
     
     local DropdownTitle = Instance.new("TextLabel")
@@ -930,85 +887,80 @@ function PhantomHub:CreateDropdown(Tab, config)
     DropdownTitle.BackgroundTransparency = 1
     DropdownTitle.Position = UDim2.new(0, 15, 0, 5)
     DropdownTitle.Size = UDim2.new(1, -15, 0, 20)
-    DropdownTitle.Font = Enum.Font.GothamMedium
+    DropdownTitle.Font = Config.Fonts.Medium
     DropdownTitle.Text = config.Name or "Dropdown"
     DropdownTitle.TextColor3 = Config.Colors.Text
-    DropdownTitle.TextSize = 13
+    DropdownTitle.TextSize = 14
     DropdownTitle.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Dropdown Button
     local DropdownButton = Instance.new("TextButton")
     DropdownButton.Name = "DropdownButton"
     DropdownButton.Parent = DropdownFrame
     DropdownButton.BackgroundColor3 = Config.Colors.Primary
     DropdownButton.BorderSizePixel = 0
-    DropdownButton.Position = UDim2.new(0, 15, 0, 30)
-    DropdownButton.Size = UDim2.new(1, -30, 0, 25)
-    DropdownButton.Font = Enum.Font.Gotham
+    DropdownButton.Position = UDim2.new(0, 15, 0, 25)
+    DropdownButton.Size = UDim2.new(1, -30, 0, 20)
+    DropdownButton.Font = Config.Fonts.Regular
     DropdownButton.Text = selected
     DropdownButton.TextColor3 = Config.Colors.Text
     DropdownButton.TextSize = 12
     DropdownButton.TextXAlignment = Enum.TextXAlignment.Left
     
     local DropdownButtonCorner = Instance.new("UICorner")
-    DropdownButtonCorner.CornerRadius = UDim.new(0, 4)
+    DropdownButtonCorner.CornerRadius = UDim.new(0, 6)
     DropdownButtonCorner.Parent = DropdownButton
     
-    -- Dropdown Arrow
     local DropdownArrow = Instance.new("TextLabel")
     DropdownArrow.Name = "DropdownArrow"
     DropdownArrow.Parent = DropdownButton
     DropdownArrow.BackgroundTransparency = 1
     DropdownArrow.Position = UDim2.new(1, -25, 0, 0)
-    DropdownArrow.Size = UDim2.new(0, 25, 1, 0)
-    DropdownArrow.Font = Enum.Font.GothamBold
+    DropdownArrow.Size = UDim2.new(0, 20, 1, 0)
+    DropdownArrow.Font = Config.Fonts.Bold
     DropdownArrow.Text = "▼"
     DropdownArrow.TextColor3 = Config.Colors.TextDark
     DropdownArrow.TextSize = 12
     
-    -- Options Container
     local OptionsContainer = Instance.new("ScrollingFrame")
     OptionsContainer.Name = "OptionsContainer"
     OptionsContainer.Parent = DropdownFrame
     OptionsContainer.BackgroundTransparency = 1
     OptionsContainer.BorderSizePixel = 0
-    OptionsContainer.Position = UDim2.new(0, 15, 0, 60)
+    OptionsContainer.Position = UDim2.new(0, 15, 0, 50)
     OptionsContainer.Size = UDim2.new(1, -30, 0, 0)
     OptionsContainer.ScrollBarThickness = 4
     OptionsContainer.ScrollBarImageColor3 = Config.Colors.Accent
     
-    -- Create option buttons
+    local OptionsListLayout = Instance.new("UIListLayout")
+    OptionsListLayout.Parent = OptionsContainer
+    OptionsListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    
     for i, option in pairs(options) do
         local OptionButton = Instance.new("TextButton")
         OptionButton.Name = "Option_" .. i
         OptionButton.Parent = OptionsContainer
         OptionButton.BackgroundColor3 = Config.Colors.Primary
         OptionButton.BorderSizePixel = 0
-        OptionButton.Position = UDim2.new(0, 0, 0, (i - 1) * 25)
-        OptionButton.Size = UDim2.new(1, 0, 0, 25)
-        OptionButton.Font = Enum.Font.Gotham
+        OptionButton.Position = UDim2.new(0, 0, 0, (i - 1) * 30)
+        OptionButton.Size = UDim2.new(1, 0, 0, 30)
+        OptionButton.Font = Config.Fonts.Regular
         OptionButton.Text = option
         OptionButton.TextColor3 = Config.Colors.Text
-        OptionButton.TextSize = 11
+        OptionButton.TextSize = 12
         OptionButton.TextXAlignment = Enum.TextXAlignment.Left
         
         local OptionCorner = Instance.new("UICorner")
-        OptionCorner.CornerRadius = UDim.new(0, 4)
+        OptionCorner.CornerRadius = UDim.new(0, 6)
         OptionCorner.Parent = OptionButton
         
         OptionButton.MouseButton1Click:Connect(function()
             selected = option
             DropdownButton.Text = selected
-            
-            -- Close dropdown
             isOpen = false
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -40, 0, 60)}):Play()
+            TweenService:Create(DropdownFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -10, 0, 50)}):Play()
             TweenService:Create(OptionsContainer, TweenInfo.new(0.3), {Size = UDim2.new(1, -30, 0, 0)}):Play()
             TweenService:Create(DropdownArrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
-            
-            if config.Callback then
-                config.Callback(selected)
-            end
+            if config.Callback then config.Callback(selected) end
         end)
         
         OptionButton.MouseEnter:Connect(function()
@@ -1020,26 +972,25 @@ function PhantomHub:CreateDropdown(Tab, config)
         end)
     end
     
-    OptionsContainer.CanvasSize = UDim2.new(0, 0, 0, #options * 25)
+    OptionsContainer.CanvasSize = UDim2.new(0, 0, 0, OptionsListLayout.AbsoluteContentSize.Y)
     
-    -- Dropdown functionality
     DropdownButton.MouseButton1Click:Connect(function()
         isOpen = not isOpen
-        
+        local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad)
+        local optionsHeight = math.min(#options * 30, 120)
         if isOpen then
-            local optionsHeight = math.min(#options * 25, 100)
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -40, 0, 60 + optionsHeight)}):Play()
-            TweenService:Create(OptionsContainer, TweenInfo.new(0.3), {Size = UDim2.new(1, -30, 0, optionsHeight)}):Play()
-            TweenService:Create(DropdownArrow, TweenInfo.new(0.3), {Rotation = 180}):Play()
+            TweenService:Create(DropdownFrame, tweenInfo, {Size = UDim2.new(1, -10, 0, 50 + optionsHeight)}):Play()
+            TweenService:Create(OptionsContainer, tweenInfo, {Size = UDim2.new(1, -30, 0, optionsHeight)}):Play()
+            TweenService:Create(DropdownArrow, tweenInfo, {Rotation = 180}):Play()
         else
-            TweenService:Create(DropdownFrame, TweenInfo.new(0.3), {Size = UDim2.new(1, -40, 0, 60)}):Play()
-            TweenService:Create(OptionsContainer, TweenInfo.new(0.3), {Size = UDim2.new(1, -30, 0, 0)}):Play()
-            TweenService:Create(DropdownArrow, TweenInfo.new(0.3), {Rotation = 0}):Play()
+            TweenService:Create(DropdownFrame, tweenInfo, {Size = UDim2.new(1, -10, 0, 50)}):Play()
+            TweenService:Create(OptionsContainer, tweenInfo, {Size = UDim2.new(1, -30, 0, 0)}):Play()
+            TweenService:Create(DropdownArrow, tweenInfo, {Rotation = 0}):Play()
         end
     end)
     
     table.insert(Tab.Elements, DropdownFrame)
-    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, #Tab.Elements * 70 + 40)
+    Tab.Content.Parent.CanvasSize = UDim2.new(0, 0, 0, Tab.Content.UIListLayout.AbsoluteContentSize.Y + 20)
     
     return {
         Frame = DropdownFrame,
@@ -1069,7 +1020,7 @@ local ExecutorTab = PhantomHub:CreateTab(Window, {
 })
 
 local FeaturesTab = PhantomHub:CreateTab(Window, {
-    Name = "Features", 
+    Name = "Features",
     Icon = "🎯"
 })
 
@@ -1087,19 +1038,19 @@ local SettingsTab = PhantomHub:CreateTab(Window, {
 PhantomHub:CreateLabel(HomeTab, {
     Text = "Welcome to Phantom Hub!",
     Color = Config.Colors.Accent,
-    Size = 16
+    Size = 18
 })
 
 PhantomHub:CreateLabel(HomeTab, {
-    Text = "Easy to use script hub with modern design",
+    Text = "Modern script hub for Roblox executors",
     Color = Config.Colors.TextDark,
-    Size = 12
+    Size = 14
 })
 
 -- Executor Tab Elements
 PhantomHub:CreateToggle(ExecutorTab, {
     Name = "Speed Hack",
-    Description = "Increase your movement speed",
+    Description = "Increase movement speed",
     Default = false,
     Callback = function(enabled)
         if enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -1131,7 +1082,7 @@ PhantomHub:CreateButton(ExecutorTab, {
     end
 })
 
--- Features Tab Elements  
+-- Features Tab Elements
 PhantomHub:CreateSlider(FeaturesTab, {
     Name = "Speed Multiplier",
     Description = "Adjust movement speed",
@@ -1173,7 +1124,7 @@ PhantomHub:CreateButton(SpawnerTab, {
 })
 
 PhantomHub:CreateButton(SpawnerTab, {
-    Name = "Item Spawner", 
+    Name = "Item Spawner",
     Description = "Create any game item",
     Callback = function(active)
         print("Item spawner:", active)
@@ -1184,7 +1135,7 @@ PhantomHub:CreateButton(SpawnerTab, {
 PhantomHub:CreateLabel(SettingsTab, {
     Text = "UI Settings",
     Color = Config.Colors.Accent,
-    Size = 14
+    Size = 16
 })
 
 PhantomHub:CreateDropdown(SettingsTab, {
@@ -1196,5 +1147,5 @@ PhantomHub:CreateDropdown(SettingsTab, {
     end
 })
 
-print("🚀 Enhanced Phantom Hub loaded successfully!")
-print("📝 Easy to edit - Just modify the example usage section!")
+print("🚀 Enhanced Phantom Hub v2.1 loaded successfully!")
+print("📝 Optimized for Roblox executors with modern design!")
