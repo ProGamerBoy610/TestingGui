@@ -864,9 +864,17 @@ function Library:CreateWindow(options)
 end
 
 -- Create the window and tabs with content
-local window = Library:CreateWindow({Title = "GROW A GARDEN"})
+local window = Library:CreateWindow({Title = "Fryzer Hub"})
 
 local homeTab = window:CreateTab("HOME")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateHeader("SPAWNER SCRIPT")
 homeTab:CreateHeader("SPAWNER SCRIPT")
 homeTab:CreateLabel("Make Sure to only Execute Dark Spawner 1x")
 homeTab:CreateLabel("Dark Spawner [ Mobile Only ]")
