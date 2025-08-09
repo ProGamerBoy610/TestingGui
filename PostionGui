@@ -1,16 +1,11 @@
--- Modern Fryzer Hub Script (Fixed)
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+--Pet dupe with sell SCRIPT GAG
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- Services
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
 
--- Player reference
-local LocalPlayer = Players.LocalPlayer
-
--- Utility functions
+-- Gradient text function (used in popup)
 local function gradient(text, startColor, endColor)
     local result = ""
     for i = 1, #text do
@@ -23,7 +18,7 @@ local function gradient(text, startColor, endColor)
     return result
 end
 
--- Confirmation popup
+-- Popup before loading
 local Confirmed = false
 WindUI:Popup({
     Title = "Confirmation",
@@ -43,21 +38,21 @@ WindUI:Popup({
         }
     }
 })
-
 repeat task.wait() until Confirmed
 
--- Create main window (using original structure)
+-- Window creation (KeySystem removed)
 local Window = WindUI:CreateWindow({
-    Title = "Fryzer Hub v2.0",
+    Title = "Fryzer Hub",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
-    Author = "Grow a garden - Modernized",
-    Folder = "FryzerHub",
+    Author = "Grow a garden",
+    Folder = "YourHub",
     Size = UDim2.fromOffset(580, 360),
     Transparent = true,
     Theme = "Dark",
     SideBarWidth = 200,
     ScrollBarEnabled = true,
+
     User = {
         Enabled = true,
         Anonymous = false,
@@ -71,7 +66,7 @@ local Window = WindUI:CreateWindow({
 
 -- UI open button
 Window:EditOpenButton({
-    Title = "Open Hub",
+    Title = "Open UI",
     Icon = "monitor",
     CornerRadius = UDim.new(0, 16),
     StrokeThickness = 2,
@@ -79,7 +74,13 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- Game data
+-- Main Tab
+local MainTab = Window:Tab({
+    Title = "Player",
+    Icon = "user"
+})
+
+-- Teleport locations
 local locations = {
     ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
     ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
@@ -93,50 +94,16 @@ local locations = {
     ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
 }
 
-local seeds = {
-    "Apple", "Bamboo", "Beanstalk", "Blueberry", "Burning Bud",
-    "Cacao", "Cactus", "Carrot", "Coconut", "Corn", "Daffodil",
-    "Dragon Fruit", "Elder Strawberry", "Ember Lily", "Giant Pinecone",
-    "Grape", "Mango", "Mushroom", "Orange Tulip", "Pepper",
-    "Pumpkin", "Strawberry", "Sugar Apple", "Tomato", "Watermelon"
-}
-
--- Script state
 local selectedLocation = "Event Area"
-local selectedSeeds = {"ALL"}
-local autoFarmEnabled = false
-local autoBuyEnabled = false
-local playerFarm = nil
 
--- Create tabs
-local PlayerTab = Window:Tab({
-    Title = "Player",
-    Icon = "user"
-})
-
-local FarmTab = Window:Tab({
-    Title = "Auto Farm",
-    Icon = "repeat"
-})
-
-local FunctionsTab = Window:Tab({
-    Title = "Functions",
-    Icon = "send"
-})
-
-local ScriptsTab = Window:Tab({
-    Title = "Scripts",
-    Icon = "code"
-})
-
--- Player Tab Content
-PlayerTab:Paragraph({
+-- Welcome Paragraph
+MainTab:Paragraph({
     Title = "Welcome to Fryzer Hub!",
-    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running the modernized version successfully."
+    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
 })
 
--- Location teleport dropdown
-PlayerTab:Dropdown({
+-- Dropdown to choose teleport location
+MainTab:Dropdown({
     Title = "Select Location",
     Values = {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"},
     Value = "Event Area",
@@ -147,8 +114,8 @@ PlayerTab:Dropdown({
     end
 })
 
--- Teleport button
-PlayerTab:Button({
+-- Teleport Button
+MainTab:Button({
     Title = "Teleport",
     Desc = "Teleport to selected location",
     Callback = function()
@@ -158,7 +125,7 @@ PlayerTab:Button({
             WindUI:Notify({
                 Title = "Teleported!",
                 Content = "Teleported to " .. selectedLocation,
-                Duration = 2
+                Duration = 1
             })
         else
             WindUI:Notify({
@@ -170,8 +137,8 @@ PlayerTab:Button({
     end
 })
 
--- Walkspeed slider
-PlayerTab:Slider({
+-- Walkspeed Slider
+MainTab:Slider({
     Title = "Walkspeed",
     Value = {
         Min = 16,
@@ -181,34 +148,52 @@ PlayerTab:Slider({
     Callback = function(val)
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = val
+            print("Walkspeed set to:", val)
         end
     end
 })
 
--- Functions Tab Content
+-- VISUAL Tab
+local Tab = Window:Tab({
+    Title = "Real Functions",
+    Icon = "send"
+})
+
+-- Fixed sellInventory function
 local function sellInventory()
-    local player = LocalPlayer
+    local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
+    -- Save the player's current position
     local originalPosition = humanoidRootPart.CFrame
+
+    -- Target coordinates (adjusted to be closer to sell area)
     local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
 
+    -- Teleport the player
     humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    
+    -- Wait longer for the game to register the position
     wait(0.5)
     
+    -- Try multiple times to fire the remote event
     for i = 1, 3 do
         pcall(function()
-            ReplicatedStorage.GameEvents.Sell_Inventory:FireServer()
+            game:GetService("ReplicatedStorage").GameEvents.Sell_Inventory:FireServer()
         end)
         wait(0.2)
     end
 
+    -- Wait longer before teleporting back
     wait(2)
+    
+    -- Teleport back to original position
     humanoidRootPart.CFrame = originalPosition
 end
 
-FunctionsTab:Button({
+-- Sell-all Button
+Tab:Button({
     Title = "Sell all",
     Desc = "This will sell all items",
     Callback = function()
@@ -221,33 +206,45 @@ FunctionsTab:Button({
     end
 })
 
-local function sellSingleItem()
-    local player = LocalPlayer
+-- Fixed sellInventory function
+local function sellInventory()
+    local player = game.Players.LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
+    -- Save the player's current position
     local originalPosition = humanoidRootPart.CFrame
+
+    -- Target coordinates (adjusted to be closer to sell area)
     local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
 
+    -- Teleport the player
     humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    
+    -- Wait longer for the game to register the position
     wait(0.5)
     
+    -- Try multiple times to fire the remote event
     for i = 1, 3 do
         pcall(function()
-            ReplicatedStorage.GameEvents.Sell_Item:FireServer()
+            game:GetService("ReplicatedStorage").GameEvents.Sell_Item:FireServer()
         end)
         wait(0.2)
     end
 
+    -- Wait longer before teleporting back
     wait(2)
+    
+    -- Teleport back to original position
     humanoidRootPart.CFrame = originalPosition
 end
 
-FunctionsTab:Button({
+-- Sell-all Button
+Tab:Button({
     Title = "Sell item",
     Desc = "This will sell items in your hand",
     Callback = function()
-        sellSingleItem()
+        sellInventory()
         WindUI:Notify({
             Title = "Sell item",
             Content = "Got the money?",
@@ -256,25 +253,28 @@ FunctionsTab:Button({
     end
 })
 
--- GUI toggle functionality
+-- PET AND GEAR SHOP GUI VISIBILITY TOGGLE (FIXED)
+local player = game:GetService("Players").LocalPlayer
 local originalStates = {}
 
 local function enableGUI()
     pcall(function()
-        local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+        local playerGui = player:WaitForChild("PlayerGui")
         local teleportUI = playerGui:WaitForChild("Teleport_UI")
         local frame = teleportUI:WaitForChild("Frame")
         local gearFrame = frame:WaitForChild("Gear")
         local petsFrame = frame:WaitForChild("Pets")
 
+        -- Store original states
         originalStates = {
-            teleportUI = teleportUI.Enabled,
+            teleportUI = teleportUI.Enabled,  -- ScreenGui uses Enabled, not Visible
             frame = frame.Visible,
             gear = gearFrame.Visible,
             pets = petsFrame.Visible,
         }
 
-        teleportUI.Enabled = true
+        -- Enable all GUI elements
+        teleportUI.Enabled = true  -- ScreenGui property
         frame.Visible = true
         gearFrame.Visible = true
         petsFrame.Visible = true
@@ -283,12 +283,13 @@ end
 
 local function disableGUI()
     pcall(function()
-        local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+        local playerGui = player:WaitForChild("PlayerGui")
         local teleportUI = playerGui:WaitForChild("Teleport_UI")
         local frame = teleportUI:WaitForChild("Frame")
         local gearFrame = frame:WaitForChild("Gear")
         local petsFrame = frame:WaitForChild("Pets")
 
+        -- Restore original states
         teleportUI.Enabled = originalStates.teleportUI or false
         frame.Visible = originalStates.frame or false
         gearFrame.Visible = originalStates.gear or false
@@ -296,7 +297,7 @@ local function disableGUI()
     end)
 end
 
-FunctionsTab:Toggle({
+Tab:Toggle({
     Title = "Enable GUI", 
     Value = false,
     Callback = function(state)
@@ -310,12 +311,163 @@ FunctionsTab:Toggle({
     end
 })
 
--- Auto Farm functionality
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local BuySeedStock = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock")
+
+local seeds = {
+    "Apple",
+    "Bamboo",
+    "Beanstalk",
+    "Blueberry",
+    "Burning Bud",
+    "Cacao",
+    "Cactus",
+    "Carrot",
+    "Coconut",
+    "Corn",
+    "Daffodil",
+    "Dragon Fruit",
+    "Elder Strawberry",
+    "Ember Lily",
+    "Giant Pinecone",
+    "Grape",
+    "Mango",
+    "Mushroom",
+    "Orange Tulip",
+    "Pepper",
+    "Pumpkin",
+    "Strawberry",
+    "Sugar Apple",
+    "Tomato",
+    "Watermelon"
+}
+
+-- Add "ALL" option to the seeds list
+local dropdownOptions = {"ALL"}
+for _, seed in ipairs(seeds) do
+    table.insert(dropdownOptions, seed)
+end
+
+local selectedSeeds = {"ALL"}
+local toggleEnabled = false
+local buyingSeeds = false
+
+local function buySelectedSeeds()
+    if buyingSeeds then return end
+    buyingSeeds = true
+    
+    for _, selectedSeed in ipairs(selectedSeeds) do
+        if selectedSeed == "ALL" then
+            -- Buy all seeds if "ALL" is selected
+            for _, seed in ipairs(seeds) do
+                BuySeedStock:FireServer(seed)
+                task.wait(0.2)
+            end
+        else
+            -- Buy individual selected seed
+            BuySeedStock:FireServer(selectedSeed)
+            task.wait(0.2)
+        end
+    end
+    
+    buyingSeeds = false
+end
+
+-- Dropdown (Multi)
+Tab:Dropdown({
+    Title = "Select Seeds to Buy",
+    Values = dropdownOptions,
+    Value = {"ALL"},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(values)
+        selectedSeeds = values
+    end
+})
+
+-- Toggle
+Tab:Toggle({
+    Title = "Auto Buy Seeds", 
+    Value = false,
+    Callback = function(state)
+        toggleEnabled = state
+        if state then
+            spawn(function()
+                while toggleEnabled do
+                    buySelectedSeeds()
+                    task.wait(1) -- Wait 1 second between buying cycles
+                end
+            end)
+        end
+    end
+})
+
+-- Beta Tab
+local AutoTab = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "repeat"
+})
+
+-- Timed Auto Farm Script with Toggle
+-- 30 seconds farming, 15 seconds waiting cycle
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+
+-- Configuration
+local FARM_ENABLED = false
+local FARM_DURATION = 60 -- Farm for 30 seconds
+local WAIT_DURATION = 4 -- Wait for 15 seconds
+local TELEPORT_SPEED = 0.3
+
+-- Variables
+local playerFarm = nil
+local currentFarmingConnection = nil
+
+-- Function to teleport smoothly
+local function teleportTo(targetPosition)
+    local character = player.Character
+    if not character then return false end
+    
+    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return false end
+    
+    local tweenInfo = TweenInfo.new(TELEPORT_SPEED, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
+    
+    tween:Play()
+    tween.Completed:Wait()
+    return true
+end
+
+-- Function to click proximity prompt
+local function clickProximityPrompt(prompt)
+    if prompt and prompt:IsA("ProximityPrompt") then
+        local success = pcall(function()
+            fireproximityprompt(prompt)
+        end)
+        return success
+    end
+    return false
+end
+
+-- Function to find the local player's farm
 local function findPlayerFarm()
     local workspace = game:GetService("Workspace")
-    local farmFolder = workspace:FindFirstChild("Farm")
-    if not farmFolder then return nil end
     
+    -- Check if Farm folder exists
+    local farmFolder = workspace:FindFirstChild("Farm")
+    if not farmFolder then
+        return nil
+    end
+    
+    -- Look through all farms to find the player's farm
     for _, farm in pairs(farmFolder:GetChildren()) do
         if farm.Name == "Farm" then
             local success, result = pcall(function()
@@ -324,7 +476,7 @@ local function findPlayerFarm()
                     local data = important:FindFirstChild("Data")
                     if data then
                         local owner = data:FindFirstChild("Owner")
-                        if owner and owner.Value == LocalPlayer.Name then
+                        if owner and owner.Value == player.Name then
                             return farm
                         end
                     end
@@ -341,10 +493,12 @@ local function findPlayerFarm()
     return nil
 end
 
+-- Function to get all plants in the player's farm
 local function getPlantsInFarm(farm)
     if not farm then return {} end
     
     local plants = {}
+    
     pcall(function()
         local important = farm:FindFirstChild("Important")
         if important then
@@ -352,6 +506,7 @@ local function getPlantsInFarm(farm)
             if plantsPhysical then
                 for _, plant in pairs(plantsPhysical:GetChildren()) do
                     if plant:IsA("Model") then
+                        -- Find ProximityPrompt in the plant
                         for _, child in pairs(plant:GetDescendants()) do
                             if child:IsA("ProximityPrompt") then
                                 table.insert(plants, {
@@ -371,145 +526,231 @@ local function getPlantsInFarm(farm)
     return plants
 end
 
-local function teleportTo(targetPosition)
-    local character = LocalPlayer.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
-    
-    tween:Play()
-    tween.Completed:Wait()
-    return true
-end
-
-local function clickProximityPrompt(prompt)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        local success = pcall(function()
-            fireproximityprompt(prompt)
-        end)
-        return success
+-- Function to farm for 30 seconds
+local function farmFor30Seconds()
+    if not playerFarm then
+        return
     end
-    return false
-end
-
-local function farmFor60Seconds()
-    if not playerFarm then return end
     
     local farmingStartTime = tick()
+    local plantsHarvested = 0
     
-    while (tick() - farmingStartTime) < 60 and autoFarmEnabled do
+    while (tick() - farmingStartTime) < FARM_DURATION and FARM_ENABLED do
+        -- Get current plants in farm
         local plants = getPlantsInFarm(playerFarm)
         
         if #plants == 0 then
             wait(2)
         else
+            -- Harvest all available plants
             for _, plantData in pairs(plants) do
-                if not autoFarmEnabled then break end
+                if not FARM_ENABLED then break end
                 
-                if (tick() - farmingStartTime) >= 60 then break end
+                -- Check if we still have time
+                if (tick() - farmingStartTime) >= FARM_DURATION then
+                    break
+                end
                 
                 local plant = plantData.model
                 local prompt = plantData.prompt
                 
+                -- Check if plant still exists
                 if plant and plant.Parent and prompt and prompt.Parent then
+                    -- Get plant position
                     local plantPosition = plant:GetModelCFrame()
                     local plantSize = plant:GetExtentsSize()
                     local plantHeight = plantSize.Y / 2 + 3
                     
+                    -- Teleport to plant
                     if teleportTo(plantPosition + Vector3.new(0, plantHeight, 0)) then
                         wait(0.5)
-                        clickProximityPrompt(prompt)
+                        
+                        -- Try to click proximity prompt
+                        if clickProximityPrompt(prompt) then
+                            plantsHarvested = plantsHarvested + 1
+                        end
                     end
                     
+                    -- Small delay between plants
                     wait(0.3)
                 end
             end
+            
+            -- After harvesting all visible plants, wait a bit before checking again
             wait(1)
         end
     end
 end
 
-local function waitAndSell()
+-- Function to wait for 15 seconds and sell inventory
+local function waitFor15SecondsAndSell()
+    local waitStartTime = tick()
+    
+    -- Teleport to selling location (Steven's location)
     local sellLocation = CFrame.new(86.58584594726562, 2.999999761581421, 0.426784485578537)
     
     if teleportTo(sellLocation) then
-        wait(1)
+        wait(1) -- Wait a moment at the location
+        
+        -- Fire the sell inventory remote
         pcall(function()
-            ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
+            game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
         end)
     end
     
-    wait(4)
+    -- Continue waiting for the remaining time
+    while (tick() - waitStartTime) < WAIT_DURATION and FARM_ENABLED do
+        wait(3) -- Update every 3 seconds during wait
+    end
 end
 
-local function startAutoFarm()
+-- Main farming loop
+local function startTimedAutoFarm()
+    -- Find player's farm first
     playerFarm = findPlayerFarm()
     
     if not playerFarm then
-        WindUI:Notify({
-            Title = "Farm Error",
-            Content = "Could not find your farm!",
-            Duration = 5
-        })
         return
     end
     
-    while autoFarmEnabled do
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.CharacterAdded:Wait()
+    local cycleCount = 0
+    
+    -- Main cycle loop
+    while FARM_ENABLED do
+        cycleCount = cycleCount + 1
+        
+        -- Check if character exists
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            player.CharacterAdded:Wait()
             wait(2)
         end
         
+        -- Phase 1: Farm for 30 seconds
         pcall(function()
-            farmFor60Seconds()
+            farmFor30Seconds()
         end)
         
-        if not autoFarmEnabled then break end
+        if not FARM_ENABLED then break end
         
+        -- Phase 2: Wait for 15 seconds and sell inventory
         pcall(function()
-            waitAndSell()
+            waitFor15SecondsAndSell()
         end)
     end
 end
 
--- Auto Farm Tab
-FarmTab:Toggle({
+-- Function to stop the auto farm
+local function stopTimedAutoFarm()
+    FARM_ENABLED = false
+    
+    if currentFarmingConnection then
+        currentFarmingConnection:Disconnect()
+        currentFarmingConnection = nil
+    end
+end
+
+-- Toggle
+AutoTab:Toggle({
     Title = "Auto Farm", 
     Value = false,
     Callback = function(state)
-        autoFarmEnabled = state
         if state then
+            FARM_ENABLED = true
             spawn(function()
-                startAutoFarm()
+                startTimedAutoFarm()
             end)
-            WindUI:Notify({
-                Title = "Auto Farm",
-                Content = "Auto farming started!",
-                Duration = 2
-            })
         else
-            WindUI:Notify({
-                Title = "Auto Farm",
-                Content = "Auto farming stopped!",
-                Duration = 2
-            })
+            stopTimedAutoFarm()
         end
     end
 })
 
--- Seed buying system
-local seedDropdownOptions = {"ALL"}
-for _, seed in ipairs(seeds) do
-    table.insert(seedDropdownOptions, seed)
+-- Global functions for control (optional)
+_G.StopTimedAutoFarm = stopTimedAutoFarm
+_G.StartTimedAutoFarm = function()
+    FARM_ENABLED = true
+    spawn(function()
+        startTimedAutoFarm()
+    end)
 end
 
-FarmTab:Dropdown({
+_G.GetPlayerFarm = function()
+    return playerFarm
+end
+
+_G.FindPlayerFarmAgain = function()
+    playerFarm = findPlayerFarm()
+    return playerFarm
+end
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local BuySeedStock = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock")
+
+local seeds = {
+    "Apple",
+    "Bamboo",
+    "Beanstalk",
+    "Blueberry",
+    "Burning Bud",
+    "Cacao",
+    "Cactus",
+    "Carrot",
+    "Coconut",
+    "Corn",
+    "Daffodil",
+    "Dragon Fruit",
+    "Elder Strawberry",
+    "Ember Lily",
+    "Giant Pinecone",
+    "Grape",
+    "Mango",
+    "Mushroom",
+    "Orange Tulip",
+    "Pepper",
+    "Pumpkin",
+    "Strawberry",
+    "Sugar Apple",
+    "Tomato",
+    "Watermelon"
+}
+
+-- Add "ALL" option to the seeds list
+local dropdownOptions = {"ALL"}
+for _, seed in ipairs(seeds) do
+    table.insert(dropdownOptions, seed)
+end
+
+local selectedSeeds = {"ALL"}
+local toggleEnabled = false
+local buyingSeeds = false
+
+local function buySelectedSeeds()
+    if buyingSeeds then return end
+    buyingSeeds = true
+    
+    for _, selectedSeed in ipairs(selectedSeeds) do
+        if selectedSeed == "ALL" then
+            -- Buy all seeds if "ALL" is selected
+            for _, seed in ipairs(seeds) do
+                BuySeedStock:FireServer(seed)
+                task.wait(0.2)
+            end
+        else
+            -- Buy individual selected seed
+            BuySeedStock:FireServer(selectedSeed)
+            task.wait(0.2)
+        end
+    end
+    
+    buyingSeeds = false
+end
+
+-- Dropdown (Multi)
+AutoTab:Dropdown({
     Title = "Select Seeds to Buy",
-    Values = seedDropdownOptions,
+    Values = dropdownOptions,
     Value = {"ALL"},
     Multi = true,
     AllowNone = true,
@@ -518,82 +759,82 @@ FarmTab:Dropdown({
     end
 })
 
-local function buySelectedSeeds()
-    local BuySeedStock = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock")
-    
-    for _, selectedSeed in ipairs(selectedSeeds) do
-        if selectedSeed == "ALL" then
-            for _, seed in ipairs(seeds) do
-                BuySeedStock:FireServer(seed)
-                task.wait(0.2)
-            end
-        else
-            BuySeedStock:FireServer(selectedSeed)
-            task.wait(0.2)
-        end
-    end
-end
-
-FarmTab:Toggle({
+-- Toggle
+AutoTab:Toggle({
     Title = "Auto Buy Seeds", 
     Value = false,
     Callback = function(state)
-        autoBuyEnabled = state
+        toggleEnabled = state
         if state then
             spawn(function()
-                while autoBuyEnabled do
+                while toggleEnabled do
                     buySelectedSeeds()
-                    task.wait(1)
+                    task.wait(1) -- Wait 1 second between buying cycles
                 end
             end)
         end
     end
 })
 
--- Scripts Tab Content
-local scriptData = {
-    {
-        title = "Jandel Chat System",
-        desc = "Launch the script",
-        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"
-    },
-    {
-        title = "Pet Dupers (Can't Gift)",
-        desc = "Launch the script",
-        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"
-    },
-    {
-        title = "Item Stealer",
-        desc = "Launch the script",
-        url = "https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"
-    },
-    {
-        title = "Admin Commander (SPAWN ALL THINGS)",
-        desc = "Launch the script",
-        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"
-    }
-}
 
-for _, script in ipairs(scriptData) do
-    ScriptsTab:Button({
-        Title = script.title,
-        Desc = script.desc,
-        Callback = function()
-            loadstring(game:HttpGet(script.url))()
-            WindUI:Notify({
-                Title = "Script Loaded",
-                Content = script.title .. " has been executed!",
-                Duration = 3
-            })
-        end
-    })
-end
 
--- Window close handler
+local ScriptTab = Window:Tab({
+    Title = "WHAT NEW",
+    Icon = "code"
+})
+
+ScriptTab:Button({
+    Title = "Jandel Chat System",
+    Desc = "Launch the script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
+        WindUI:Notify({
+            Title = "Script Loaded",
+            Content = "script has been executed!",
+            Duration = 3
+        })
+    end
+})
+
+ScriptTab:Button({
+    Title = "Pet Dupers (Can't Gift)",
+    Desc = "Launch the script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
+        WindUI:Notify({
+            Title = "Script Loaded",
+            Content = "script has been executed!",
+            Duration = 3
+        })
+    end
+})
+
+ScriptTab:Button({
+    Title = "Item Stealer",
+    Desc = "Launch the script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))
+        WindUI:Notify({
+            Title = "Script Loaded",
+            Content = "script has been executed!",
+            Duration = 3
+        })
+    end
+})
+
+ScriptTab:Button({
+    Title = "Admin Commander (SPAWN ALL THINGS)",
+    Desc = "Launch the script",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"))()
+        WindUI:Notify({
+            Title = "Script Loaded",
+            Content = "script has been executed!",
+            Duration = 3
+        })
+    end
+})
+
 Window:OnClose(function()
-    autoFarmEnabled = false
-    autoBuyEnabled = false
-    print("Fryzer Hub closed.")
+    print("Window closed.")
 end)
-
-print("Fryzer Hub Modern loaded successfully!")
