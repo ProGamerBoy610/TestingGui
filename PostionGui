@@ -913,7 +913,7 @@ local mainTab = window:CreateTab("MAIN")
 mainTab:CreateHeader("MAIN SCRIPTS")
 
 mainTab:CreateButton("Execute Main Script", function()
-    print("Main script executed!")
+    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 1.5, "success")
 end)
 
 mainTab:CreateInput("Enter Script URL...", function(url)
