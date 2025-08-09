@@ -1,4 +1,3 @@
--- Modern Hub GUI with improved design
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -7,12 +6,7 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Main GUI Container
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "ModernHubGUI"
-screenGui.Parent = playerGui
-screenGui.ResetOnSpawn = false
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+local Library = {}
 
 -- Configuration
 local config = {
@@ -52,145 +46,7 @@ local function createStroke(parent, thickness, color)
     return stroke
 end
 
--- Main Frame
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 420, 0, 280)
-mainFrame.Position = UDim2.new(0.5, -210, 0.5, -140)
-mainFrame.BackgroundColor3 = config.colors.background
-mainFrame.BorderSizePixel = 0
-mainFrame.Active = true
-mainFrame.Draggable = true
-mainFrame.Parent = screenGui
-
-createCorner(mainFrame, 12)
-createStroke(mainFrame, 1, config.colors.border)
-
--- Drop Shadow Effect
-local shadowFrame = Instance.new("Frame")
-shadowFrame.Name = "Shadow"
-shadowFrame.Size = UDim2.new(1, 4, 1, 4)
-shadowFrame.Position = UDim2.new(0, -2, 0, -2)
-shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-shadowFrame.BackgroundTransparency = 0.7
-shadowFrame.BorderSizePixel = 0
-shadowFrame.ZIndex = mainFrame.ZIndex - 1
-shadowFrame.Parent = mainFrame
-
-createCorner(shadowFrame, 12)
-
--- Title Bar
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.Position = UDim2.new(0, 0, 0, 0)
-titleBar.BackgroundColor3 = config.colors.secondary
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
-
-createCorner(titleBar, 12)
-
--- Fix corner clipping
-local titleFix = Instance.new("Frame")
-titleFix.Size = UDim2.new(1, 0, 0, 12)
-titleFix.Position = UDim2.new(0, 0, 1, -12)
-titleFix.BackgroundColor3 = config.colors.secondary
-titleFix.BorderSizePixel = 0
-titleFix.Parent = titleBar
-
-local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(1, -80, 1, 0)
-titleText.Position = UDim2.new(0, 15, 0, 0)
-titleText.BackgroundTransparency = 1
-titleText.Text = "GROW A GARDEN"
-titleText.TextColor3 = config.colors.text
-titleText.TextScaled = true
-titleText.TextXAlignment = Enum.TextXAlignment.Left
-titleText.Font = Enum.Font.GothamBold
-titleText.Parent = titleBar
-
--- Close Button
-local closeButton = Instance.new("TextButton")
-closeButton.Name = "CloseButton"
-closeButton.Size = UDim2.new(0, 25, 0, 25)
-closeButton.Position = UDim2.new(1, -30, 0, 5)
-closeButton.BackgroundColor3 = config.colors.danger
-closeButton.BorderSizePixel = 0
-closeButton.Text = "×"
-closeButton.TextColor3 = config.colors.text
-closeButton.TextScaled = true
-closeButton.Font = Enum.Font.GothamBold
-closeButton.Parent = titleBar
-
-createCorner(closeButton, 6)
-
--- Minimize Button
-local minimizeButton = Instance.new("TextButton")
-minimizeButton.Name = "MinimizeButton"
-minimizeButton.Size = UDim2.new(0, 25, 0, 25)
-minimizeButton.Position = UDim2.new(1, -58, 0, 5)
-minimizeButton.BackgroundColor3 = config.colors.accent
-minimizeButton.BorderSizePixel = 0
-minimizeButton.Text = "−"
-minimizeButton.TextColor3 = config.colors.text
-minimizeButton.TextScaled = true
-minimizeButton.Font = Enum.Font.GothamBold
-minimizeButton.Parent = titleBar
-
-createCorner(minimizeButton, 6)
-
--- Navigation Panel
-local navPanel = Instance.new("Frame")
-navPanel.Name = "NavPanel"
-navPanel.Size = UDim2.new(0, 100, 1, -40)
-navPanel.Position = UDim2.new(0, 5, 0, 38)
-navPanel.BackgroundColor3 = config.colors.secondary
-navPanel.BorderSizePixel = 0
-navPanel.Parent = mainFrame
-
-createCorner(navPanel, 8)
-
-local navScrollFrame = Instance.new("ScrollingFrame")
-navScrollFrame.Size = UDim2.new(1, -6, 1, -6)
-navScrollFrame.Position = UDim2.new(0, 3, 0, 3)
-navScrollFrame.BackgroundTransparency = 1
-navScrollFrame.BorderSizePixel = 0
-navScrollFrame.ScrollBarThickness = 4
-navScrollFrame.ScrollBarImageColor3 = config.colors.accent
-navScrollFrame.Parent = navPanel
-
-local navLayout = Instance.new("UIListLayout")
-navLayout.SortOrder = Enum.SortOrder.LayoutOrder
-navLayout.Padding = UDim.new(0, 3)
-navLayout.Parent = navScrollFrame
-
--- Content Panel
-local contentPanel = Instance.new("Frame")
-contentPanel.Name = "ContentPanel"
-contentPanel.Size = UDim2.new(1, -115, 1, -40)
-contentPanel.Position = UDim2.new(0, 110, 0, 38)
-contentPanel.BackgroundColor3 = config.colors.secondary
-contentPanel.BorderSizePixel = 0
-contentPanel.Parent = mainFrame
-
-createCorner(contentPanel, 8)
-
-local contentScrollFrame = Instance.new("ScrollingFrame")
-contentScrollFrame.Name = "ContentScrollFrame"
-contentScrollFrame.Size = UDim2.new(1, -10, 1, -10)
-contentScrollFrame.Position = UDim2.new(0, 5, 0, 5)
-contentScrollFrame.BackgroundTransparency = 1
-contentScrollFrame.BorderSizePixel = 0
-contentScrollFrame.ScrollBarThickness = 4
-contentScrollFrame.ScrollBarImageColor3 = config.colors.accent
-contentScrollFrame.Parent = contentPanel
-
-local contentLayout = Instance.new("UIListLayout")
-contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-contentLayout.Padding = UDim.new(0, 8)
-contentLayout.Parent = contentScrollFrame
-
--- Component Creation Functions
+-- Component Creation Functions (parent is optional)
 local function createHeader(text, parent)
     local header = Instance.new("TextLabel")
     header.Size = UDim2.new(1, -10, 0, 30)
@@ -200,9 +56,9 @@ local function createHeader(text, parent)
     header.TextColor3 = config.colors.text
     header.TextScaled = true
     header.Font = Enum.Font.GothamBold
-    header.Parent = parent or contentScrollFrame
     
     createCorner(header, 6)
+    if parent then header.Parent = parent end
     return header
 end
 
@@ -215,8 +71,7 @@ local function createLabel(text, parent)
     label.TextScaled = true
     label.TextXAlignment = Enum.TextXAlignment.Left
     label.Font = Enum.Font.Gotham
-    label.Parent = parent or contentScrollFrame
-    
+    if parent then label.Parent = parent end
     return label
 end
 
@@ -229,7 +84,6 @@ local function createButton(text, callback, parent, color)
     button.TextColor3 = config.colors.text
     button.TextScaled = true
     button.Font = Enum.Font.GothamBold
-    button.Parent = parent or contentScrollFrame
     
     createCorner(button, 6)
     
@@ -260,6 +114,7 @@ local function createButton(text, callback, parent, color)
         end
     end)
     
+    if parent then button.Parent = parent end
     return button
 end
 
@@ -268,7 +123,6 @@ local function createToggle(text, defaultState, callback, parent)
     toggleFrame.Size = UDim2.new(1, -10, 0, 32)
     toggleFrame.BackgroundColor3 = config.colors.background
     toggleFrame.BorderSizePixel = 0
-    toggleFrame.Parent = parent or contentScrollFrame
     
     createCorner(toggleFrame, 6)
     createStroke(toggleFrame, 1)
@@ -320,6 +174,7 @@ local function createToggle(text, defaultState, callback, parent)
         end
     end)
     
+    if parent then toggleFrame.Parent = parent end
     return toggleFrame
 end
 
@@ -328,7 +183,6 @@ local function createSlider(text, minVal, maxVal, defaultVal, callback, parent)
     sliderFrame.Size = UDim2.new(1, -10, 0, 45)
     sliderFrame.BackgroundColor3 = config.colors.background
     sliderFrame.BorderSizePixel = 0
-    sliderFrame.Parent = parent or contentScrollFrame
     
     createCorner(sliderFrame, 6)
     createStroke(sliderFrame, 1)
@@ -407,6 +261,7 @@ local function createSlider(text, minVal, maxVal, defaultVal, callback, parent)
         end
     end)
     
+    if parent then sliderFrame.Parent = parent end
     return sliderFrame
 end
 
@@ -415,7 +270,6 @@ local function createDropdown(text, options, callback, parent)
     dropdownFrame.Size = UDim2.new(1, -10, 0, 32)
     dropdownFrame.BackgroundColor3 = config.colors.background
     dropdownFrame.BorderSizePixel = 0
-    dropdownFrame.Parent = parent or contentScrollFrame
     dropdownFrame.ZIndex = 5
     
     createCorner(dropdownFrame, 6)
@@ -503,6 +357,7 @@ local function createDropdown(text, options, callback, parent)
         end
     end)
     
+    if parent then dropdownFrame.Parent = parent end
     return dropdownFrame
 end
 
@@ -511,7 +366,6 @@ local function createTextBox(placeholderText, callback, parent)
     textBoxFrame.Size = UDim2.new(1, -10, 0, 32)
     textBoxFrame.BackgroundColor3 = config.colors.background
     textBoxFrame.BorderSizePixel = 0
-    textBoxFrame.Parent = parent or contentScrollFrame
     
     createCorner(textBoxFrame, 6)
     createStroke(textBoxFrame, 1)
@@ -534,250 +388,30 @@ local function createTextBox(placeholderText, callback, parent)
         end
     end)
     
+    if parent then textBoxFrame.Parent = parent end
     return textBoxFrame
 end
-
--- Navigation System
-local currentTab = "HOME"
-local navButtons = {}
 
 local function createNavButton(name, index)
     local navButton = Instance.new("TextButton")
     navButton.Name = name
     navButton.Size = UDim2.new(1, -6, 0, 28)
-    navButton.BackgroundColor3 = name == "HOME" and config.colors.accent or Color3.fromRGB(0, 0, 0)
-    navButton.BackgroundTransparency = name == "HOME" and 0 or 1
+    navButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    navButton.BackgroundTransparency = 1
     navButton.BorderSizePixel = 0
     navButton.Text = name
     navButton.TextColor3 = config.colors.text
     navButton.TextScaled = true
     navButton.Font = Enum.Font.Gotham
     navButton.LayoutOrder = index
-    navButton.Parent = navScrollFrame
     
     createCorner(navButton, 6)
     
-    navButton.MouseEnter:Connect(function()
-        if currentTab ~= name then
-            tween(navButton, {BackgroundTransparency = 0.9}, config.fastTweenInfo)
-        end
-    end)
-    
-    navButton.MouseLeave:Connect(function()
-        if currentTab ~= name then
-            tween(navButton, {BackgroundTransparency = 1}, config.fastTweenInfo)
-        end
-    end)
-    
-    navButton.MouseButton1Click:Connect(function()
-        -- Deselect previous
-        if navButtons[currentTab] then
-            tween(navButtons[currentTab], {
-                BackgroundColor3 = Color3.fromRGB(0, 0, 0),
-                BackgroundTransparency = 1
-            })
-        end
-        
-        -- Select current
-        currentTab = name
-        tween(navButton, {
-            BackgroundColor3 = config.colors.accent,
-            BackgroundTransparency = 0
-        })
-        
-        updateContentPanel(name)
-    end)
-    
-    navButtons[name] = navButton
     return navButton
 end
 
--- Create navigation buttons
-local tabs = {"HOME", "SPECIAL", "MAIN", "SPAWNER", "DESTROY", "SETTINGS", "SWITCH"}
-for i, tab in ipairs(tabs) do
-    createNavButton(tab, i)
-end
-
--- Content Update Function
-function updateContentPanel(section)
-    -- Clear existing content
-    for _, child in pairs(contentScrollFrame:GetChildren()) do
-        if child:IsA("GuiObject") then
-            child:Destroy()
-        end
-    end
-    
-    if section == "HOME" then
-        createHeader("SPAWNER SCRIPT")
-        createLabel("Make Sure to only Execute Dark Spawner 1x")
-        createLabel("Dark Spawner [ Mobile Only ]")
-        createButton("ReModified v3.8 || Dark Spawner", function()
-            print("Dark Spawner executed!")
-        end, nil, config.colors.success)
-        createLabel("Pet Placer v1.0 [ Not Animated ]")
-        createButton("ALLOW GIFT PET [NEW]", function()
-            print("Gift pet allowed!")
-        end, nil, Color3.fromRGB(200, 50, 150))
-        createLabel("Allow Gift Spawned Pets ^.^")
-        
-    elseif section == "SPECIAL" then
-        createHeader("SPECIAL FEATURES")
-        createToggle("Auto Farm", false, function(state)
-            print("Auto Farm:", state)
-        end)
-        createToggle("Speed Hack", true, function(state)
-            print("Speed Hack:", state)
-        end)
-        createSlider("Walk Speed", 16, 100, 50, function(value)
-            print("Walk Speed:", value)
-        end)
-        createDropdown("Game Mode", {"Easy", "Normal", "Hard", "Extreme"}, function(mode)
-            print("Game Mode:", mode)
-        end)
-        
-    elseif section == "MAIN" then
-        createHeader("MAIN SCRIPTS")
-        createButton("Execute Main Script", function()
-            print("Main script executed!")
-        end)
-        createTextBox("Enter Script URL...", function(url)
-            print("Script URL:", url)
-        end)
-        createToggle("Auto Execute", false, function(state)
-            print("Auto Execute:", state)
-        end)
-        createSlider("Execution Delay", 1, 10, 3, function(delay)
-            print("Execution Delay:", delay)
-        end)
-        
-    elseif section == "SPAWNER" then
-        createHeader("SPAWNER CONTROLS")
-        createButton("Dark Spawner", function()
-            print("Dark Spawner activated!")
-        end, nil, Color3.fromRGB(50, 50, 200))
-        createButton("Light Spawner", function()
-            print("Light Spawner activated!")
-        end, nil, Color3.fromRGB(200, 200, 50))
-        createToggle("Auto Spawn", true, function(state)
-            print("Auto Spawn:", state)
-        end)
-        createDropdown("Spawn Type", {"Random", "Pets", "Tools", "NPCs"}, function(type)
-            print("Spawn Type:", type)
-        end)
-        createSlider("Spawn Rate", 1, 20, 5, function(rate)
-            print("Spawn Rate:", rate)
-        end)
-        
-    elseif section == "DESTROY" then
-        createHeader("DESTRUCTION TOOLS")
-        createButton("Clear All", function()
-            print("Everything cleared!")
-        end, nil, config.colors.danger)
-        createButton("Reset Character", function()
-            print("Character reset!")
-        end, nil, Color3.fromRGB(150, 100, 50))
-        createToggle("Safe Mode", true, function(state)
-            print("Safe Mode:", state)
-        end)
-        createTextBox("Target Name...", function(name)
-            print("Target Name:", name)
-        end)
-        
-    elseif section == "SETTINGS" then
-        createHeader("CONFIGURATION")
-        createToggle("Auto Save", true, function(state)
-            print("Auto Save:", state)
-        end)
-        createToggle("Notifications", false, function(state)
-            print("Notifications:", state)
-        end)
-        createSlider("GUI Scale", 50, 150, 100, function(scale)
-            print("GUI Scale:", scale)
-        end)
-        createDropdown("Theme", {"Dark", "Light", "Blue", "Red"}, function(theme)
-            print("Theme:", theme)
-        end)
-        createTextBox("Config Name...", function(name)
-            print("Config Name:", name)
-        end)
-        createButton("Save Config", function()
-            print("Config saved!")
-        end, nil, Color3.fromRGB(100, 150, 100))
-        createButton("Load Config", function()
-            print("Config loaded!")
-        end, nil, Color3.fromRGB(100, 100, 150))
-        
-    elseif section == "SWITCH" then
-        createHeader("GAME SWITCHER")
-        createButton("Join New Server", function()
-            print("Joining new server...")
-        end, nil, Color3.fromRGB(100, 100, 200))
-        createButton("Rejoin Current", function()
-            print("Rejoining current server...")
-        end, nil, Color3.fromRGB(150, 150, 100))
-        createDropdown("Server Region", {"US East", "US West", "Europe", "Asia"}, function(region)
-            print("Server Region:", region)
-        end)
-        createTextBox("Server ID...", function(id)
-            print("Server ID:", id)
-        end)
-        createSlider("Max Players", 1, 30, 12, function(players)
-            print("Max Players:", players)
-        end)
-        createToggle("Auto Rejoin", false, function(state)
-            print("Auto Rejoin:", state)
-        end)
-    end
-    
-    -- Update canvas sizes for scrolling
-    local contentSize = contentLayout.AbsoluteContentSize.Y + 20
-    contentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize)
-    
-    local navSize = navLayout.AbsoluteContentSize.Y + 20
-    navScrollFrame.CanvasSize = UDim2.new(0, 0, 0, navSize)
-end
-
--- Mini Bar for minimize functionality
-local miniBar = Instance.new("Frame")
-miniBar.Name = "MiniBar"
-miniBar.Size = UDim2.new(0, 180, 0, 28)
-miniBar.Position = UDim2.new(0.5, -90, 0.1, 0)
-miniBar.BackgroundColor3 = config.colors.background
-miniBar.BorderSizePixel = 0
-miniBar.Parent = screenGui
-miniBar.Visible = false
-miniBar.Active = true
-miniBar.Draggable = true
-
-createCorner(miniBar, 8)
-createStroke(miniBar, 1, config.colors.border)
-
-local miniText = Instance.new("TextLabel")
-miniText.Size = UDim2.new(1, -30, 1, 0)
-miniText.Position = UDim2.new(0, 8, 0, 0)
-miniText.BackgroundTransparency = 1
-miniText.Text = "GROW A GARDEN"
-miniText.TextColor3 = config.colors.text
-miniText.TextScaled = true
-miniText.TextXAlignment = Enum.TextXAlignment.Left
-miniText.Font = Enum.Font.GothamBold
-miniText.Parent = miniBar
-
-local restoreButton = Instance.new("TextButton")
-restoreButton.Size = UDim2.new(0, 22, 0, 22)
-restoreButton.Position = UDim2.new(1, -25, 0, 3)
-restoreButton.BackgroundColor3 = config.colors.accent
-restoreButton.BorderSizePixel = 0
-restoreButton.Text = "+"
-restoreButton.TextColor3 = config.colors.text
-restoreButton.TextScaled = true
-restoreButton.Font = Enum.Font.GothamBold
-restoreButton.Parent = miniBar
-
-createCorner(restoreButton, 6)
-
 -- Notification System
-local function createNotification(title, message, duration, notifType)
+local function createNotification(screenGui, title, message, duration, notifType)
     local notifFrame = Instance.new("Frame")
     notifFrame.Size = UDim2.new(0, 280, 0, 60)
     notifFrame.Position = UDim2.new(1, 300, 0.1, 0)
@@ -835,96 +469,528 @@ local function createNotification(title, message, duration, notifType)
     return notifFrame
 end
 
--- Event Connections
-closeButton.MouseButton1Click:Connect(function()
-    tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
-    wait(0.3)
-    screenGui:Destroy()
-end)
+function Library:CreateWindow(options)
+    local title = options.Title or "Modern Hub GUI"
+    local windowSize = options.Size or UDim2.new(0, 420, 0, 280)
+    local windowPosition = options.Position or UDim2.new(0.5, -210, 0.5, -140)
 
-minimizeButton.MouseButton1Click:Connect(function()
-    tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
-    wait(0.3)
-    mainFrame.Visible = false
-    miniBar.Visible = true
-    tween(miniBar, {Position = UDim2.new(0.5, -90, 0.1, 0)})
-end)
+    -- Main GUI Container
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "ModernHubGUI"
+    screenGui.Parent = playerGui
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 
-restoreButton.MouseButton1Click:Connect(function()
-    tween(miniBar, {Position = UDim2.new(0.5, -90, -0.1, 0)})
-    wait(0.1)
+    -- Main Frame
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Name = "MainFrame"
+    mainFrame.Size = windowSize
+    mainFrame.Position = windowPosition
+    mainFrame.BackgroundColor3 = config.colors.background
+    mainFrame.BorderSizePixel = 0
+    mainFrame.Active = true
+    mainFrame.Draggable = true
+    mainFrame.Parent = screenGui
+
+    createCorner(mainFrame, 12)
+    createStroke(mainFrame, 1, config.colors.border)
+
+    -- Drop Shadow Effect
+    local shadowFrame = Instance.new("Frame")
+    shadowFrame.Name = "Shadow"
+    shadowFrame.Size = UDim2.new(1, 4, 1, 4)
+    shadowFrame.Position = UDim2.new(0, -2, 0, -2)
+    shadowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadowFrame.BackgroundTransparency = 0.7
+    shadowFrame.BorderSizePixel = 0
+    shadowFrame.ZIndex = mainFrame.ZIndex - 1
+    shadowFrame.Parent = mainFrame
+
+    createCorner(shadowFrame, 12)
+
+    -- Title Bar
+    local titleBar = Instance.new("Frame")
+    titleBar.Name = "TitleBar"
+    titleBar.Size = UDim2.new(1, 0, 0, 35)
+    titleBar.Position = UDim2.new(0, 0, 0, 0)
+    titleBar.BackgroundColor3 = config.colors.secondary
+    titleBar.BorderSizePixel = 0
+    titleBar.Parent = mainFrame
+
+    createCorner(titleBar, 12)
+
+    -- Fix corner clipping
+    local titleFix = Instance.new("Frame")
+    titleFix.Size = UDim2.new(1, 0, 0, 12)
+    titleFix.Position = UDim2.new(0, 0, 1, -12)
+    titleFix.BackgroundColor3 = config.colors.secondary
+    titleFix.BorderSizePixel = 0
+    titleFix.Parent = titleBar
+
+    local titleText = Instance.new("TextLabel")
+    titleText.Size = UDim2.new(1, -80, 1, 0)
+    titleText.Position = UDim2.new(0, 15, 0, 0)
+    titleText.BackgroundTransparency = 1
+    titleText.Text = title
+    titleText.TextColor3 = config.colors.text
+    titleText.TextScaled = true
+    titleText.TextXAlignment = Enum.TextXAlignment.Left
+    titleText.Font = Enum.Font.GothamBold
+    titleText.Parent = titleBar
+
+    -- Close Button
+    local closeButton = Instance.new("TextButton")
+    closeButton.Name = "CloseButton"
+    closeButton.Size = UDim2.new(0, 25, 0, 25)
+    closeButton.Position = UDim2.new(1, -30, 0, 5)
+    closeButton.BackgroundColor3 = config.colors.danger
+    closeButton.BorderSizePixel = 0
+    closeButton.Text = "×"
+    closeButton.TextColor3 = config.colors.text
+    closeButton.TextScaled = true
+    closeButton.Font = Enum.Font.GothamBold
+    closeButton.Parent = titleBar
+
+    createCorner(closeButton, 6)
+
+    -- Minimize Button
+    local minimizeButton = Instance.new("TextButton")
+    minimizeButton.Name = "MinimizeButton"
+    minimizeButton.Size = UDim2.new(0, 25, 0, 25)
+    minimizeButton.Position = UDim2.new(1, -58, 0, 5)
+    minimizeButton.BackgroundColor3 = config.colors.accent
+    minimizeButton.BorderSizePixel = 0
+    minimizeButton.Text = "−"
+    minimizeButton.TextColor3 = config.colors.text
+    minimizeButton.TextScaled = true
+    minimizeButton.Font = Enum.Font.GothamBold
+    minimizeButton.Parent = titleBar
+
+    createCorner(minimizeButton, 6)
+
+    -- Navigation Panel
+    local navPanel = Instance.new("Frame")
+    navPanel.Name = "NavPanel"
+    navPanel.Size = UDim2.new(0, 100, 1, -40)
+    navPanel.Position = UDim2.new(0, 5, 0, 38)
+    navPanel.BackgroundColor3 = config.colors.secondary
+    navPanel.BorderSizePixel = 0
+    navPanel.Parent = mainFrame
+
+    createCorner(navPanel, 8)
+
+    local navScrollFrame = Instance.new("ScrollingFrame")
+    navScrollFrame.Size = UDim2.new(1, -6, 1, -6)
+    navScrollFrame.Position = UDim2.new(0, 3, 0, 3)
+    navScrollFrame.BackgroundTransparency = 1
+    navScrollFrame.BorderSizePixel = 0
+    navScrollFrame.ScrollBarThickness = 4
+    navScrollFrame.ScrollBarImageColor3 = config.colors.accent
+    navScrollFrame.Parent = navPanel
+
+    local navLayout = Instance.new("UIListLayout")
+    navLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    navLayout.Padding = UDim.new(0, 3)
+    navLayout.Parent = navScrollFrame
+
+    -- Update nav canvas size
+    navScrollFrame.ChildAdded:Connect(function()
+        RunService.Heartbeat:Wait()
+        navScrollFrame.CanvasSize = UDim2.new(0, 0, 0, navLayout.AbsoluteContentSize.Y + 20)
+    end)
+
+    -- Content Panel
+    local contentPanel = Instance.new("Frame")
+    contentPanel.Name = "ContentPanel"
+    contentPanel.Size = UDim2.new(1, -115, 1, -40)
+    contentPanel.Position = UDim2.new(0, 110, 0, 38)
+    contentPanel.BackgroundColor3 = config.colors.secondary
+    contentPanel.BorderSizePixel = 0
+    contentPanel.Parent = mainFrame
+
+    createCorner(contentPanel, 8)
+
+    -- Mini Bar for minimize functionality
+    local miniBar = Instance.new("Frame")
+    miniBar.Name = "MiniBar"
+    miniBar.Size = UDim2.new(0, 180, 0, 28)
+    miniBar.Position = UDim2.new(0.5, -90, 0.1, 0)
+    miniBar.BackgroundColor3 = config.colors.background
+    miniBar.BorderSizePixel = 0
+    miniBar.Parent = screenGui
     miniBar.Visible = false
-    mainFrame.Visible = true
-    mainFrame.Size = UDim2.new(0, 0, 0, 0)
-    tween(mainFrame, {Size = UDim2.new(0, 420, 0, 280)})
-end)
+    miniBar.Active = true
+    miniBar.Draggable = true
 
--- Hover effects for title bar buttons
-closeButton.MouseEnter:Connect(function()
-    tween(closeButton, {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}, config.fastTweenInfo)
-end)
+    createCorner(miniBar, 8)
+    createStroke(miniBar, 1, config.colors.border)
 
-closeButton.MouseLeave:Connect(function()
-    tween(closeButton, {BackgroundColor3 = config.colors.danger}, config.fastTweenInfo)
-end)
+    local miniText = Instance.new("TextLabel")
+    miniText.Size = UDim2.new(1, -30, 1, 0)
+    miniText.Position = UDim2.new(0, 8, 0, 0)
+    miniText.BackgroundTransparency = 1
+    miniText.Text = title
+    miniText.TextColor3 = config.colors.text
+    miniText.TextScaled = true
+    miniText.TextXAlignment = Enum.TextXAlignment.Left
+    miniText.Font = Enum.Font.GothamBold
+    miniText.Parent = miniBar
 
-minimizeButton.MouseEnter:Connect(function()
-    tween(minimizeButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}, config.fastTweenInfo)
-end)
+    local restoreButton = Instance.new("TextButton")
+    restoreButton.Size = UDim2.new(0, 22, 0, 22)
+    restoreButton.Position = UDim2.new(1, -25, 0, 3)
+    restoreButton.BackgroundColor3 = config.colors.accent
+    restoreButton.BorderSizePixel = 0
+    restoreButton.Text = "+"
+    restoreButton.TextColor3 = config.colors.text
+    restoreButton.TextScaled = true
+    restoreButton.Font = Enum.Font.GothamBold
+    restoreButton.Parent = miniBar
 
-minimizeButton.MouseLeave:Connect(function()
-    tween(minimizeButton, {BackgroundColor3 = config.colors.accent}, config.fastTweenInfo)
-end)
+    createCorner(restoreButton, 6)
 
-restoreButton.MouseEnter:Connect(function()
-    tween(restoreButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}, config.fastTweenInfo)
-end)
+    -- Event Connections
+    closeButton.MouseButton1Click:Connect(function()
+        tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
+        wait(0.3)
+        screenGui:Destroy()
+    end)
 
-restoreButton.MouseLeave:Connect(function()
-    tween(restoreButton, {BackgroundColor3 = config.colors.accent}, config.fastTweenInfo)
-end)
+    minimizeButton.MouseButton1Click:Connect(function()
+        tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
+        wait(0.3)
+        mainFrame.Visible = false
+        miniBar.Visible = true
+        tween(miniBar, {Position = UDim2.new(0.5, -90, 0.1, 0)})
+    end)
 
--- Keyboard shortcuts
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if gameProcessed then return end
-    
-    if input.KeyCode == Enum.KeyCode.F4 then
-        if mainFrame.Visible then
-            minimizeButton.MouseButton1Click:Fire()
-        else
-            restoreButton.MouseButton1Click:Fire()
-        end
-    elseif input.KeyCode == Enum.KeyCode.F5 then
-        -- Refresh/reload GUI
-        createNotification("System", "GUI Refreshed", 2, "success")
-        updateContentPanel(currentTab)
-    end
-end)
+    restoreButton.MouseButton1Click:Connect(function()
+        tween(miniBar, {Position = UDim2.new(0.5, -90, -0.1, 0)})
+        wait(0.1)
+        miniBar.Visible = false
+        mainFrame.Visible = true
+        mainFrame.Size = UDim2.new(0, 0, 0, 0)
+        tween(mainFrame, {Size = windowSize})
+    end)
 
--- Mobile touch compatibility
-if UserInputService.TouchEnabled then
-    -- Add mobile-specific optimizations
-    mainFrame.Size = UDim2.new(0, 380, 0, 260)
-    mainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
-    
-    -- Adjust component sizes for mobile
-    spawn(function()
-        wait(0.1) -- Wait for components to be created
-        for _, component in pairs(contentScrollFrame:GetChildren()) do
-            if component:IsA("GuiObject") and component.Size.Y.Offset < 35 then
-                component.Size = UDim2.new(component.Size.X.Scale, component.Size.X.Offset, 0, 38)
+    -- Hover effects for title bar buttons
+    closeButton.MouseEnter:Connect(function()
+        tween(closeButton, {BackgroundColor3 = Color3.fromRGB(255, 60, 60)}, config.fastTweenInfo)
+    end)
+
+    closeButton.MouseLeave:Connect(function()
+        tween(closeButton, {BackgroundColor3 = config.colors.danger}, config.fastTweenInfo)
+    end)
+
+    minimizeButton.MouseEnter:Connect(function()
+        tween(minimizeButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}, config.fastTweenInfo)
+    end)
+
+    minimizeButton.MouseLeave:Connect(function()
+        tween(minimizeButton, {BackgroundColor3 = config.colors.accent}, config.fastTweenInfo)
+    end)
+
+    restoreButton.MouseEnter:Connect(function()
+        tween(restoreButton, {BackgroundColor3 = Color3.fromRGB(108, 121, 255)}, config.fastTweenInfo)
+    end)
+
+    restoreButton.MouseLeave:Connect(function()
+        tween(restoreButton, {BackgroundColor3 = config.colors.accent}, config.fastTweenInfo)
+    end)
+
+    -- Keyboard shortcuts
+    UserInputService.InputBegan:Connect(function(input, gameProcessed)
+        if gameProcessed then return end
+        
+        if input.KeyCode == Enum.KeyCode.F4 then
+            if mainFrame.Visible then
+                minimizeButton.MouseButton1Click:Fire()
+            else
+                restoreButton.MouseButton1Click:Fire()
             end
+        elseif input.KeyCode == Enum.KeyCode.F5 then
+            -- Refresh/reload GUI
+            createNotification(screenGui, "System", "GUI Refreshed", 2, "success")
+            -- You can add refresh logic if needed
         end
     end)
+
+    -- Mobile touch compatibility
+    local isMobile = UserInputService.TouchEnabled
+    if isMobile then
+        mainFrame.Size = UDim2.new(0, 380, 0, 260)
+        mainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
+    end
+
+    local Window = {
+        Tabs = {},
+        NavButtons = {},
+        CurrentTab = nil
+    }
+
+    function Window:CreateTab(name)
+        local Tab = {}
+        local index = #self.Tabs + 1
+        local navButton = createNavButton(name, index)
+        navButton.Parent = navScrollFrame
+        self.NavButtons[name] = navButton
+
+        local tabContent = Instance.new("ScrollingFrame")
+        tabContent.Name = name .. "Content"
+        tabContent.Size = UDim2.new(1, -10, 1, -10)
+        tabContent.Position = UDim2.new(0, 5, 0, 5)
+        tabContent.BackgroundTransparency = 1
+        tabContent.BorderSizePixel = 0
+        tabContent.ScrollBarThickness = 4
+        tabContent.ScrollBarImageColor3 = config.colors.accent
+        tabContent.Parent = contentPanel
+        tabContent.Visible = false
+
+        local contentLayout = Instance.new("UIListLayout")
+        contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+        contentLayout.Padding = UDim.new(0, 8)
+        contentLayout.Parent = tabContent
+
+        tabContent.ChildAdded:Connect(function()
+            RunService.Heartbeat:Wait()
+            tabContent.CanvasSize = UDim2.new(0, 0, 0, contentLayout.AbsoluteContentSize.Y + 20)
+        end)
+
+        -- Hover effects
+        navButton.MouseEnter:Connect(function()
+            if self.CurrentTab ~= name then
+                tween(navButton, {BackgroundTransparency = 0.9})
+            end
+        end)
+        
+        navButton.MouseLeave:Connect(function()
+            if self.CurrentTab ~= name then
+                tween(navButton, {BackgroundTransparency = 1})
+            end
+        end)
+
+        -- Click to switch tab
+        navButton.MouseButton1Click:Connect(function()
+            if self.CurrentTab then
+                local prevButton = self.NavButtons[self.CurrentTab]
+                tween(prevButton, {BackgroundColor3 = Color3.fromRGB(0, 0, 0), BackgroundTransparency = 1})
+                self.Tabs[self.CurrentTab].Content.Visible = false
+            end
+            self.CurrentTab = name
+            tween(navButton, {BackgroundColor3 = config.colors.accent, BackgroundTransparency = 0})
+            tabContent.Visible = true
+        end)
+
+        Tab.Content = tabContent
+
+        function Tab:CreateHeader(text)
+            local header = createHeader(text, self.Content)
+            if isMobile then
+                header.Size = UDim2.new(1, -10, 0, 35)
+            end
+            return header
+        end
+
+        function Tab:CreateLabel(text)
+            local label = createLabel(text, self.Content)
+            if isMobile then
+                label.Size = UDim2.new(1, -10, 0, 28)
+            end
+            return label
+        end
+
+        function Tab:CreateButton(text, callback, color)
+            local button = createButton(text, callback, self.Content, color)
+            if isMobile then
+                button.Size = UDim2.new(1, -10, 0, 38)
+            end
+            return button
+        end
+
+        function Tab:CreateToggle(text, defaultState, callback)
+            local toggle = createToggle(text, defaultState, callback, self.Content)
+            if isMobile then
+                toggle.Size = UDim2.new(1, -10, 0, 38)
+            end
+            return toggle
+        end
+
+        function Tab:CreateSlider(text, minVal, maxVal, defaultVal, callback)
+            local slider = createSlider(text, minVal, maxVal, defaultVal, callback, self.Content)
+            if isMobile then
+                slider.Size = UDim2.new(1, -10, 0, 50)
+            end
+            return slider
+        end
+
+        function Tab:CreateDropdown(text, options, callback)
+            local dropdown = createDropdown(text, options, callback, self.Content)
+            if isMobile then
+                dropdown.Size = UDim2.new(1, -10, 0, 38)
+            end
+            return dropdown
+        end
+
+        function Tab:CreateInput(placeholderText, callback)
+            local input = createTextBox(placeholderText, callback, self.Content)
+            if isMobile then
+                input.Size = UDim2.new(1, -10, 0, 38)
+            end
+            return input
+        end
+
+        self.Tabs[name] = Tab
+
+        -- Select first tab automatically
+        if not self.CurrentTab then
+            self.CurrentTab = name
+            navButton.BackgroundColor3 = config.colors.accent
+            navButton.BackgroundTransparency = 0
+            tabContent.Visible = true
+        end
+
+        return Tab
+    end
+
+    function Window:Notify(title, message, duration, notifType)
+        createNotification(screenGui, title, message, duration, notifType)
+    end
+
+    function Window:Destroy()
+        screenGui:Destroy()
+    end
+
+    return Window
 end
 
--- Initialize with HOME content
-updateContentPanel("HOME")
+-- Create the window and tabs with content
+local window = Library:CreateWindow({Title = "GROW A GARDEN"})
+
+local homeTab = window:CreateTab("HOME")
+homeTab:CreateHeader("SPAWNER SCRIPT")
+homeTab:CreateLabel("Make Sure to only Execute Dark Spawner 1x")
+homeTab:CreateLabel("Dark Spawner [ Mobile Only ]")
+homeTab:CreateButton("ReModified v3.8 || Dark Spawner", function()
+    print("Dark Spawner executed!")
+end, config.colors.success)
+homeTab:CreateLabel("Pet Placer v1.0 [ Not Animated ]")
+homeTab:CreateButton("ALLOW GIFT PET [NEW]", function()
+    print("Gift pet allowed!")
+end, Color3.fromRGB(200, 50, 150))
+homeTab:CreateLabel("Allow Gift Spawned Pets ^.^")
+
+local specialTab = window:CreateTab("SPECIAL")
+specialTab:CreateHeader("SPECIAL FEATURES")
+specialTab:CreateToggle("Auto Farm", false, function(state)
+    print("Auto Farm:", state)
+end)
+specialTab:CreateToggle("Speed Hack", true, function(state)
+    print("Speed Hack:", state)
+end)
+specialTab:CreateSlider("Walk Speed", 16, 100, 50, function(value)
+    print("Walk Speed:", value)
+end)
+specialTab:CreateDropdown("Game Mode", {"Easy", "Normal", "Hard", "Extreme"}, function(mode)
+    print("Game Mode:", mode)
+end)
+
+local mainTab = window:CreateTab("MAIN")
+mainTab:CreateHeader("MAIN SCRIPTS")
+mainTab:CreateButton("Execute Main Script", function()
+    print("Main script executed!")
+end)
+mainTab:CreateInput("Enter Script URL...", function(url)
+    print("Script URL:", url)
+end)
+mainTab:CreateToggle("Auto Execute", false, function(state)
+    print("Auto Execute:", state)
+end)
+mainTab:CreateSlider("Execution Delay", 1, 10, 3, function(delay)
+    print("Execution Delay:", delay)
+end)
+
+local spawnerTab = window:CreateTab("SPAWNER")
+spawnerTab:CreateHeader("SPAWNER CONTROLS")
+spawnerTab:CreateButton("Dark Spawner", function()
+    print("Dark Spawner activated!")
+end, Color3.fromRGB(50, 50, 200))
+spawnerTab:CreateButton("Light Spawner", function()
+    print("Light Spawner activated!")
+end, Color3.fromRGB(200, 200, 50))
+spawnerTab:CreateToggle("Auto Spawn", true, function(state)
+    print("Auto Spawn:", state)
+end)
+spawnerTab:CreateDropdown("Spawn Type", {"Random", "Pets", "Tools", "NPCs"}, function(type)
+    print("Spawn Type:", type)
+end)
+spawnerTab:CreateSlider("Spawn Rate", 1, 20, 5, function(rate)
+    print("Spawn Rate:", rate)
+end)
+
+local destroyTab = window:CreateTab("DESTROY")
+destroyTab:CreateHeader("DESTRUCTION TOOLS")
+destroyTab:CreateButton("Clear All", function()
+    print("Everything cleared!")
+end, config.colors.danger)
+destroyTab:CreateButton("Reset Character", function()
+    print("Character reset!")
+end, Color3.fromRGB(150, 100, 50))
+destroyTab:CreateToggle("Safe Mode", true, function(state)
+    print("Safe Mode:", state)
+end)
+destroyTab:CreateInput("Target Name...", function(name)
+    print("Target Name:", name)
+end)
+
+local settingsTab = window:CreateTab("SETTINGS")
+settingsTab:CreateHeader("CONFIGURATION")
+settingsTab:CreateToggle("Auto Save", true, function(state)
+    print("Auto Save:", state)
+end)
+settingsTab:CreateToggle("Notifications", false, function(state)
+    print("Notifications:", state)
+end)
+settingsTab:CreateSlider("GUI Scale", 50, 150, 100, function(scale)
+    print("GUI Scale:", scale)
+end)
+settingsTab:CreateDropdown("Theme", {"Dark", "Light", "Blue", "Red"}, function(theme)
+    print("Theme:", theme)
+end)
+settingsTab:CreateInput("Config Name...", function(name)
+    print("Config Name:", name)
+end)
+settingsTab:CreateButton("Save Config", function()
+    print("Config saved!")
+end, Color3.fromRGB(100, 150, 100))
+settingsTab:CreateButton("Load Config", function()
+    print("Config loaded!")
+end, Color3.fromRGB(100, 100, 150))
+
+local switchTab = window:CreateTab("SWITCH")
+switchTab:CreateHeader("GAME SWITCHER")
+switchTab:CreateButton("Join New Server", function()
+    print("Joining new server...")
+end, Color3.fromRGB(100, 100, 200))
+switchTab:CreateButton("Rejoin Current", function()
+    print("Rejoining current server...")
+end, Color3.fromRGB(150, 150, 100))
+switchTab:CreateDropdown("Server Region", {"US East", "US West", "Europe", "Asia"}, function(region)
+    print("Server Region:", region)
+end)
+switchTab:CreateInput("Server ID...", function(id)
+    print("Server ID:", id)
+end)
+switchTab:CreateSlider("Max Players", 1, 30, 12, function(players)
+    print("Max Players:", players)
+end)
+switchTab:CreateToggle("Auto Rejoin", false, function(state)
+    print("Auto Rejoin:", state)
+end)
 
 -- Welcome notification
 spawn(function()
     wait(0.5)
-    createNotification("Welcome!", "GROW A GARDEN Hub loaded successfully", 3, "success")
+    window:Notify("Welcome!", "GROW A GARDEN Hub loaded successfully", 3, "success")
 end)
 
 -- Auto-save functionality (example)
@@ -932,8 +998,8 @@ local autoSave = true
 if autoSave then
     spawn(function()
         while wait(30) do -- Save every 30 seconds
-            if screenGui.Parent then
-                createNotification("Auto Save", "Settings saved automatically", 2, "success")
+            if playerGui:FindFirstChild("ModernHubGUI") then
+                window:Notify("Auto Save", "Settings saved automatically", 2, "success")
             else
                 break
             end
