@@ -1,1033 +1,323 @@
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+-- Modern Fryzer Hub Script
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+-- Services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
 
--- Set blue theme and transparency
-WindUI.TransparencyValue = 0.2
-WindUI:SetTheme("Dark")
+-- Player reference
+local LocalPlayer = Players.LocalPlayer
 
--- Blue gradient function
-local function gradient(text, startColor, endColor)
+-- Script configuration
+local Config = {
+    Title = "Fryzer Hub",
+    Version = "v2.0",
+    Author = "Grow a garden",
+    AutoSave = true,
+    Theme = "Dark"
+}
+
+-- Localization setup
+WindUI:Localization({
+    Enabled = true,
+    Prefix = "fh:",
+    DefaultLanguage = "en",
+    Translations = {
+        ["en"] = {
+            ["TITLE"] = "Fryzer Hub",
+            ["WELCOME"] = "Welcome to Fryzer Hub!",
+            ["PLAYER"] = "Player",
+            ["FARMING"] = "Auto Farm",
+            ["FUNCTIONS"] = "Functions",
+            ["SCRIPTS"] = "Scripts",
+            ["SETTINGS"] = "Settings"
+        }
+    }
+})
+
+-- Utility functions
+local Utils = {}
+
+function Utils.gradient(text, startColor, endColor)
     local result = ""
     for i = 1, #text do
         local t = (i - 1) / math.max(#text - 1, 1)
         local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
         local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
         local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
+        result = result .. string.format('<font color="rgb(%d, %d, %d)">%s</font>', r, g, b, text:sub(i, i))
     end
     return result
 end
 
--- Blue popup
-WindUI:Popup({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "sparkles",
-    Content = "Welcome to Fryzer Hub - Blue Edition! Ready to start farming?",
-    Buttons = {
-        {
-            Title = "Get Started",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function() end
-        }
-    }
-})
-
--- Create window with blue gradient background
-local Window = WindUI:CreateWindow({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "palette",
-    Author = "Grow a garden",
-    Folder = "FryzerHub",
-    Size = UDim2.fromOffset(700, 500),
-    Theme = "Dark",
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromHex("#0c1445"), Transparency = 1 },
-        ["50"] = { Color = Color3.fromHex("#1e3c72"), Transparency = 0.95 },
-        ["100"] = { Color = Color3.fromHex("#2a5298"), Transparency = 0.9 },
-    }, {
-        Rotation = 45,
-    }),
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            WindUI:Notify({
-                Title = gradient("Blue Profile", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-                Content = "User profile accessed!",
-                Duration = 3
-            })
-        end
-    },
-    SideBarWidth = 220,
-    ScrollBarEnabled = true
-})
-
--- Blue tags
-Window:Tag({
-    Title = "v2.0",
-    Color = Color3.fromHex("#00BFFF")
-})
-Window:Tag({
-    Title = "Blue Edition",
-    Color = Color3.fromHex("#0066FF")
-})
-
--- Theme switcher button
-Window:CreateTopbarButton("theme-switcher", "moon", function()
-    WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
-    WindUI:Notify({
-        Title = gradient("Theme Changed", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-        Content = "Current theme: "..WindUI:GetCurrentTheme(),
-        Duration = 2
-    })
-end, 990)
-
--- Create sections
-local Sections = {
-    Main = Window:Section({ Title = "Main Features", Opened = true }),
-    Farming = Window:Section({ Title = "Auto Farm", Opened = true }),
-    Shop = Window:Section({ Title = "Shop", Opened = true }),
-    Scripts = Window:Section({ Title = "Scripts", Opened = true }),
-    Settings = Window:Section({ Title = "Settings", Opened = true })
-}
-
--- Create tabs
-local Tabs = {
-    Main = Sections.Main:Tab({ Title = "Player", Icon = "layout-grid" }),
-    AutoFarm = Sections.Farming:Tab({ Title = "Auto Farm", Icon = "zap" }),
-    Shop = Sections.Shop:Tab({ Title = "Shop Functions", Icon = "store" }),
-    Scripts = Sections.Scripts:Tab({ Title = "External Scripts", Icon = "code" }),
-    Settings = Sections.Settings:Tab({ Title = "Settings", Icon = "settings" })
-}
-
--- Main Tab: Player Features
-Tabs.Main:Paragraph({
-    Title = gradient("Welcome to Fryzer Hub!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Hello " .. LocalPlayer.DisplayName .. "! You're running the blue edition of Fryzer Hub.",
-    Image = "sparkles",
-    ImageSize = 20,
-    Color = "White",
-})
-
-Tabs.Main:Divider()
-
--- Teleport locations
-local locations = {
-    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
-    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
-    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
-    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
-    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
-    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
-    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
-    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
-    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
-    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
-}
-
-local selectedLocation = "Event Area"
-
-Tabs.Main:Dropdown({
-    Title = gradient("Select Location", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"},
-    Value = "Event Area",
-    Multi = false,
-    AllowNone = false,
-    Callback = function(selected)
-        selectedLocation = selected
-    end
-})
-
-Tabs.Main:Button({
-    Title = gradient("Teleport", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "map",
-    Callback = function()
-        local pos = locations[selectedLocation]
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-            WindUI:Notify({
-                Title = gradient("Teleported!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Teleported to " .. selectedLocation,
-                Icon = "check",
-                Duration = 1
-            })
-        else
-            WindUI:Notify({
-                Title = gradient("Teleport Failed", Color3.fromHex("#FF4500"), Color3.fromHex("#FF6347")),
-                Content = "Please try again",
-                Icon = "x",
-                Duration = 5
-            })
-        end
-    end
-})
-
-Tabs.Main:Slider({
-    Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Adjust player walkspeed",
-    Value = { Min = 16, Max = 100, Default = 16 },
-    Step = 1,
-    Callback = function(val)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = val
-            WindUI:Notify({
-                Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Set to: " .. val,
-                Duration = 2
-            })
-        end
-    end
-})
-
--- Shop Tab: Sell and GUI Functions
-local function sellInventory(remoteName)
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    local originalPosition = humanoidRootPart.CFrame
-    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
-
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    wait(0.5)
-    
-    for i = 1, 3 do
-        pcall(function()
-            game:GetService("ReplicatedStorage").GameEvents[remoteName]:FireServer()
-        end)
-        wait(0.2)
+function Utils.teleportTo(position, speed)
+    speed = speed or 0.3
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        return false
     end
     
-    wait(2)
-    humanoidRootPart.CFrame = originalPosition
-end
-
-Tabs.Shop:Button({
-    Title = gradient("Sell All", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "dollar-sign",
-    Callback = function()
-        sellInventory("Sell_Inventory")
-        WindUI:Notify({
-            Title = gradient("Sell All", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Inventory sold!",
-            Icon = "check",
-            Duration = 1
-        })
-    end
-})
-
-Tabs.Shop:Button({
-    Title = gradient("Sell Item", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "dollar-sign",
-    Callback = function()
-        sellInventory("Sell_Item")
-        WindUI:Notify({
-            Title = gradient("Sell Item", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Item sold!",
-            Icon = "check",
-            Duration = 1
-        })
-    end
-})
-
-local originalStates = {}
-local function enableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        originalStates = {
-            teleportUI = teleportUI.Enabled,
-            frame = frame.Visible,
-            gear = gearFrame.Visible,
-            pets = petsFrame.Visible,
-        }
-
-        teleportUI.Enabled = true
-        frame.Visible = true
-        gearFrame.Visible = true
-        petsFrame.Visible = true
-    end)
-end
-
-local function disableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        teleportUI.Enabled = originalStates.teleportUI or false
-        frame.Visible = originalStates.frame or false
-        gearFrame.Visible = originalStates.gear or false
-        petsFrame.Visible = originalStates.pets or false
-    end)
-end
-
-Tabs.Shop:Toggle({
-    Title = gradient("Enable Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state)
-        if state then
-            enableGUI()
-            WindUI:Notify({
-                Title = gradient("Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Shop GUI enabled!",
-                Icon = "check",
-                Duration = 2
-            })
-        else
-            disableGUI()
-            WindUI:Notify({
-                Title = gradient("Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Shop GUI disabled!",
-                Icon = "x",
-                Duration = 2
-            })
-        end
-    end
-})
-
-local seeds = {
-    "Apple", "Bamboo", "Beanstalk", "Blueberry", "Burning Bed", "Cacao", "C математическим выражениемactus", "Carrot", "Coconut", "Corn", "Daffodil", "Dragon Fruit",
-    "Elder Strawberry", "Ember Lily", "Giant Pinecone", "Grape", "Mango", "Mushroom", "Orange Tulip", "Pepper", "Pumpkin", "Strawberry", "Sugar Apple", "Tomato", "Watermelon"
-}
-local dropdownOptions = {"ALL"}
-for _, seed in ipairs(seeds) do
-    table.insert(dropdownOptions, seed)
-end
-
-local selectedSeeds = {"ALL"}
-local toggleEnabled = false
-local buyingSeeds = false
-
-local function buySelectedSeeds()
-    if buyingSeeds then return end
-    buyingSeeds = true
-    
-    for _, selectedSeed in ipairs(selectedSeeds) do
-        if selectedSeed == "ALL" then
-            for _, seed in ipairs(seeds) do
-                game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
-                task.wait(0.2)
-            end
-        else
-            game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(selectedSeed)
-            task.wait(0.2)
-        end
-    end
-    
-    buyingSeeds = false
-end
-
-Tabs.Shop:Dropdown({
-    Title = gradient("Select Seeds to Buy", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = dropdownOptions,
-    Value = {"ALL"},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(values)
-        selectedSeeds = values
-    end
-})
-
-Tabs.Shop:Toggle({
-    Title = gradient("Auto Buy Seeds", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state)
-        toggleEnabled = state
-        if state then
-            spawn(function()
-                while toggleEnabled do
-                    buySelectedSeeds()
-                    task.wait(1)
-                end
-            end)
-        end
-    end
-})
-
--- Auto Farm Tab
-local FARM_ENABLED = false
-local FARM_DURATION = 60
-local WAIT_DURATION = 4
-local TELEPORT_SPEED = 0.3
-local playerFarm = nil
-local currentFarmingConnection = nil
-
-local function teleportTo(targetPosition)
-    local character = player.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local tweenInfo = TweenInfo.new(TELEPORT_SPEED, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
+    local humanoidRootPart = character.HumanoidRootPart
+    local tweenInfo = TweenInfo.new(speed, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = CFrame.new(position)})
     
     tween:Play()
     tween.Completed:Wait()
     return true
 end
 
-local function clickProximityPrompt(prompt)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        local success = pcall(function()
-            fireproximityprompt(prompt)
-        end)
-        return success
-    end
-    return false
+function Utils.notify(title, content, duration)
+    WindUI:Notify({
+        Title = title,
+        Content = content,
+        Duration = duration or 3
+    })
 end
 
-local function findPlayerFarm()
-    local workspace = game:GetService("Workspace")
-    local farmFolder = workspace:FindFirstChild("Farm")
-    if not farmFolder then return nil end
+-- Game data
+local GameData = {
+    locations = {
+        ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
+        ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
+        ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
+        ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
+        ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
+        ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
+        ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
+        ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
+        ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
+        ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
+    },
     
-    for _, farm in pairs(farmFolder:GetChildren()) do Ascendancy 1
-            if farm.Name == "Farm" then
-                local success, result = pcall(function()
-                    local important = farm:FindFirstChild("Important")
-                    if important then
-                        local data = important:FindFirstChild("Data")
-                        if data then
-                            local owner = data:FindFirstChild("Owner")
-                            if owner and owner.Value == player.Name then
-                                return farm
-                            end
-                        end
-                    end
-                    return nil
-                end)
-                if success and result then return result end
-            end
-        end
-    end
-    return nil
-end
-
-local function getPlantsInFarm(farm)
-    if not farm then return {} end
+    seeds = {
+        "Apple", "Bamboo", "Beanstalk", "Blueberry", "Burning Bud",
+        "Cacao", "Cactus", "Carrot", "Coconut", "Corn", "Daffodil",
+        "Dragon Fruit", "Elder Strawberry", "Ember Lily", "Giant Pinecone",
+        "Grape", "Mango", "Mushroom", "Orange Tulip", "Pepper",
+        "Pumpkin", "Strawberry", "Sugar Apple", "Tomato", "Watermelon"
+    },
     
-    local plants = {}
-    pcall(function()
-        local important = farm:FindFirstChild("Important")
-        if important then
-            local plantsPhysical = important:FindFirstChild("Plants_Physical")
-            if plantsPhysical then
-                for _, plant in pairs(plantsPhysical:GetChildren()) do
-                    if plant:IsA(model) then
-                        for _, child in pairs(plant:GetDescendants()) do
-                            if child:IsA("ProximityPrompt") then
-                                table.insert(plants, {
-                                    model = plant,
-                                    prompt = child,
-                                    name = plant.Name
-                                })
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end)
-    return plants
-end
+    sellLocation = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
+}
 
-local function farmFor30Seconds()
-    if not playerFarm then return end
-    
-    local farmingStartTime = tick()
-    local plantsHarvested = 0
-    
-    while (tick ~
+-- Main script variables
+local ScriptState = {
+    autoFarmEnabled = false,
+    autoBuyEnabled = false,
+    selectedLocation = "Event Area",
+    selectedSeeds = {"ALL"},
+    playerFarm = nil
+}
 
-System: You are Grok 3 built by xAI.
-
-The provided script appears to be a Lua script for a Roblox game, specifically designed for "Grow A Garden" with features like teleportation, inventory selling, auto-farming, and GUI toggling. The task is to convert this script to a new model that uses a blue-themed WindUI structure, as shown in the second script. The new script should maintain all core functionalities while adopting the new UI structure with sections, tabs, and blue gradient styling.
-
-Below is the complete converted script, re卓
-
-```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
--- Set blue theme and transparency
-WindUI.TransparencyValue = 0.2
-WindUI:SetTheme("Dark")
-
--- Blue gradient function
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
-    end
-    return result
-end
-
--- Blue popup
+-- Confirmation popup
+local Confirmed = false
 WindUI:Popup({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "sparkles",
-    Content = "Welcome to Fryzer Hub - Blue Edition! Ready to start farming?",
+    Title = "Confirmation",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Content = "Fryzer Hub " .. Utils.gradient("FH", Color3.fromHex("#00FF87"), Color3.fromHex("#60EFFF")),
     Buttons = {
         {
-            Title = "Get Started",
+            Title = "Cancel",
+            Variant = "Secondary",
+        },
+        {
+            Title = "Continue",
             Icon = "arrow-right",
+            Callback = function() Confirmed = true end,
             Variant = "Primary",
-            Callback = function() end
         }
     }
 })
 
--- Create window with blue gradient background
+repeat task.wait() until Confirmed
+
+-- Create main window
 local Window = WindUI:CreateWindow({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF", Color3.fromHex("#00BFFF")),
-    Icon = "palette",
-    Author = "Grow a garden",
+    Title = Config.Title,
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Author = Config.Author,
     Folder = "FryzerHub",
     Size = UDim2.fromOffset(700, 500),
-    Theme = "Dark",
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromHex("#0c1445"), Transparency = 1 },
-        ["50"] = { Color = Color3.fromHex("#1e3c72"), Transparency = 0.95 },
-        ["100"] = { Color = Color3.fromHex("#2a5298"), Transparency = 0.9 },
-    }, {
-        Rotation = 45,
-    }),
+    Transparent = true,
+    Theme = Config.Theme,
+    SideBarWidth = 220,
+    ScrollBarEnabled = true,
     User = {
         Enabled = true,
         Anonymous = false,
         Username = LocalPlayer.DisplayName,
         UserId = LocalPlayer.UserId,
         Callback = function()
-            WindUI:Notify({
-                Title = gradient("Blue Profile", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-                Content = "User profile accessed!",
-                Duration = 3
-            })
+            Utils.notify("Profile", "User profile clicked!")
         end
-    },
-    SideBarWidth = 220,
-    ScrollBarEnabled = true
-})
-
--- Blue tags
-Window:Tag({
-    Title = "v2.0",
-    Color = Color3.fromHex("#00BFFF")
-})
-Window:Tag({
-    Title = "Blue Edition",
-    Color = Color3.fromHex("#0066FF")
-})
-
--- Theme switcher button
-Window:CreateTopbarButton("theme-switcher", "moon", function()
-    WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
-    WindUI:Notify({
-        Title = gradient("Theme Changed", Color3.fromHex("#00BFFF"), "#0066FF"),
-        Content = "Current theme: "..WindUI:GetCurrentTheme(),
-        Duration = 2
-    })
-end, 990)
-
--- Create sections
-local Sections = {
-    Main = Window:Section({ Title = "Main Features", Opened = true }),
-    Farming = Window:Section({ Title = "Auto Farm", Opened = true }),
-    Shop = Window:Section({ Title = "Shop", Opened = true }),
-    Scripts = Window:Section({ Title = "What's New", Opened = true }),
-    Settings = Window:Section({ Title = "Settings", Opened = true })
-}
-
--- Create tabs
-local Tabs = {
-    Main = Sections.Mainರ
-
-System: You are Grok 3 built by xAI.
-
-I apologize, but it seems the second script provided in your query was cut off, and the full code for the new model is incomplete, ending mid-function. However, based on the provided portion and the original script, I can complete the conversion to the new blue-themed WindUI model, incorporating all the functionalities from the original script (teleportation, walkspeed, selling inventory/items, GUI toggle, auto-buying seeds, auto-farming, and external script buttons) while maintaining the new structure with sections, tabs, and blue gradient styling.
-
-Below is the completed script, restructured to fit the new model:
-
-```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
--- Set blue theme and transparency
-WindUI.TransparencyValue = 0.2
-WindUI:SetTheme("Dark")
-
--- Blue gradient function
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
-    end
-    return result
-end
-
--- Blue popup
-WindUI:Popup({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "sparkles",
-    Content = "Welcome to Fryzer Hub - Blue Edition! Ready to start farming?",
-    Buttons = {
-        {
-            Title = "Get Started",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function() end
-        }
     }
 })
 
--- Create window with blue gradient background
-local Window = WindUI:CreateWindow({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "palette",
-    Author = "Grow a garden",
-    Folder = "FryzerHub",
-    Size = UDim2.fromOffset(700, 500),
-    Theme = "Dark",
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromHex("#0c1445"), Transparency = 1 },
-        ["50"] = { Color = Color3.fromHex("#1e3c72"), Transparency = 0.95 },
-        ["100"] = { Color = Color3.fromHex("#2a5298"), Transparency = 0.9 },
-    }, {
-        Rotation = 45,
-    }),
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            WindUI:Notify({
-                Title = gradient("Blue Profile", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-                Content = "User profile accessed!",
-                Duration = 3
-            })
-        end
-    },
-    SideBarWidth = 220,
-    ScrollBarEnabled = true
-})
-
--- Blue tags
+-- Add version tag
 Window:Tag({
-    Title = "v2.0",
-    Color = Color3.fromHex("#00BFFF")
-})
-Window:Tag({
-    Title = "Blue Edition",
-    Color = Color3.fromHex("#0066FF")
+    Title = Config.Version,
+    Color = Color3.fromHex("#30ff6a")
 })
 
--- Theme switcher button
-Window:CreateTopbarButton("theme-switcher", "moon", function()
-    WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
-    WindUI:Notify({
-        Title = gradient("Theme Changed", Color3.from tactile("#00BFFF"), Color3.fromHex("#0066FF")),
-        Content = "Current theme: "..WindUI:GetCurrentTheme(),
-        Duration = 2
-    })
-end, 990)
+-- UI open button configuration
+Window:EditOpenButton({
+    Title = "Open Hub",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
+    Draggable = true,
+})
 
--- Create sections
+-- Create sections and tabs
 local Sections = {
-    Main = Window:Section({ Title = "Main Features", Opened = true }),
-    Farming = Window:Section({ Title = "Auto Farm", Opened = true }),
-    Shop = Window:Section({ Title = "Shop", Opened = true }),
-    Scripts = Window:Section({ Title = "What's New", Opened = true }),
-    Settings = Window:Section({ Title = "Settings", Opened = true })
+    Main = Window:Section({ Title = "fh:PLAYER", Opened = true }),
+    Automation = Window:Section({ Title = "fh:FARMING", Opened = true }),
+    Tools = Window:Section({ Title = "fh:FUNCTIONS", Opened = true })
 }
 
--- Create tabs
 local Tabs = {
-    Main = Sections.Main:Tab({ Title = "Player", Icon = "layout-grid" }),
-    AutoFarm = Sections.Farming:Tab({ Title = "Auto Farm", Icon = "zap" }),
-    Shop = Sections.Shop:Tab({ Title = "Shop Functions", Icon = "store" }),
-    Scripts = Sections.Scripts:Tab({ Title = "External Scripts", Icon = "code" }),
-    Settings = Sections.Settings:Tab({ Title = "Settings", Icon = "settings" })
+    Player = Sections.Main:Tab({ Title = "fh:PLAYER", Icon = "user" }),
+    AutoFarm = Sections.Automation:Tab({ Title = "Auto Farm", Icon = "repeat" }),
+    Functions = Sections.Tools:Tab({ Title = "fh:FUNCTIONS", Icon = "send" }),
+    Scripts = Sections.Tools:Tab({ Title = "fh:SCRIPTS", Icon = "code" })
 }
 
--- Main Tab: Player Features
-Tabs.Main:Paragraph({
-    Title = gradient("Welcome to Fryzer Hub!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Hello " .. LocalPlayer.DisplayName .. "! You're running the blue edition of Fryzer Hub.",
-    Image = "sparkles",
+-- Player Tab Content
+Tabs.Player:Paragraph({
+    Title = "fh:WELCOME",
+    Desc = "Hello " .. LocalPlayer.DisplayName .. "! Welcome to the modern Fryzer Hub.",
+    Image = "user",
     ImageSize = 20,
     Color = "White"
 })
 
-Tabs.Main:Divider()
-
--- Teleport locations
-local locations = {
-    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
-    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
-    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
-    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
-    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
-    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
-    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
-    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
-    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
-    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
-}
-
-local selectedLocation = "Event Area"
-
-Tabs.Main:Dropdown({
-    Title = gradient("Select Location", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
+-- Location teleport dropdown
+Tabs.Player:Dropdown({
+    Title = "Select Location",
     Values = {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"},
     Value = "Event Area",
     Multi = false,
     AllowNone = false,
     Callback = function(selected)
-        selectedLocation = selected
+        ScriptState.selectedLocation = selected
     end
 })
 
-Tabs.Main:Button({
-    Title = gradient("Teleport", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "map",
+-- Teleport button
+Tabs.Player:Button({
+    Title = "Teleport",
+    Icon = "navigation",
+    Desc = "Teleport to selected location",
     Callback = function()
-        local pos = locations[selectedLocation]
+        local pos = GameData.locations[ScriptState.selectedLocation]
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-            WindUI:Notify({
-                Title = gradient("Teleported!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Teleported to " .. selectedLocation,
-                Icon = "check",
-                Duration = 1
-            })
+            Utils.notify("Teleported!", "Teleported to " .. ScriptState.selectedLocation, 2)
         else
-            WindUI:Notify({
-、やはり、提供されたスクリプトはRobloxゲーム「Grow A Garden」向けのLuaスクリプトで、テレポーテーション、在庫売却、オートファーム、GUIトグルなどの機能が含まれています。タスクは、このスクリプトを新しい青をテーマにしたWindUIモデルに変換し、セクション、タブ、青のグラデーションスタイルを採用しながら、すべてのコア機能を維持することです。
-
-以下は、元のスクリプトの鼈
-
-```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
-
--- Set blue theme and transparency
-WindUI.TransparencyValue = 0.2
-WindUI:SetTheme("Dark")
-
--- Blue gradient function
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
-    end
-    return result
-end
-
--- Blue popup
-WindUI:Popup({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "sparkles",
-    Content = "Welcome to Freyzer Hub - Blue Edition! Ready to start farming?",
-    Buttons = {
-        {
-            Title = "Get Started",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function() end
-        }
-    }
-})
-
--- Create window with blue gradient background
-local Window = WindUI:CreateWindow({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "palette",
-    Author = "Grow a garden",
-    Folder = "FryzerHub",
-    Size = UDim2.fromOffset(700, 500),
-    Theme = "Dark",
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromHex("#0c1445"), Transparency = 1 },
-        ["50"] = { Color = Color3.fromHex("#1 reply: WindUI:Notify({
-                Title = gradient("Teleport Failed", Color3.fromHex("#FF4500"), Color3.fromHex("#FF6347")),
-                Content = "Please try again",
-                Icon = "x",
-                Duration = 5
-            })
+            Utils.notify("Teleport Failed", "Try again", 3)
         end
     end
 })
 
-Tabs.Main:Slider({
-    Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Adjust player walkspeed",
-    Value = { Min = 16, Max = 100, Default = 16 },
-    Step = 1,
+-- Walkspeed slider
+Tabs.Player:Slider({
+    Title = "Walkspeed",
+    Desc = "Adjust your walking speed",
+    Value = {
+        Min = 16,
+        Max = 100,
+        Default = 16
+    },
     Callback = function(val)
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = val
-            WindUI:Notify({
-                Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Set to: " .. val,
-                Duration = 2
-            })
         end
     end
 })
 
--- Shop Tab: Sell and GUI Functions
-local function sellInventory(remoteName)
-    local player = game.Players.LocalPlayer
+-- Functions Tab Content
+local function sellInventory()
+    local player = LocalPlayer
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
     local originalPosition = humanoidRootPart.CFrame
-    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
-
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    
+    -- Teleport to sell location
+    humanoidRootPart.CFrame = CFrame.new(GameData.sellLocation)
     wait(0.5)
     
+    -- Fire sell event multiple times for reliability
     for i = 1, 3 do
         pcall(function()
-            game:GetService("ReplicatedStorage").GameEvents[remoteName]:FireServer()
+            ReplicatedStorage.GameEvents.Sell_Inventory:FireServer()
         end)
         wait(0.2)
     end
     
-    wait(2)
+    wait(1)
     humanoidRootPart.CFrame = originalPosition
 end
 
-Tabs.Shop:Button({
-    Title = gradient("Sell All", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
+Tabs.Functions:Button({
+    Title = "Sell All Items",
     Icon = "dollar-sign",
+    Desc = "Sell all items in your inventory",
     Callback = function()
-        sellInventory("Sell_Inventory")
-        WindUI:Netify({
-            Title = gradient("Sell All", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Inventory sold!",
-            Icon = "check",
-            Duration = 1
-        })
+        sellInventory()
+        Utils.notify("Sell Complete", "Items sold successfully!", 2)
     end
 })
 
-Tabs.Shop:Button({
-    Title = gradient("Sell Item", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "dollar-sign",
-    Callback = function()
-        sellInventory("Sell_Item")
-        WindUI:Notify({
-            Title = gradient("Sell Item", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Item sold!",
-            Icon = "check",
-            Duration = 1
-        })
-    end
-})
-
+-- GUI visibility toggle
 local originalStates = {}
-local function enableGUI()
+local function toggleGUI(state)
     pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
+        local playerGui = LocalPlayer:WaitForChild("PlayerGui")
         local teleportUI = playerGui:WaitForChild("Teleport_UI")
         local frame = teleportUI:WaitForChild("Frame")
         local gearFrame = frame:WaitForChild("Gear")
         local petsFrame = frame:WaitForChild("Pets")
 
-        originalStates = {
-            teleportUI = teleportUI.Enabled,
-            frame = frame.Visible,
-            gear = gearFrame.Visible,
-            pets = petsFrame.Visible,
-        }
-
-        teleportUI.Enabled = true
-        frame.Visible = true
-        gearFrame.Visible = true
-        petsFrame.Visible = true
+        if state then
+            originalStates = {
+                teleportUI = teleportUI.Enabled,
+                frame = frame.Visible,
+                gear = gearFrame.Visible,
+                pets = petsFrame.Visible,
+            }
+            
+            teleportUI.Enabled = true
+            frame.Visible = true
+            gearFrame.Visible = true
+            petsFrame.Visible = true
+        else
+            teleportUI.Enabled = originalStates.teleportUI or false
+            frame.Visible = originalStates.frame or false
+            gearFrame.Visible = originalStates.gear or false
+            petsFrame.Visible = originalStates.pets or false
+        end
     end)
 end
 
-local function disableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        teleportUI.Enabled = originalStates.teleportUI or false
-        frame.Visible = originalStates.frame or false
-        gearFrame.Visible = originalStates.gear or false
-        petsFrame.Visible = originalStates.pets or false
-    end)
-end
-
-Tabs.Shop:Toggle({
-    Title = gradient("Enable Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
+Tabs.Functions:Toggle({
+    Title = "Enable Game GUI", 
+    Desc = "Show/hide the game's built-in interface",
     Value = false,
     Callback = function(state)
-        if state then
-            enableGUI()
-            WindUI:Notify({
-                Title = gradient("Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Shop GUI enabled!",
-                Icon = "check",
-                Duration = 2
-            })
-        else
-            disableGUI()
-            WindUI:Notify({
-                Title = gradient("Shop GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Shop GUI disabled!",
-                Icon = "x",
-                Duration = 2
-            })
-        end
+        toggleGUI(state)
     end
 })
 
-local seeds = {
-    "Apple", "Bamboo", "Beanstalk", "Blueberry", "Burning Bud", "Cacao", "Cactus", "Carrot", "Coconut", "Corn", "Daffinil",
-    "Dragon Fruit", "Elder Strawberry", "Ember Lily", "Giant Pinecone", "Grape", "Mango", "Mushroom", "Orange Tulip", "Pepper",
-    "Pumpkin", "Strawberry", "Sugar Apple", "Tomato", "Watermelon"
-}
+-- Auto Farm Tab Content
+local AutoFarm = {}
 
-local dropdownOptions = {"ALL"}
-for _, seed in ipairs(seeds) do
-    table.insert(dropdownOptions, seed)
-end
-
-local selectedSeeds = {"ALL"}
-local toggleEnabled = false
-local buyingSeeds = false
-
-local function buySelectedSeeds()
-    if buyingSeeds then return end
-    buyingSeeds = true
-    
-    for _, selectedSeed in ipairs(selectedSeeds) do
-        if selectedSeed == "ALL" then
-            for _, seed in ipairs(seeds) do
-                game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
-                task.wait(0.2)
-            end
-        else
-            game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(selectedSeed)
-            task.wait(0.2)
-        end
-    end
-    
-    buyingSeeds = false
-end
-
-Tabs.Shp:Dropdown({
-    Title = gradient("Select Seeds to Buy", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = dropdownOptions,
-    Value = {"ALL"},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(values)
-        discussionSeeds = values
-    end
-})
-
-Tabs.Shop:Toggle({
-    Title = gradient("Auto Buy Seeds", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state) 
-        toggleEnabled = state
-        if state then
-            spawn(function()
-                while toggleEnabled do
-                    buySelectedSeeds()
-                    task.wait(1)
-                end
-            end)
-        end
-    end
-})
-
--- Auto Farm Tab
-local FARM_ENABLED = false
-local FARM_DURATION = 60
-local WAIT_DURATION = 4
-local TELEPORT_SPEED = 0.3
-local playerFarm = nil
-local currentFarmingConnection = nil
-
-local function teleportTo(targetPosition)
-    local character = player.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local tweenInfo = TweenInfo.new(TELEPORT_SPEED, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
-    
-    tween:Play()
-    tween.Completed:Wait()
-    return true
-end
-
-local function clickProximityPrompt(prompt)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        local success = pcall(function()
-            fireproximityprompt(prompt)
-        end)
-        return success
-    end
-    return false
-end
-
-local function findPlayerFarm()
+function AutoFarm.findPlayerFarm()
     local workspace = game:GetService("Workspace")
     local farmFolder = workspace:FindFirstChild("Farm")
     if not farmFolder then return nil end
@@ -1040,20 +330,24 @@ local function findPlayerFarm()
                     local data = important:FindFirstChild("Data")
                     if data then
                         local owner = data:FindFirstChild("Owner")
-                        if owner and owner.Value == player.Name then
+                        if owner and owner.Value == LocalPlayer.Name then
                             return farm
                         end
                     end
                 end
                 return nil
             end)
-            if success and result then return result end
+            
+            if success and result then
+                return result
+            end
         end
     end
+    
     return nil
 end
 
-local function getPlantsInFarm(farm)
+function AutoFarm.getPlantsInFarm(farm)
     if not farm then return {} end
     
     local plants = {}
@@ -1077,748 +371,171 @@ local function getPlantsInFarm(farm)
                     end
                 end
             end
-        end)
+        end
     end)
+    
     return plants
 end
 
-local function farmFor30Seconds()
-    if not playerFarm then return end
+function AutoFarm.start()
+    if not ScriptState.autoFarmEnabled then return end
     
-    local farmingStartTime = tick()
-    local plantsHarvested = 0
-    
-    while (tick() - farmingStartTime) < FARM_DURATION and FARM_ENABLED do
-        local plants = getPlantsInFarm(playerFarm)
-        
-        if #plants == 0 then
-            wait(2)
-        else
-            for _, plantData in pairs(plants) do
-                if not FARM_ENABLED then break end
-                
-                if (tick() - farmingStartTime) >= FARM_DURATION then
-                    break
-                end
-                
-                local plant = plantData.model
-                local prompt = plantData.prompt
-                
-                if plant and plant.Parent and prompt and prompt.Parent then
-                    local plantPosition = plant:GetModelCFrame()
-                    local plantSize = plant:GetExtentsSize()
-                    local plantHeight = plantSize.Y / 2 + 3
-                    
-                    if teleportTo(plantPosition + Vector3.new(0, plantHeight, 0)) then
-                        wait(0.5)
-                        if clickProximityPrompt(prompt) then
-                            plantsHarvested = plantsHarvested + 1
-                        end
-                    end
-                    wait(0.3)
-                end
-            end
-            wait(1)
-        end
-    end
-end
-
-Tabs.AutoFarm:Toggle({
-    Title = gradient("Auto Farm", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state)
-        if state then
-            FARM_ENABLED = true
-            spawn(function()
-                playerFarm = findPlayerFarm()
-                if not playerFarm then
-                    WindUI:Notify({
-                        Title = gradient("Auto Farm", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                        Content = "Farm not found!",
-                        Icon = "x",
-                        Duration = 3
-                    })
-                    return
-                end
-                while FARM_ENABLED do
-                    pcall(function()
-                        farmFor30Seconds()
-                        if not intelligent
-
-System: You are Grok 3 built by xAI.
-
-It appears the second script you provided was incomplete, cutting off in the middle of a function. However, I've incorporated all the functionalities from the original script into the new blue-themed WindUI model, maintaining the section/tab structure and styling as requested. Below is the completed converted script:
-
-```lua
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
-local TweenService = game:GetService("TweenService")
-local RunService = game:Get禁止
-
--- Set blue theme and transparency
-WindUI.TransparencyValue = 0.2
-WindUI:SetTheme("Dark")
-
--- Blue gradient function
-local function gradient(text, startColor, endColor)
-    local result = ""
-    for i = 1, #text do
-        local t = (i - 1) / math.max(#text - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. string.format('<font color="rgb(%d,%d,%d)">%s</font>', r, g, b, text:sub(i, i))
-    end
-    return result
-end
-
--- Blue popup
-WindUI:Popup({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "sparkles",
-    Content = "Welcome to Fryzer Hub - Blue Edition! Ready to start farming?",
-    Buttons = {
-        {
-            Title = "Get Started",
-            Icon = "arrow-right",
-            Variant = "Primary",
-            Callback = function() end
-        }
-    }
-})
-
--- Create window with blue gradient background
-local Window = WindUI:CreateWindow({
-    Title = gradient("Fryzer Hub", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "palette",
-    Author = "Grow a garden",
-    Folder = "FryzerHub",
-    Size = UDim2.fromOffset(700, 500),
-    Theme = "Dark",
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromHex("#0c1445"), Transparency = 1 },
-        ["50"] = { Color = Color3.fromHex("#1e3c72"), Transparency = 0.95 },
-        ["100"] = { Color = Color3.fromHex("#2a5298"), Transparency = 0.9 },
-    }, {
-        Rotation = 45,
-    }),
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            WindUI:Notify({
-                Title = gradient("Blue Profile", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-                Content = "User profile accessed!",
-                Duration = 3
-            })
-        end
-    },
-    SideBarWidth = 220,
-    ScrollBarEnabled = true
-})
-
--- Blue tags
-Window:Tag({
-    Title = "v2.0",
-    Color = Color3.fromHex("#00BFFF")
-})
-Window:Tag({
-    Title = "Blue Edition",
-    Color = Color3.fromHex("#0066FF")
-})
-
--- Theme switcher button
-Window:CreateTopbarButton("theme-switcher", "moon", function()
-    WindUI:SetTheme(WindUI:GetCurrentTheme() == "Dark" and "Light" or "Dark")
-    WindUI:Notify({
-        Title = gradient("Theme Changed", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-        Content = "Current theme: "..WindUI:GetCurrentTheme(),
-        Duration = 2
-    })
-end, 990)
-
--- Create sections
-local Sections = {
-    Main = Window:Section({ Title = "Main Features", Opened = true }),
-    Farming = Window:Section({ Title = "Auto Farm", Opened = true }),
-    Shop = Window:Section({ Title = "Shop", Opened = true }),
-    Scripts = Window:Section({ Title = "What's New", Opened = true }),
-    Settings = Window:Section({ Title = "Settings", Opened = true })
-}
-
--- Create tabs
-local Tabs = {
-    Main = Sections.Main:Tab({ Title = "Player", Icon = "layout-grid" }),
-    AutoFarm = Sections.Farming:Tab({ Title = "Auto Farm", Icon = "zap" }),
-    Shop = Sections.Shop:Tab({ Title = "Shop Functions", Icon = "store" }),
-    Scripts = Sections.Scripts:Tab({ Title = "External Scripts", Icon = "code" }),
-    Settings = Sections.Settings:Tab({ Title = "Settings", Icon = "settings" })
-}
-
--- Main Tab: Player Features
-Tabs.Main:Paragraph({
-    Title = gradient("Welcome to Fryzer Hub!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Hello " .. LocalPlayer.DisplayName .. "! You're running the blue edition of Fryzer Hub.",
-    Image = "sparkles",
-    ImageSize = 20,
-    Color = "White"
-})
-
-Tabs.Main:Divider()
-
--- Teleport locations
-local locations = {
-    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
-    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
-    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
-    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
-    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
-    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
-    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
-    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
-    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
-    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
-}
-
-local selectedLocation = "Event Area"
-
-Tabs.Main:Dropdown({
-    Title = gradient("Select Location", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"},
-    Value = "Event Area",
-    Multi = false,
-    AllowNone = false,
-    Callback = function(selected)
-        selectedLocation = selected
-    end
-})
-
-Tabs.Main:Button({
-    Title = gradient("Teleport", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "map",
-    Callback = function()
-        local pos = locations[selectedLocation]
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-            WindUI:Notify({
-                Title = gradient("Teleported!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Teleported to " .. selectedLocation,
-                Icon = "check",
-                Duration = 1
-            })
-        else
-            WindUI:Notify({
-                Title = gradient("Teleport Failed", Color3.fromHex("#FF4500"), Color3.fromHex("#FF6347")),
-                Content = "Please try again",
-                Icon = "x",
-                Duration = 5
-            })
-        end
-    end
-})
-
-Tabs.Main:Slider({
-    Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Adjust player walkspeed",
-    Value = { Min = 16, Max = 100, Default = 16 },
-    Step = 1,
-    Callback = function(val)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = val
-            WindUI:Notify({
-                Title = gradient("Walkspeed", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-                Content = "Set to: " .. val,
-                Duration = 2
-            })
-        end
-    end
-})
-
--- Shop Tab: Sell and GUI Functions
-local function sellInventory(remoteName)
-    local player = game.Players.LocalPlayer
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    local originalPosition = humanoidRootPart.CFrame
-    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
-
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    wait(0.5)
-    
-    for i = 1, 3 do
-        pcall(function()
-            game:GetService("ReplicatedStorage").GameEvents[remoteName]:FireServer()
-        end)
-        wait(0.2)
-    end
-    
-    wait(2)
-    humanoidRootPart.CFrame = originalPosition
-end
-
-Tabs.Shop:Button({
-    Title = gradient("Sell All", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "dollar-sign",
-    Callback = function()
-        sellInventory("Sell_Inventory")
-        WindUI:Notify({
-            Title = gradient("Sell All", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Got the money?",
-            Icon = "check",
-            Duration = 1
-        })
-    end
-})
-
-Tabs.Shop:Button({
-    Title = gradient("Sell Item", Color3.fromHex("#00BFFF"), Color3.fromHex("#0066FF")),
-    Icon = "dollar-sign",
-    Callback = function()
-        sellInventory("Sell_Item")
-        WindUI:Notify({
-            Title = gradient("Sell Item", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Got the money?",
-            Icon = "check",
-            Duration = 1
-        })
-    end
-})
-
-local originalStates = {}
-local function enableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        originalStates = {
-            teleportUI = teleportUI.Enabled,
-            frame = frame.Visible,
-            gear = gearFrame.Visible,
-            pets = petsFrame.Visible,
-        }
-
-        teleportUI.Enabled = true
-        frame.Visible = true
-        gearFrame.Visible = true
-        petsFrame.Visible = true
-    end)
-end
-
-local function disableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        teleportUI.Enabled = originalStates.teleportUI or false
-        frame.Visible = originalStates.frame or false
-        gearFrame.Visible = originalStates.gear or false
-        petsFrame.Visible = originalStates.pets or false
-    end)
-end
-
-Tabs.Shop:Toggle({
-    Title = gradient("Enable GUI", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state)
-        if state then
-            enableGUI()
-            print("GUI enabled")
-        else
-            disableGUI()
-            print("GUI disabled")
-        end
-    end
-})
-
-local seeds = {
-    "Apple", "Bamboo", "Beanstalk", "Blueberry", "Burning Bud", "Cacao", "Cactus", "Carrot", "Coconut", "Corn", "Daffodil",
-    "Dragon Fruit", "Elder Strawberry", "Ember Lily", "Giant Pinecone", "Grape", "Mango", "Mushroom", "Orange Tulip", "Pepper",
-    "Pumpkin", "Strawberry", "Sugar Apple", "Tomato", "Watermelon"
-}
-
-local dropdownOptions = {"ALL"}
-for _, seed in ipairs(seeds) do
-    table.insert(dropdownOptions, seed)
-end
-
-local selectedSeeds = {"ALL"}
-local toggleEnabled = false
-local buyingSeeds = false
-
-local function buySelectedSeeds()
-    if buyingSeeds then return end
-    buyingSeeds = true
-    
-    for _, selectedSeed in ipairs(selectedSeeds) do
-        if selectedSeed == "ALL" then
-            for _, seed in ipairs(seeds) do
-                game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(seed)
-                task.wait(0.2)
-            end
-        else
-            game:GetService("ReplicatedStorage").GameEvents.BuySeedStock:FireServer(selectedSeed)
-            task.wait(0.2)
-        end
-    end
-    
-    buyingSeeds = false
-end
-
-Tabs.Shop:Dropdown({
-    Title = gradient("Select Seeds to Buy", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = dropdownOptions,
-    Value = {"ALL"},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(values)
-        selectedSeeds = values
-    end
-})
-
-Tabs.Shop:Toggle({
-    Title = gradient("Auto Buy Seeds", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Value = false,
-    Callback = function(state)
-        toggleEnabled = state
-        if state then
-            spawn(function()
-                while toggleEnabled do
-                    buySelectedSeeds()
-                    task.wait(1)
-                end
-            end)
-        end
-    end
-})
-
--- Auto Farm Tab
-local FARM_ENABLED = false
-local FARM_DURATION = 60
-local WAIT_DURATION = 4
-local TELEPORT_SPEED = 0.3
-local playerFarm = nil
-local currentFarmingConnection = nil
-
-local function teleportTo(targetPosition)
-    local character = player.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local tweenInfo = TweenInfo.new(TELEPORT_SPEED, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
-    
-    tween:Play()
-    tween.Completed:Wait()
-    return true
-end
-
-local function clickProximityPrompt(prompt)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        local success = pcall(function()
-            fireproximityprompt(prompt)
-        end)
-        return success
-    end
-    return false
-end
-
-local function findPlayerFarm()
-    local workspace = game:GetService("Workspace")
-    local farmFolder = workspace:FindFirstChild("Farm")
-    if not farmFolder then return nil end
-    
-    for _, farm in pairs(farmFolder:GetChildren()) do
-        if farm.Name == "Farm" then
-            local success, result = pcall(function()
-                local important = farm:FindFirstChild("Important")
-                if important then
-                    local data = important:FindFirstChild("Data")
-                    if data then
-                        local owner = data:FindFirstChild("Owner")
-                        if owner and owner.Value == player.Name then
-                            return farm
-                        end
-                    end
-                end
-                return nil
-            end)
-            if success and result then return result end
-        end
-    end
-    return nil
-end
-
-local function getPlantsInFarm(farm)
-    if not farm then return {} end
-    
-    local plants = {}
-    pcall(function()
-        local important = farm:FindFirstChild("Important")
-        if important then
-            local plantsPhysical = important:FindFirstChild("Plants_Physical")
-            if plantsPhysical then
-                for _, plant in pairs(plantsPhysical:GetChildren()) do
-                    if plant:IsA("Model") then
-                        for _, child in pairs(plant:GetDescendants()) do
-                            if child:IsA("ProximityPrompt") then
-                                table.insert(plants, {
-                                    model = plant,
-                                    prompt = child,
-                                    name = plant.Name
-                                })
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end)
-    end)
-    return plants
-end
-
-local function farmFor30Seconds()
-    if not playerFarm then return end
-    
-    local farmingStartTime = tick()
-    local plantsHarvested = 0
-    
-    while (tick() - farmingStartTime) < FARM_DURATION and FARM_ENABLED do
-        local plants = getPlantsInFarm(playerFarm)
-        
-        if #plants == 0 then
-            wait(2)
-        else
-            for _, plantData in pairs(plants) do
-                if not FARM_ENABLED then break end
-                
-                if (tick() - farmingStartTime) >= FARM_DURATION then
-                    break
-                end
-                
-                local plant = plantData.model
-                local prompt = plantData.prompt
-                
-                if plant and plant.Parent and prompt and prompt.Parent then
-                    local plantPosition = plant:GetModelCFrame()
-                    local plantSize = plant:GetExtentsSize()
-                    local plantHeight = plantSize.Y / 2 + 3
-                    
-                    if teleportTo(plantPosition + Vector3.new(0, plantHeight, 0)) then
-                        wait(0.5)
-                        if clickProximityPrompt(prompt) then
-                            plantsHarvested = plantsHarvested + 1
-                        end
-                    end
-                    wait(0.3)
-                end
-            end
-            wait(1)
-        end
-    end
-end
-
-local function waitFor15SecondsAndSell()
-    local waitStartTime = tick()
-    
-    local sellLocation = CFrame.new(86.58584594726562, 2.999999761581421, 0.426784485578537)
-    
-    if teleportTo(sellLocation) then
-        wait(1)
-        pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
-        end)
-    end
-    
-    while (tick() - waitStartTime) < WAIT_DURATION and FARM_ENABLED do
-        wait(3)
-    end
-end
-
-local function startTimedAutoFarm()
-    playerFarm = findPlayerFarm()
-    
-    if not playerFarm then
-        WindUI:Notify({
-            Title = gradient("Auto Farm", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Farm not found!",
-            Icon = "x",
-            Duration = 3
-        })
+    ScriptState.playerFarm = AutoFarm.findPlayerFarm()
+    if not ScriptState.playerFarm then
+        Utils.notify("Farm Error", "Could not find your farm!", 5)
         return
     end
     
-    local cycleCount = 0
-    
-    while FARM_ENABLED do
-        cycleCount = cycleCount + 1
-        
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            player.CharacterAdded:Wait()
-            wait(2)
+    spawn(function()
+        while ScriptState.autoFarmEnabled do
+            -- Farming phase (60 seconds)
+            local farmStartTime = tick()
+            while (tick() - farmStartTime) < 60 and ScriptState.autoFarmEnabled do
+                local plants = AutoFarm.getPlantsInFarm(ScriptState.playerFarm)
+                
+                if #plants > 0 then
+                    for _, plantData in pairs(plants) do
+                        if not ScriptState.autoFarmEnabled or (tick() - farmStartTime) >= 60 then
+                            break
+                        end
+                        
+                        local plant = plantData.model
+                        local prompt = plantData.prompt
+                        
+                        if plant and plant.Parent and prompt and prompt.Parent then
+                            local plantPosition = plant:GetModelCFrame()
+                            local plantSize = plant:GetExtentsSize()
+                            local plantHeight = plantSize.Y / 2 + 3
+                            
+                            if Utils.teleportTo(plantPosition.Position + Vector3.new(0, plantHeight, 0), 0.3) then
+                                wait(0.5)
+                                pcall(function()
+                                    fireproximityprompt(prompt)
+                                end)
+                            end
+                            wait(0.3)
+                        end
+                    end
+                end
+                wait(1)
+            end
+            
+            -- Selling phase (4 seconds)
+            if ScriptState.autoFarmEnabled then
+                sellInventory()
+                wait(4)
+            end
         end
-        
-        pcall(function()
-            farmFor30Seconds()
-        end)
-        
-        if not FARM_ENABLED then break end
-        
-        pcall(function()
-            waitFor15SecondsAndSell()
-        end)
-    end
+    end)
 end
 
-local function stopTimedAutoFarm()
-    FARM_ENABLED = false
-    if currentFarmingConnection then
-        currentFarmingConnection:Disconnect()
-        currentFarmingConnection = nil
+-- Auto farm toggle
+Tabs.AutoFarm:Toggle({
+    Title = "Auto Farm", 
+    Desc = "Automatically farm and sell items",
+    Value = false,
+    Callback = function(state)
+        ScriptState.autoFarmEnabled = state
+        if state then
+            AutoFarm.start()
+            Utils.notify("Auto Farm", "Auto farming started!", 2)
+        else
+            Utils.notify("Auto Farm", "Auto farming stopped!", 2)
+        end
+    end
+})
+
+-- Seed buying system
+local seedDropdownOptions = {"ALL"}
+for _, seed in ipairs(GameData.seeds) do
+    table.insert(seedDropdownOptions, seed)
+end
+
+Tabs.AutoFarm:Dropdown({
+    Title = "Select Seeds to Buy",
+    Values = seedDropdownOptions,
+    Value = {"ALL"},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(values)
+        ScriptState.selectedSeeds = values
+    end
+})
+
+local function buySeeds()
+    local BuySeedStock = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock")
+    
+    for _, selectedSeed in ipairs(ScriptState.selectedSeeds) do
+        if selectedSeed == "ALL" then
+            for _, seed in ipairs(GameData.seeds) do
+                BuySeedStock:FireServer(seed)
+                task.wait(0.2)
+            end
+        else
+            BuySeedStock:FireServer(selectedSeed)
+            task.wait(0.2)
+        end
     end
 end
 
 Tabs.AutoFarm:Toggle({
-    Title = gradient("Auto Farm", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
+    Title = "Auto Buy Seeds", 
+    Desc = "Automatically purchase selected seeds",
     Value = false,
     Callback = function(state)
+        ScriptState.autoBuyEnabled = state
         if state then
-            FARM_ENABLED = true
             spawn(function()
-                startTimedAutoFarm()
+                while ScriptState.autoBuyEnabled do
+                    buySeeds()
+                    task.wait(1)
+                end
             end)
-        else
-            stopTimedAutoFarm()
         end
     end
 })
 
--- Scripts Tab
-Tabs.Scripts:Button({
-    Title = gradient("Jandel Chat System", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "message-circle",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
-        WindUI:Notify({
-            Title = gradient("Script Loaded", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Jandel Chat System script has been executed!",
-            Duration = 3
-        })
-    end
-})
+-- Scripts Tab Content
+local scriptData = {
+    {
+        title = "Jandel Chat System",
+        desc = "Enhanced chat system",
+        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"
+    },
+    {
+        title = "Pet Dupers (Can't Gift)",
+        desc = "Duplicate pets (limited functionality)",
+        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"
+    },
+    {
+        title = "Item Stealer",
+        desc = "Advanced item acquisition",
+        url = "https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"
+    },
+    {
+        title = "Admin Commander",
+        desc = "Spawn all items and more",
+        url = "https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"
+    }
+}
 
-Tabs.Scripts:Button({
-    Title = gradient("Pet Dupers (Can't Gift)", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "pets",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
-        WindUI:Notify({
-            Title = gradient("Script Loaded", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Pet Dupers script has been executed!",
-            Duration = 3
-        })
-    end
-})
-
-Tabs.Scripts:Button({
-    Title = gradient("Item Stealer", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "hand",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
-        WindUI:Notify({
-            Title = gradient("Script Loaded", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Item Stealer script has been executed!",
-            Duration = 3
-        })
-    end
-})
-
-Tabs.Scripts:Button({
-    Title = gradient("Admin Commander", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Icon = "crown",
-    Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20System"))()
-        WindUI:Notify({
-            Title = gradient("Script Loaded", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = "Admin Commander script has been executed!",
-            Duration = 3
-        })
-    end
-})
-
--- Settings Tab
-Tabs.Settings:Paragraph({
-    Title = gradient("⚙️ Hub Settings", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Desc = "Customize your hub experience",
-    Image = "settings",
-    ImageSize = 20,
-    Color = "White"
-})
-
-Tabs.Settings:Slider({
-    Title = gradient("🔍 Transparency", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF"))
-    Desc = "Adjust window transparency",
-    Value = { Min = 0, Max = 1, Default = 0.2 },
-    Step = 0.1,
-    Callback = function(value)
-        Window:ToggleTransparency(tonumber(value) > 0)
-        WindUI.TransparencyValue = tonumber(value)
-    end
-})
-
-Tabs.Settings:Dropdown({
-    Title = gradient("🎨 Theme Selector", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-    Values = {"Dark", "Light"},
-    Value = "Dark",
-    Callback = function(theme)
-        WindUI:SetTheme(theme)
-        WindUI:Notify({
-            Title = gradient("Theme Applied", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-            Content = theme,
-            Icon = "palette",
-            Duration = 2
-        })
-    end
-})
-
--- Window callbacks
-Window:OnClose(function()
-    stopTimedAutoFarm()
-    WindUI:Notify({
-        Title = gradient("Goodbye!", Color3.fromHex("#0066FF"), Color3.fromHex("#00BFFF")),
-        Content = "Thanks for using Fryzer Hub!",
-        Duration = 3
+for _, script in ipairs(scriptData) do
+    Tabs.Scripts:Button({
+        Title = script.title,
+        Icon = "play",
+        Desc = script.desc,
+        Callback = function()
+            loadstring(game:HttpGet(script.url))()
+            Utils.notify("Script Loaded", script.title .. " has been executed!", 3)
+        end
     })
+end
+
+-- Window close handler
+Window:OnClose(function()
+    ScriptState.autoFarmEnabled = false
+    ScriptState.autoBuyEnabled = false
+    print("Fryzer Hub closed.")
 end)
 
--- Global functions
-_G.StopTimedAutoFarm = stopTimedAutoFarm
-_G.StartTimedAutoFarm = function()
-    FARM_ENABLED = true
-    spawn(function()
-        startTimedAutoFarm()
-    end)
-end
-
-_G.GetPlayerFarm = function()
-    return playerFarm
-end
-
-_G.FindPlayerFarmAgain = function()
-    playerFarm = findPlayerFarm()
-    return playerFarm
-end
+print("Fryzer Hub Modern loaded successfully!")
