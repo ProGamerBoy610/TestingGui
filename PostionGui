@@ -12,7 +12,7 @@ PhantomHub.__index = PhantomHub
 -- Configuration
 local Config = {
     HubName = "PHANTOM HUB",
-    Version = "v2.3.0",
+    Version = "v2.4.0",
     Colors = {
         Background = Color3.fromRGB(30, 30, 40),
         Sidebar = Color3.fromRGB(25, 25, 35),
@@ -272,6 +272,13 @@ function PhantomHub:CreateWindow(config)
     ContentPadding.PaddingRight = UDim.new(0, 10)
     ContentPadding.PaddingTop = UDim.new(0, 10)
     
+    -- Update CanvasSize dynamically
+    ContentListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        if Window.CurrentTab then
+            ContentScroll.CanvasSize = UDim2.new(0, 0, 0, ContentListLayout.AbsoluteContentSize.Y + 20)
+        end
+    end)
+    
     -- Store references
     Window.ScreenGui = ScreenGui
     Window.MainFrame = MainFrame
@@ -396,7 +403,7 @@ function PhantomHub:CreateTab(Window, config)
     TabContent.Name = "TabContent_" .. Tab.Name
     TabContent.Parent = Window.ContentScroll
     TabContent.BackgroundTransparency = 1
-    TabContent.Size = UDim2.new(1, 0, 0, 0)
+    TabContent.Size = UDim2.new(1, 0, 1, 0)
     TabContent.Visible = false
     TabContent.ZIndex = 4
     
@@ -1231,5 +1238,5 @@ PhantomHub:CreateDropdown(SettingsTab, {
     end
 })
 
-print("🚀 Phantom Hub v2.3 loaded successfully!")
-print("📱 Components fixed for visibility in compact design!")
+print("🚀 Phantom Hub v2.4 loaded successfully!")
+print("📱 Tab components fixed for visibility in compact design!")
