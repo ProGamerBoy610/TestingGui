@@ -893,7 +893,7 @@ local specialTab = window:CreateTab("SPECIAL")
 specialTab:CreateHeader("SPECIAL FEATURES")
 
 specialTab:CreateToggle("Auto Farm", false, function(state)
-    print("Auto Farm:", state)
+    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 1.5, "success")
 end)
 
 specialTab:CreateToggle("Speed Hack", true, function(state)
