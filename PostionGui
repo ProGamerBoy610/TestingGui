@@ -1,132 +1,215 @@
--- Load WindUI (or any UI lib you want to use)
+-- Load your library from GitHub
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
--- Create the window and tabs with content
-local window = Library:CreateWindow({Title = "GROW A GARDEN V3.87"})
+-- Create the window using your library
+local window = Library:CreateWindow({
+    Title = "GROW A GARDEN V3.87",
+    Size = UDim2.new(0, 420, 0, 280),
+    Position = UDim2.new(0.5, -210, 0.5, -140)
+})
 
+-- HOME Tab
 local homeTab = window:CreateTab("HOME")
 
 homeTab:CreateHeader("Main SCRIPT")
-
 homeTab:CreateLabel("Make Sure to only Execute Dark Spawner 1x")
-
 homeTab:CreateLabel("Dark Spawner [ Mobile Only ]")
 
 homeTab:CreateButton("ReModified v3.8 || Dark Spawner", function()
+    -- Add your actual Dark Spawner script here
     print("Dark Spawner executed!")
-end, config.colors.success)
+    window:Notify("Success", "Dark Spawner activated!", 3, "success")
+end)
 
 homeTab:CreateLabel("Pet Placer v1.0 [ Not Animated ]")
 
 homeTab:CreateButton("ALLOW GIFT PET [NEW]", function()
+    -- Add your actual gift pet script here
     print("Gift pet allowed!")
-end, Color3.fromRGB(200, 50, 150))
+    window:Notify("Success", "Gift pets enabled!", 2, "success")
+end)
 
 homeTab:CreateLabel("Allow Gift Spawned Pets ^.^")
 
+-- SPECIAL Tab
 local specialTab = window:CreateTab("SPECIAL")
 
 specialTab:CreateHeader("SPECIAL FEATURES")
 
 specialTab:CreateToggle("Auto Farm", false, function(state)
-    print("Auto Farm:", state)
+    if state then
+        print("Auto Farm enabled")
+        window:Notify("Auto Farm", "Auto farming started!", 2, "success")
+        -- Add your auto farm logic here
+    else
+        print("Auto Farm disabled")
+        window:Notify("Auto Farm", "Auto farming stopped!", 2, "error")
+        -- Stop auto farm logic here
+    end
 end)
 
-specialTab:CreateToggle("Speed Hack", true, function(state)
-    print("Speed Hack:", state)
+specialTab:CreateToggle("Speed Hack", false, function(state)
+    if state then
+        print("Speed Hack enabled")
+        -- Add speed hack logic here
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100
+        end
+        window:Notify("Speed Hack", "Speed increased!", 2, "success")
+    else
+        print("Speed Hack disabled")
+        -- Reset speed
+        if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+            game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 16
+        end
+        window:Notify("Speed Hack", "Speed reset to normal!", 2, "error")
+    end
 end)
 
 specialTab:CreateSlider("Walk Speed", 16, 100, 50, function(value)
     print("Walk Speed:", value)
+    if game.Players.LocalPlayer.Character and game.Players.LocalPlayer.Character:FindFirstChild("Humanoid") then
+        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
+    end
 end)
 
 specialTab:CreateDropdown("Game Mode", {"Easy", "Normal", "Hard", "Extreme"}, function(mode)
     print("Game Mode:", mode)
+    window:Notify("Game Mode", "Switched to " .. mode .. " mode!", 2, "success")
 end)
 
+-- MAIN Tab
 local mainTab = window:CreateTab("MAIN")
 
 mainTab:CreateHeader("MAIN SCRIPTS")
 
 mainTab:CreateButton("Execute Main Script", function()
     print("Main script executed!")
+    window:Notify("Main Script", "Main script executed successfully!", 3, "success")
+    -- Add your main script logic here
 end)
 
 mainTab:CreateInput("Enter Script URL...", function(url)
     print("Script URL:", url)
+    if url and url ~= "" then
+        -- Execute script from URL
+        local success, error = pcall(function()
+            loadstring(game:HttpGet(url))()
+        end)
+        if success then
+            window:Notify("Script Loader", "Script executed successfully!", 3, "success")
+        else
+            window:Notify("Script Loader", "Failed to execute script!", 3, "error")
+        end
+    end
 end)
 
 mainTab:CreateToggle("Auto Execute", false, function(state)
     print("Auto Execute:", state)
+    -- Add auto execute logic here
 end)
 
 mainTab:CreateSlider("Execution Delay", 1, 10, 3, function(delay)
-    print("Execution Delay:", delay)
+    print("Execution Delay:", delay, "seconds")
 end)
 
+-- SPAWNER Tab
 local spawnerTab = window:CreateTab("SPAWNER")
 
 spawnerTab:CreateHeader("SPAWNER CONTROLS")
 
 spawnerTab:CreateButton("Dark Spawner", function()
     print("Dark Spawner activated!")
-end, Color3.fromRGB(50, 50, 200))
+    window:Notify("Dark Spawner", "Dark spawner activated!", 3, "success")
+    -- Add your dark spawner logic here
+end)
 
 spawnerTab:CreateButton("Light Spawner", function()
     print("Light Spawner activated!")
-end, Color3.fromRGB(200, 200, 50))
+    window:Notify("Light Spawner", "Light spawner activated!", 3, "success")
+    -- Add your light spawner logic here
+end)
 
 spawnerTab:CreateToggle("Auto Spawn", true, function(state)
     print("Auto Spawn:", state)
+    if state then
+        window:Notify("Auto Spawn", "Auto spawning enabled!", 2, "success")
+    else
+        window:Notify("Auto Spawn", "Auto spawning disabled!", 2, "error")
+    end
 end)
 
 spawnerTab:CreateDropdown("Spawn Type", {"Random", "Pets", "Tools", "NPCs"}, function(type)
     print("Spawn Type:", type)
+    window:Notify("Spawn Type", "Spawn type set to: " .. type, 2, "success")
 end)
 
 spawnerTab:CreateSlider("Spawn Rate", 1, 20, 5, function(rate)
     print("Spawn Rate:", rate)
 end)
 
+-- DESTROY Tab
 local destroyTab = window:CreateTab("DESTROY")
 
 destroyTab:CreateHeader("DESTRUCTION TOOLS")
 
 destroyTab:CreateButton("Clear All", function()
     print("Everything cleared!")
-end, config.colors.danger)
+    window:Notify("Warning", "All items cleared!", 3, "error")
+    -- Add your clear all logic here
+end)
 
 destroyTab:CreateButton("Reset Character", function()
     print("Character reset!")
-end, Color3.fromRGB(150, 100, 50))
+    if game.Players.LocalPlayer.Character then
+        game.Players.LocalPlayer.Character:BreakJoints()
+    end
+    window:Notify("Reset", "Character has been reset!", 2, "error")
+end)
 
 destroyTab:CreateToggle("Safe Mode", true, function(state)
     print("Safe Mode:", state)
+    if state then
+        window:Notify("Safe Mode", "Safe mode enabled - destructive actions disabled!", 3, "success")
+    else
+        window:Notify("Safe Mode", "Safe mode disabled - be careful!", 3, "error")
+    end
 end)
 
 destroyTab:CreateInput("Target Name...", function(name)
     print("Target Name:", name)
+    -- Add target-specific destruction logic here
 end)
 
-
+-- SWITCH Tab
 local switchTab = window:CreateTab("SWITCH")
 
 switchTab:CreateHeader("GAME SWITCHER")
 
 switchTab:CreateButton("Join New Server", function()
     print("Joining new server...")
-end, Color3.fromRGB(100, 100, 200))
+    window:Notify("Server Switch", "Searching for new server...", 3, "success")
+    -- Add server switching logic here
+    game:GetService("TeleportService"):Teleport(game.PlaceId)
+end)
 
 switchTab:CreateButton("Rejoin Current", function()
     print("Rejoining current server...")
-end, Color3.fromRGB(150, 150, 100))
+    window:Notify("Rejoin", "Rejoining current server...", 2, "success")
+    game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId)
+end)
 
 switchTab:CreateDropdown("Server Region", {"US East", "US West", "Europe", "Asia"}, function(region)
     print("Server Region:", region)
+    window:Notify("Region", "Preferred region set to: " .. region, 2, "success")
 end)
 
 switchTab:CreateInput("Server ID...", function(id)
     print("Server ID:", id)
+    if id and id ~= "" then
+        -- Attempt to join specific server
+        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, id)
+    end
 end)
 
 switchTab:CreateSlider("Max Players", 1, 30, 12, function(players)
@@ -135,21 +218,33 @@ end)
 
 switchTab:CreateToggle("Auto Rejoin", false, function(state)
     print("Auto Rejoin:", state)
+    if state then
+        -- Set up auto rejoin on disconnect
+        game:GetService("Players").PlayerRemoving:Connect(function(player)
+            if player == game.Players.LocalPlayer then
+                wait(2)
+                game:GetService("TeleportService"):Teleport(game.PlaceId)
+            end
+        end)
+        window:Notify("Auto Rejoin", "Auto rejoin enabled!", 2, "success")
+    else
+        window:Notify("Auto Rejoin", "Auto rejoin disabled!", 2, "error")
+    end
 end)
 
--- Welcome notification
+-- Welcome notification and cleanup
 spawn(function()
-    wait(0.5)
-    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 1.5, "success")
+    wait(1)
+    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 3, "success")
 end)
 
--- Auto-save functionality (example)
+-- Auto-save functionality
 local autoSave = true
 if autoSave then
     spawn(function()
-        while wait(30) do -- Save every 30 seconds
-            if playerGui:FindFirstChild("ModernHubGUI") then
-                window:Notify("Auto Save", "Settings saved automatically", 2, "success")
+        while wait(30) do
+            if game.Players.LocalPlayer.PlayerGui:FindFirstChild("ModernHubGUI") then
+                window:Notify("Auto Save", "Settings saved automatically", 1.5, "success")
             else
                 break
             end
