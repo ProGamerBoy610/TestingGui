@@ -1,561 +1,561 @@
--- Custom Script Hub
-local WindUI = loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/dist/main.lua"))()
+-- Custom Script Hub (Native GUI)
+-- No external libraries required
 
--- Services
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- Player reference
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Hub Configuration
 local HubConfig = {
-    Title = "NEXUS HUB",
-    Version = "v2.5",
-    Author = "Custom Hub Creator",
-    Theme = "Dark"
-}
-
--- Script Categories and Data
-local ScriptDatabase = {
-    Universal = {
-        {
-            name = "Infinite Yield",
-            desc = "Ultimate admin commands",
-            script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source'))();"
-        },
-        {
-            name = "Dark Dex",
-            desc = "Advanced game explorer",
-            script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/Babyhamsta/RBLX_Scripts/main/Universal/BypassedDarkDexV3.lua', true))();"
-        },
-        {
-            name = "Remote Spy",
-            desc = "Monitor game communications",
-            script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/exxtremestuffs/SimpleSpySource/master/SimpleSpy.lua'))();"
-        },
-        {
-            name = "Chat Bypasser",
-            desc = "Enhanced chat system",
-            script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/synnyyy/synergy/additional/betterbypasser'))();"
-        }
-    },
-    
-    Games = {
-        ["Adopt Me"] = {
-            {
-                name = "Auto Farm Pets",
-                desc = "Automatically collect pets",
-                script = "print('Adopt Me Auto Farm Loaded');"
-            },
-            {
-                name = "Money Generator",
-                desc = "Generate in-game currency",
-                script = "print('Money Generator Loaded');"
-            }
-        },
-        
-        ["Blox Fruits"] = {
-            {
-                name = "Auto Farm",
-                desc = "Level up automatically",
-                script = "loadstring(game:HttpGet('https://raw.githubusercontent.com/scriptpastebin/raw/main/1'))();"
-            },
-            {
-                name = "Devil Fruit Notifier",
-                desc = "Find rare fruits instantly",
-                script = "print('Fruit Notifier Loaded');"
-            }
-        },
-        
-        ["Arsenal"] = {
-            {
-                name = "Aimbot & ESP",
-                desc = "Enhanced shooting accuracy",
-                script = "print('Arsenal Aimbot Loaded');"
-            },
-            {
-                name = "Infinite Ammo",
-                desc = "Never run out of bullets",
-                script = "print('Infinite Ammo Loaded');"
-            }
-        },
-        
-        ["Doors"] = {
-            {
-                name = "Entity ESP",
-                desc = "See all entities through walls",
-                script = "print('Doors ESP Loaded');"
-            },
-            {
-                name = "Skip Rooms",
-                desc = "Teleport to next room",
-                script = "print('Room Skipper Loaded');"
-            }
-        }
-    },
-    
-    Exploits = {
-        {
-            name = "Walkspeed Modifier",
-            desc = "Control your movement speed",
-            script = "game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = 100;"
-        },
-        {
-            name = "Jump Power Boost",
-            desc = "Super jump ability",
-            script = "game.Players.LocalPlayer.Character.Humanoid.JumpPower = 200;"
-        },
-        {
-            name = "Noclip Toggle",
-            desc = "Walk through walls",
-            script = [[
-                local noclip = false
-                local function toggleNoclip()
-                    noclip = not noclip
-                    local char = game.Players.LocalPlayer.Character
-                    if char then
-                        for _, part in pairs(char:GetDescendants()) do
-                            if part:IsA("BasePart") then
-                                part.CanCollide = not noclip
-                            end
-                        end
-                    end
-                end
-                toggleNoclip()
-            ]]
-        },
-        {
-            name = "Anti-AFK",
-            desc = "Prevent getting kicked for inactivity",
-            script = [[
-                local VirtualUser = game:GetService("VirtualUser")
-                game:GetService("Players").LocalPlayer.Idled:connect(function()
-                    VirtualUser:CaptureController()
-                    VirtualUser:ClickButton2(Vector2.new())
-                end)
-            ]]
-        }
-    },
-    
-    Tools = {
-        {
-            name = "Server Hop",
-            desc = "Find new servers quickly",
-            script = [[
-                local TeleportService = game:GetService("TeleportService")
-                local Players = game:GetService("Players")
-                TeleportService:Teleport(game.PlaceId, Players.LocalPlayer)
-            ]]
-        },
-        {
-            name = "Rejoin Server",
-            desc = "Reconnect to current server",
-            script = [[
-                game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId)
-            ]]
-        },
-        {
-            name = "Copy Game ID",
-            desc = "Get current game's place ID",
-            script = "setclipboard(tostring(game.PlaceId)); print('Game ID copied: ' .. game.PlaceId);"
-        }
+    Title = "PHANTOM HUB",
+    Version = "v1.8.5",
+    Game = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name,
+    Colors = {
+        Primary = Color3.fromRGB(45, 45, 55),
+        Secondary = Color3.fromRGB(35, 35, 45),
+        Accent = Color3.fromRGB(100, 150, 255),
+        Success = Color3.fromRGB(50, 200, 50),
+        Warning = Color3.fromRGB(255, 200, 50),
+        Error = Color3.fromRGB(255, 100, 100),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextSecondary = Color3.fromRGB(200, 200, 200)
     }
 }
 
--- Hub State
-local HubState = {
-    currentCategory = "HOME",
-    favoriteScripts = {},
-    recentScripts = {},
-    searchQuery = ""
+-- Script Database
+local Scripts = {
+    HOME = {},
+    EXECUTOR = {
+        {name = "Speed Hack", desc = "Increase movement speed", type = "toggle", enabled = false},
+        {name = "Jump Boost", desc = "Enhanced jumping ability", type = "toggle", enabled = false},
+        {name = "Noclip Mode", desc = "Walk through walls", type = "toggle", enabled = false},
+        {name = "Infinite Health", desc = "God mode protection", type = "toggle", enabled = false},
+        {name = "Teleport Tool", desc = "Click to teleport anywhere", type = "button"},
+        {name = "Fly Mode", desc = "Fly around the map", type = "toggle", enabled = false}
+    },
+    FEATURES = {
+        {name = "Auto Farm", desc = "Automatic resource collection", type = "toggle", enabled = false},
+        {name = "ESP Players", desc = "See players through walls", type = "toggle", enabled = false},
+        {name = "Aimbot", desc = "Enhanced targeting system", type = "toggle", enabled = false},
+        {name = "Auto Collect", desc = "Collect items automatically", type = "toggle", enabled = false},
+        {name = "Speed Multiplier", desc = "Adjustable speed control", type = "slider", value = 16, min = 16, max = 200}
+    },
+    SPAWNER = {
+        {name = "Money Generator", desc = "Spawn in-game currency", type = "button"},
+        {name = "Item Spawner", desc = "Create any game item", type = "button"},
+        {name = "Vehicle Spawner", desc = "Spawn vehicles instantly", type = "button"},
+        {name = "Weapon Cache", desc = "Access all weapons", type = "button"}
+    },
+    TELEPORT = {
+        {name = "Safe Zone", desc = "Teleport to safety", type = "button"},
+        {name = "Boss Arena", desc = "Go to boss location", type = "button"},
+        {name = "Treasure Room", desc = "Find hidden treasures", type = "button"},
+        {name = "Spawn Point", desc = "Return to spawn", type = "button"}
+    },
+    SETTINGS = {}
 }
 
--- Utility Functions
-local Utils = {}
+-- Create Main GUI
+local function CreateMainGUI()
+    -- Remove existing GUI if it exists
+    if PlayerGui:FindFirstChild("PhantomHub") then
+        PlayerGui:FindFirstChild("PhantomHub"):Destroy()
+    end
+    
+    -- Main ScreenGui
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "PhantomHub"
+    ScreenGui.Parent = PlayerGui
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Main Frame
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Name = "MainFrame"
+    MainFrame.Parent = ScreenGui
+    MainFrame.BackgroundColor3 = HubConfig.Colors.Primary
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
+    MainFrame.Size = UDim2.new(0, 600, 0, 400)
+    MainFrame.ClipsDescendants = true
+    
+    -- Add rounded corners
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 12)
+    Corner.Parent = MainFrame
+    
+    -- Add drop shadow effect
+    local Shadow = Instance.new("Frame")
+    Shadow.Name = "Shadow"
+    Shadow.Parent = ScreenGui
+    Shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Shadow.BackgroundTransparency = 0.7
+    Shadow.BorderSizePixel = 0
+    Shadow.Position = UDim2.new(0.5, -305, 0.5, -195)
+    Shadow.Size = UDim2.new(0, 610, 0, 410)
+    Shadow.ZIndex = MainFrame.ZIndex - 1
+    
+    local ShadowCorner = Instance.new("UICorner")
+    ShadowCorner.CornerRadius = UDim.new(0, 12)
+    ShadowCorner.Parent = Shadow
+    
+    -- Title Bar
+    local TitleBar = Instance.new("Frame")
+    TitleBar.Name = "TitleBar"
+    TitleBar.Parent = MainFrame
+    TitleBar.BackgroundColor3 = HubConfig.Colors.Secondary
+    TitleBar.BorderSizePixel = 0
+    TitleBar.Size = UDim2.new(1, 0, 0, 50)
+    
+    local TitleCorner = Instance.new("UICorner")
+    TitleCorner.CornerRadius = UDim.new(0, 12)
+    TitleCorner.Parent = TitleBar
+    
+    -- Fix corner for bottom of title
+    local TitleFix = Instance.new("Frame")
+    TitleFix.Parent = TitleBar
+    TitleFix.BackgroundColor3 = HubConfig.Colors.Secondary
+    TitleFix.BorderSizePixel = 0
+    TitleFix.Position = UDim2.new(0, 0, 0.5, 0)
+    TitleFix.Size = UDim2.new(1, 0, 0.5, 0)
+    
+    -- Title Text
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Parent = TitleBar
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.Size = UDim2.new(0, 200, 1, 0)
+    Title.Font = Enum.Font.GothamBold
+    Title.Text = HubConfig.Title
+    Title.TextColor3 = HubConfig.Colors.Text
+    Title.TextSize = 18
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- Game Name
+    local GameName = Instance.new("TextLabel")
+    GameName.Name = "GameName"
+    GameName.Parent = TitleBar
+    GameName.BackgroundTransparency = 1
+    GameName.Position = UDim2.new(1, -200, 0, 0)
+    GameName.Size = UDim2.new(0, 180, 1, 0)
+    GameName.Font = Enum.Font.Gotham
+    GameName.Text = string.upper(HubConfig.Game)
+    GameName.TextColor3 = HubConfig.Colors.TextSecondary
+    GameName.TextSize = 12
+    GameName.TextXAlignment = Enum.TextXAlignment.Right
+    
+    -- Close Button
+    local CloseButton = Instance.new("TextButton")
+    CloseButton.Name = "CloseButton"
+    CloseButton.Parent = TitleBar
+    CloseButton.BackgroundColor3 = HubConfig.Colors.Error
+    CloseButton.BorderSizePixel = 0
+    CloseButton.Position = UDim2.new(1, -35, 0, 10)
+    CloseButton.Size = UDim2.new(0, 25, 0, 25)
+    CloseButton.Font = Enum.Font.GothamBold
+    CloseButton.Text = "✕"
+    CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    CloseButton.TextSize = 14
+    
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(0, 4)
+    CloseCorner.Parent = CloseButton
+    
+    -- Minimize Button
+    local MinimizeButton = Instance.new("TextButton")
+    MinimizeButton.Name = "MinimizeButton"
+    MinimizeButton.Parent = TitleBar
+    MinimizeButton.BackgroundColor3 = HubConfig.Colors.Warning
+    MinimizeButton.BorderSizePixel = 0
+    MinimizeButton.Position = UDim2.new(1, -65, 0, 10)
+    MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+    MinimizeButton.Font = Enum.Font.GothamBold
+    MinimizeButton.Text = "−"
+    MinimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    MinimizeButton.TextSize = 14
+    
+    local MinCorner = Instance.new("UICorner")
+    MinCorner.CornerRadius = UDim.new(0, 4)
+    MinCorner.Parent = MinimizeButton
+    
+    -- Sidebar
+    local Sidebar = Instance.new("Frame")
+    Sidebar.Name = "Sidebar"
+    Sidebar.Parent = MainFrame
+    Sidebar.BackgroundColor3 = HubConfig.Colors.Secondary
+    Sidebar.BorderSizePixel = 0
+    Sidebar.Position = UDim2.new(0, 0, 0, 50)
+    Sidebar.Size = UDim2.new(0, 150, 1, -50)
+    
+    -- Content Area
+    local ContentArea = Instance.new("Frame")
+    ContentArea.Name = "ContentArea"
+    ContentArea.Parent = MainFrame
+    ContentArea.BackgroundColor3 = HubConfig.Colors.Primary
+    ContentArea.BorderSizePixel = 0
+    ContentArea.Position = UDim2.new(0, 150, 0, 50)
+    ContentArea.Size = UDim2.new(1, -150, 1, -50)
+    
+    -- Content Header
+    local ContentHeader = Instance.new("Frame")
+    ContentHeader.Name = "ContentHeader"
+    ContentHeader.Parent = ContentArea
+    ContentHeader.BackgroundColor3 = HubConfig.Colors.Accent
+    ContentHeader.BorderSizePixel = 0
+    ContentHeader.Size = UDim2.new(1, 0, 0, 40)
+    
+    local HeaderText = Instance.new("TextLabel")
+    HeaderText.Name = "HeaderText"
+    HeaderText.Parent = ContentHeader
+    HeaderText.BackgroundTransparency = 1
+    HeaderText.Position = UDim2.new(0, 15, 0, 0)
+    HeaderText.Size = UDim2.new(1, -15, 1, 0)
+    HeaderText.Font = Enum.Font.GothamBold
+    HeaderText.Text = "EXECUTOR SCRIPTS"
+    HeaderText.TextColor3 = Color3.fromRGB(255, 255, 255)
+    HeaderText.TextSize = 14
+    HeaderText.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- Scrolling Frame for Content
+    local ScrollFrame = Instance.new("ScrollingFrame")
+    ScrollFrame.Name = "ScrollFrame"
+    ScrollFrame.Parent = ContentArea
+    ScrollFrame.BackgroundTransparency = 1
+    ScrollFrame.Position = UDim2.new(0, 0, 0, 40)
+    ScrollFrame.Size = UDim2.new(1, 0, 1, -40)
+    ScrollFrame.ScrollBarThickness = 4
+    ScrollFrame.ScrollBarImageColor3 = HubConfig.Colors.Accent
+    
+    return ScreenGui, MainFrame, Sidebar, ScrollFrame, HeaderText
+end
 
-function Utils.executeScript(scriptCode, scriptName)
-    local success, error = pcall(function()
-        loadstring(scriptCode)()
+-- Create Sidebar Buttons
+local function CreateSidebarButton(parent, text, icon, position, callback)
+    local Button = Instance.new("TextButton")
+    Button.Name = text .. "Button"
+    Button.Parent = parent
+    Button.BackgroundColor3 = HubConfig.Colors.Secondary
+    Button.BorderSizePixel = 0
+    Button.Position = UDim2.new(0, 0, 0, position)
+    Button.Size = UDim2.new(1, 0, 0, 45)
+    Button.AutoButtonColor = false
+    
+    local ButtonText = Instance.new("TextLabel")
+    ButtonText.Name = "ButtonText"
+    ButtonText.Parent = Button
+    ButtonText.BackgroundTransparency = 1
+    ButtonText.Position = UDim2.new(0, 35, 0, 0)
+    ButtonText.Size = UDim2.new(1, -35, 1, 0)
+    ButtonText.Font = Enum.Font.GothamMedium
+    ButtonText.Text = string.upper(text)
+    ButtonText.TextColor3 = HubConfig.Colors.TextSecondary
+    ButtonText.TextSize = 11
+    ButtonText.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local IconLabel = Instance.new("TextLabel")
+    IconLabel.Name = "IconLabel"
+    IconLabel.Parent = Button
+    IconLabel.BackgroundTransparency = 1
+    IconLabel.Position = UDim2.new(0, 12, 0, 0)
+    IconLabel.Size = UDim2.new(0, 20, 1, 0)
+    IconLabel.Font = Enum.Font.GothamBold
+    IconLabel.Text = icon
+    IconLabel.TextColor3 = HubConfig.Colors.TextSecondary
+    IconLabel.TextSize = 16
+    
+    -- Hover Effect
+    Button.MouseEnter:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(55, 55, 70)}):Play()
+        TweenService:Create(ButtonText, TweenInfo.new(0.2), {TextColor3 = HubConfig.Colors.Text}):Play()
+        TweenService:Create(IconLabel, TweenInfo.new(0.2), {TextColor3 = HubConfig.Colors.Accent}):Play()
     end)
     
-    if success then
-        WindUI:Notify({
-            Title = "Script Executed",
-            Content = scriptName .. " has been loaded successfully!",
-            Duration = 3
-        })
+    Button.MouseLeave:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = HubConfig.Colors.Secondary}):Play()
+        TweenService:Create(ButtonText, TweenInfo.new(0.2), {TextColor3 = HubConfig.Colors.TextSecondary}):Play()
+        TweenService:Create(IconLabel, TweenInfo.new(0.2), {TextColor3 = HubConfig.Colors.TextSecondary}):Play()
+    end)
+    
+    Button.MouseButton1Click:Connect(callback)
+    
+    return Button
+end
+
+-- Create Content Items
+local function CreateToggleButton(parent, scriptData, position)
+    local Container = Instance.new("Frame")
+    Container.Name = "ToggleContainer"
+    Container.Parent = parent
+    Container.BackgroundColor3 = HubConfig.Colors.Secondary
+    Container.BorderSizePixel = 0
+    Container.Position = UDim2.new(0, 15, 0, position)
+    Container.Size = UDim2.new(1, -30, 0, 45)
+    
+    local ContainerCorner = Instance.new("UICorner")
+    ContainerCorner.CornerRadius = UDim.new(0, 6)
+    ContainerCorner.Parent = Container
+    
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Parent = Container
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 15, 0, 5)
+    Title.Size = UDim2.new(1, -80, 0, 20)
+    Title.Font = Enum.Font.GothamMedium
+    Title.Text = scriptData.name
+    Title.TextColor3 = HubConfig.Colors.Text
+    Title.TextSize = 13
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local Desc = Instance.new("TextLabel")
+    Desc.Name = "Desc"
+    Desc.Parent = Container
+    Desc.BackgroundTransparency = 1
+    Desc.Position = UDim2.new(0, 15, 0, 22)
+    Desc.Size = UDim2.new(1, -80, 0, 15)
+    Desc.Font = Enum.Font.Gotham
+    Desc.Text = scriptData.desc
+    Desc.TextColor3 = HubConfig.Colors.TextSecondary
+    Desc.TextSize = 10
+    Desc.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- Toggle Switch
+    local ToggleFrame = Instance.new("Frame")
+    ToggleFrame.Name = "ToggleFrame"
+    ToggleFrame.Parent = Container
+    ToggleFrame.BackgroundColor3 = scriptData.enabled and HubConfig.Colors.Success or Color3.fromRGB(60, 60, 60)
+    ToggleFrame.BorderSizePixel = 0
+    ToggleFrame.Position = UDim2.new(1, -55, 0.5, -10)
+    ToggleFrame.Size = UDim2.new(0, 40, 0, 20)
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 10)
+    ToggleCorner.Parent = ToggleFrame
+    
+    local ToggleKnob = Instance.new("Frame")
+    ToggleKnob.Name = "ToggleKnob"
+    ToggleKnob.Parent = ToggleFrame
+    ToggleKnob.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleKnob.BorderSizePixel = 0
+    ToggleKnob.Position = scriptData.enabled and UDim2.new(0, 22, 0, 2) or UDim2.new(0, 2, 0, 2)
+    ToggleKnob.Size = UDim2.new(0, 16, 0, 16)
+    
+    local KnobCorner = Instance.new("UICorner")
+    KnobCorner.CornerRadius = UDim.new(0, 8)
+    KnobCorner.Parent = ToggleKnob
+    
+    -- Toggle Function
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Name = "ToggleButton"
+    ToggleButton.Parent = ToggleFrame
+    ToggleButton.BackgroundTransparency = 1
+    ToggleButton.Size = UDim2.new(1, 0, 1, 0)
+    ToggleButton.Text = ""
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        scriptData.enabled = not scriptData.enabled
         
-        -- Add to recent scripts
-        table.insert(HubState.recentScripts, 1, {name = scriptName, time = os.date()})
-        if #HubState.recentScripts > 10 then
-            table.remove(HubState.recentScripts, 11)
+        -- Animate toggle
+        TweenService:Create(ToggleFrame, TweenInfo.new(0.3), {
+            BackgroundColor3 = scriptData.enabled and HubConfig.Colors.Success or Color3.fromRGB(60, 60, 60)
+        }):Play()
+        
+        TweenService:Create(ToggleKnob, TweenInfo.new(0.3), {
+            Position = scriptData.enabled and UDim2.new(0, 22, 0, 2) or UDim2.new(0, 2, 0, 2)
+        }):Play()
+        
+        -- Execute script logic here
+        print(scriptData.name .. " is now " .. (scriptData.enabled and "enabled" or "disabled"))
+        
+        -- Add your script execution logic here
+        if scriptData.name == "Speed Hack" then
+            if scriptData.enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = 100
+            elseif LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            end
+        elseif scriptData.name == "Jump Boost" then
+            if scriptData.enabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = 200
+            elseif LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.JumpPower = 50
+            end
         end
-    else
-        WindUI:Notify({
-            Title = "Execution Failed",
-            Content = "Error loading " .. scriptName .. ": " .. tostring(error),
-            Duration = 5
-        })
-    end
+    end)
+    
+    return Container
 end
 
-function Utils.addToFavorites(scriptName, scriptCode)
-    local alreadyFavorited = false
-    for _, fav in pairs(HubState.favoriteScripts) do
-        if fav.name == scriptName then
-            alreadyFavorited = true
-            break
+local function CreateActionButton(parent, scriptData, position)
+    local Button = Instance.new("TextButton")
+    Button.Name = "ActionButton"
+    Button.Parent = parent
+    Button.BackgroundColor3 = HubConfig.Colors.Accent
+    Button.BorderSizePixel = 0
+    Button.Position = UDim2.new(0, 15, 0, position)
+    Button.Size = UDim2.new(1, -30, 0, 40)
+    Button.AutoButtonColor = false
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
+    ButtonCorner.Parent = Button
+    
+    local Title = Instance.new("TextLabel")
+    Title.Name = "Title"
+    Title.Parent = Button
+    Title.BackgroundTransparency = 1
+    Title.Position = UDim2.new(0, 15, 0, 0)
+    Title.Size = UDim2.new(1, -15, 0.6, 0)
+    Title.Font = Enum.Font.GothamMedium
+    Title.Text = scriptData.name
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.TextSize = 13
+    Title.TextXAlignment = Enum.TextXAlignment.Left
+    Title.TextYAlignment = Enum.TextYAlignment.Bottom
+    
+    local Desc = Instance.new("TextLabel")
+    Desc.Name = "Desc"
+    Desc.Parent = Button
+    Desc.BackgroundTransparency = 1
+    Desc.Position = UDim2.new(0, 15, 0.6, 0)
+    Desc.Size = UDim2.new(1, -15, 0.4, 0)
+    Desc.Font = Enum.Font.Gotham
+    Desc.Text = scriptData.desc
+    Desc.TextColor3 = Color3.fromRGB(200, 200, 255)
+    Desc.TextSize = 10
+    Desc.TextXAlignment = Enum.TextXAlignment.Left
+    Desc.TextYAlignment = Enum.TextYAlignment.Top
+    
+    -- Hover Effects
+    Button.MouseEnter:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(120, 170, 255)}):Play()
+    end)
+    
+    Button.MouseLeave:Connect(function()
+        TweenService:Create(Button, TweenInfo.new(0.2), {BackgroundColor3 = HubConfig.Colors.Accent}):Play()
+    end)
+    
+    Button.MouseButton1Click:Connect(function()
+        print("Executed: " .. scriptData.name)
+        
+        -- Add your script execution logic here
+        if scriptData.name == "Teleport Tool" then
+            print("Teleport tool activated")
+        elseif scriptData.name == "Money Generator" then
+            print("Money generated")
+        end
+    end)
+    
+    return Button
+end
+
+-- Populate Content Area
+local function PopulateContent(scrollFrame, category, headerText)
+    -- Clear existing content
+    for _, child in pairs(scrollFrame:GetChildren()) do
+        if child:IsA("Frame") or child:IsA("TextButton") then
+            child:Destroy()
         end
     end
     
-    if not alreadyFavorited then
-        table.insert(HubState.favoriteScripts, {
-            name = scriptName,
-            script = scriptCode,
-            time = os.date()
-        })
-        WindUI:Notify({
-            Title = "Added to Favorites",
-            Content = scriptName .. " has been favorited!",
-            Duration = 2
-        })
-    end
-end
-
--- Startup Animation
-local function showStartupAnimation()
-    WindUI:Popup({
-        Title = "NEXUS HUB",
-        Icon = "zap",
-        Content = "Welcome to the most advanced script hub!\nLoading premium features...",
-        Buttons = {
-            {
-                Title = "Enter Hub",
-                Icon = "arrow-right",
-                Variant = "Primary",
-                Callback = function() end
-            }
-        }
-    })
-end
-
-showStartupAnimation()
-
--- Create Main Window
-local Window = WindUI:CreateWindow({
-    Title = HubConfig.Title,
-    Icon = "command",
-    Author = HubConfig.Author,
-    Folder = "NexusHub",
-    Size = UDim2.fromOffset(750, 500),
-    Transparent = true,
-    Theme = HubConfig.Theme,
-    SideBarWidth = 180,
-    ScrollBarEnabled = true,
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Username = LocalPlayer.DisplayName,
-        UserId = LocalPlayer.UserId,
-        Callback = function()
-            WindUI:Notify({
-                Title = "User Profile",
-                Content = "Welcome, " .. LocalPlayer.DisplayName .. "!",
-                Duration = 2
-            })
+    headerText.Text = string.upper(category) .. " SCRIPTS"
+    
+    local yPosition = 15
+    local scripts = Scripts[category] or {}
+    
+    for _, scriptData in pairs(scripts) do
+        if scriptData.type == "toggle" then
+            CreateToggleButton(scrollFrame, scriptData, yPosition)
+            yPosition = yPosition + 55
+        elseif scriptData.type == "button" then
+            CreateActionButton(scrollFrame, scriptData, yPosition)
+            yPosition = yPosition + 50
         end
+    end
+    
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yPosition + 15)
+end
+
+-- Main Execution
+local function InitializeHub()
+    local screenGui, mainFrame, sidebar, scrollFrame, headerText = CreateMainGUI()
+    
+    local currentCategory = "EXECUTOR"
+    
+    -- Create Sidebar Buttons
+    local buttonData = {
+        {text = "HOME", icon = "🏠", category = "HOME"},
+        {text = "EXECUTOR", icon = "⚡", category = "EXECUTOR"},
+        {text = "FEATURES", icon = "🎯", category = "FEATURES"},
+        {text = "SPAWNER", icon = "📦", category = "SPAWNER"},
+        {text = "TELEPORT", icon = "📍", category = "TELEPORT"},
+        {text = "SETTINGS", icon = "⚙️", category = "SETTINGS"}
     }
-})
-
--- Add version tag
-Window:Tag({
-    Title = HubConfig.Version,
-    Color = Color3.fromHex("#ff6b6b")
-})
-
-Window:Tag({
-    Title = "PREMIUM",
-    Color = Color3.fromHex("#ffd93d")
-})
-
--- Configure UI button
-Window:EditOpenButton({
-    Title = "NEXUS",
-    Icon = "zap",
-    CornerRadius = UDim.new(0, 20),
-    StrokeThickness = 3,
-    Color = ColorSequence.new{
-        ColorSequenceKeypoint.new(0, Color3.fromHex("#667eea")),
-        ColorSequenceKeypoint.new(1, Color3.fromHex("#764ba2"))
-    },
-    Draggable = true,
-})
-
--- Create Tabs
-local Tabs = {
-    Home = Window:Tab({ Title = "HOME", Icon = "home" }),
-    Universal = Window:Tab({ Title = "UNIVERSAL", Icon = "globe" }),
-    Games = Window:Tab({ Title = "GAMES", Icon = "gamepad-2" }),
-    Exploits = Window:Tab({ Title = "EXPLOITS", Icon = "zap" }),
-    Tools = Window:Tab({ Title = "TOOLS", Icon = "wrench" }),
-    Favorites = Window:Tab({ Title = "FAVORITES", Icon = "heart" }),
-    Settings = Window:Tab({ Title = "SETTINGS", Icon = "settings" })
-}
-
--- HOME TAB
-Tabs.Home:Paragraph({
-    Title = "🚀 Welcome to NEXUS HUB",
-    Content = "The ultimate script collection with over 100+ premium scripts!\n\n• Universal Scripts\n• Game-Specific Exploits\n• Advanced Tools\n• Regular Updates"
-})
-
--- Quick Stats
-Tabs.Home:Paragraph({
-    Title = "📊 Hub Statistics",
-    Content = "Total Scripts: 50+\nActive Users: 10,000+\nLast Update: " .. os.date("%B %d, %Y") .. "\nSuccess Rate: 99.9%"
-})
-
--- Recent Scripts Section
-if #HubState.recentScripts > 0 then
-    Tabs.Home:Paragraph({
-        Title = "🕒 Recently Used",
-        Content = "Your recent script history will appear here."
-    })
-end
-
--- UNIVERSAL TAB
-Tabs.Universal:Paragraph({
-    Title = "🌐 Universal Scripts",
-    Content = "Scripts that work on any Roblox game"
-})
-
-for _, script in pairs(ScriptDatabase.Universal) do
-    Tabs.Universal:Button({
-        Title = script.name,
-        Desc = script.desc,
-        Callback = function()
-            Utils.executeScript(script.script, script.name)
-        end
-    })
-end
-
--- GAMES TAB
-Tabs.Games:Paragraph({
-    Title = "🎮 Game-Specific Scripts",
-    Content = "Choose your game and unleash powerful exploits!"
-})
-
-for gameName, scripts in pairs(ScriptDatabase.Games) do
-    -- Create a collapsible section for each game
-    Tabs.Games:Paragraph({
-        Title = "🎯 " .. gameName,
-        Content = #scripts .. " scripts available"
-    })
     
-    for _, script in pairs(scripts) do
-        Tabs.Games:Button({
-            Title = script.name,
-            Desc = script.desc,
-            Callback = function()
-                Utils.executeScript(script.script, script.name)
-            end
-        })
+    for i, data in pairs(buttonData) do
+        CreateSidebarButton(sidebar, data.text, data.icon, (i-1) * 45, function()
+            currentCategory = data.category
+            PopulateContent(scrollFrame, currentCategory, headerText)
+        end)
     end
     
-    Tabs.Games:Divider()
+    -- Initialize with first category
+    PopulateContent(scrollFrame, currentCategory, headerText)
+    
+    -- Close Button Functionality
+    mainFrame.TitleBar.CloseButton.MouseButton1Click:Connect(function()
+        screenGui:Destroy()
+    end)
+    
+    -- Minimize Button Functionality
+    local minimized = false
+    mainFrame.TitleBar.MinimizeButton.MouseButton1Click:Connect(function()
+        minimized = not minimized
+        if minimized then
+            TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 600, 0, 50)}):Play()
+        else
+            TweenService:Create(mainFrame, TweenInfo.new(0.3), {Size = UDim2.new(0, 600, 0, 400)}):Play()
+        end
+    end)
+    
+    -- Drag Functionality
+    local dragging = false
+    local dragInput, mousePos, framePos
+    
+    mainFrame.TitleBar.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            mousePos = input.Position
+            framePos = mainFrame.Position
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - mousePos
+            mainFrame.Position = UDim2.new(framePos.X.Scale, framePos.X.Offset + delta.X, framePos.Y.Scale, framePos.Y.Offset + delta.Y)
+        end
+    end)
+    
+    mainFrame.TitleBar.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = false
+        end
+    end)
+    
+    print("🚀 PHANTOM HUB loaded successfully!")
 end
 
--- EXPLOITS TAB  
-Tabs.Exploits:Paragraph({
-    Title = "⚡ Advanced Exploits",
-    Content = "Powerful modifications for enhanced gameplay"
-})
-
-for _, script in pairs(ScriptDatabase.Exploits) do
-    Tabs.Exploits:Button({
-        Title = script.name,
-        Desc = script.desc,
-        Callback = function()
-            Utils.executeScript(script.script, script.name)
-        end
-    })
-end
-
--- Add custom exploit controls
-Tabs.Exploits:Slider({
-    Title = "Custom Walkspeed",
-    Value = { Min = 16, Max = 500, Default = 16 },
-    Callback = function(value)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.WalkSpeed = value
-        end
-    end
-})
-
-Tabs.Exploits:Slider({
-    Title = "Custom Jump Power",
-    Value = { Min = 50, Max = 1000, Default = 50 },
-    Callback = function(value)
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-            LocalPlayer.Character.Humanoid.JumpPower = value
-        end
-    end
-})
-
--- TOOLS TAB
-Tabs.Tools:Paragraph({
-    Title = "🔧 Utility Tools",
-    Content = "Essential tools for script management"
-})
-
-for _, script in pairs(ScriptDatabase.Tools) do
-    Tabs.Tools:Button({
-        Title = script.name,
-        Desc = script.desc,
-        Callback = function()
-            Utils.executeScript(script.script, script.name)
-        end
-    })
-end
-
--- Advanced Tools
-Tabs.Tools:Button({
-    Title = "Clear All Scripts",
-    Desc = "Remove all running scripts",
-    Callback = function()
-        -- This is a placeholder - actual implementation would vary
-        WindUI:Notify({
-            Title = "Scripts Cleared",
-            Content = "All scripts have been terminated",
-            Duration = 2
-        })
-    end
-})
-
--- FAVORITES TAB
-Tabs.Favorites:Paragraph({
-    Title = "❤️ Favorite Scripts",
-    Content = "Your most used scripts appear here"
-})
-
-if #HubState.favoriteScripts == 0 then
-    Tabs.Favorites:Paragraph({
-        Title = "No Favorites Yet",
-        Content = "Start adding scripts to your favorites by using them from other tabs!"
-    })
-else
-    for _, fav in pairs(HubState.favoriteScripts) do
-        Tabs.Favorites:Button({
-            Title = fav.name,
-            Desc = "Added on " .. fav.time,
-            Callback = function()
-                Utils.executeScript(fav.script, fav.name)
-            end
-        })
-    end
-end
-
--- SETTINGS TAB
-Tabs.Settings:Paragraph({
-    Title = "⚙️ Hub Settings",
-    Content = "Customize your experience"
-})
-
--- Theme selector
-local themes = {"Dark", "Light", "Darker", "Rose", "Aqua"}
-Tabs.Settings:Dropdown({
-    Title = "Theme Selection",
-    Values = themes,
-    Value = "Dark",
-    Callback = function(theme)
-        WindUI:SetTheme(theme)
-        WindUI:Notify({
-            Title = "Theme Changed",
-            Content = "Applied " .. theme .. " theme",
-            Duration = 2
-        })
-    end
-})
-
--- Auto-execute toggle
-Tabs.Settings:Toggle({
-    Title = "Auto-Execute Favorites",
-    Desc = "Automatically run favorite scripts on join",
-    Value = false,
-    Callback = function(state)
-        -- Placeholder for auto-execute functionality
-        WindUI:Notify({
-            Title = "Auto-Execute",
-            Content = state and "Enabled" or "Disabled",
-            Duration = 1
-        })
-    end
-})
-
--- Notification settings
-Tabs.Settings:Toggle({
-    Title = "Show Notifications",
-    Desc = "Display script execution notifications",
-    Value = true,
-    Callback = function(state)
-        -- Placeholder for notification settings
-    end
-})
-
--- Hub info
-Tabs.Settings:Paragraph({
-    Title = "📋 Hub Information",
-    Content = "Version: " .. HubConfig.Version .. "\nCreated by: " .. HubConfig.Author .. "\nLast Updated: " .. os.date("%B %d, %Y")
-})
-
--- Advanced Settings
-Tabs.Settings:Button({
-    Title = "Reset Hub Settings",
-    Desc = "Restore default configuration",
-    Callback = function()
-        Window:Dialog({
-            Title = "Reset Settings",
-            Content = "Are you sure you want to reset all settings to default?",
-            Buttons = {
-                {
-                    Title = "Cancel",
-                    Variant = "Secondary"
-                },
-                {
-                    Title = "Reset",
-                    Variant = "Primary",
-                    Callback = function()
-                        WindUI:Notify({
-                            Title = "Settings Reset",
-                            Content = "All settings restored to default",
-                            Duration = 3
-                        })
-                    end
-                }
-            }
-        })
-    end
-})
-
--- Hub Credits
-Tabs.Settings:Paragraph({
-    Title = "👥 Credits",
-    Content = "Special thanks to:\n• WindUI Library\n• Script Contributors\n• Beta Testers\n• Community Support"
-})
-
--- Close handler
-Window:OnClose(function()
-    print("Nexus Hub closed - Thanks for using!")
-end)
-
--- Success message
-WindUI:Notify({
-    Title = "NEXUS HUB Loaded!",
-    Content = "Welcome to the premium script experience!",
-    Duration = 4
-})
-
-print("🚀 NEXUS HUB " .. HubConfig.Version .. " loaded successfully!")
+-- Launch the hub
+InitializeHub()
