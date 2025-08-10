@@ -716,7 +716,7 @@ function Library:CreateWindow(options)
 end
 
 -- Create the window and tabs with content
-local window = Library:CreateWindow({Title = "GROW A GARDEN V3.87"})
+local window = Library:CreateWindow({Title = "GROW A GARDEN V3.88"})
 
 local homeTab = window:CreateTab("HOME")
 homeTab:CreateHeader("Main SCRIPT")
