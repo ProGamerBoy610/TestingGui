@@ -1,4 +1,5 @@
---My Script Hub - Complete Working Version
+--My Hub
+--My Script Hub
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -476,18 +477,12 @@ function Library:CreateWindow(options)
     local windowSize = options.Size or UDim2.new(0, 420, 0, 280)
     local windowPosition = options.Position or UDim2.new(0.5, -210, 0.5, -140)
 
-    -- Remove existing ModernHubGUI if it exists
-    if playerGui:FindFirstChild("ModernHubGUI") then
-        playerGui:FindFirstChild("ModernHubGUI"):Destroy()
-    end
-
     -- Main GUI Container
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "ModernHubGUI"
     screenGui.Parent = playerGui
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    screenGui.Enabled = true -- Start visible by default
 
     -- Main Frame
     local mainFrame = Instance.new("Frame")
@@ -546,7 +541,7 @@ function Library:CreateWindow(options)
     titleText.Font = Enum.Font.GothamBold
     titleText.Parent = titleBar
 
-    -- Close Button (X) - Now hides instead of destroying
+    -- Close Button
     local closeButton = Instance.new("TextButton")
     closeButton.Name = "CloseButton"
     closeButton.Size = UDim2.new(0, 25, 0, 25)
@@ -658,15 +653,10 @@ function Library:CreateWindow(options)
     createCorner(restoreButton, 6)
 
     -- Event Connections
-    -- Modified Close Button - Now hides GUI instead of destroying
     closeButton.MouseButton1Click:Connect(function()
-        -- Hide the GUI with animation
         tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
         wait(0.3)
-        screenGui.Enabled = false -- Hide the entire ScreenGui
-        
-        -- Send notification that GUI is hidden
-        createNotification(screenGui, "GUI Hidden", "Use Fryzer Circle to show again", 2, "info")
+        screenGui:Destroy()
     end)
 
     minimizeButton.MouseButton1Click:Connect(function()
@@ -725,19 +715,6 @@ function Library:CreateWindow(options)
             -- Refresh/reload GUI
             createNotification(screenGui, "System", "GUI Refreshed", 2, "success")
             -- You can add refresh logic if needed
-        elseif input.KeyCode == Enum.KeyCode.Insert then
-            -- Toggle GUI visibility with Insert key
-            if screenGui.Enabled then
-                closeButton.MouseButton1Click:Fire()
-            else
-                -- Show the GUI again
-                screenGui.Enabled = true
-                mainFrame.Size = UDim2.new(0, 0, 0, 0)
-                mainFrame.Visible = true
-                miniBar.Visible = false
-                tween(mainFrame, {Size = windowSize})
-                createNotification(screenGui, "GUI Shown", "Welcome back!", 2, "success")
-            end
         end
     end)
 
@@ -748,43 +725,11 @@ function Library:CreateWindow(options)
         mainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
     end
 
-    -- Window object with additional methods for showing/hiding
     local Window = {
         Tabs = {},
         NavButtons = {},
-        CurrentTab = nil,
-        ScreenGui = screenGui,
-        MainFrame = mainFrame
+        CurrentTab = nil
     }
-
-    -- Add Show/Hide methods for external control (like Fryzer Circle)
-    function Window:Show()
-        self.ScreenGui.Enabled = true
-        self.MainFrame.Size = UDim2.new(0, 0, 0, 0)
-        self.MainFrame.Visible = true
-        miniBar.Visible = false
-        tween(self.MainFrame, {Size = windowSize})
-        createNotification(self.ScreenGui, "GUI Shown", "Welcome back!", 2, "success")
-    end
-
-    function Window:Hide()
-        tween(self.MainFrame, {Size = UDim2.new(0, 0, 0, 0)})
-        wait(0.3)
-        self.ScreenGui.Enabled = false
-        createNotification(self.ScreenGui, "GUI Hidden", "Use toggle to show again", 2, "info")
-    end
-
-    function Window:Toggle()
-        if self.ScreenGui.Enabled then
-            self:Hide()
-        else
-            self:Show()
-        end
-    end
-
-    function Window:IsVisible()
-        return self.ScreenGui.Enabled
-    end
 
     function Window:CreateTab(name)
         local Tab = {}
@@ -918,100 +863,164 @@ function Library:CreateWindow(options)
         screenGui:Destroy()
     end
 
-    -- Print status message
-    print("🎯 Modern Hub GUI Enhanced loaded!")
-    print("🔧 Close button now hides GUI instead of destroying")
-    print("🎮 Works with Fryzer Circle Toggle GUI")
-    print("⌨️  Keyboard shortcuts:")
-    print("   - Insert: Toggle GUI visibility")
-    print("   - F4: Minimize/Restore")
-    print("   - F5: Refresh notification")
-
     return Window
 end
+--I make this much into loadsritng
 
--- ================================
--- CREATE EXAMPLE GUI HERE
--- ================================
+-- Create the window and tabs with content
+local window = Library:CreateWindow({Title = "GROW A GARDEN V3.87"})
 
--- Create the window
-local Window = Library:CreateWindow({
-    Title = "My Script Hub",
-    Size = UDim2.new(0, 450, 0, 320),
-})
+local homeTab = window:CreateTab("HOME")
 
--- Create Main tab
-local MainTab = Window:CreateTab("Main")
+homeTab:CreateHeader("Main SCRIPT")
 
-MainTab:CreateHeader("🎯 Main Features")
-MainTab:CreateLabel("Welcome to the Modern Hub GUI!")
+homeTab:CreateLabel("Make Sure to only Execute Dark Spawner 1x")
 
-MainTab:CreateButton("Test Button", function()
-    Window:Notify("Success", "Button clicked successfully!", 3, "success")
-    print("Test button clicked!")
-end)
+homeTab:CreateLabel("Dark Spawner [ Mobile Only ]")
 
-MainTab:CreateToggle("Auto Farm", false, function(state)
+homeTab:CreateButton("ReModified v3.8 || Dark Spawner", function()
+    print("Dark Spawner executed!")
+end, config.colors.success)
+
+homeTab:CreateLabel("Pet Placer v1.0 [ Not Animated ]")
+
+homeTab:CreateButton("ALLOW GIFT PET [NEW]", function()
+    print("Gift pet allowed!")
+end, Color3.fromRGB(200, 50, 150))
+
+homeTab:CreateLabel("Allow Gift Spawned Pets ^.^")
+
+local specialTab = window:CreateTab("SPECIAL")
+
+specialTab:CreateHeader("SPECIAL FEATURES")
+
+specialTab:CreateToggle("Auto Farm", false, function(state)
     print("Auto Farm:", state)
-    Window:Notify("Toggle", "Auto Farm " .. (state and "enabled" or "disabled"), 2)
 end)
 
-MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(value)
+specialTab:CreateToggle("Speed Hack", true, function(state)
+    print("Speed Hack:", state)
+end)
+
+specialTab:CreateSlider("Walk Speed", 16, 100, 50, function(value)
     print("Walk Speed:", value)
-    if player.Character and player.Character:FindFirstChild("Humanoid") then
-        player.Character.Humanoid.WalkSpeed = value
-    end
 end)
 
-MainTab:CreateDropdown("Game Mode", {"Normal", "Hard", "Extreme"}, function(option)
-    print("Selected game mode:", option)
-    Window:Notify("Mode", "Game mode set to " .. option, 2)
+specialTab:CreateDropdown("Game Mode", {"Easy", "Normal", "Hard", "Extreme"}, function(mode)
+    print("Game Mode:", mode)
 end)
 
-MainTab:CreateInput("Enter Username", function(text)
-    print("Entered username:", text)
-    Window:Notify("Input", "Username set to: " .. text, 2)
+local mainTab = window:CreateTab("MAIN")
+
+mainTab:CreateHeader("MAIN SCRIPTS")
+
+mainTab:CreateButton("Execute Main Script", function()
+    print("Main script executed!")
 end)
 
--- Create Settings tab
-local SettingsTab = Window:CreateTab("Settings")
-
-SettingsTab:CreateHeader("⚙️ GUI Settings")
-SettingsTab:CreateLabel("Configure your GUI preferences")
-
-SettingsTab:CreateToggle("Show Notifications", true, function(state)
-    print("Notifications:", state)
+mainTab:CreateInput("Enter Script URL...", function(url)
+    print("Script URL:", url)
 end)
 
-SettingsTab:CreateSlider("GUI Transparency", 0, 100, 0, function(value)
-    print("Transparency:", value)
-    -- You can modify GUI transparency here
+mainTab:CreateToggle("Auto Execute", false, function(state)
+    print("Auto Execute:", state)
 end)
 
-SettingsTab:CreateButton("Reset GUI", function()
-    Window:Notify("Reset", "GUI has been reset!", 2, "success")
-end, Color3.fromRGB(242, 87, 87))
+mainTab:CreateSlider("Execution Delay", 1, 10, 3, function(delay)
+    print("Execution Delay:", delay)
+end)
 
--- Create Info tab
-local InfoTab = Window:CreateTab("Info")
+local spawnerTab = window:CreateTab("SPAWNER")
 
-InfoTab:CreateHeader("ℹ️ Information")
-InfoTab:CreateLabel("Modern Hub GUI v1.0")
-InfoTab:CreateLabel("Created by: Your Name")
-InfoTab:CreateLabel("Compatible with Fryzer Circle Toggle")
+spawnerTab:CreateHeader("SPAWNER CONTROLS")
 
-InfoTab:CreateButton("Join Discord", function()
-    Window:Notify("Discord", "Discord link copied!", 3, "info")
-end, Color3.fromRGB(88, 101, 242))
+spawnerTab:CreateButton("Dark Spawner", function()
+    print("Dark Spawner activated!")
+end, Color3.fromRGB(50, 50, 200))
 
-InfoTab:CreateButton("Check Updates", function()
-    Window:Notify("Update", "You have the latest version!", 2, "success")
-end, Color3.fromRGB(87, 242, 135))
+spawnerTab:CreateButton("Light Spawner", function()
+    print("Light Spawner activated!")
+end, Color3.fromRGB(200, 200, 50))
 
--- Show welcome notification
-Window:Notify("Welcome", "Modern Hub GUI loaded successfully!", 3, "success")
+spawnerTab:CreateToggle("Auto Spawn", true, function(state)
+    print("Auto Spawn:", state)
+end)
 
-print("✅ Complete GUI created with example tabs!")
-print("🔵 Now you can run the Fryzer Circle script for toggle functionality")
+spawnerTab:CreateDropdown("Spawn Type", {"Random", "Pets", "Tools", "NPCs"}, function(type)
+    print("Spawn Type:", type)
+end)
 
-return Library
+spawnerTab:CreateSlider("Spawn Rate", 1, 20, 5, function(rate)
+    print("Spawn Rate:", rate)
+end)
+
+local destroyTab = window:CreateTab("DESTROY")
+
+destroyTab:CreateHeader("DESTRUCTION TOOLS")
+
+destroyTab:CreateButton("Clear All", function()
+    print("Everything cleared!")
+end, config.colors.danger)
+
+destroyTab:CreateButton("Reset Character", function()
+    print("Character reset!")
+end, Color3.fromRGB(150, 100, 50))
+
+destroyTab:CreateToggle("Safe Mode", true, function(state)
+    print("Safe Mode:", state)
+end)
+
+destroyTab:CreateInput("Target Name...", function(name)
+    print("Target Name:", name)
+end)
+
+
+local switchTab = window:CreateTab("SWITCH")
+
+switchTab:CreateHeader("GAME SWITCHER")
+
+switchTab:CreateButton("Join New Server", function()
+    print("Joining new server...")
+end, Color3.fromRGB(100, 100, 200))
+
+switchTab:CreateButton("Rejoin Current", function()
+    print("Rejoining current server...")
+end, Color3.fromRGB(150, 150, 100))
+
+switchTab:CreateDropdown("Server Region", {"US East", "US West", "Europe", "Asia"}, function(region)
+    print("Server Region:", region)
+end)
+
+switchTab:CreateInput("Server ID...", function(id)
+    print("Server ID:", id)
+end)
+
+switchTab:CreateSlider("Max Players", 1, 30, 12, function(players)
+    print("Max Players:", players)
+end)
+
+switchTab:CreateToggle("Auto Rejoin", false, function(state)
+    print("Auto Rejoin:", state)
+end)
+
+-- Welcome notification
+spawn(function()
+    wait(0.5)
+    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 1.5, "success")
+end)
+
+-- Auto-save functionality (example)
+local autoSave = true
+if autoSave then
+    spawn(function()
+        while wait(30) do -- Save every 30 seconds
+            if playerGui:FindFirstChild("ModernHubGUI") then
+                window:Notify("Auto Save", "Settings saved automatically", 2, "success")
+            else
+                break
+            end
+        end
+    end)
+end
+
+print("Modern Hub GUI loaded successfully!")
