@@ -1,4 +1,4 @@
---My Script Hub
+--My Script Hub - Complete Working Version
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -929,5 +929,89 @@ function Library:CreateWindow(options)
 
     return Window
 end
+
+-- ================================
+-- CREATE EXAMPLE GUI HERE
+-- ================================
+
+-- Create the window
+local Window = Library:CreateWindow({
+    Title = "My Script Hub",
+    Size = UDim2.new(0, 450, 0, 320),
+})
+
+-- Create Main tab
+local MainTab = Window:CreateTab("Main")
+
+MainTab:CreateHeader("🎯 Main Features")
+MainTab:CreateLabel("Welcome to the Modern Hub GUI!")
+
+MainTab:CreateButton("Test Button", function()
+    Window:Notify("Success", "Button clicked successfully!", 3, "success")
+    print("Test button clicked!")
+end)
+
+MainTab:CreateToggle("Auto Farm", false, function(state)
+    print("Auto Farm:", state)
+    Window:Notify("Toggle", "Auto Farm " .. (state and "enabled" or "disabled"), 2)
+end)
+
+MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(value)
+    print("Walk Speed:", value)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = value
+    end
+end)
+
+MainTab:CreateDropdown("Game Mode", {"Normal", "Hard", "Extreme"}, function(option)
+    print("Selected game mode:", option)
+    Window:Notify("Mode", "Game mode set to " .. option, 2)
+end)
+
+MainTab:CreateInput("Enter Username", function(text)
+    print("Entered username:", text)
+    Window:Notify("Input", "Username set to: " .. text, 2)
+end)
+
+-- Create Settings tab
+local SettingsTab = Window:CreateTab("Settings")
+
+SettingsTab:CreateHeader("⚙️ GUI Settings")
+SettingsTab:CreateLabel("Configure your GUI preferences")
+
+SettingsTab:CreateToggle("Show Notifications", true, function(state)
+    print("Notifications:", state)
+end)
+
+SettingsTab:CreateSlider("GUI Transparency", 0, 100, 0, function(value)
+    print("Transparency:", value)
+    -- You can modify GUI transparency here
+end)
+
+SettingsTab:CreateButton("Reset GUI", function()
+    Window:Notify("Reset", "GUI has been reset!", 2, "success")
+end, Color3.fromRGB(242, 87, 87))
+
+-- Create Info tab
+local InfoTab = Window:CreateTab("Info")
+
+InfoTab:CreateHeader("ℹ️ Information")
+InfoTab:CreateLabel("Modern Hub GUI v1.0")
+InfoTab:CreateLabel("Created by: Your Name")
+InfoTab:CreateLabel("Compatible with Fryzer Circle Toggle")
+
+InfoTab:CreateButton("Join Discord", function()
+    Window:Notify("Discord", "Discord link copied!", 3, "info")
+end, Color3.fromRGB(88, 101, 242))
+
+InfoTab:CreateButton("Check Updates", function()
+    Window:Notify("Update", "You have the latest version!", 2, "success")
+end, Color3.fromRGB(87, 242, 135))
+
+-- Show welcome notification
+Window:Notify("Welcome", "Modern Hub GUI loaded successfully!", 3, "success")
+
+print("✅ Complete GUI created with example tabs!")
+print("🔵 Now you can run the Fryzer Circle script for toggle functionality")
 
 return Library
