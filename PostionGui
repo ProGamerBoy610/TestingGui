@@ -1,31 +1,16 @@
--- Fryzer Circle Toggle GUI and My Script Hub Combined
+-- My Script Hub (ModernHubGUI) - Compatible with Fryzer Circle Toggle GUI
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local GuiService = game:GetService("GuiService")
+local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
 
--- Configuration for Circle Toggle
-local ToggleConfig = {
-    CircleSize = 60, -- Size of the circle
-    Colors = {
-        Background = Color3.fromRGB(20, 20, 20),
-        Border = Color3.fromRGB(40, 40, 40),
-        Text = Color3.fromRGB(255, 255, 255),
-        Accent = Color3.fromRGB(88, 101, 242),
-        Shadow = Color3.fromRGB(0, 0, 0)
-    },
-    Position = {
-        X = 100, -- Default X position
-        Y = 200  -- Default Y position
-    }
-}
+local Library = {}
 
--- Configuration for ModernHubGUI
+-- Configuration
 local config = {
     colors = {
         background = Color3.fromRGB(25, 25, 35),
@@ -40,160 +25,6 @@ local config = {
     tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
     fastTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
 }
-
--- Remove existing Fryzer GUI if it exists
-if PlayerGui:FindFirstChild("FryzerToggleGUI") then
-    PlayerGui:FindFirstChild("FryzerToggleGUI"):Destroy()
-end
-
--- Create Toggle ScreenGui
-local ToggleScreenGui = Instance.new("ScreenGui")
-ToggleScreenGui.Name = "FryzerToggleGUI"
-ToggleScreenGui.Parent = PlayerGui
-ToggleScreenGui.ResetOnSpawn = false
-ToggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-ToggleScreenGui.DisplayOrder = 999 -- High display order to stay on top
-
--- Create Shadow Frame for Toggle
-local ShadowFrame = Instance.new("Frame")
-ShadowFrame.Name = "ShadowFrame"
-ShadowFrame.Parent = ToggleScreenGui
-ShadowFrame.BackgroundColor3 = ToggleConfig.Colors.Shadow
-ShadowFrame.BackgroundTransparency = 0.7
-ShadowFrame.BorderSizePixel = 0
-ShadowFrame.Position = UDim2.new(0, ToggleConfig.Position.X + 3, 0, ToggleConfig.Position.Y + 3)
-ShadowFrame.Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
-ShadowFrame.ZIndex = 1
-
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0.5, 0)
-ShadowCorner.Parent = ShadowFrame
-
--- Create Main Circle Frame
-local CircleFrame = Instance.new("Frame")
-CircleFrame.Name = "CircleFrame"
-CircleFrame.Parent = ToggleScreenGui
-CircleFrame.BackgroundColor3 = ToggleConfig.Colors.Background
-CircleFrame.BorderSizePixel = 2
-CircleFrame.BorderColor3 = ToggleConfig.Colors.Border
-CircleFrame.Position = UDim2.new(0, ToggleConfig.Position.X, 0, ToggleConfig.Position.Y)
-CircleFrame.Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
-CircleFrame.ZIndex = 2
-
-local CircleCorner = Instance.new("UICorner")
-CircleCorner.CornerRadius = UDim.new(0.5, 0)
-CircleCorner.Parent = CircleFrame
-
-local Gradient = Instance.new("UIGradient")
-Gradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
-    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
-}
-Gradient.Rotation = 45
-Gradient.Parent = CircleFrame
-
--- Create Toggle Button
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Parent = CircleFrame
-ToggleButton.BackgroundTransparency = 1
-ToggleButton.Size = UDim2.new(1, 0, 1, 0)
-ToggleButton.Text = ""
-ToggleButton.ZIndex = 4
-
--- Create Text Label
-local TextLabel = Instance.new("TextLabel")
-TextLabel.Name = "TextLabel"
-TextLabel.Parent = CircleFrame
-TextLabel.BackgroundTransparency = 1
-TextLabel.Size = UDim2.new(1, 0, 1, 0)
-TextLabel.Font = Enum.Font.GothamBold
-TextLabel.Text = "Fryzer"
-TextLabel.TextColor3 = ToggleConfig.Colors.Text
-TextLabel.TextSize = 12
-TextLabel.TextScaled = true
-TextLabel.ZIndex = 3
-
-local TextSizeConstraint = Instance.new("UITextSizeConstraint")
-TextSizeConstraint.MaxTextSize = 12
-TextSizeConstraint.MinTextSize = 8
-TextSizeConstraint.Parent = TextLabel
-
--- Dragging variables for Toggle
-local dragging = false
-local dragStart = nil
-local startPos = nil
-
--- Drag functionality
-local function InputBegan(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = CircleFrame.Position
-    end
-end
-
-local function InputChanged(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragging then
-            local delta = input.Position - dragStart
-            local newPosition = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-            
-            local screenSize = workspace.CurrentCamera.ViewportSize
-            local x = math.clamp(newPosition.X.Offset, 0, screenSize.X - ToggleConfig.CircleSize)
-            local y = math.clamp(newPosition.Y.Offset, GuiService:GetGuiInset().Y, screenSize.Y - ToggleConfig.CircleSize)
-            
-            CircleFrame.Position = UDim2.new(0, x, 0, y)
-            ShadowFrame.Position = UDim2.new(0, x + 3, 0, y + 3)
-        end
-    end
-end
-
-local function InputEnded(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
-    end
-end
-
-ToggleButton.InputBegan:Connect(InputBegan)
-UserInputService.InputChanged:Connect(InputChanged)
-UserInputService.InputEnded:Connect(InputEnded)
-
--- Hover/Touch effects
-ToggleButton.MouseEnter:Connect(function()
-    TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        Size = UDim2.new(0, ToggleConfig.CircleSize + 5, 0, ToggleConfig.CircleSize + 5),
-        BorderColor3 = ToggleConfig.Colors.Accent
-    }):Play()
-    
-    TweenService:Create(ShadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        Size = UDim2.new(0, ToggleConfig.CircleSize + 5, 0, ToggleConfig.CircleSize + 5),
-        BackgroundTransparency = 0.5
-    }):Play()
-    
-    TweenService:Create(TextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        TextColor3 = ToggleConfig.Colors.Accent
-    }):Play()
-end)
-
-ToggleButton.MouseLeave:Connect(function()
-    TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize),
-        BorderColor3 = ToggleConfig.Colors.Border
-    }):Play()
-    
-    TweenService:Create(ShadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize),
-        BackgroundTransparency = 0.7
-    }):Play()
-    
-    TweenService:Create(TextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-        TextColor3 = ToggleConfig.Colors.Text
-    }):Play()
-end)
-
--- Library for ModernHubGUI
-local Library = {}
 
 -- Utility Functions
 local function tween(object, properties, tweenInfo)
@@ -636,108 +467,6 @@ local function createNotification(screenGui, title, message, duration, notifType
     return notifFrame
 end
 
--- Toggle functionality
-local isHubVisible = false
-local function ToggleModernHub()
-    local modernHubGui = PlayerGui:FindFirstChild("ModernHubGUI")
-    
-    if modernHubGui then
-        isHubVisible = not isHubVisible
-        modernHubGui.Enabled = isHubVisible
-        
-        if isHubVisible then
-            tween(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                BackgroundColor3 = ToggleConfig.Colors.Accent,
-                BorderColor3 = Color3.fromRGB(120, 130, 255)
-            }):Play()
-            
-            tween(TextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                TextColor3 = Color3.fromRGB(255, 255, 255)
-            }):Play()
-            
-            Gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
-                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
-            }
-        else
-            tween(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                BackgroundColor3 = ToggleConfig.Colors.Background,
-                BorderColor3 = ToggleConfig.Colors.Border
-            }):Play()
-            
-            tween(TextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-                TextColor3 = ToggleConfig.Colors.Text
-            }):Play()
-            
-            Gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
-                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
-            }
-        end
-        
-        local clickTween = TweenService:Create(CircleFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
-            Size = UDim2.new(0, ToggleConfig.CircleSize - 5, 0, ToggleConfig.CircleSize - 5)
-        })
-        
-        clickTween:Play()
-        clickTween.Completed:Connect(function()
-            TweenService:Create(CircleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Back), {
-                Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
-            }):Play()
-        end)
-    else
-        tween(CircleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            BorderColor3 = Color3.fromRGB(255, 100, 100)
-        }):Play()
-        
-        tween(TextLabel, TweenInfo.new(0.2, Enum.EasingStyle.Quad), {
-            TextColor3 = Color3.fromRGB(255, 150, 150)
-        }):Play()
-        
-        wait(0.5)
-        tween(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            BorderColor3 = ToggleConfig.Colors.Border
-        }):Play()
-        
-        tween(TextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
-            TextColor3 = ToggleConfig.Colors.Text
-        }):Play()
-        
-        print("⚠️ ModernHubGUI not found! Make sure it exists in PlayerGui.")
-    end
-end
-
--- Toggle events
-local dragThreshold = 5
-local startDragPos = nil
-
-ToggleButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        startDragPos = input.Position
-    end
-end)
-
-UserInputService.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if startDragPos then
-            local currentPos = UserInputService:GetMouseLocation()
-            local distance = (currentPos - startDragPos).Magnitude
-            
-            if distance < dragThreshold and not dragging then
-                ToggleModernHub()
-            end
-        end
-        dragging = false
-        startDragPos = nil
-    end
-end)
-
-ToggleButton.TouchTap:Connect(function()
-    if not dragging then
-        ToggleModernHub()
-    end
-end)
-
 function Library:CreateWindow(options)
     local title = options.Title or "Modern Hub GUI"
     local windowSize = options.Size or UDim2.new(0, 420, 0, 280)
@@ -745,10 +474,10 @@ function Library:CreateWindow(options)
 
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "ModernHubGUI"
-    screenGui.Parent = PlayerGui
+    screenGui.Parent = playerGui
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    screenGui.Enabled = false -- Start hidden, controlled by toggle
+    screenGui.Enabled = false -- Start hidden, controlled by Fryzer Circle Toggle
 
     local mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
@@ -793,7 +522,7 @@ function Library:CreateWindow(options)
     titleFix.Parent = titleBar
 
     local titleText = Instance.new("TextLabel")
-    titleText.Size = UDim2.new(1, -52, 1, 0)
+    titleText.Size = UDim2.new(1, -15, 1, 0)
     titleText.Position = UDim2.new(0, 15, 0, 0)
     titleText.BackgroundTransparency = 1
     titleText.Text = title
@@ -986,24 +715,6 @@ function Library:CreateWindow(options)
     return Window
 end
 
--- Initialize Toggle State
-spawn(function()
-    wait(0.5)
-    local modernHubGui = PlayerGui:FindFirstChild("ModernHubGUI")
-    if modernHubGui then
-        isHubVisible = modernHubGui.Enabled
-        if isHubVisible then
-            CircleFrame.BackgroundColor3 = ToggleConfig.Colors.Accent
-            CircleFrame.BorderColor3 = Color3.fromRGB(120, 130, 255)
-            TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-            Gradient.Color = ColorSequence.new{
-                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
-                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
-            }
-        end
-    end
-end)
-
 -- Create the window and tabs with content
 local window = Library:CreateWindow({Title = "GROW A GARDEN V3.87"})
 
@@ -1115,7 +826,7 @@ local autoSave = true
 if autoSave then
     spawn(function()
         while wait(30) do
-            if PlayerGui:FindFirstChild("ModernHubGUI") then
+            if playerGui:FindFirstChild("ModernHubGUI") then
                 window:Notify("Auto Save", "Settings saved automatically", 2, "success")
             else
                 break
@@ -1124,8 +835,4 @@ if autoSave then
     end)
 end
 
-print("🔵 Fryzer Circle Toggle GUI loaded!")
-print("📱 Works on Mobile and PC")
-print("🎯 Click to toggle ModernHubGUI visibility")
-print("🖱️ Drag to move the circle around")
-print("Modern Hub GUI loaded successfully!")
+print("Modern Hub GUI loaded successfully! Controlled by Fryzer Circle Toggle GUI.")
