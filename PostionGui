@@ -1,10 +1,11 @@
---My Hub
---My Script Hub
+-- Combined Modern Hub GUI with Fryzer Circle Toggle
+-- All-in-one script that creates both the hub and toggle button
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -25,6 +26,22 @@ local config = {
     },
     tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quart, Enum.EasingDirection.Out),
     fastTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
+}
+
+-- Toggle Button Configuration
+local ToggleConfig = {
+    CircleSize = 60,
+    Colors = {
+        Background = Color3.fromRGB(20, 20, 20),
+        Border = Color3.fromRGB(40, 40, 40),
+        Text = Color3.fromRGB(255, 255, 255),
+        Accent = Color3.fromRGB(88, 101, 242),
+        Shadow = Color3.fromRGB(0, 0, 0)
+    },
+    Position = {
+        X = 100,
+        Y = 200
+    }
 }
 
 -- Utility Functions
@@ -472,10 +489,274 @@ local function createNotification(screenGui, title, message, duration, notifType
     return notifFrame
 end
 
+-- Create Toggle Button Function
+local function createToggleButton(hubScreenGui, hubMainFrame, toggleButton)
+    -- Remove existing toggle GUI if it exists
+    if playerGui:FindFirstChild("FryzerToggleGUI") then
+        playerGui:FindFirstChild("FryzerToggleGUI"):Destroy()
+    end
+
+    -- Create Toggle ScreenGui
+    local toggleScreenGui = Instance.new("ScreenGui")
+    toggleScreenGui.Name = "FryzerToggleGUI"
+    toggleScreenGui.Parent = playerGui
+    toggleScreenGui.ResetOnSpawn = false
+    toggleScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    toggleScreenGui.DisplayOrder = 999
+
+    -- Create Shadow Frame
+    local shadowFrame = Instance.new("Frame")
+    shadowFrame.Name = "ShadowFrame"
+    shadowFrame.Parent = toggleScreenGui
+    shadowFrame.BackgroundColor3 = ToggleConfig.Colors.Shadow
+    shadowFrame.BackgroundTransparency = 0.7
+    shadowFrame.BorderSizePixel = 0
+    shadowFrame.Position = UDim2.new(0, ToggleConfig.Position.X + 3, 0, ToggleConfig.Position.Y + 3)
+    shadowFrame.Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
+    shadowFrame.ZIndex = 1
+
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0.5, 0)
+    shadowCorner.Parent = shadowFrame
+
+    -- Create Main Circle Frame
+    local circleFrame = Instance.new("Frame")
+    circleFrame.Name = "CircleFrame"
+    circleFrame.Parent = toggleScreenGui
+    circleFrame.BackgroundColor3 = ToggleConfig.Colors.Background
+    circleFrame.BorderSizePixel = 2
+    circleFrame.BorderColor3 = ToggleConfig.Colors.Border
+    circleFrame.Position = UDim2.new(0, ToggleConfig.Position.X, 0, ToggleConfig.Position.Y)
+    circleFrame.Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
+    circleFrame.ZIndex = 2
+
+    local circleCorner = Instance.new("UICorner")
+    circleCorner.CornerRadius = UDim.new(0.5, 0)
+    circleCorner.Parent = circleFrame
+
+    -- Add gradient effect
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new{
+        ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
+        ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
+    }
+    gradient.Rotation = 45
+    gradient.Parent = circleFrame
+
+    -- Create Button
+    local toggleButtonFrame = Instance.new("TextButton")
+    toggleButtonFrame.Name = "ToggleButton"
+    toggleButtonFrame.Parent = circleFrame
+    toggleButtonFrame.BackgroundTransparency = 1
+    toggleButtonFrame.Size = UDim2.new(1, 0, 1, 0)
+    toggleButtonFrame.Text = ""
+    toggleButtonFrame.ZIndex = 4
+
+    -- Create Text Label
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Name = "TextLabel"
+    textLabel.Parent = circleFrame
+    textLabel.BackgroundTransparency = 1
+    textLabel.Size = UDim2.new(1, 0, 1, 0)
+    textLabel.Font = Enum.Font.GothamBold
+    textLabel.Text = "Fryzer"
+    textLabel.TextColor3 = ToggleConfig.Colors.Text
+    textLabel.TextSize = 12
+    textLabel.TextScaled = true
+    textLabel.ZIndex = 3
+
+    local textSizeConstraint = Instance.new("UITextSizeConstraint")
+    textSizeConstraint.MaxTextSize = 12
+    textSizeConstraint.MinTextSize = 8
+    textSizeConstraint.Parent = textLabel
+
+    -- Variables for dragging
+    local dragging = false
+    local dragStart = nil
+    local startPos = nil
+
+    -- Drag functionality
+    local function inputBegan(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = circleFrame.Position
+        end
+    end
+
+    local function inputChanged(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+            if dragging then
+                local delta = input.Position - dragStart
+                local newPosition = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+                
+                local screenSize = workspace.CurrentCamera.ViewportSize
+                local x = math.clamp(newPosition.X.Offset, 0, screenSize.X - ToggleConfig.CircleSize)
+                local y = math.clamp(newPosition.Y.Offset, GuiService:GetGuiInset().Y, screenSize.Y - ToggleConfig.CircleSize)
+                
+                circleFrame.Position = UDim2.new(0, x, 0, y)
+                shadowFrame.Position = UDim2.new(0, x + 3, 0, y + 3)
+            end
+        end
+    end
+
+    local function inputEnded(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end
+
+    toggleButtonFrame.InputBegan:Connect(inputBegan)
+    UserInputService.InputChanged:Connect(inputChanged)
+    UserInputService.InputEnded:Connect(inputEnded)
+
+    -- Hover effects
+    toggleButtonFrame.MouseEnter:Connect(function()
+        TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, ToggleConfig.CircleSize + 5, 0, ToggleConfig.CircleSize + 5),
+            BorderColor3 = ToggleConfig.Colors.Accent
+        }):Play()
+        
+        TweenService:Create(shadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, ToggleConfig.CircleSize + 5, 0, ToggleConfig.CircleSize + 5),
+            BackgroundTransparency = 0.5
+        }):Play()
+        
+        TweenService:Create(textLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            TextColor3 = ToggleConfig.Colors.Accent
+        }):Play()
+    end)
+
+    toggleButtonFrame.MouseLeave:Connect(function()
+        TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize),
+            BorderColor3 = ToggleConfig.Colors.Border
+        }):Play()
+        
+        TweenService:Create(shadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize),
+            BackgroundTransparency = 0.7
+        }):Play()
+        
+        TweenService:Create(textLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            TextColor3 = ToggleConfig.Colors.Text
+        }):Play()
+    end)
+
+    -- Toggle functionality
+    local function toggleHub()
+        local isVisible = hubMainFrame.Visible
+        
+        if isVisible then
+            -- Hide the hub
+            tween(hubMainFrame, {Size = UDim2.new(0, 0, 0, 0)})
+            wait(0.3)
+            hubMainFrame.Visible = false
+            
+            -- Update toggle button appearance (inactive)
+            TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = ToggleConfig.Colors.Background,
+                BorderColor3 = ToggleConfig.Colors.Border
+            }):Play()
+            
+            TweenService:Create(textLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                TextColor3 = ToggleConfig.Colors.Text
+            }):Play()
+            
+            gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
+            }
+        else
+            -- Show the hub
+            hubMainFrame.Visible = true
+            hubMainFrame.Size = UDim2.new(0, 0, 0, 0)
+            tween(hubMainFrame, {Size = UDim2.new(0, 450, 0, 320)})
+            
+            -- Update toggle button appearance (active)
+            TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = ToggleConfig.Colors.Accent,
+                BorderColor3 = Color3.fromRGB(120, 130, 255)
+            }):Play()
+            
+            TweenService:Create(textLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            }):Play()
+            
+            gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
+            }
+        end
+        
+        -- Click animation
+        local clickTween = TweenService:Create(circleFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, ToggleConfig.CircleSize - 5, 0, ToggleConfig.CircleSize - 5)
+        })
+        
+        clickTween:Play()
+        clickTween.Completed:Connect(function()
+            TweenService:Create(circleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Back), {
+                Size = UDim2.new(0, ToggleConfig.CircleSize, 0, ToggleConfig.CircleSize)
+            }):Play()
+        end)
+    end
+
+    -- Connect toggle functionality
+    local dragThreshold = 5
+    local startDragPos = nil
+
+    toggleButtonFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            startDragPos = input.Position
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if startDragPos then
+                local currentPos = UserInputService:GetMouseLocation()
+                local distance = (currentPos - startDragPos).Magnitude
+                
+                -- If moved less than threshold, consider it a click
+                if distance < dragThreshold and not dragging then
+                    toggleHub()
+                end
+            end
+            dragging = false
+            startDragPos = nil
+        end
+    end)
+
+    -- Initialize button appearance based on hub visibility
+    spawn(function()
+        wait(0.1)
+        if hubMainFrame.Visible then
+            circleFrame.BackgroundColor3 = ToggleConfig.Colors.Accent
+            circleFrame.BorderColor3 = Color3.fromRGB(120, 130, 255)
+            textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
+            }
+        end
+    end)
+
+    return toggleScreenGui, toggleHub
+end
+
 function Library:CreateWindow(options)
     local title = options.Title or "Modern Hub GUI"
     local windowSize = options.Size or UDim2.new(0, 420, 0, 280)
     local windowPosition = options.Position or UDim2.new(0.5, -210, 0.5, -140)
+
+    -- Remove existing GUIs if they exist
+    if playerGui:FindFirstChild("ModernHubGUI") then
+        playerGui:FindFirstChild("ModernHubGUI"):Destroy()
+    end
+    if playerGui:FindFirstChild("FryzerToggleGUI") then
+        playerGui:FindFirstChild("FryzerToggleGUI"):Destroy()
+    end
 
     -- Main GUI Container
     local screenGui = Instance.new("ScreenGui")
@@ -483,6 +764,7 @@ function Library:CreateWindow(options)
     screenGui.Parent = playerGui
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Enabled = true
 
     -- Main Frame
     local mainFrame = Instance.new("Frame")
@@ -541,7 +823,7 @@ function Library:CreateWindow(options)
     titleText.Font = Enum.Font.GothamBold
     titleText.Parent = titleBar
 
-    -- Close Button
+    -- Close Button (X) - Now hides instead of destroying
     local closeButton = Instance.new("TextButton")
     closeButton.Name = "CloseButton"
     closeButton.Size = UDim2.new(0, 25, 0, 25)
@@ -652,11 +934,16 @@ function Library:CreateWindow(options)
 
     createCorner(restoreButton, 6)
 
+    -- Create Toggle Button
+    local toggleScreenGui, toggleHubFunction = createToggleButton(screenGui, mainFrame, nil)
+
     -- Event Connections
+    -- Modified Close Button - Now hides GUI instead of destroying
     closeButton.MouseButton1Click:Connect(function()
         tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
         wait(0.3)
-        screenGui:Destroy()
+        mainFrame.Visible = false
+        createNotification(screenGui, "GUI Hidden", "Use Fryzer Circle to show again", 2, "info")
     end)
 
     minimizeButton.MouseButton1Click:Connect(function()
@@ -712,9 +999,9 @@ function Library:CreateWindow(options)
                 restoreButton.MouseButton1Click:Fire()
             end
         elseif input.KeyCode == Enum.KeyCode.F5 then
-            -- Refresh/reload GUI
             createNotification(screenGui, "System", "GUI Refreshed", 2, "success")
-            -- You can add refresh logic if needed
+        elseif input.KeyCode == Enum.KeyCode.Insert then
+            toggleHubFunction()
         end
     end)
 
@@ -725,11 +1012,38 @@ function Library:CreateWindow(options)
         mainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
     end
 
+    -- Window object
     local Window = {
         Tabs = {},
         NavButtons = {},
-        CurrentTab = nil
+        CurrentTab = nil,
+        ScreenGui = screenGui,
+        MainFrame = mainFrame,
+        ToggleScreenGui = toggleScreenGui
     }
+
+    function Window:Show()
+        self.MainFrame.Visible = true
+        self.MainFrame.Size = UDim2.new(0, 0, 0, 0)
+        miniBar.Visible = false
+        tween(self.MainFrame, {Size = windowSize})
+        createNotification(self.ScreenGui, "GUI Shown", "Welcome back!", 2, "success")
+    end
+
+    function Window:Hide()
+        tween(self.MainFrame, {Size = UDim2.new(0, 0, 0, 0)})
+        wait(0.3)
+        self.MainFrame.Visible = false
+        createNotification(self.ScreenGui, "GUI Hidden", "Use Fryzer Circle to show again", 2, "info")
+    end
+
+    function Window:Toggle()
+        toggleHubFunction()
+    end
+
+    function Window:IsVisible()
+        return self.MainFrame.Visible
+    end
 
     function Window:CreateTab(name)
         local Tab = {}
@@ -861,166 +1175,104 @@ function Library:CreateWindow(options)
 
     function Window:Destroy()
         screenGui:Destroy()
+        if self.ToggleScreenGui then
+            self.ToggleScreenGui:Destroy()
+        end
     end
+
+    print("🎯 Combined Modern Hub GUI loaded!")
+    print("🔵 Fryzer Circle Toggle created automatically")
+    print("🔧 Close button now hides GUI instead of destroying")
+    print("⌨️  Keyboard shortcuts:")
+    print("   - Insert: Toggle GUI visibility")
+    print("   - F4: Minimize/Restore")
+    print("   - F5: Refresh notification")
 
     return Window
 end
---I make this much into loadsritng
 
--- Create the window and tabs with content
-local window = Library:CreateWindow({Title = "GROW A GARDEN V3.87"})
+-- ================================
+-- CREATE EXAMPLE GUI HERE
+-- ================================
 
-local homeTab = window:CreateTab("HOME")
+-- Create the window
+local Window = Library:CreateWindow({
+    Title = "My Script Hub",
+    Size = UDim2.new(0, 450, 0, 320),
+})
 
-homeTab:CreateHeader("Main SCRIPT")
+-- Create Main tab
+local MainTab = Window:CreateTab("Main")
 
-homeTab:CreateLabel("Make Sure to only Execute Dark Spawner 1x")
+MainTab:CreateHeader("🎯 Main Features")
+MainTab:CreateLabel("Welcome to the Modern Hub GUI!")
 
-homeTab:CreateLabel("Dark Spawner [ Mobile Only ]")
+MainTab:CreateButton("Test Button", function()
+    Window:Notify("Success", "Button clicked successfully!", 3, "success")
+    print("Test button clicked!")
+end)
 
-homeTab:CreateButton("ReModified v3.8 || Dark Spawner", function()
-    print("Dark Spawner executed!")
-end, config.colors.success)
-
-homeTab:CreateLabel("Pet Placer v1.0 [ Not Animated ]")
-
-homeTab:CreateButton("ALLOW GIFT PET [NEW]", function()
-    print("Gift pet allowed!")
-end, Color3.fromRGB(200, 50, 150))
-
-homeTab:CreateLabel("Allow Gift Spawned Pets ^.^")
-
-local specialTab = window:CreateTab("SPECIAL")
-
-specialTab:CreateHeader("SPECIAL FEATURES")
-
-specialTab:CreateToggle("Auto Farm", false, function(state)
+MainTab:CreateToggle("Auto Farm", false, function(state)
     print("Auto Farm:", state)
+    Window:Notify("Toggle", "Auto Farm " .. (state and "enabled" or "disabled"), 2)
 end)
 
-specialTab:CreateToggle("Speed Hack", true, function(state)
-    print("Speed Hack:", state)
-end)
-
-specialTab:CreateSlider("Walk Speed", 16, 100, 50, function(value)
+MainTab:CreateSlider("Walk Speed", 16, 100, 16, function(value)
     print("Walk Speed:", value)
+    if player.Character and player.Character:FindFirstChild("Humanoid") then
+        player.Character.Humanoid.WalkSpeed = value
+    end
 end)
 
-specialTab:CreateDropdown("Game Mode", {"Easy", "Normal", "Hard", "Extreme"}, function(mode)
-    print("Game Mode:", mode)
+MainTab:CreateDropdown("Game Mode", {"Normal", "Hard", "Extreme"}, function(option)
+    print("Selected game mode:", option)
+    Window:Notify("Mode", "Game mode set to " .. option, 2)
 end)
 
-local mainTab = window:CreateTab("MAIN")
-
-mainTab:CreateHeader("MAIN SCRIPTS")
-
-mainTab:CreateButton("Execute Main Script", function()
-    print("Main script executed!")
+MainTab:CreateInput("Enter Username", function(text)
+    print("Entered username:", text)
+    Window:Notify("Input", "Username set to: " .. text, 2)
 end)
 
-mainTab:CreateInput("Enter Script URL...", function(url)
-    print("Script URL:", url)
+-- Create Settings tab
+local SettingsTab = Window:CreateTab("Settings")
+
+SettingsTab:CreateHeader("⚙️ GUI Settings")
+SettingsTab:CreateLabel("Configure your GUI preferences")
+
+SettingsTab:CreateToggle("Show Notifications", true, function(state)
+    print("Notifications:", state)
 end)
 
-mainTab:CreateToggle("Auto Execute", false, function(state)
-    print("Auto Execute:", state)
+SettingsTab:CreateSlider("GUI Transparency", 0, 100, 0, function(value)
+    print("Transparency:", value)
 end)
 
-mainTab:CreateSlider("Execution Delay", 1, 10, 3, function(delay)
-    print("Execution Delay:", delay)
-end)
+SettingsTab:CreateButton("Reset GUI", function()
+    Window:Notify("Reset", "GUI has been reset!", 2, "success")
+end, Color3.fromRGB(242, 87, 87))
 
-local spawnerTab = window:CreateTab("SPAWNER")
+-- Create Info tab
+local InfoTab = Window:CreateTab("Info")
 
-spawnerTab:CreateHeader("SPAWNER CONTROLS")
+InfoTab:CreateHeader("ℹ️ Information")
+InfoTab:CreateLabel("Combined Modern Hub GUI v1.0")
+InfoTab:CreateLabel("Created with Fryzer Circle Toggle")
+InfoTab:CreateLabel("Works on Mobile and PC")
 
-spawnerTab:CreateButton("Dark Spawner", function()
-    print("Dark Spawner activated!")
-end, Color3.fromRGB(50, 50, 200))
+InfoTab:CreateButton("Join Discord", function()
+    Window:Notify("Discord", "Discord link copied!", 3, "info")
+end, Color3.fromRGB(88, 101, 242))
 
-spawnerTab:CreateButton("Light Spawner", function()
-    print("Light Spawner activated!")
-end, Color3.fromRGB(200, 200, 50))
+InfoTab:CreateButton("Check Updates", function()
+    Window:Notify("Update", "You have the latest version!", 2, "success")
+end, Color3.fromRGB(87, 242, 135))
 
-spawnerTab:CreateToggle("Auto Spawn", true, function(state)
-    print("Auto Spawn:", state)
-end)
+-- Show welcome notification
+Window:Notify("Welcome", "Combined GUI loaded successfully!", 3, "success")
 
-spawnerTab:CreateDropdown("Spawn Type", {"Random", "Pets", "Tools", "NPCs"}, function(type)
-    print("Spawn Type:", type)
-end)
+print("✅ Complete Combined GUI created!")
+print("🔵 Fryzer Circle Toggle is ready to use")
+print("🎮 Click the circle to show/hide the hub")
 
-spawnerTab:CreateSlider("Spawn Rate", 1, 20, 5, function(rate)
-    print("Spawn Rate:", rate)
-end)
-
-local destroyTab = window:CreateTab("DESTROY")
-
-destroyTab:CreateHeader("DESTRUCTION TOOLS")
-
-destroyTab:CreateButton("Clear All", function()
-    print("Everything cleared!")
-end, config.colors.danger)
-
-destroyTab:CreateButton("Reset Character", function()
-    print("Character reset!")
-end, Color3.fromRGB(150, 100, 50))
-
-destroyTab:CreateToggle("Safe Mode", true, function(state)
-    print("Safe Mode:", state)
-end)
-
-destroyTab:CreateInput("Target Name...", function(name)
-    print("Target Name:", name)
-end)
-
-
-local switchTab = window:CreateTab("SWITCH")
-
-switchTab:CreateHeader("GAME SWITCHER")
-
-switchTab:CreateButton("Join New Server", function()
-    print("Joining new server...")
-end, Color3.fromRGB(100, 100, 200))
-
-switchTab:CreateButton("Rejoin Current", function()
-    print("Rejoining current server...")
-end, Color3.fromRGB(150, 150, 100))
-
-switchTab:CreateDropdown("Server Region", {"US East", "US West", "Europe", "Asia"}, function(region)
-    print("Server Region:", region)
-end)
-
-switchTab:CreateInput("Server ID...", function(id)
-    print("Server ID:", id)
-end)
-
-switchTab:CreateSlider("Max Players", 1, 30, 12, function(players)
-    print("Max Players:", players)
-end)
-
-switchTab:CreateToggle("Auto Rejoin", false, function(state)
-    print("Auto Rejoin:", state)
-end)
-
--- Welcome notification
-spawn(function()
-    wait(0.5)
-    window:Notify("Welcome!", "Fryzer Hub loaded successfully", 1.5, "success")
-end)
-
--- Auto-save functionality (example)
-local autoSave = true
-if autoSave then
-    spawn(function()
-        while wait(30) do -- Save every 30 seconds
-            if playerGui:FindFirstChild("ModernHubGUI") then
-                window:Notify("Auto Save", "Settings saved automatically", 2, "success")
-            else
-                break
-            end
-        end
-    end)
-end
-
-print("Modern Hub GUI loaded successfully!")
+return Library
