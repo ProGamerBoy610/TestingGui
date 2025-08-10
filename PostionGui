@@ -1,3 +1,5 @@
+--My Script Hub
+
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
@@ -474,12 +476,18 @@ function Library:CreateWindow(options)
     local windowSize = options.Size or UDim2.new(0, 420, 0, 280)
     local windowPosition = options.Position or UDim2.new(0.5, -210, 0.5, -140)
 
+    -- Remove existing ModernHubGUI if it exists
+    if playerGui:FindFirstChild("ModernHubGUI") then
+        playerGui:FindFirstChild("ModernHubGUI"):Destroy()
+    end
+
     -- Main GUI Container
     local screenGui = Instance.new("ScreenGui")
     screenGui.Name = "ModernHubGUI"
     screenGui.Parent = playerGui
     screenGui.ResetOnSpawn = false
     screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Enabled = true -- Start visible by default
 
     -- Main Frame
     local mainFrame = Instance.new("Frame")
@@ -538,7 +546,7 @@ function Library:CreateWindow(options)
     titleText.Font = Enum.Font.GothamBold
     titleText.Parent = titleBar
 
-    -- Close Button
+    -- Close Button (X) - Now hides instead of destroying
     local closeButton = Instance.new("TextButton")
     closeButton.Name = "CloseButton"
     closeButton.Size = UDim2.new(0, 25, 0, 25)
@@ -650,29 +658,15 @@ function Library:CreateWindow(options)
     createCorner(restoreButton, 6)
 
     -- Event Connections
+    -- Modified Close Button - Now hides GUI instead of destroying
     closeButton.MouseButton1Click:Connect(function()
+        -- Hide the GUI with animation
         tween(mainFrame, {Size = UDim2.new(0, 0, 0, 0)})
         wait(0.3)
-        mainFrame.Visible = false
-        screenGui.Enabled = false
-        -- Update Fryzer Circle Toggle GUI state
-        local fryzerGui = playerGui:FindFirstChild("FryzerToggleGUI")
-        if fryzerGui then
-            local circleFrame = fryzerGui:FindFirstChild("CircleFrame")
-            local textLabel = circleFrame and circleFrame:FindFirstChild("TextLabel")
-            local gradient = circleFrame and circleFrame:FindFirstChild("UIGradient")
-            if circleFrame and textLabel and gradient then
-                tween(circleFrame, {
-                    BackgroundColor3 = Color3.fromRGB(20, 20, 20),
-                    BorderColor3 = Color3.fromRGB(40, 40, 40)
-                }, config.fastTweenInfo)
-                tween(textLabel, {TextColor3 = Color3.fromRGB(255, 255, 255)}, config.fastTweenInfo)
-                gradient.Color = ColorSequence.new{
-                    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
-                    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
-                }
-            end
-        end
+        screenGui.Enabled = false -- Hide the entire ScreenGui
+        
+        -- Send notification that GUI is hidden
+        createNotification(screenGui, "GUI Hidden", "Use Fryzer Circle to show again", 2, "info")
     end)
 
     minimizeButton.MouseButton1Click:Connect(function()
@@ -731,6 +725,19 @@ function Library:CreateWindow(options)
             -- Refresh/reload GUI
             createNotification(screenGui, "System", "GUI Refreshed", 2, "success")
             -- You can add refresh logic if needed
+        elseif input.KeyCode == Enum.KeyCode.Insert then
+            -- Toggle GUI visibility with Insert key
+            if screenGui.Enabled then
+                closeButton.MouseButton1Click:Fire()
+            else
+                -- Show the GUI again
+                screenGui.Enabled = true
+                mainFrame.Size = UDim2.new(0, 0, 0, 0)
+                mainFrame.Visible = true
+                miniBar.Visible = false
+                tween(mainFrame, {Size = windowSize})
+                createNotification(screenGui, "GUI Shown", "Welcome back!", 2, "success")
+            end
         end
     end)
 
@@ -741,11 +748,43 @@ function Library:CreateWindow(options)
         mainFrame.Position = UDim2.new(0.5, -190, 0.5, -130)
     end
 
+    -- Window object with additional methods for showing/hiding
     local Window = {
         Tabs = {},
         NavButtons = {},
-        CurrentTab = nil
+        CurrentTab = nil,
+        ScreenGui = screenGui,
+        MainFrame = mainFrame
     }
+
+    -- Add Show/Hide methods for external control (like Fryzer Circle)
+    function Window:Show()
+        self.ScreenGui.Enabled = true
+        self.MainFrame.Size = UDim2.new(0, 0, 0, 0)
+        self.MainFrame.Visible = true
+        miniBar.Visible = false
+        tween(self.MainFrame, {Size = windowSize})
+        createNotification(self.ScreenGui, "GUI Shown", "Welcome back!", 2, "success")
+    end
+
+    function Window:Hide()
+        tween(self.MainFrame, {Size = UDim2.new(0, 0, 0, 0)})
+        wait(0.3)
+        self.ScreenGui.Enabled = false
+        createNotification(self.ScreenGui, "GUI Hidden", "Use toggle to show again", 2, "info")
+    end
+
+    function Window:Toggle()
+        if self.ScreenGui.Enabled then
+            self:Hide()
+        else
+            self:Show()
+        end
+    end
+
+    function Window:IsVisible()
+        return self.ScreenGui.Enabled
+    end
 
     function Window:CreateTab(name)
         local Tab = {}
@@ -878,6 +917,15 @@ function Library:CreateWindow(options)
     function Window:Destroy()
         screenGui:Destroy()
     end
+
+    -- Print status message
+    print("🎯 Modern Hub GUI Enhanced loaded!")
+    print("🔧 Close button now hides GUI instead of destroying")
+    print("🎮 Works with Fryzer Circle Toggle GUI")
+    print("⌨️  Keyboard shortcuts:")
+    print("   - Insert: Toggle GUI visibility")
+    print("   - F4: Minimize/Restore")
+    print("   - F5: Refresh notification")
 
     return Window
 end
