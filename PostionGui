@@ -1,5 +1,5 @@
 -- Fryzer Hub GUI Script for Roblox (Updated)
--- Added draggable opener, more tabs, and cooler looks with gradients, strokes, animations.
+-- Changes: Toggle main GUI on opener touch/click, smaller sizes, blue-purple theme, transparent buttons, added stroke to opener.
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -11,11 +11,11 @@ local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = player:WaitForChild("PlayerGui")
 screenGui.Name = "FryzerHub"
 
--- Opener GUI (2nd GUI): Ball shape with text "Fryzer"
+-- Opener GUI (2nd GUI): Ball shape with text "Fryzer" - smaller
 local openerFrame = Instance.new("Frame")
-openerFrame.Size = UDim2.new(0, 100, 0, 100)
-openerFrame.Position = UDim2.new(0.5, -50, 0.5, -50)
-openerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+openerFrame.Size = UDim2.new(0, 80, 0, 80)
+openerFrame.Position = UDim2.new(0.5, -40, 0.5, -40)
+openerFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 50)  -- Dark blue
 openerFrame.BackgroundTransparency = 0.3
 openerFrame.BorderSizePixel = 0
 openerFrame.Parent = screenGui
@@ -26,13 +26,13 @@ uiCornerOpener.Parent = openerFrame
 
 local uiGradientOpener = Instance.new("UIGradient")
 uiGradientOpener.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 0, 100)),  -- Purple
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 50))  -- Dark blue
 }
 uiGradientOpener.Parent = openerFrame
 
 local uiStrokeOpener = Instance.new("UIStroke")
-uiStrokeOpener.Color = Color3.fromRGB(255, 255, 255)
+uiStrokeOpener.Color = Color3.fromRGB(0, 120, 255)  -- Blue
 uiStrokeOpener.Transparency = 0.5
 uiStrokeOpener.Parent = openerFrame
 
@@ -41,15 +41,15 @@ openerLabel.Size = UDim2.new(1, 0, 1, 0)
 openerLabel.BackgroundTransparency = 1
 openerLabel.Text = "Fryzer"
 openerLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-openerLabel.TextSize = 20
+openerLabel.TextSize = 18
 openerLabel.Font = Enum.Font.GothamBold
 openerLabel.Parent = openerFrame
 
--- Main GUI
+-- Main GUI - smaller
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 600, 0, 400)
-mainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.Size = UDim2.new(0, 500, 0, 350)
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40)  -- Dark purple-blue
 mainFrame.BorderSizePixel = 0
 mainFrame.Visible = false
 mainFrame.Parent = screenGui
@@ -60,19 +60,19 @@ uiCornerMain.Parent = mainFrame
 
 local uiGradientMain = Instance.new("UIGradient")
 uiGradientMain.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 100)),  -- Blue
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 0, 100))  -- Purple
 }
 uiGradientMain.Parent = mainFrame
 
 local uiStrokeMain = Instance.new("UIStroke")
-uiStrokeMain.Color = Color3.fromRGB(100, 100, 100)
+uiStrokeMain.Color = Color3.fromRGB(0, 120, 255)  -- Blue
 uiStrokeMain.Parent = mainFrame
 
 -- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 40)
-titleBar.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleBar.BackgroundColor3 = Color3.fromRGB(50, 0, 100)  -- Purple
 titleBar.BorderSizePixel = 0
 titleBar.Parent = mainFrame
 
@@ -82,8 +82,8 @@ uiCornerTitle.Parent = titleBar
 
 local uiGradientTitle = Instance.new("UIGradient")
 uiGradientTitle.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(30, 30, 30)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(10, 10, 10))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 100)),  -- Blue
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 0, 100))  -- Purple
 }
 uiGradientTitle.Parent = titleBar
 
@@ -98,34 +98,28 @@ titleLabel.Font = Enum.Font.GothamBold
 titleLabel.TextXAlignment = Enum.TextXAlignment.Left
 titleLabel.Parent = titleBar
 
--- Minimize Button
+-- Minimize Button - transparent background
 local minimizeButton = Instance.new("TextButton")
 minimizeButton.Size = UDim2.new(0, 30, 0, 30)
 minimizeButton.Position = UDim2.new(1, -70, 0, 5)
-minimizeButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+minimizeButton.BackgroundTransparency = 1
 minimizeButton.Text = "-"
 minimizeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 minimizeButton.Parent = titleBar
-
-local uiCornerMin = Instance.new("UICorner")
-uiCornerMin.Parent = minimizeButton
 
 local uiStrokeMin = Instance.new("UIStroke")
 uiStrokeMin.Color = Color3.fromRGB(255, 255, 255)
 uiStrokeMin.Transparency = 0.8
 uiStrokeMin.Parent = minimizeButton
 
--- Close Button
+-- Close Button - transparent background
 local closeButton = Instance.new("TextButton")
 closeButton.Size = UDim2.new(0, 30, 0, 30)
 closeButton.Position = UDim2.new(1, -35, 0, 5)
-closeButton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+closeButton.BackgroundTransparency = 1
 closeButton.Text = "X"
 closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeButton.Parent = titleBar
-
-local uiCornerClose = Instance.new("UICorner")
-uiCornerClose.Parent = closeButton
 
 local uiStrokeClose = Instance.new("UIStroke")
 uiStrokeClose.Color = Color3.fromRGB(255, 255, 255)
@@ -134,16 +128,16 @@ uiStrokeClose.Parent = closeButton
 
 -- Tabs on Left
 local tabsFrame = Instance.new("Frame")
-tabsFrame.Size = UDim2.new(0, 150, 1, -40)
+tabsFrame.Size = UDim2.new(0, 130, 1, -40)  -- Adjusted for smaller GUI
 tabsFrame.Position = UDim2.new(0, 0, 0, 40)
-tabsFrame.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+tabsFrame.BackgroundColor3 = Color3.fromRGB(0, 30, 60)  -- Dark blue
 tabsFrame.BorderSizePixel = 0
 tabsFrame.Parent = mainFrame
 
 local uiGradientTabs = Instance.new("UIGradient")
 uiGradientTabs.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 50, 50)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 30, 30))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 0, 100)),  -- Purple
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 30, 60))  -- Dark blue
 }
 uiGradientTabs.Parent = tabsFrame
 
@@ -156,8 +150,8 @@ uiListLayoutTabs.Parent = tabsFrame
 local currentTab = nil
 local function createTab(name)
     local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(1, 0, 0, 50)
-    tabButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    tabButton.Size = UDim2.new(1, 0, 0, 45)  -- Slightly smaller
+    tabButton.BackgroundColor3 = Color3.fromRGB(0, 50, 100)  -- Blue
     tabButton.Text = name
     tabButton.TextColor3 = Color3.fromRGB(255, 255, 255)
     tabButton.Font = Enum.Font.Gotham
@@ -168,12 +162,12 @@ local function createTab(name)
     uiCornerTab.Parent = tabButton
     
     local uiStrokeTab = Instance.new("UIStroke")
-    uiStrokeTab.Color = Color3.fromRGB(80, 80, 80)
+    uiStrokeTab.Color = Color3.fromRGB(128, 0, 128)  -- Purple
     uiStrokeTab.Parent = tabButton
     
     local contentFrame = Instance.new("ScrollingFrame")
-    contentFrame.Size = UDim2.new(1, -150, 1, -40)
-    contentFrame.Position = UDim2.new(0, 150, 0, 40)
+    contentFrame.Size = UDim2.new(1, -130, 1, -40)
+    contentFrame.Position = UDim2.new(0, 130, 0, 40)
     contentFrame.BackgroundTransparency = 1
     contentFrame.ScrollBarThickness = 6
     contentFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
@@ -202,10 +196,10 @@ local function createTab(name)
         currentTab = contentFrame
         
         -- Animation for tab selection
-        TweenService:Create(tabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 120, 255)}):Play()
+        TweenService:Create(tabButton, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(128, 0, 128)}):Play()  -- Purple selected
         for _, btn in ipairs(tabsFrame:GetChildren()) do
             if btn:IsA("TextButton") and btn ~= tabButton then
-                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)}):Play()
+                TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 50, 100)}):Play()  -- Blue normal
             end
         end
     end)
@@ -220,12 +214,12 @@ local scriptsTab = createTab("Scripts")
 local infoTab = createTab("Info")
 local extrasTab = createTab("Extras")
 
--- Add example components to tabs (customize as needed)
+-- Add example components to tabs (updated colors)
 
 -- Components Tab
 local textLabelEx = Instance.new("TextLabel")
 textLabelEx.Size = UDim2.new(1, 0, 0, 30)
-textLabelEx.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+textLabelEx.BackgroundColor3 = Color3.fromRGB(0, 30, 60)  -- Dark blue
 textLabelEx.Text = "Example Label"
 textLabelEx.TextColor3 = Color3.fromRGB(255, 255, 255)
 textLabelEx.Parent = componentsTab
@@ -236,7 +230,7 @@ uiCornerLabel.Parent = textLabelEx
 -- Button Example
 local buttonEx = Instance.new("TextButton")
 buttonEx.Size = UDim2.new(1, 0, 0, 40)
-buttonEx.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+buttonEx.BackgroundColor3 = Color3.fromRGB(0, 30, 60)  -- Dark blue
 buttonEx.Text = "[] Press Me"
 buttonEx.TextColor3 = Color3.fromRGB(255, 255, 255)
 buttonEx.Parent = componentsTab
@@ -247,14 +241,14 @@ uiCornerButton.Parent = buttonEx
 buttonEx.MouseButton1Click:Connect(function()
     buttonEx.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     wait(1)
-    buttonEx.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+    buttonEx.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
 end)
 
 -- Add similar components to other tabs...
 -- For Settings Tab: Add a toggle
 local toggleSettings = Instance.new("TextButton")
 toggleSettings.Size = UDim2.new(1, 0, 0, 40)
-toggleSettings.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+toggleSettings.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
 toggleSettings.Text = "Off []"
 toggleSettings.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleSettings.Parent = settingsTab
@@ -267,14 +261,14 @@ toggleSettings.MouseButton1Click:Connect(function()
         toggleSettings.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     else
         toggleSettings.Text = "Off []"
-        toggleSettings.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+        toggleSettings.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
     end
 end)
 
 -- For Scripts Tab: Add a textbox
 local scriptBox = Instance.new("TextBox")
 scriptBox.Size = UDim2.new(1, 0, 0, 100)
-scriptBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+scriptBox.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
 scriptBox.Text = "Enter script..."
 scriptBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 scriptBox.MultiLine = true
@@ -285,34 +279,31 @@ local infoLabel = Instance.new("TextLabel")
 infoLabel.Size = UDim2.new(1, 0, 0, 30)
 infoLabel.BackgroundTransparency = 1
 infoLabel.Text = "Hub Version: 1.0"
-infoLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+infoLabel.TextColor3 = Color3.fromRGB(200, 200, 255)  -- Light blue
 infoLabel.Parent = infoTab
 
 -- For Extras Tab: Add slider
 local sliderFrameExtras = Instance.new("Frame")
 sliderFrameExtras.Size = UDim2.new(1, 0, 0, 40)
-sliderFrameExtras.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+sliderFrameExtras.BackgroundColor3 = Color3.fromRGB(0, 30, 60)
 sliderFrameExtras.Parent = extrasTab
 
 local sliderBarExtras = Instance.new("Frame")
 sliderBarExtras.Size = UDim2.new(1, -20, 0, 10)
 sliderBarExtras.Position = UDim2.new(0, 10, 0.5, -5)
-sliderBarExtras.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+sliderBarExtras.BackgroundColor3 = Color3.fromRGB(50, 0, 100)  -- Purple
 sliderBarExtras.Parent = sliderFrameExtras
 
 local sliderHandleExtras = Instance.new("Frame")
 sliderHandleExtras.Size = UDim2.new(0, 20, 0, 20)
 sliderHandleExtras.Position = UDim2.new(0, 0, 0.5, -10)
-sliderHandleExtras.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+sliderHandleExtras.BackgroundColor3 = Color3.fromRGB(0, 120, 255)  -- Blue
 sliderHandleExtras.Parent = sliderFrameExtras
 
 local uiCornerSliderExtras = Instance.new("UICorner")
 uiCornerSliderExtras.Parent = sliderHandleExtras
 
--- Similar dragging logic for slider as before...
-
--- (Copy the slider dragging code from previous, but for extras)
-
+-- Slider dragging logic
 local draggingSlider = false
 local valueExtras = 0
 
@@ -337,11 +328,11 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- Confirmation Frame
+-- Confirmation Frame - update colors
 local confirmFrame = Instance.new("Frame")
-confirmFrame.Size = UDim2.new(0, 300, 0, 150)
-confirmFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-confirmFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+confirmFrame.Size = UDim2.new(0, 250, 0, 130)  -- Smaller
+confirmFrame.Position = UDim2.new(0.5, -125, 0.5, -65)
+confirmFrame.BackgroundColor3 = Color3.fromRGB(20, 0, 40)
 confirmFrame.BorderSizePixel = 0
 confirmFrame.Visible = false
 confirmFrame.Parent = screenGui
@@ -351,8 +342,8 @@ uiCornerConfirm.Parent = confirmFrame
 
 local uiGradientConfirm = Instance.new("UIGradient")
 uiGradientConfirm.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(40, 40, 40)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(20, 20, 20))
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 50, 100)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 0, 100))
 }
 uiGradientConfirm.Parent = confirmFrame
 
@@ -366,26 +357,30 @@ confirmLabel.Parent = confirmFrame
 local yesButton = Instance.new("TextButton")
 yesButton.Size = UDim2.new(0.4, 0, 0.3, 0)
 yesButton.Position = UDim2.new(0.1, 0, 0.7, 0)
-yesButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+yesButton.BackgroundColor3 = Color3.fromRGB(0, 120, 255)  -- Blue
 yesButton.Text = "Yes"
 yesButton.Parent = confirmFrame
 
 local noButton = Instance.new("TextButton")
 noButton.Size = UDim2.new(0.4, 0, 0.3, 0)
 noButton.Position = UDim2.new(0.5, 0, 0.7, 0)
-noButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+noButton.BackgroundColor3 = Color3.fromRGB(128, 0, 128)  -- Purple
 noButton.Text = "No"
 noButton.Parent = confirmFrame
 
--- Events
+-- Events - Toggle mainFrame on opener click/touch
 openerFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -300, 0.5, -200), Visible = true}):Play()
+        if mainFrame.Visible then
+            TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -250, 1, 0), Visible = false}):Play()
+        else
+            TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Position = UDim2.new(0.5, -250, 0.5, -175), Visible = true}):Play()
+        end
     end
 end)
 
 minimizeButton.MouseButton1Click:Connect(function()
-    TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -300, 1, 0), Visible = false}):Play()
+    TweenService:Create(mainFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.In), {Position = UDim2.new(0.5, -250, 1, 0), Visible = false}):Play()
 end)
 
 closeButton.MouseButton1Click:Connect(function()
@@ -450,17 +445,15 @@ end
 
 openerFrame.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        if not mainFrame.Visible then  -- Only drag if main is not open, or adjust as needed
-            draggingOpener = true
-            dragStartOpener = input.Position
-            startPosOpener = openerFrame.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    draggingOpener = false
-                end
-            end)
-        end
+        draggingOpener = true
+        dragStartOpener = input.Position
+        startPosOpener = openerFrame.Position
+        
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                draggingOpener = false
+            end
+        end)
     end
 end)
 
@@ -478,16 +471,16 @@ end)
 
 -- Show first tab by default
 componentsTab.Visible = true
-TweenService:Create(tabsFrame:GetChildren()[1], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(0, 120, 255)}):Play()
+TweenService:Create(tabsFrame:GetChildren()[1], TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(128, 0, 128)}):Play()  -- Purple
 
 -- Additional cool effects: Hover animations for buttons
 local function addHoverEffect(button)
-    local originalColor = button.BackgroundColor3
+    local originalColor = button.TextColor3
     button.MouseEnter:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = originalColor:Lerp(Color3.fromRGB(255, 255, 255), 0.1)}):Play()
+        TweenService:Create(button, TweenInfo.new(0.1), {TextColor3 = originalColor:Lerp(Color3.fromRGB(200, 200, 255), 0.5)}):Play()
     end)
     button.MouseLeave:Connect(function()
-        TweenService:Create(button, TweenInfo.new(0.1), {BackgroundColor3 = originalColor}):Play()
+        TweenService:Create(button, TweenInfo.new(0.1), {TextColor3 = originalColor}):Play()
     end)
 end
 
@@ -498,4 +491,4 @@ addHoverEffect(noButton)
 addHoverEffect(buttonEx)
 addHoverEffect(toggleSettings)
 
--- Add more as needed
+-- No hover for opener to open main, only click/touch toggles
