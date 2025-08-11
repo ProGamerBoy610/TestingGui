@@ -1,6 +1,7 @@
 -- Complete Roblox Hub GUI System
 -- Created by Assistant for Fryzer Hub
 
+print("1 loaded successfully!")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -90,6 +91,7 @@ local shadowCorner = Instance.new("UICorner")
 shadowCorner.CornerRadius = UDim.new(0, 17)
 shadowCorner.Parent = shadow
 
+print("1 loaded successfully!")
 -- Title Bar
 local titleBar = Instance.new("Frame")
 titleBar.Name = "TitleBar"
@@ -198,6 +200,7 @@ local sidebarCorner = Instance.new("UICorner")
 sidebarCorner.CornerRadius = UDim.new(0, 0)
 sidebarCorner.Parent = sidebar
 
+print("1 loaded successfully!")
 -- Right Content Area
 local contentArea = Instance.new("Frame")
 contentArea.Size = UDim2.new(1, -150, 1, 0)
@@ -296,6 +299,7 @@ end
 
 -- UI Elements Creation Functions
 
+print("1 loaded successfully!")
 local function createTextLabel(text, parent, tabName)
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, -20, 0, 30)
@@ -361,7 +365,8 @@ local function createToggle(text, defaultValue, callback, parent, tabName)
     label.TextSize = 14
     label.Font = Enum.Font.Gotham
     label.Parent = container
-    
+
+print("1 loaded successfully!")
     local toggleButton = Instance.new("TextButton")
     toggleButton.Size = UDim2.new(0, 50, 0, 25)
     toggleButton.Position = UDim2.new(1, -50, 0.5, -12.5)
