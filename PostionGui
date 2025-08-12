@@ -1,3 +1,4 @@
+--My Hub
 -- Fryzer Hub - Custom Design Based on Your Drawing
 -- Easy to customize like Rayfield with your exact specifications
 
@@ -8,6 +9,20 @@ local RunService = game:GetService("RunService")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
+
+-- Humanoid check - destroy if no humanoid found
+spawn(function()
+    while true do
+        wait(1)
+        if not (player.Character and player.Character:FindFirstChild("Humanoid")) then
+            if playerGui:FindFirstChild("FryzerHub") then
+                playerGui:FindFirstChild("FryzerHub"):Destroy()
+                print("FryzerHub destroyed: No Humanoid found")
+                break
+            end
+        end
+    end
+end)
 
 -- Remove existing GUI if it exists
 if playerGui:FindFirstChild("FryzerHub") then
@@ -79,6 +94,12 @@ mainFrame.Parent = screenGui
 local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 6)
 mainCorner.Parent = mainFrame
+
+-- Green UI stroke
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Color = Color3.fromRGB(0, 255, 0)
+uiStroke.Thickness = 2
+uiStroke.Parent = mainFrame
 
 -- Title Bar (Fryzer Hub header)
 local titleBar = Instance.new("Frame")
@@ -158,7 +179,7 @@ tabsScroll.Size = UDim2.new(1, 0, 1, 0)
 tabsScroll.BackgroundTransparency = 1
 tabsScroll.ScrollBarThickness = 3
 tabsScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-tabsScroll.CanvasSize = UDim2.new(0, 0, 0, 400)
+tabsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
 tabsScroll.Parent = tabsFrame
 
 local tabsLayout = Instance.new("UIListLayout")
@@ -181,7 +202,7 @@ scrollFrame.Position = UDim2.new(0, 4, 0, 4)
 scrollFrame.BackgroundTransparency = 1
 scrollFrame.ScrollBarThickness = 4
 scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 800)
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
 scrollFrame.Parent = contentFrame
 
 -- UI Layout for scroll content
@@ -193,6 +214,7 @@ contentLayout.Parent = scrollFrame
 -- Tab creation function
 local currentTab = nil
 local tabs = {}
+local componentCounter = 0
 
 -- Tab icons (as shown in your drawing)
 local tabIcons = {
@@ -237,23 +259,34 @@ local function createTab(name, content)
         tabs[name].active = true
         currentTab = name
         
-        -- Clear and populate content
+        -- Clear content properly
         for _, child in pairs(scrollFrame:GetChildren()) do
-            if child:IsA("Frame") or child:IsA("TextButton") or child:IsA("TextBox") then
+            if child:IsA("Frame") and child ~= contentLayout then
                 child:Destroy()
             end
         end
         
+        -- Reset component counter for consistent ordering
+        componentCounter = 0
+        
+        -- Populate content
         content()
+        
+        -- Update scroll size
+        wait(0.1)
+        local contentSize = contentLayout.AbsoluteContentSize
+        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 40) -- Increased padding
     end)
 end
 
 -- Button Creation Function (Flash green for 1 second, then back)
 local function createButton(name, callback)
+    componentCounter = componentCounter + 1
+    
     local btnFrame = Instance.new("Frame")
     btnFrame.Size = UDim2.new(1, -16, 0, 35)
     btnFrame.BackgroundTransparency = 1
-    btnFrame.LayoutOrder = math.random(1, 1000)
+    btnFrame.LayoutOrder = componentCounter
     btnFrame.Parent = scrollFrame
     
     local btnLabel = Instance.new("TextLabel")
@@ -282,8 +315,10 @@ local function createButton(name, callback)
     btnSquare.MouseButton1Click:Connect(function()
         -- Flash green for 1 second then back to normal
         btnSquare.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
-        wait(1)
-        btnSquare.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+        spawn(function()
+            wait(1)
+            btnSquare.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
+        end)
         
         if callback then
             callback()
@@ -293,10 +328,12 @@ end
 
 -- Toggle Button Creation Function (Stays green when ON, grey when OFF)
 local function createToggle(name, callback)
+    componentCounter = componentCounter + 1
+    
     local toggleFrame = Instance.new("Frame")
     toggleFrame.Size = UDim2.new(1, -16, 0, 35)
     toggleFrame.BackgroundTransparency = 1
-    toggleFrame.LayoutOrder = math.random(1, 1000)
+    toggleFrame.LayoutOrder = componentCounter
     toggleFrame.Parent = scrollFrame
     
     local toggleLabel = Instance.new("TextLabel")
@@ -357,10 +394,12 @@ end
 
 -- Slider Creation Function
 local function createSlider(name, min, max, default, callback)
+    componentCounter = componentCounter + 1
+    
     local sliderFrame = Instance.new("Frame")
     sliderFrame.Size = UDim2.new(1, -16, 0, 45)
     sliderFrame.BackgroundTransparency = 1
-    sliderFrame.LayoutOrder = math.random(1, 1000)
+    sliderFrame.LayoutOrder = componentCounter
     sliderFrame.Parent = scrollFrame
     
     local sliderLabel = Instance.new("TextLabel")
@@ -446,10 +485,12 @@ end
 
 -- TextBox Creation Function
 local function createTextBox(name, placeholder, callback)
+    componentCounter = componentCounter + 1
+    
     local textFrame = Instance.new("Frame")
     textFrame.Size = UDim2.new(1, -16, 0, 50)
     textFrame.BackgroundTransparency = 1
-    textFrame.LayoutOrder = math.random(1, 1000)
+    textFrame.LayoutOrder = componentCounter
     textFrame.Parent = scrollFrame
     
     local textLabel = Instance.new("TextLabel")
@@ -488,10 +529,12 @@ end
 
 -- Scrollable Dropdown Creation Function
 local function createDropdown(name, options, callback)
+    componentCounter = componentCounter + 1
+    
     local dropFrame = Instance.new("Frame")
     dropFrame.Size = UDim2.new(1, -16, 0, 50)
     dropFrame.BackgroundTransparency = 1
-    dropFrame.LayoutOrder = math.random(1, 1000)
+    dropFrame.LayoutOrder = componentCounter
     dropFrame.Parent = scrollFrame
     
     local dropLabel = Instance.new("TextLabel")
@@ -530,14 +573,14 @@ local function createDropdown(name, options, callback)
     dropArrow.Parent = dropBtn
     
     local optionsFrame = Instance.new("ScrollingFrame")
-    optionsFrame.Size = UDim2.new(1, -8, 0, math.min(#options * 20, 100)) -- Max height 100, scrollable if more
+    optionsFrame.Size = UDim2.new(1, -8, 0, math.min(#options * 25, 100))
     optionsFrame.Position = UDim2.new(0, 4, 1, 0)
     optionsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
     optionsFrame.BorderSizePixel = 0
     optionsFrame.Visible = false
     optionsFrame.ScrollBarThickness = 3
     optionsFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-    optionsFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 20)
+    optionsFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 25)
     optionsFrame.Parent = dropFrame
     
     local optionsCorner = Instance.new("UICorner")
@@ -556,7 +599,7 @@ local function createDropdown(name, options, callback)
         dropArrow.Text = isOpen and "▲" or "▼"
         
         if isOpen then
-            dropFrame.Size = UDim2.new(1, -16, 0, 50 + math.min(#options * 20, 100))
+            dropFrame.Size = UDim2.new(1, -16, 0, 50 + math.min(#options * 25, 100))
         else
             dropFrame.Size = UDim2.new(1, -16, 0, 50)
         end
@@ -564,7 +607,7 @@ local function createDropdown(name, options, callback)
     
     for i, option in pairs(options) do
         local optionBtn = Instance.new("TextButton")
-        optionBtn.Size = UDim2.new(1, 0, 0, 20)
+        optionBtn.Size = UDim2.new(1, 0, 0, 25)
         optionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
         optionBtn.Text = option
         optionBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
@@ -600,10 +643,12 @@ end
 
 -- Text Label Creation Function
 local function createTextLabel(text)
+    componentCounter = componentCounter + 1
+    
     local labelFrame = Instance.new("Frame")
     labelFrame.Size = UDim2.new(1, -16, 0, 25)
     labelFrame.BackgroundTransparency = 1
-    labelFrame.LayoutOrder = math.random(1, 1000)
+    labelFrame.LayoutOrder = componentCounter
     labelFrame.Parent = scrollFrame
     
     local label = Instance.new("TextLabel")
@@ -766,7 +811,9 @@ createTab("Misc", function()
         game.Lighting.ClockTime = value * 4.8
     end)
     createTextBox("Chat Message", "Enter message...", function(msg)
-        game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+        if game.ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") and game.ReplicatedStorage.DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest") then
+            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
+        end
     end)
 end)
 
@@ -829,39 +876,55 @@ end)
 -- Minimize functionality (Make GUI invisible, ball can show it again)
 minimizeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
-    -- Make minimize button background transparent for 1 second
-    minimizeBtn.BackgroundTransparency = 1
-    wait(1)
-    minimizeBtn.BackgroundTransparency = 0
+    -- Make minimize button flash
+    spawn(function()
+        minimizeBtn.BackgroundTransparency = 1
+        wait(1)
+        if minimizeBtn.Parent then
+            minimizeBtn.BackgroundTransparency = 0
+        end
+    end)
 end)
 
 -- Close button functionality (Show confirmation)
 closeBtn.MouseButton1Click:Connect(function()
-    -- Make close button background transparent for 1 second  
-    closeBtn.BackgroundTransparency = 1
-    wait(1)
-    closeBtn.BackgroundTransparency = 1
-    -- Destroy the entire GUI
-    screenGui:Destroy()
+    -- Make close button flash
+    spawn(function()
+        closeBtn.BackgroundTransparency = 1
+        wait(1)
+        -- Destroy the entire GUI
+        if screenGui.Parent then
+            screenGui:Destroy()
+        end
+    end)
 end)
 
 -- Auto-resize scroll frames based on content
 local function updateScrollSize()
-    wait(0.1) -- Wait for layout to update
-    local contentSize = contentLayout.AbsoluteContentSize
-    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 20)
-    
-    local tabsSize = tabsLayout.AbsoluteContentSize  
-    tabsScroll.CanvasSize = UDim2.new(0, 0, 0, tabsSize.Y + 20)
+    spawn(function()
+        wait(0.1) -- Wait for layout to update
+        if contentLayout.Parent then
+            local contentSize = contentLayout.AbsoluteContentSize
+            scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 60) -- Increased padding for more scroll length
+        end
+        
+        if tabsLayout.Parent then
+            local tabsSize = tabsLayout.AbsoluteContentSize  
+            tabsScroll.CanvasSize = UDim2.new(0, 0, 0, tabsSize.Y + 20)
+        end
+    end)
 end
 
 contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateScrollSize)
 tabsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateScrollSize)
 
 -- Initialize with first tab
-if tabs["Main"] then
-    tabs["Main"].button.MouseButton1Click()
-end
+spawn(function()
+    wait(0.5) -- Wait for everything to load
+    if tabs["Main"] then
+        tabs["Main"].button.MouseButton1Click()
+    end
+end)
 
 -- Add rainbow effect for ball opener
 spawn(function()
@@ -869,6 +932,8 @@ spawn(function()
         for i = 0, 1, 0.01 do
             if ballOpener.Parent then
                 ballOpener.BackgroundColor3 = Color3.fromHSV(i, 1, 1)
+            else
+                break
             end
             wait(0.05)
         end
@@ -877,7 +942,6 @@ end)
 
 print("Fryzer Hub loaded successfully!")
 print("Click the ball to toggle GUI visibility!")
-print("Drag the ball or main GUI to move them around!")
 
 --[[
 EASY CUSTOMIZATION GUIDE (Like Rayfield):
