@@ -150,10 +150,11 @@ minimizeCorner.CornerRadius = UDim.new(0, 3)
 minimizeCorner.Parent = minimizeBtn
 
 -- Close Button (X button)
+-- Close Button (X button)
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 25, 0, 20)
 closeBtn.Position = UDim2.new(1, -25, 0, 7)
-closeBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+closeBtn.BackgroundTransparency = 1 -- Invisible background
 closeBtn.Text = "X"
 closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 closeBtn.TextScaled = true
