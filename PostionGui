@@ -22,6 +22,147 @@ local dragSpeed = 0.25
 local dragStart = nil
 local startPos = nil
 
+-- Notification System
+local notificationFrame = Instance.new("Frame")
+notificationFrame.Name = "NotificationFrame"
+notificationFrame.Size = UDim2.new(0, 0, 1, 0)
+notificationFrame.Position = UDim2.new(1, 0, 0, 0)
+notificationFrame.BackgroundTransparency = 1
+notificationFrame.Parent = screenGui
+
+local notificationLayout = Instance.new("UIListLayout")
+notificationLayout.SortOrder = Enum.SortOrder.LayoutOrder
+notificationLayout.Padding = UDim.new(0, 8)
+notificationLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
+notificationLayout.VerticalAlignment = Enum.VerticalAlignment.Top
+notificationLayout.Parent = notificationFrame
+
+local notificationPadding = Instance.new("UIPadding")
+notificationPadding.PaddingTop = UDim.new(0, 20)
+notificationPadding.PaddingRight = UDim.new(0, 20)
+notificationPadding.Parent = notificationFrame
+
+-- Notification Creation Function
+local function createNotification(title, message, duration, notificationType)
+    duration = duration or 3
+    notificationType = notificationType or "info"
+    
+    local notification = Instance.new("Frame")
+    notification.Size = UDim2.new(0, 300, 0, 80)
+    notification.Position = UDim2.new(0, 320, 0, 0) -- Start off-screen
+    notification.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    notification.BorderSizePixel = 0
+    notification.Parent = notificationFrame
+    
+    local notifCorner = Instance.new("UICorner")
+    notifCorner.CornerRadius = UDim.new(0, 8)
+    notifCorner.Parent = notification
+    
+    -- Notification stroke based on type
+    local notifStroke = Instance.new("UIStroke")
+    notifStroke.Thickness = 2
+    if notificationType == "success" then
+        notifStroke.Color = Color3.fromRGB(0, 255, 0)
+    elseif notificationType == "error" then
+        notifStroke.Color = Color3.fromRGB(255, 0, 0)
+    elseif notificationType == "warning" then
+        notifStroke.Color = Color3.fromRGB(255, 165, 0)
+    else -- info
+        notifStroke.Color = Color3.fromRGB(120, 60, 255)
+    end
+    notifStroke.Parent = notification
+    
+    -- Icon based on type
+    local iconText = "ℹ️"
+    if notificationType == "success" then
+        iconText = "✅"
+    elseif notificationType == "error" then
+        iconText = "❌"
+    elseif notificationType == "warning" then
+        iconText = "⚠️"
+    end
+    
+    local icon = Instance.new("TextLabel")
+    icon.Size = UDim2.new(0, 30, 0, 30)
+    icon.Position = UDim2.new(0, 10, 0, 10)
+    icon.BackgroundTransparency = 1
+    icon.Text = iconText
+    icon.TextScaled = true
+    icon.Font = Enum.Font.Gotham
+    icon.Parent = notification
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -100, 0, 25)
+    titleLabel.Position = UDim2.new(0, 45, 0, 8)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.TextScaled = true
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = notification
+    
+    local messageLabel = Instance.new("TextLabel")
+    messageLabel.Size = UDim2.new(1, -100, 0, 20)
+    messageLabel.Position = UDim2.new(0, 45, 0, 35)
+    messageLabel.BackgroundTransparency = 1
+    messageLabel.Text = message
+    messageLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    messageLabel.TextScaled = true
+    messageLabel.Font = Enum.Font.Gotham
+    messageLabel.TextXAlignment = Enum.TextXAlignment.Left
+    messageLabel.TextWrapped = true
+    messageLabel.Parent = notification
+    
+    -- Close button
+    local closeBtn = Instance.new("TextButton")
+    closeBtn.Size = UDim2.new(0, 20, 0, 20)
+    closeBtn.Position = UDim2.new(1, -25, 0, 5)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Text = "×"
+    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeBtn.TextScaled = true
+    closeBtn.Font = Enum.Font.GothamBold
+    closeBtn.Parent = notification
+    
+    closeBtn.MouseButton1Click:Connect(function()
+        -- Animate out
+        TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+            Position = UDim2.new(0, 320, 0, 0),
+            Size = UDim2.new(0, 300, 0, 0)
+        }):Play()
+        
+        spawn(function()
+            wait(0.3)
+            if notification.Parent then
+                notification:Destroy()
+            end
+        end)
+    end)
+    
+    -- Animate in
+    TweenService:Create(notification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
+        Position = UDim2.new(0, 0, 0, 0)
+    }):Play()
+    
+    -- Auto-close after duration
+    spawn(function()
+        wait(duration)
+        if notification.Parent then
+            -- Animate out
+            TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
+                Position = UDim2.new(0, 320, 0, 0),
+                Size = UDim2.new(0, 300, 0, 0)
+            }):Play()
+            
+            wait(0.3)
+            if notification.Parent then
+                notification:Destroy()
+            end
+        end
+    end)
+end
+
 -- Drag function
 local function updateInput(input)
     local delta = input.Position - dragStart
@@ -257,6 +398,9 @@ local function createTab(name, content)
         wait(0.1)
         local contentSize = contentLayout.AbsoluteContentSize
         scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 40) -- Increased padding
+        
+        -- Show notification when tab is switched
+        createNotification("Tab Switched", "Switched to " .. name .. " tab", 2, "info")
     end)
 end
 
@@ -300,6 +444,9 @@ local function createButton(name, callback)
             wait(1)
             btnSquare.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
         end)
+        
+        -- Show success notification
+        createNotification("Button Clicked", name .. " executed successfully!", 3, "success")
         
         if callback then
             callback()
@@ -360,11 +507,13 @@ local function createToggle(name, callback)
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
             statusLabel.Text = "ON"
             statusLabel.TextColor3 = Color3.fromRGB(60, 255, 60)
+            createNotification("Toggle Enabled", name .. " has been enabled", 2, "success")
         else
             -- Grey when OFF  
             toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
             statusLabel.Text = "OFF"
             statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+            createNotification("Toggle Disabled", name .. " has been disabled", 2, "warning")
         end
         
         if callback then
@@ -454,7 +603,10 @@ local function createSlider(name, min, max, default, callback)
     
     UserInputService.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
+            if dragging then
+                createNotification("Slider Updated", name .. " set to " .. math.floor(value + 0.5), 2, "info")
+                dragging = false
+            end
         end
     end)
     
@@ -503,6 +655,9 @@ local function createTextBox(name, placeholder, callback)
     
     if callback then
         textBox.FocusLost:Connect(function()
+            if textBox.Text ~= "" then
+                createNotification("Text Updated", name .. " updated", 2, "info")
+            end
             callback(textBox.Text)
         end)
     end
@@ -614,6 +769,8 @@ local function createDropdown(name, options, callback)
             isOpen = false
             dropArrow.Text = "▼"
             dropFrame.Size = UDim2.new(1, -16, 0, 50)
+            
+            createNotification("Selection Made", name .. ": " .. option, 2, "info")
             
             if callback then
                 callback(option)
@@ -754,6 +911,15 @@ createTab("Settings", function()
     createButton("Save Settings", function()
         print("Settings saved!")
     end)
+    createButton("Test Notifications", function()
+        createNotification("Test Info", "This is an info notification", 3, "info")
+        wait(0.5)
+        createNotification("Test Success", "This is a success notification", 3, "success")
+        wait(0.5)
+        createNotification("Test Warning", "This is a warning notification", 3, "warning")
+        wait(0.5)
+        createNotification("Test Error", "This is an error notification", 3, "error")
+    end)
 end)
 
 createTab("Combat", function()
@@ -851,12 +1017,16 @@ ballButton.MouseButton1Click:Connect(function()
     -- If showing GUI, click first tab by default
     if mainFrame.Visible and tabs["Main"] then
         tabs["Main"].button.MouseButton1Click()
+        createNotification("Welcome!", "Fryzer Hub loaded successfully", 3, "success")
+    else
+        createNotification("GUI Hidden", "Use the ball to show GUI again", 2, "info")
     end
 end)
 
 -- Minimize functionality (Make GUI invisible, ball can show it again)
 minimizeBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = false
+    createNotification("GUI Minimized", "Click the ball to restore", 2, "warning")
     -- Make minimize button flash
     spawn(function()
         minimizeBtn.BackgroundTransparency = 1
@@ -869,6 +1039,7 @@ end)
 
 -- Close button functionality (Show confirmation)
 closeBtn.MouseButton1Click:Connect(function()
+    createNotification("Goodbye!", "Fryzer Hub closed successfully", 2, "error")
     -- Make close button flash
     spawn(function()
         closeBtn.BackgroundTransparency = 1
@@ -924,7 +1095,26 @@ end)
 print("Fryzer Hub loaded successfully!")
 print("Click the ball to toggle GUI visibility!")
 
+-- NOTIFICATION USAGE EXAMPLES:
+-- createNotification("Title", "Message", duration, type)
+-- Types: "info", "success", "warning", "error"
+-- Duration is in seconds (optional, defaults to 3)
+
 --[[
+HOW TO USE THE NOTIFICATION SYSTEM:
+
+Basic notification:
+createNotification("Hello", "This is a test message")
+
+With custom duration (5 seconds):
+createNotification("Hello", "This message lasts 5 seconds", 5)
+
+Different types:
+createNotification("Info", "Information message", 3, "info")       -- Blue border
+createNotification("Success", "Success message", 3, "success")     -- Green border
+createNotification("Warning", "Warning message", 3, "warning")     -- Orange border  
+createNotification("Error", "Error message", 3, "error")           -- Red border
+
 EASY CUSTOMIZATION GUIDE (Like Rayfield):
 
 -- Create a new tab:
