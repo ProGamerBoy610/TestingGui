@@ -10,12 +10,6 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
-
--- Remove existing GUI if it exists
-if playerGui:FindFirstChild("FryzerHub") then
-    playerGui:FindFirstChild("FryzerHub"):Destroy()
-end
-
 -- Create main ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FryzerHub"
@@ -113,7 +107,7 @@ local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(0, 100, 1, 0)
 titleText.Position = UDim2.new(0, 8, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "Fryzer Hub v2.77"
+titleText.Text = "Fryzer Hub 99 nights in forest"
 titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleText.TextScaled = true
 titleText.Font = Enum.Font.GothamBold
