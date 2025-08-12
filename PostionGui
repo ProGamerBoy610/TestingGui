@@ -840,7 +840,7 @@ closeBtn.MouseButton1Click:Connect(function()
     -- Make close button background transparent for 1 second  
     closeBtn.BackgroundTransparency = 1
     wait(1)
-    closeBtn.BackgroundTransparency = 0
+    closeBtn.BackgroundTransparency = 1
     -- Destroy the entire GUI
     screenGui:Destroy()
 end)
