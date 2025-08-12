@@ -1,1144 +1,616 @@
---My Hub
--- Fryzer Hub - Custom Design Based on Your Drawing
--- Easy to customize like Rayfield with your exact specifications
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 
-local player = Players.LocalPlayer
-local playerGui = player:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
 
--- Create main ScreenGui
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FryzerHub"
-screenGui.Parent = playerGui
-screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
--- Variables for dragging
-local dragToggle = nil
-local dragSpeed = 0.25
-local dragStart = nil
-local startPos = nil
-
--- Notification System
-local notificationFrame = Instance.new("Frame")
-notificationFrame.Name = "NotificationFrame"
-notificationFrame.Size = UDim2.new(0, 0, 1, 0)
-notificationFrame.Position = UDim2.new(1, 0, 0, 0)
-notificationFrame.BackgroundTransparency = 1
-notificationFrame.Parent = screenGui
-
-local notificationLayout = Instance.new("UIListLayout")
-notificationLayout.SortOrder = Enum.SortOrder.LayoutOrder
-notificationLayout.Padding = UDim.new(0, 8)
-notificationLayout.HorizontalAlignment = Enum.HorizontalAlignment.Right
-notificationLayout.VerticalAlignment = Enum.VerticalAlignment.Top
-notificationLayout.Parent = notificationFrame
-
-local notificationPadding = Instance.new("UIPadding")
-notificationPadding.PaddingTop = UDim.new(0, 20)
-notificationPadding.PaddingRight = UDim.new(0, 20)
-notificationPadding.Parent = notificationFrame
-
--- Notification Creation Function
-local function createNotification(title, message, duration, notificationType)
-    duration = duration or 3
-    notificationType = notificationType or "info"
-    
-    local notification = Instance.new("Frame")
-    notification.Size = UDim2.new(0, 300, 0, 80)
-    notification.Position = UDim2.new(0, 320, 0, 0) -- Start off-screen
-    notification.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    notification.BorderSizePixel = 0
-    notification.Parent = notificationFrame
-    
-    local notifCorner = Instance.new("UICorner")
-    notifCorner.CornerRadius = UDim.new(0, 8)
-    notifCorner.Parent = notification
-    
-    -- Notification stroke based on type
-    local notifStroke = Instance.new("UIStroke")
-    notifStroke.Thickness = 2
-    if notificationType == "success" then
-        notifStroke.Color = Color3.fromRGB(0, 255, 0)
-    elseif notificationType == "error" then
-        notifStroke.Color = Color3.fromRGB(255, 0, 0)
-    elseif notificationType == "warning" then
-        notifStroke.Color = Color3.fromRGB(255, 165, 0)
-    else -- info
-        notifStroke.Color = Color3.fromRGB(120, 60, 255)
-    end
-    notifStroke.Parent = notification
-    
-    -- Icon based on type
-    local iconText = "ℹ️"
-    if notificationType == "success" then
-        iconText = "✅"
-    elseif notificationType == "error" then
-        iconText = "❌"
-    elseif notificationType == "warning" then
-        iconText = "⚠️"
-    end
-    
-    local icon = Instance.new("TextLabel")
-    icon.Size = UDim2.new(0, 30, 0, 30)
-    icon.Position = UDim2.new(0, 10, 0, 10)
-    icon.BackgroundTransparency = 1
-    icon.Text = iconText
-    icon.TextScaled = true
-    icon.Font = Enum.Font.Gotham
-    icon.Parent = notification
-    
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, -100, 0, 25)
-    titleLabel.Position = UDim2.new(0, 45, 0, 8)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    titleLabel.TextScaled = true
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = notification
-    
-    local messageLabel = Instance.new("TextLabel")
-    messageLabel.Size = UDim2.new(1, -100, 0, 20)
-    messageLabel.Position = UDim2.new(0, 45, 0, 35)
-    messageLabel.BackgroundTransparency = 1
-    messageLabel.Text = message
-    messageLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    messageLabel.TextScaled = true
-    messageLabel.Font = Enum.Font.Gotham
-    messageLabel.TextXAlignment = Enum.TextXAlignment.Left
-    messageLabel.TextWrapped = true
-    messageLabel.Parent = notification
-    
-    -- Close button
-    local closeBtn = Instance.new("TextButton")
-    closeBtn.Size = UDim2.new(0, 20, 0, 20)
-    closeBtn.Position = UDim2.new(1, -25, 0, 5)
-    closeBtn.BackgroundTransparency = 1
-    closeBtn.Text = "×"
-    closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    closeBtn.TextScaled = true
-    closeBtn.Font = Enum.Font.GothamBold
-    closeBtn.Parent = notification
-    
-    closeBtn.MouseButton1Click:Connect(function()
-        -- Animate out
-        TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-            Position = UDim2.new(0, 320, 0, 0),
-            Size = UDim2.new(0, 300, 0, 0)
-        }):Play()
-        
-        spawn(function()
-            wait(0.3)
-            if notification.Parent then
-                notification:Destroy()
-            end
-        end)
-    end)
-    
-    -- Animate in
-    TweenService:Create(notification, TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out), {
-        Position = UDim2.new(0, 0, 0, 0)
-    }):Play()
-    
-    -- Auto-close after duration
-    spawn(function()
-        wait(duration)
-        if notification.Parent then
-            -- Animate out
-            TweenService:Create(notification, TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.In), {
-                Position = UDim2.new(0, 320, 0, 0),
-                Size = UDim2.new(0, 300, 0, 0)
-            }):Play()
-            
-            wait(0.3)
-            if notification.Parent then
-                notification:Destroy()
-            end
-        end
-    end)
-end
-
--- Drag function
-local function updateInput(input)
-    local delta = input.Position - dragStart
-    local position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    TweenService:Create(dragToggle, TweenInfo.new(dragSpeed), {Position = position}):Play()
-end
-
--- Create Ball Opener GUI (Small circle as in your drawing)
-local ballOpener = Instance.new("Frame")
-ballOpener.Name = "BallOpener"
-ballOpener.Size = UDim2.new(0, 50, 0, 50)
-ballOpener.Position = UDim2.new(0, 20, 0.5, -25)
-ballOpener.BackgroundColor3 = Color3.fromRGB(120, 60, 255)
-ballOpener.BorderSizePixel = 0
-ballOpener.Parent = screenGui
-
--- Make ball round
-local ballCorner = Instance.new("UICorner")
-ballCorner.CornerRadius = UDim.new(0.5, 0)
-ballCorner.Parent = ballOpener
-
--- Ball text
-local ballText = Instance.new("TextLabel")
-ballText.Size = UDim2.new(1, 0, 1, 0)
-ballText.BackgroundTransparency = 1
-ballText.Text = "Fryzer"
-ballText.TextColor3 = Color3.fromRGB(255, 255, 255)
-ballText.TextScaled = true
-ballText.Font = Enum.Font.GothamBold
-ballText.Parent = ballOpener
-
--- Ball click detector
-local ballButton = Instance.new("TextButton")
-ballButton.Size = UDim2.new(1, 0, 1, 0)
-ballButton.BackgroundTransparency = 1
-ballButton.Text = ""
-ballButton.Parent = ballOpener
-
--- Main GUI Frame (Based on your drawing)
-local mainFrame = Instance.new("Frame")
-mainFrame.Name = "MainFrame"
-mainFrame.Size = UDim2.new(0, 500, 0, 350)
-mainFrame.Position = UDim2.new(0.5, -250, 0.5, -175)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-mainFrame.BorderSizePixel = 1
-mainFrame.BorderColor3 = Color3.fromRGB(60, 60, 65)
-mainFrame.Visible = false
-mainFrame.Parent = screenGui
-
--- Main corner
-local mainCorner = Instance.new("UICorner")
-mainCorner.CornerRadius = UDim.new(0, 6)
-mainCorner.Parent = mainFrame
-
--- Green UI stroke
-local uiStroke = Instance.new("UIStroke")
-uiStroke.Color = Color3.fromRGB(0, 255, 0)
-uiStroke.Thickness = 2
-uiStroke.Parent = mainFrame
-
--- Title Bar (Fryzer Hub header)
-local titleBar = Instance.new("Frame")
-titleBar.Name = "TitleBar"
-titleBar.Size = UDim2.new(1, 0, 0, 35)
-titleBar.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-titleBar.BorderSizePixel = 0
-titleBar.Parent = mainFrame
-
-local titleCorner = Instance.new("UICorner")
-titleCorner.CornerRadius = UDim.new(0, 6)
-titleCorner.Parent = titleBar
-
--- Title corner fix
-local titleFix = Instance.new("Frame")
-titleFix.Size = UDim2.new(1, 0, 0, 6)
-titleFix.Position = UDim2.new(0, 0, 1, -6)
-titleFix.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-titleFix.BorderSizePixel = 0
-titleFix.Parent = titleBar
-
--- Title text (Fryzer Hub)
-local titleText = Instance.new("TextLabel")
-titleText.Size = UDim2.new(0, 100, 1, 0)
-titleText.Position = UDim2.new(0, 8, 0, 0)
-titleText.BackgroundTransparency = 1
-titleText.Text = "Fryzer Hub"
-titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
-titleText.TextScaled = true
-titleText.Font = Enum.Font.GothamBold
-titleText.TextXAlignment = Enum.TextXAlignment.Left
-titleText.Parent = titleBar
-
--- Minimize Button (- button)
-local minimizeBtn = Instance.new("TextButton")
-minimizeBtn.Size = UDim2.new(0, 25, 0, 20)
-minimizeBtn.Position = UDim2.new(1, -55, 0, 7)
-minimizeBtn.BackgroundTransparency = 1 -- Invisible background
-minimizeBtn.Text = "-"
-minimizeBtn.TextColor3 = Color3.fromRGB(0, 0, 0)
-minimizeBtn.TextScaled = true
-minimizeBtn.Font = Enum.Font.GothamBold
-minimizeBtn.BorderSizePixel = 0
-minimizeBtn.Parent = titleBar
-
-local minimizeCorner = Instance.new("UICorner")
-minimizeCorner.CornerRadius = UDim.new(0, 3)
-minimizeCorner.Parent = minimizeBtn
-
--- Close Button (X button)
-local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 25, 0, 20)
-closeBtn.Position = UDim2.new(1, -25, 0, 7)
-closeBtn.BackgroundTransparency = 1 -- Invisible background
-closeBtn.Text = "X"
-closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-closeBtn.TextScaled = true
-closeBtn.Font = Enum.Font.GothamBold
-closeBtn.BorderSizePixel = 0
-closeBtn.Parent = titleBar
-
-local closeCorner = Instance.new("UICorner")
-closeCorner.CornerRadius = UDim.new(0, 3)
-closeCorner.Parent = closeBtn
-
--- Tab Icons Section (Left side as in your drawing)
-local tabsFrame = Instance.new("Frame")
-tabsFrame.Size = UDim2.new(0, 80, 1, -35)
-tabsFrame.Position = UDim2.new(0, 0, 0, 35)
-tabsFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
-tabsFrame.BorderSizePixel = 0
-tabsFrame.Parent = mainFrame
-
--- Tabs scrolling frame
-local tabsScroll = Instance.new("ScrollingFrame")
-tabsScroll.Size = UDim2.new(1, 0, 1, 0)
-tabsScroll.BackgroundTransparency = 1
-tabsScroll.ScrollBarThickness = 3
-tabsScroll.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-tabsScroll.CanvasSize = UDim2.new(0, 0, 0, 0)
-tabsScroll.Parent = tabsFrame
-
-local tabsLayout = Instance.new("UIListLayout")
-tabsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-tabsLayout.Padding = UDim.new(0, 4)
-tabsLayout.Parent = tabsScroll
-
--- Components Section (Right side as in your drawing)
-local contentFrame = Instance.new("Frame")
-contentFrame.Size = UDim2.new(1, -80, 1, -35)
-contentFrame.Position = UDim2.new(0, 80, 0, 35)
-contentFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 35)
-contentFrame.BorderSizePixel = 0
-contentFrame.Parent = mainFrame
-
--- Scrolling Frame for components
-local scrollFrame = Instance.new("ScrollingFrame")
-scrollFrame.Size = UDim2.new(1, -8, 1, -8)
-scrollFrame.Position = UDim2.new(0, 4, 0, 4)
-scrollFrame.BackgroundTransparency = 1
-scrollFrame.ScrollBarThickness = 4
-scrollFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
-scrollFrame.Parent = contentFrame
-
--- UI Layout for scroll content
-local contentLayout = Instance.new("UIListLayout")
-contentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-contentLayout.Padding = UDim.new(0, 6)
-contentLayout.Parent = scrollFrame
-
--- Tab creation function
-local currentTab = nil
-local tabs = {}
-local componentCounter = 0
-
--- Tab icons (as shown in your drawing)
-local tabIcons = {
-    ["Main"] = "🏠",
-    ["Player"] = "👤", 
-    ["Visuals"] = "👁",
-    ["Scripts"] = "📜",
-    ["Settings"] = "⚙",
-    ["Combat"] = "⚔",
-    ["Misc"] = "🔧"
+-- Configuration
+local Config = {
+    WalkSpeed = 16,
+    FlySpeed = 1,
+    KillAuraDistance = 25,
+    AutoChopDistance = 25,
+    Colors = {
+        Items = Color3.fromRGB(255, 255, 0),
+        Enemy = Color3.fromRGB(255, 0, 0),
+        Children = Color3.fromRGB(0, 255, 0),
+        PeltTrader = Color3.fromRGB(0, 255, 255)
+    }
 }
 
-local function createTab(name, content)
-    local tabBtn = Instance.new("TextButton")
-    tabBtn.Size = UDim2.new(1, -6, 0, 35)
-    tabBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    tabBtn.Text = (tabIcons[name] or "📁") .. "\n" .. name
-    tabBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-    tabBtn.TextScaled = true
-    tabBtn.Font = Enum.Font.Gotham
-    tabBtn.BorderSizePixel = 0
-    tabBtn.LayoutOrder = #tabs + 1
-    tabBtn.Parent = tabsScroll
+-- State Variables
+local State = {
+    ActiveEspItems = false,
+    ActiveDistanceEsp = false,
+    ActiveEspEnemy = false,
+    ActiveEspChildren = false,
+    ActiveEspPeltTrader = false,
+    ActivateFly = false,
+    FLYING = false,
+    ActiveNoCooldownPrompt = false,
+    ActiveNoFog = false,
+    ActiveAutoChopTree = false,
+    ActiveKillAura = false,
+    ActiveNoclip = false,
+    ActiveSpeedBoost = false
+}
+
+-- Popup Confirmation
+local Confirmed = false
+WindUI:Popup({
+    Title = "99 Nights In The Forest",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Content = "Script by Iliankytb - Converted to WindUI",
+    Buttons = {
+        {
+            Title = "Cancel",
+            Variant = "Secondary",
+        },
+        {
+            Title = "Continue",
+            Icon = "arrow-right",
+            Callback = function() Confirmed = true end,
+            Variant = "Primary",
+        }
+    }
+})
+repeat task.wait() until Confirmed
+
+-- Create Window
+local Window = WindUI:CreateWindow({
+    Title = "Fryzer Hub",
+    Icon = "rbxassetid://129260712070622",
+    IconThemed = true,
+    Author = "99 Nights Forest Hub",
+    Folder = "ForestHub",
+    Size = UDim2.fromOffset(580, 360),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 200,
+    ScrollBarEnabled = true,
+    KeySystem = false,
     
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 4)
-    tabCorner.Parent = tabBtn
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Username = LocalPlayer.DisplayName,
+        UserId = LocalPlayer.UserId
+    }
+})
+
+-- Utility Functions
+local function getServerInfo()
+    local playerCount = #Players:GetPlayers()
+    local maxPlayers = Players.MaxPlayers
+    local isStudio = RunService:IsStudio()
     
-    tabs[name] = {button = tabBtn, content = content, active = false}
-    
-    tabBtn.MouseButton1Click:Connect(function()
-        -- Deactivate all tabs
-        for tabName, tab in pairs(tabs) do
-            tab.button.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            tab.button.TextColor3 = Color3.fromRGB(200, 200, 200)
-            tab.active = false
-        end
-        
-        -- Activate clicked tab
-        tabBtn.BackgroundColor3 = Color3.fromRGB(120, 60, 255)
-        tabBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        tabs[name].active = true
-        currentTab = name
-        
-        -- Clear content properly
-        for _, child in pairs(scrollFrame:GetChildren()) do
-            if child:IsA("Frame") and child ~= contentLayout then
-                child:Destroy()
-            end
-        end
-        
-        -- Reset component counter for consistent ordering
-        componentCounter = 0
-        
-        -- Populate content
-        content()
-        
-        -- Update scroll size
-        wait(0.1)
-        local contentSize = contentLayout.AbsoluteContentSize
-        scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 40) -- Increased padding
-        
-        -- Show notification when tab is switched
-        createNotification("Tab Switched", "Switched to " .. name .. " tab", 2, "info")
-    end)
+    return {
+        PlaceId = game.PlaceId,
+        JobId = game.JobId,
+        IsStudio = isStudio,
+        CurrentPlayers = playerCount,
+        MaxPlayers = maxPlayers
+    }
 end
 
--- Button Creation Function (Flash green for 1 second, then back)
-local function createButton(name, callback)
-    componentCounter = componentCounter + 1
+local function createEsp(char, color, text, parent, offset)
+    if not char or char:FindFirstChild("ESP") then return end
     
-    local btnFrame = Instance.new("Frame")
-    btnFrame.Size = UDim2.new(1, -16, 0, 35)
-    btnFrame.BackgroundTransparency = 1
-    btnFrame.LayoutOrder = componentCounter
-    btnFrame.Parent = scrollFrame
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = char
+    highlight.FillColor = color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = char
     
-    local btnLabel = Instance.new("TextLabel")
-    btnLabel.Size = UDim2.new(0.8, 0, 1, 0)
-    btnLabel.BackgroundTransparency = 1
-    btnLabel.Text = name
-    btnLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    btnLabel.TextScaled = true
-    btnLabel.Font = Enum.Font.Gotham
-    btnLabel.TextXAlignment = Enum.TextXAlignment.Left
-    btnLabel.Parent = btnFrame
-    
-    local btnSquare = Instance.new("TextButton")
-    btnSquare.Size = UDim2.new(0, 25, 0, 25)
-    btnSquare.Position = UDim2.new(1, -30, 0.5, -12.5)
-    btnSquare.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-    btnSquare.Text = ""
-    btnSquare.BorderSizePixel = 1
-    btnSquare.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    btnSquare.Parent = btnFrame
-    
-    local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 2)
-    btnCorner.Parent = btnSquare
-    
-    btnSquare.MouseButton1Click:Connect(function()
-        -- Flash green for 1 second then back to normal
-        btnSquare.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
-        spawn(function()
-            wait(1)
-            btnSquare.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-        end)
-        
-        -- Show success notification
-        createNotification("Button Clicked", name .. " executed successfully!", 3, "success")
-        
-        if callback then
-            callback()
-        end
-    end)
-end
-
--- Toggle Button Creation Function (Stays green when ON, grey when OFF)
-local function createToggle(name, callback)
-    componentCounter = componentCounter + 1
-    
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, -16, 0, 35)
-    toggleFrame.BackgroundTransparency = 1
-    toggleFrame.LayoutOrder = componentCounter
-    toggleFrame.Parent = scrollFrame
-    
-    local toggleLabel = Instance.new("TextLabel")
-    toggleLabel.Size = UDim2.new(0.6, 0, 1, 0)
-    toggleLabel.BackgroundTransparency = 1
-    toggleLabel.Text = name
-    toggleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggleLabel.TextScaled = true
-    toggleLabel.Font = Enum.Font.Gotham
-    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    toggleLabel.Parent = toggleFrame
-    
-    local statusLabel = Instance.new("TextLabel")
-    statusLabel.Size = UDim2.new(0, 35, 1, 0)
-    statusLabel.Position = UDim2.new(0.6, 0, 0, 0)
-    statusLabel.BackgroundTransparency = 1
-    statusLabel.Text = "OFF"
-    statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-    statusLabel.TextScaled = true
-    statusLabel.Font = Enum.Font.GothamBold
-    statusLabel.Parent = toggleFrame
-    
-    local toggleBtn = Instance.new("TextButton")
-    toggleBtn.Size = UDim2.new(0, 25, 0, 25)
-    toggleBtn.Position = UDim2.new(1, -30, 0.5, -12.5)
-    toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-    toggleBtn.Text = ""
-    toggleBtn.BorderSizePixel = 1
-    toggleBtn.BorderColor3 = Color3.fromRGB(100, 100, 100)
-    toggleBtn.Parent = toggleFrame
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 2)
-    toggleCorner.Parent = toggleBtn
-    
-    local isToggled = false
-    
-    toggleBtn.MouseButton1Click:Connect(function()
-        isToggled = not isToggled
-        
-        if isToggled then
-            -- Stay green when ON
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 255, 60)
-            statusLabel.Text = "ON"
-            statusLabel.TextColor3 = Color3.fromRGB(60, 255, 60)
-            createNotification("Toggle Enabled", name .. " has been enabled", 2, "success")
-        else
-            -- Grey when OFF  
-            toggleBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-            statusLabel.Text = "OFF"
-            statusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-            createNotification("Toggle Disabled", name .. " has been disabled", 2, "warning")
-        end
-        
-        if callback then
-            callback(isToggled)
-        end
-    end)
-end
-
--- Slider Creation Function
-local function createSlider(name, min, max, default, callback)
-    componentCounter = componentCounter + 1
-    
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, -16, 0, 45)
-    sliderFrame.BackgroundTransparency = 1
-    sliderFrame.LayoutOrder = componentCounter
-    sliderFrame.Parent = scrollFrame
-    
-    local sliderLabel = Instance.new("TextLabel")
-    sliderLabel.Size = UDim2.new(1, 0, 0, 18)
-    sliderLabel.BackgroundTransparency = 1
-    sliderLabel.Text = name .. ": " .. default
-    sliderLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    sliderLabel.TextScaled = true
-    sliderLabel.Font = Enum.Font.Gotham
-    sliderLabel.TextXAlignment = Enum.TextXAlignment.Left
-    sliderLabel.Parent = sliderFrame
-    
-    local sliderBG = Instance.new("Frame")
-    sliderBG.Size = UDim2.new(1, -16, 0, 5)
-    sliderBG.Position = UDim2.new(0, 8, 1, -12)
-    sliderBG.BackgroundColor3 = Color3.fromRGB(60, 60, 65)
-    sliderBG.BorderSizePixel = 0
-    sliderBG.Parent = sliderFrame
-    
-    local sliderBGCorner = Instance.new("UICorner")
-    sliderBGCorner.CornerRadius = UDim.new(0, 2)
-    sliderBGCorner.Parent = sliderBG
-    
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new(0, 0, 1, 0)
-    sliderFill.BackgroundColor3 = Color3.fromRGB(120, 60, 255)
-    sliderFill.BorderSizePixel = 0
-    sliderFill.Parent = sliderBG
-    
-    local fillCorner = Instance.new("UICorner")
-    fillCorner.CornerRadius = UDim.new(0, 2)
-    fillCorner.Parent = sliderFill
-    
-    local sliderButton = Instance.new("TextButton")
-    sliderButton.Size = UDim2.new(0, 16, 0, 16)
-    sliderButton.Position = UDim2.new(0, -8, 0.5, -8)
-    sliderButton.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    sliderButton.Text = ""
-    sliderButton.BorderSizePixel = 0
-    sliderButton.Parent = sliderBG
-    
-    local sliderBtnCorner = Instance.new("UICorner")
-    sliderBtnCorner.CornerRadius = UDim.new(0, 8)
-    sliderBtnCorner.Parent = sliderButton
-    
-    local dragging = false
-    local value = default
-    
-    local function updateSlider(input)
-        local relativePos = math.clamp((input.Position.X - sliderBG.AbsolutePosition.X) / sliderBG.AbsoluteSize.X, 0, 1)
-        value = min + (max - min) * relativePos
-        
-        sliderButton.Position = UDim2.new(relativePos, -8, 0.5, -8)
-        sliderFill.Size = UDim2.new(relativePos, 0, 1, 0)
-        sliderLabel.Text = name .. ": " .. math.floor(value + 0.5)
-        
-        if callback then
-            callback(value)
-        end
-    end
-    
-    sliderButton.MouseButton1Down:Connect(function()
-        dragging = true
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            updateSlider(input)
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            if dragging then
-                createNotification("Slider Updated", name .. " set to " .. math.floor(value + 0.5), 2, "info")
-                dragging = false
-            end
-        end
-    end)
-    
-    -- Initialize
-    local initialPos = (default - min) / (max - min)
-    sliderButton.Position = UDim2.new(initialPos, -8, 0.5, -8)
-    sliderFill.Size = UDim2.new(initialPos, 0, 1, 0)
-end
-
--- TextBox Creation Function
-local function createTextBox(name, placeholder, callback)
-    componentCounter = componentCounter + 1
-    
-    local textFrame = Instance.new("Frame")
-    textFrame.Size = UDim2.new(1, -16, 0, 50)
-    textFrame.BackgroundTransparency = 1
-    textFrame.LayoutOrder = componentCounter
-    textFrame.Parent = scrollFrame
-    
-    local textLabel = Instance.new("TextLabel")
-    textLabel.Size = UDim2.new(1, 0, 0, 16)
-    textLabel.BackgroundTransparency = 1
-    textLabel.Text = name
-    textLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textLabel.TextScaled = true
-    textLabel.Font = Enum.Font.Gotham
-    textLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textLabel.Parent = textFrame
-    
-    local textBox = Instance.new("TextBox")
-    textBox.Size = UDim2.new(1, -8, 0, 26)
-    textBox.Position = UDim2.new(0, 4, 1, -30)
-    textBox.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-    textBox.Text = ""
-    textBox.PlaceholderText = placeholder
-    textBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
-    textBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-    textBox.TextScaled = true
-    textBox.Font = Enum.Font.Gotham
-    textBox.BorderSizePixel = 0
-    textBox.Parent = textFrame
-    
-    local textCorner = Instance.new("UICorner")
-    textCorner.CornerRadius = UDim.new(0, 4)
-    textCorner.Parent = textBox
-    
-    if callback then
-        textBox.FocusLost:Connect(function()
-            if textBox.Text ~= "" then
-                createNotification("Text Updated", name .. " updated", 2, "info")
-            end
-            callback(textBox.Text)
-        end)
-    end
-end
-
--- Scrollable Dropdown Creation Function
-local function createDropdown(name, options, callback)
-    componentCounter = componentCounter + 1
-    
-    local dropFrame = Instance.new("Frame")
-    dropFrame.Size = UDim2.new(1, -16, 0, 50)
-    dropFrame.BackgroundTransparency = 1
-    dropFrame.LayoutOrder = componentCounter
-    dropFrame.Parent = scrollFrame
-    
-    local dropLabel = Instance.new("TextLabel")
-    dropLabel.Size = UDim2.new(1, 0, 0, 16)
-    dropLabel.BackgroundTransparency = 1
-    dropLabel.Text = name
-    dropLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropLabel.TextScaled = true
-    dropLabel.Font = Enum.Font.Gotham
-    dropLabel.TextXAlignment = Enum.TextXAlignment.Left
-    dropLabel.Parent = dropFrame
-    
-    local dropBtn = Instance.new("TextButton")
-    dropBtn.Size = UDim2.new(1, -8, 0, 26)
-    dropBtn.Position = UDim2.new(0, 4, 1, -30)
-    dropBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 45)
-    dropBtn.Text = "Select " .. name
-    dropBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropBtn.TextScaled = true
-    dropBtn.Font = Enum.Font.Gotham
-    dropBtn.BorderSizePixel = 0
-    dropBtn.Parent = dropFrame
-    
-    local dropCorner = Instance.new("UICorner")
-    dropCorner.CornerRadius = UDim.new(0, 4)
-    dropCorner.Parent = dropBtn
-    
-    local dropArrow = Instance.new("TextLabel")
-    dropArrow.Size = UDim2.new(0, 16, 1, 0)
-    dropArrow.Position = UDim2.new(1, -20, 0, 0)
-    dropArrow.BackgroundTransparency = 1
-    dropArrow.Text = "▼"
-    dropArrow.TextColor3 = Color3.fromRGB(255, 255, 255)
-    dropArrow.TextScaled = true
-    dropArrow.Font = Enum.Font.Gotham
-    dropArrow.Parent = dropBtn
-    
-    local optionsFrame = Instance.new("ScrollingFrame")
-    optionsFrame.Size = UDim2.new(1, -8, 0, math.min(#options * 25, 100))
-    optionsFrame.Position = UDim2.new(0, 4, 1, 0)
-    optionsFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-    optionsFrame.BorderSizePixel = 0
-    optionsFrame.Visible = false
-    optionsFrame.ScrollBarThickness = 3
-    optionsFrame.ScrollBarImageColor3 = Color3.fromRGB(120, 60, 255)
-    optionsFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 25)
-    optionsFrame.Parent = dropFrame
-    
-    local optionsCorner = Instance.new("UICorner")
-    optionsCorner.CornerRadius = UDim.new(0, 4)
-    optionsCorner.Parent = optionsFrame
-    
-    local optionsLayout = Instance.new("UIListLayout")
-    optionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
-    optionsLayout.Parent = optionsFrame
-    
-    local isOpen = false
-    
-    dropBtn.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        optionsFrame.Visible = isOpen
-        dropArrow.Text = isOpen and "▲" or "▼"
-        
-        if isOpen then
-            dropFrame.Size = UDim2.new(1, -16, 0, 50 + math.min(#options * 25, 100))
-        else
-            dropFrame.Size = UDim2.new(1, -16, 0, 50)
-        end
-    end)
-    
-    for i, option in pairs(options) do
-        local optionBtn = Instance.new("TextButton")
-        optionBtn.Size = UDim2.new(1, 0, 0, 25)
-        optionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-        optionBtn.Text = option
-        optionBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        optionBtn.TextScaled = true
-        optionBtn.Font = Enum.Font.Gotham
-        optionBtn.BorderSizePixel = 0
-        optionBtn.LayoutOrder = i
-        optionBtn.Parent = optionsFrame
-        
-        optionBtn.MouseEnter:Connect(function()
-            optionBtn.BackgroundColor3 = Color3.fromRGB(120, 60, 255)
-            optionBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-        end)
-        
-        optionBtn.MouseLeave:Connect(function()
-            optionBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
-            optionBtn.TextColor3 = Color3.fromRGB(200, 200, 200)
-        end)
-        
-        optionBtn.MouseButton1Click:Connect(function()
-            dropBtn.Text = option
-            optionsFrame.Visible = false
-            isOpen = false
-            dropArrow.Text = "▼"
-            dropFrame.Size = UDim2.new(1, -16, 0, 50)
-            
-            createNotification("Selection Made", name .. ": " .. option, 2, "info")
-            
-            if callback then
-                callback(option)
-            end
-        end)
-    end
-end
-
--- Text Label Creation Function
-local function createTextLabel(text)
-    componentCounter = componentCounter + 1
-    
-    local labelFrame = Instance.new("Frame")
-    labelFrame.Size = UDim2.new(1, -16, 0, 25)
-    labelFrame.BackgroundTransparency = 1
-    labelFrame.LayoutOrder = componentCounter
-    labelFrame.Parent = scrollFrame
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, offset or 0, 0)
+    billboard.Adornee = parent
+    billboard.Parent = parent
     
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 1, 0)
     label.BackgroundTransparency = 1
     label.Text = text
-    label.TextColor3 = Color3.fromRGB(255, 255, 255)
+    label.TextColor3 = color
     label.TextScaled = true
-    label.Font = Enum.Font.GothamBold
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    label.Parent = labelFrame
-end
-
--- Create tabs with content (As shown in your drawing)
-createTab("Main", function()
-    createTextLabel("🏠 Main Features")
-    createToggle("Enable Aimbot", function(state)
-        print("Aimbot:", state)
-    end)
-    createToggle("Enable ESP", function(state)  
-        print("ESP:", state)
-    end)
-    createButton("Execute Script", function()
-        print("Script executed!")
-    end)
-    createSlider("FOV Size", 50, 200, 90, function(value)
-        print("FOV:", value)
-    end)
-end)
-
-createTab("Player", function()
-    createTextLabel("👤 Player Modifications")
-    createSlider("Walk Speed", 16, 100, 16, function(value)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = value
-        end
-    end)
-    createSlider("Jump Power", 50, 200, 50, function(value)
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = value
-        end
-    end)
-    createToggle("No Clip", function(state)
-        print("No Clip:", state)
-    end)
-    createToggle("Infinite Jump", function(state)
-        print("Infinite Jump:", state)
-    end)
-    createButton("Reset Character", function()
-        if player.Character then
-            player.Character:BreakJoints()
-        end
-    end)
-end)
-
-createTab("Visuals", function()
-    createTextLabel("👁 Visual Enhancements")
-    createToggle("Full Bright", function(state)
-        if state then
-            game.Lighting.Ambient = Color3.fromRGB(255, 255, 255)
-            game.Lighting.Brightness = 2
-        else
-            game.Lighting.Ambient = Color3.fromRGB(0, 0, 0)
-            game.Lighting.Brightness = 1
-        end
-    end)
-    createSlider("FOV", 70, 120, 70, function(value)
-        if workspace.CurrentCamera then
-            workspace.CurrentCamera.FieldOfView = value
-        end
-    end)
-    createDropdown("Sky Box", {"Default", "Night", "Space", "Sunset", "Ocean", "Desert", "Forest", "City", "Mountain", "Cave"}, function(selected)
-        print("Sky Box:", selected)
-    end)
-    createToggle("Remove Fog", function(state)
-        if state then
-            game.Lighting.FogEnd = 100000
-        else
-            game.Lighting.FogEnd = 100
-        end
-    end)
-end)
-
-createTab("Scripts", function()
-    createTextLabel("📜 Script Execution")
-    createTextBox("Script URL", "Enter script URL here...", function(url)
-        print("Loading script from:", url)
-    end)
-    createTextBox("Custom Code", "Enter Lua code here...", function(code)
-        print("Executing:", code)
-    end)
-    createButton("Execute Code", function()
-        print("Code executed!")
-    end)
-    createToggle("Auto Execute", function(state)
-        print("Auto Execute:", state)
-    end)
-    createDropdown("Preset Scripts", {
-        "Infinite Yield", "Dark Dex", "Remote Spy", "Speed Hub", 
-        "Arsenal Script", "Phantom Forces", "Jailbreak", "Adopt Me",
-        "Tower Defense", "Pet Simulator", "Mining Simulator", "Car Crushers"
-    }, function(selected)
-        print("Selected preset:", selected)
-    end)
-end)
-
-createTab("Settings", function()
-    createTextLabel("⚙ Hub Settings")
-    createSlider("GUI Scale", 0.5, 2, 1, function(value)
-        mainFrame.Size = UDim2.new(0, 500 * value, 0, 350 * value)
-        mainFrame.Position = UDim2.new(0.5, -250 * value, 0.5, -175 * value)
-    end)
-    createToggle("Rainbow Mode", function(state)
-        print("Rainbow Mode:", state)
-    end)
-    createDropdown("Theme", {"Default", "Dark", "Light", "Blue", "Red", "Green", "Purple", "Custom"}, function(selected)
-        print("Theme:", selected)
-    end)
-    createTextBox("Key Bind", "Enter key...", function(key)
-        print("Key bind set to:", key)
-    end)
-    createButton("Save Settings", function()
-        print("Settings saved!")
-    end)
-    createButton("Test Notifications", function()
-        createNotification("Test Info", "This is an info notification", 3, "info")
-        wait(0.5)
-        createNotification("Test Success", "This is a success notification", 3, "success")
-        wait(0.5)
-        createNotification("Test Warning", "This is a warning notification", 3, "warning")
-        wait(0.5)
-        createNotification("Test Error", "This is an error notification", 3, "error")
-    end)
-end)
-
-createTab("Combat", function()
-    createTextLabel("⚔ Combat Features")
-    createToggle("Auto Aim", function(state)
-        print("Auto Aim:", state)
-    end)
-    createToggle("Trigger Bot", function(state)
-        print("Trigger Bot:", state)
-    end)
-    createSlider("Aim Smoothness", 1, 10, 5, function(value)
-        print("Smoothness:", value)
-    end)
-    createDropdown("Target Part", {"Head", "Torso", "HumanoidRootPart", "Random"}, function(selected)
-        print("Target Part:", selected)
-    end)
-    createButton("Kill All", function()
-        print("Kill all executed!")
-    end)
-end)
-
-createTab("Misc", function()
-    createTextLabel("🔧 Miscellaneous")
-    createToggle("Auto Farm", function(state)
-        print("Auto Farm:", state)
-    end)
-    createToggle("Fly Mode", function(state)
-        print("Fly Mode:", state)
-    end)
-    createButton("Teleport to Spawn", function()
-        if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-            player.Character.HumanoidRootPart.CFrame = CFrame.new(0, 5, 0)
-        end
-    end)
-    createSlider("Time Scale", 0.1, 5, 1, function(value)
-        game.Lighting.ClockTime = value * 4.8
-    end)
-    createTextBox("Chat Message", "Enter message...", function(msg)
-        if game.ReplicatedStorage:FindFirstChild("DefaultChatSystemChatEvents") and game.ReplicatedStorage.DefaultChatSystemChatEvents:FindFirstChild("SayMessageRequest") then
-            game.ReplicatedStorage.DefaultChatSystemChatEvents.SayMessageRequest:FireServer(msg, "All")
-        end
-    end)
-end)
-
--- Dragging functionality for main frame
-titleBar.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragToggle = mainFrame
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = nil
-            end
-        end)
-    end
-end)
-
-titleBar.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragToggle then
-            updateInput(input)
-        end
-    end
-end)
-
--- Dragging for ball opener (2nd GUI)
-ballOpener.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragToggle = ballOpener
-        dragStart = input.Position
-        startPos = ballOpener.Position
-        
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                dragToggle = nil
-            end
-        end)
-    end
-end)
-
-ballOpener.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-        if dragToggle then
-            updateInput(input)
-        end
-    end
-end)
-
--- Ball opener click functionality (Toggle main GUI visibility)
-ballButton.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
+    label.Parent = billboard
     
-    -- If showing GUI, click first tab by default
-    if mainFrame.Visible and tabs["Main"] then
-        tabs["Main"].button.MouseButton1Click()
-        createNotification("Welcome!", "Fryzer Hub loaded successfully", 3, "success")
-    else
-        createNotification("GUI Hidden", "Use the ball to show GUI again", 2, "info")
-    end
-end)
-
--- Minimize functionality (Make GUI invisible, ball can show it again)
-minimizeBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-    createNotification("GUI Minimized", "Click the ball to restore", 2, "warning")
-    -- Make minimize button flash
-    spawn(function()
-        minimizeBtn.BackgroundTransparency = 1
-        wait(1)
-        if minimizeBtn.Parent then
-            minimizeBtn.BackgroundTransparency = 0
-        end
-    end)
-end)
-
--- Close button functionality (Show confirmation)
-closeBtn.MouseButton1Click:Connect(function()
-    createNotification("Goodbye!", "Fryzer Hub closed successfully", 2, "error")
-    -- Make close button flash
-    spawn(function()
-        closeBtn.BackgroundTransparency = 1
-        wait(1)
-        -- Destroy the entire GUI
-        if screenGui.Parent then
-            screenGui:Destroy()
-        end
-    end)
-end)
-
--- Auto-resize scroll frames based on content
-local function updateScrollSize()
-    spawn(function()
-        wait(0.1) -- Wait for layout to update
-        if contentLayout.Parent then
-            local contentSize = contentLayout.AbsoluteContentSize
-            scrollFrame.CanvasSize = UDim2.new(0, 0, 0, contentSize.Y + 60) -- Increased padding for more scroll length
-        end
-        
-        if tabsLayout.Parent then
-            local tabsSize = tabsLayout.AbsoluteContentSize  
-            tabsScroll.CanvasSize = UDim2.new(0, 0, 0, tabsSize.Y + 20)
+    -- Distance update loop
+    task.spawn(function()
+        local Camera = Workspace.CurrentCamera
+        while highlight and billboard and parent and parent.Parent do
+            if Camera and parent:IsA("BasePart") then
+                local distance = (Camera.CFrame.Position - parent.Position).Magnitude
+                if State.ActiveDistanceEsp then
+                    label.Text = text .. " (" .. math.floor(distance + 0.5) .. " m)"
+                else
+                    label.Text = text
+                end
+            end
+            wait(0.1)
         end
     end)
 end
 
-contentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateScrollSize)
-tabsLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(updateScrollSize)
-
--- Initialize with first tab
-spawn(function()
-    wait(0.5) -- Wait for everything to load
-    if tabs["Main"] then
-        tabs["Main"].button.MouseButton1Click()
+local function removeEsp(char, parent)
+    if char:FindFirstChildOfClass("Highlight") then
+        char:FindFirstChildOfClass("Highlight"):Destroy()
     end
-end)
+    if parent:FindFirstChildOfClass("BillboardGui") then
+        parent:FindFirstChildOfClass("BillboardGui"):Destroy()
+    end
+end
 
--- Add rainbow effect for ball opener
-spawn(function()
-    while ballOpener.Parent do
-        for i = 0, 1, 0.01 do
-            if ballOpener.Parent then
-                ballOpener.BackgroundColor3 = Color3.fromHSV(i, 1, 1)
-            else
-                break
+-- Fly System
+local IYMouse = LocalPlayer:GetMouse()
+local flyKeyDown, flyKeyUp
+
+local function sFLY()
+    repeat wait() until LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    
+    local T = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+    
+    local function FLY()
+        State.FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        
+        task.spawn(function()
+            repeat wait()
+                if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((Workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + 
+                        ((Workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, 
+                        (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - Workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = Workspace.CurrentCamera.CoordinateFrame
+            until not State.FLYING
+            BG:Destroy()
+            BV:Destroy()
+            if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
             end
-            wait(0.05)
+        end)
+    end
+    
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = Config.FlySpeed
+        elseif KEY:lower() == 's' then
+            CONTROL.B = -Config.FlySpeed
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = -Config.FlySpeed
+        elseif KEY:lower() == 'd' then 
+            CONTROL.R = Config.FlySpeed
+        elseif KEY:lower() == 'e' then
+            CONTROL.Q = Config.FlySpeed * 2
+        elseif KEY:lower() == 'q' then
+            CONTROL.E = -Config.FlySpeed * 2
+        end
+    end)
+    
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then CONTROL.F = 0
+        elseif KEY:lower() == 's' then CONTROL.B = 0
+        elseif KEY:lower() == 'a' then CONTROL.L = 0
+        elseif KEY:lower() == 'd' then CONTROL.R = 0
+        elseif KEY:lower() == 'e' then CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then CONTROL.E = 0
+        end
+    end)
+    
+    FLY()
+end
+
+local function NOFLY()
+    State.FLYING = false
+    if flyKeyDown then flyKeyDown:Disconnect() end
+    if flyKeyUp then flyKeyUp:Disconnect() end
+    if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+end
+
+-- Create Tabs
+local InfoTab = Window:Tab({ Title = "Info", Icon = "info" })
+local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
+local EspTab = Window:Tab({ Title = "ESP", Icon = "eye" })
+local GameTab = Window:Tab({ Title = "Game", Icon = "gamepad-2" })
+
+-- Info Tab
+local serverInfo = getServerInfo()
+InfoTab:Paragraph({
+    Title = "Server Information",
+    Content = string.format("Place ID: %s\nJob ID: %s\nPlayers: %d/%d", 
+        serverInfo.PlaceId, serverInfo.JobId, serverInfo.CurrentPlayers, serverInfo.MaxPlayers)
+})
+
+-- Player Tab
+PlayerTab:Slider({
+    Title = "Walk Speed",
+    Value = {
+        Min = 0,
+        Max = 500,
+        Default = 16
+    },
+    Callback = function(value)
+        Config.WalkSpeed = value
+        if State.ActiveSpeedBoost and LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = value
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Speed Boost",
+    Value = false,
+    Callback = function(state)
+        State.ActiveSpeedBoost = state
+        task.spawn(function()
+            while State.ActiveSpeedBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                    LocalPlayer.Character.Humanoid.WalkSpeed = Config.WalkSpeed
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChildOfClass("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = 16
+            end
+        end)
+    end
+})
+
+PlayerTab:Slider({
+    Title = "Fly Speed",
+    Value = {
+        Min = 0.1,
+        Max = 10,
+        Default = 1
+    },
+    Callback = function(value)
+        Config.FlySpeed = value
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Fly",
+    Value = false,
+    Callback = function(state)
+        State.ActivateFly = state
+        if state and not State.FLYING then
+            sFLY()
+        elseif not state and State.FLYING then
+            NOFLY()
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Noclip",
+    Value = false,
+    Callback = function(state)
+        State.ActiveNoclip = state
+        task.spawn(function()
+            while State.ActiveNoclip do
+                if LocalPlayer.Character then
+                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                        if part:IsA("BasePart") then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Instant Prompt",
+    Value = false,
+    Callback = function(state)
+        State.ActiveNoCooldownPrompt = state
+        if state then
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then
+                    prompt:SetAttribute("HoldDurationOld", prompt.HoldDuration)
+                    prompt.HoldDuration = 0
+                end
+            end
+        else
+            for _, prompt in pairs(Workspace:GetDescendants()) do
+                if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then
+                    prompt.HoldDuration = prompt:GetAttribute("HoldDurationOld")
+                end
+            end
+        end
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "No Fog",
+    Value = false,
+    Callback = function(state)
+        State.ActiveNoFog = state
+        task.spawn(function()
+            while State.ActiveNoFog do
+                for _, part in pairs(Workspace.Map.Boundaries:GetChildren()) do
+                    if part:IsA("Part") then
+                        part:Destroy()
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+    end
+})
+
+PlayerTab:Button({
+    Title = "Teleport to Campfire",
+    Callback = function()
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = Workspace.Map.Campground.MainFire.PrimaryPart.CFrame
+        end
+    end
+})
+
+-- ESP Tab
+EspTab:Toggle({
+    Title = "Show Distance in ESP",
+    Value = false,
+    Callback = function(state)
+        State.ActiveDistanceEsp = state
+    end
+})
+
+EspTab:Toggle({
+    Title = "Items ESP",
+    Value = false,
+    Callback = function(state)
+        State.ActiveEspItems = state
+        task.spawn(function()
+            while State.ActiveEspItems do
+                for _, obj in pairs(Workspace.Items:GetChildren()) do
+                    if obj:IsA("Model") and obj.PrimaryPart and not obj:FindFirstChildOfClass("Highlight") then
+                        createEsp(obj, Config.Colors.Items, obj.Name, obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, obj in pairs(Workspace.Items:GetChildren()) do
+                if obj:IsA("Model") and obj.PrimaryPart then
+                    removeEsp(obj, obj.PrimaryPart)
+                end
+            end
+        end)
+    end
+})
+
+EspTab:Toggle({
+    Title = "Enemy ESP",
+    Value = false,
+    Callback = function(state)
+        State.ActiveEspEnemy = state
+        task.spawn(function()
+            while State.ActiveEspEnemy do
+                for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                    if obj:IsA("Model") and obj.PrimaryPart and 
+                       obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and 
+                       obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and 
+                       obj.Name ~= "Pelt Trader" and not obj:FindFirstChildOfClass("Highlight") then
+                        createEsp(obj, Config.Colors.Enemy, obj.Name, obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                if obj:IsA("Model") and obj.PrimaryPart then
+                    removeEsp(obj, obj.PrimaryPart)
+                end
+            end
+        end)
+    end
+})
+
+EspTab:Toggle({
+    Title = "Children ESP",
+    Value = false,
+    Callback = function(state)
+        State.ActiveEspChildren = state
+        task.spawn(function()
+            while State.ActiveEspChildren do
+                for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                    if obj:IsA("Model") and obj.PrimaryPart and 
+                       (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or 
+                        obj.Name == "Lost Child3" or obj.Name == "Lost Child4") and 
+                       not obj:FindFirstChildOfClass("Highlight") then
+                        createEsp(obj, Config.Colors.Children, obj.Name, obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                if obj:IsA("Model") and obj.PrimaryPart and 
+                   (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or 
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                    removeEsp(obj, obj.PrimaryPart)
+                end
+            end
+        end)
+    end
+})
+
+EspTab:Toggle({
+    Title = "Pelt Trader ESP",
+    Value = false,
+    Callback = function(state)
+        State.ActiveEspPeltTrader = state
+        task.spawn(function()
+            while State.ActiveEspPeltTrader do
+                for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                    if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" and 
+                       not obj:FindFirstChildOfClass("Highlight") then
+                        createEsp(obj, Config.Colors.PeltTrader, obj.Name, obj.PrimaryPart, 2)
+                    end
+                end
+                task.wait(0.1)
+            end
+            for _, obj in pairs(Workspace.Characters:GetChildren()) do
+                if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                    removeEsp(obj, obj.PrimaryPart)
+                end
+            end
+        end)
+    end
+})
+
+-- Game Tab
+GameTab:Paragraph({
+    Title = "Note",
+    Content = "For Auto Chop Tree and Kill Aura to work, equip any axe!"
+})
+
+GameTab:Slider({
+    Title = "Kill Aura Distance",
+    Value = {
+        Min = 25,
+        Max = 1000,
+        Default = 25
+    },
+    Callback = function(value)
+        Config.KillAuraDistance = value
+    end
+})
+
+GameTab:Toggle({
+    Title = "Kill Aura",
+    Value = false,
+    Callback = function(state)
+        State.ActiveKillAura = state
+        task.spawn(function()
+            while State.ActiveKillAura do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    local weapon = LocalPlayer.Inventory:FindFirstChild("Old Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Good Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Strong Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Chainsaw")
+                    
+                    if weapon then
+                        for _, enemy in pairs(Workspace.Characters:GetChildren()) do
+                            if enemy:IsA("Model") and enemy.PrimaryPart then
+                                local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= Config.KillAuraDistance then
+                                    ReplicatedStorage.RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+    end
+})
+
+GameTab:Slider({
+    Title = "Auto Chop Distance",
+    Value = {
+        Min = 25,
+        Max = 500,
+        Default = 25
+    },
+    Callback = function(value)
+        Config.AutoChopDistance = value
+    end
+})
+
+GameTab:Toggle({
+    Title = "Auto Chop Tree",
+    Value = false,
+    Callback = function(state)
+        State.ActiveAutoChopTree = state
+        task.spawn(function()
+            while State.ActiveAutoChopTree do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = LocalPlayer.Character.HumanoidRootPart
+                    local weapon = LocalPlayer.Inventory:FindFirstChild("Old Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Good Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Strong Axe") or 
+                                 LocalPlayer.Inventory:FindFirstChild("Chainsaw")
+                    
+                    if weapon then
+                        for _, folder in pairs({Workspace.Map.Foliage, Workspace.Map.Landmarks}) do
+                            for _, tree in pairs(folder:GetChildren()) do
+                                if tree:IsA("Model") and tree.PrimaryPart and 
+                                   (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") then
+                                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                    if distance <= Config.AutoChopDistance then
+                                        ReplicatedStorage.RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+                wait(0.1)
+            end
+        end)
+    end
+})
+
+-- Fly key binding
+UserInputService.InputBegan:Connect(function(input, processed)
+    if processed then return end
+    if input.KeyCode == Enum.KeyCode.F and State.ActivateFly then
+        if State.FLYING then
+            NOFLY()
+        else
+            sFLY()
         end
     end
 end)
 
-print("Fryzer Hub loaded successfully!")
-print("Click the ball to toggle GUI visibility!")
-
--- NOTIFICATION USAGE EXAMPLES:
--- createNotification("Title", "Message", duration, type)
--- Types: "info", "success", "warning", "error"
--- Duration is in seconds (optional, defaults to 3)
-
---[[
-HOW TO USE THE NOTIFICATION SYSTEM:
-
-Basic notification:
-createNotification("Hello", "This is a test message")
-
-With custom duration (5 seconds):
-createNotification("Hello", "This message lasts 5 seconds", 5)
-
-Different types:
-createNotification("Info", "Information message", 3, "info")       -- Blue border
-createNotification("Success", "Success message", 3, "success")     -- Green border
-createNotification("Warning", "Warning message", 3, "warning")     -- Orange border  
-createNotification("Error", "Error message", 3, "error")           -- Red border
-
-EASY CUSTOMIZATION GUIDE (Like Rayfield):
-
--- Create a new tab:
-createTab("TabName", function()
-    -- Tab content goes here
-end)
-
--- Add components to tabs:
-createTextLabel("Section Header")
-createToggle("Toggle Name", function(state) 
-    print("Toggle state:", state) 
-end)
-createButton("Button Name", function() 
-    print("Button clicked!") 
-end)
-createSlider("Slider Name", min, max, default, function(value) 
-    print("Slider value:", value) 
-end)
-createTextBox("TextBox Name", "Placeholder", function(text) 
-    print("Text entered:", text) 
-end)
-createDropdown("Dropdown Name", {"Option1", "Option2"}, function(selected) 
-    print("Selected:", selected) 
-end)
-
-Customize colors by changing Color3.fromRGB values throughout the script!
---]]
+-- Notification
+WindUI:Notify({
+    Title = "Fryzer Hub",
+    Content = "Script loaded successfully! Version 0.19",
+    Duration = 5
+})
