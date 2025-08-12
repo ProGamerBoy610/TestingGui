@@ -73,7 +73,7 @@ local Window = WindUI:CreateWindow({
 Window:EditOpenButton({
     Title = "Open UI",
     Icon = "monitor",
-    CornerRadius = UDim.new(0, 26),
+    CornerRadius = UDim.new(0, 16),
     StrokeThickness = 2,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
     Draggable = true,
@@ -719,6 +719,127 @@ end
 
 -- Initialize ESP connections
 setupEspConnections()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+esptpTab:Button({
+    Title = "Tp to campfire",
+    Desc = "Teleports you to the campfire",
+    Callback = function()
+        local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+        
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            
+            WindUI:Notify({
+                Title = "Teleport",
+                Content = "Teleported successfully!",
+                Duration = 1
+            })
+        else
+            WindUI:Notify({
+                Title = "Teleport Failed",
+                Content = "Somthing went wrong!",
+                Duration = 1
+            })
+        end
+    end
+})
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local selectedItem = nil
+local dropdown
+local lastValues = {}
+
+-- Function to get unique item names
+local function getUniqueItemNames()
+    local namesSet = {}
+    for _, obj in pairs(workspace.Items:GetChildren()) do
+        namesSet[obj.Name] = true
+    end
+
+    local uniqueNames = {}
+    for name in pairs(namesSet) do
+        table.insert(uniqueNames, name)
+    end
+    table.sort(uniqueNames) -- Sort alphabetically
+    return uniqueNames
+end
+
+-- Function to update dropdown if values changed
+local function updateDropdown()
+    local uniqueNames = getUniqueItemNames()
+
+    -- Check if values actually changed before updating
+    if #uniqueNames ~= #lastValues then
+        lastValues = uniqueNames
+        dropdown:SetValues(uniqueNames)
+    else
+        for i, v in ipairs(uniqueNames) do
+            if lastValues[i] ~= v then
+                lastValues = uniqueNames
+                dropdown:SetValues(uniqueNames)
+                break
+            end
+        end
+    end
+end
+
+-- Dropdown
+dropdown = esptpTab:Dropdown({
+    Title = "Select Item",
+    Values = getUniqueItemNames(),
+    Value = nil,
+    Multi = false,
+    AllowNone = false,
+    Callback = function(selected)
+        selectedItem = selected
+        print("Selected item:", selected)
+    end
+})
+
+-- Update dropdown every second
+task.spawn(function()
+    while task.wait(1) do
+        updateDropdown()
+    end
+end)
+
+-- TP Button
+esptpTab:Button({
+    Title = "Teleport to Selected",
+    Desc = "Teleports you to the selected item",
+    Callback = function()
+        if not selectedItem then
+            WindUI:Notify({
+                Title = "Teleport Failed",
+                Content = "No item selected!",
+                Duration = 3
+            })
+            return
+        end
+
+        local target = workspace.Items:FindFirstChild(selectedItem)
+        if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = target.CFrame
+            WindUI:Notify({
+                Title = "Teleport",
+                Content = "Teleported to " .. selectedItem,
+                Duration = 3
+            })
+        else
+            WindUI:Notify({
+                Title = "Teleport Failed",
+                Content = selectedItem .. " not found!",
+                Duration = 3
+            })
+        end
+    end
+})
 
 
 -- Window close callback
