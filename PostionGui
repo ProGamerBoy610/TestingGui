@@ -10,19 +10,6 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Humanoid check - destroy if no humanoid found
-spawn(function()
-    while true do
-        wait(1)
-        if not (player.Character and player.Character:FindFirstChild("Humanoid")) then
-            if playerGui:FindFirstChild("FryzerHub") then
-                playerGui:FindFirstChild("FryzerHub"):Destroy()
-                print("FryzerHub destroyed: No Humanoid found")
-                break
-            end
-        end
-    end
-end)
 
 -- Remove existing GUI if it exists
 if playerGui:FindFirstChild("FryzerHub") then
@@ -126,7 +113,7 @@ local titleText = Instance.new("TextLabel")
 titleText.Size = UDim2.new(0, 100, 1, 0)
 titleText.Position = UDim2.new(0, 8, 0, 0)
 titleText.BackgroundTransparency = 1
-titleText.Text = "Fryzer Hub"
+titleText.Text = "Fryzer Hub v2.77"
 titleText.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleText.TextScaled = true
 titleText.Font = Enum.Font.GothamBold
