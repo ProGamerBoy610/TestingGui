@@ -3,8 +3,6 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
 
 -- Gradient text function (used in popup)
 local function gradient(text, startColor, endColor)
@@ -59,6 +57,7 @@ local Window = WindUI:CreateWindow({
         URL = "https://your-key-link.com",
         SaveKey = false,
     },
+    
     User = {
         Enabled = true,
         Anonymous = false,
@@ -74,7 +73,7 @@ local Window = WindUI:CreateWindow({
 Window:EditOpenButton({
     Title = "Open UI",
     Icon = "monitor",
-    CornerRadius = UDim.new(0, 16),
+    CornerRadius = UDim.new(0, 26),
     StrokeThickness = 2,
     Color = ColorSequence.new(Color3.fromHex("FF0F7B"), Color3.fromHex("F89B29")),
     Draggable = true,
@@ -89,17 +88,22 @@ PlayerTab:Paragraph({
     Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 -- Default speed
 local defaultSpeed = 16
 
 -- Toggle for WalkSpeed
 PlayerTab:Toggle({
-    Title = "WalkSpeed",
+    Title = "WalkSpeed", 
     Value = false,
     Callback = function(state)
         if state then
+            -- Set to slider value when enabled
             LocalPlayer.Character.Humanoid.WalkSpeed = _G.CurrentWalkSpeed or defaultSpeed
         else
+            -- Reset to Roblox default when disabled
             LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed
         end
         print("WalkSpeed enabled:", state)
@@ -116,6 +120,7 @@ PlayerTab:Slider({
     },
     Callback = function(val)
         _G.CurrentWalkSpeed = val
+        -- If toggle is enabled, update immediately
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
             LocalPlayer.Character.Humanoid.WalkSpeed = val
         end
@@ -123,18 +128,21 @@ PlayerTab:Slider({
     end
 })
 
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
 -- Default jump height
-local defaultJumpHeight = 7.2
+local defaultJumpHeight = 7.2 -- Roblox default JumpHeight
 
 -- Toggle for Jump Height
 PlayerTab:Toggle({
-    Title = "Enable Jump Power",
+    Title = "Enable Jump Power", 
     Value = false,
     Callback = function(state)
         local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
         if humanoid then
             if state then
-                humanoid.UseJumpPower = false
+                humanoid.UseJumpPower = false -- Ensure JumpHeight is used
                 humanoid.JumpHeight = _G.CurrentJumpHeight or defaultJumpHeight
             else
                 humanoid.JumpHeight = defaultJumpHeight
@@ -162,21 +170,24 @@ PlayerTab:Slider({
     end
 })
 
--- Fly Variables
-local IYMouse = LocalPlayer:GetMouse()
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+
+local IYMouse = Players.LocalPlayer:GetMouse()
 local FLYING = false
 local QEfly = true
 local iyflyspeed = 1
 local vehicleflyspeed = 1
 local ActivateFly = false
-local flyKeyDown, flyKeyUp
 
 local function sFLY(vfly)
-    repeat task.wait() until LocalPlayer and LocalPlayer.Character and LocalPlayer.Character:WaitForChild("HumanoidRootPart") and LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    repeat task.wait() until IYMouse
+    repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat wait() until IYMouse
     if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
 
-    local T = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
     local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
     local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
     local SPEED = 0
@@ -193,9 +204,9 @@ local function sFLY(vfly)
         BV.Velocity = Vector3.new(0, 0, 0)
         BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
         task.spawn(function()
-            repeat task.wait()
-                if not vfly and LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                    LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+            repeat wait()
+                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
                 end
                 if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
                     SPEED = 50
@@ -217,8 +228,8 @@ local function sFLY(vfly)
             SPEED = 0
             BG:Destroy()
             BV:Destroy()
-            if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
             end
         end)
     end
@@ -229,7 +240,7 @@ local function sFLY(vfly)
             CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
         elseif KEY:lower() == 'a' then
             CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'd' then
+        elseif KEY:lower() == 'd' then 
             CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
         elseif QEfly and KEY:lower() == 'e' then
             CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
@@ -259,25 +270,26 @@ end
 local function NOFLY()
     FLYING = false
     if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-    if LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-        LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
     end
     pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
 end
 
 local velocityHandlerName = "BodyVelocity"
 local gyroHandlerName = "BodyGyro"
-local mfly1, mfly2
+local mfly1
+local mfly2
 
 local function UnMobileFly()
     pcall(function()
         FLYING = false
-        local root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
         root:FindFirstChild(velocityHandlerName):Destroy()
         root:FindFirstChild(gyroHandlerName):Destroy()
-        LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
-        if mfly1 then mfly1:Disconnect() end
-        if mfly2 then mfly2:Disconnect() end
+        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+        mfly1:Disconnect()
+        mfly2:Disconnect()
     end)
 end
 
@@ -285,13 +297,13 @@ local function MobileFly()
     UnMobileFly()
     FLYING = true
 
-    local root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
     local camera = workspace.CurrentCamera
     local v3none = Vector3.new()
     local v3zero = Vector3.new(0, 0, 0)
     local v3inf = Vector3.new(9e9, 9e9, 9e9)
 
-    local controlModule = require(LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
     local bv = Instance.new("BodyVelocity")
     bv.Name = velocityHandlerName
     bv.Parent = root
@@ -305,7 +317,7 @@ local function MobileFly()
     bg.P = 1000
     bg.D = 50
 
-    mfly1 = LocalPlayer.CharacterAdded:Connect(function()
+    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
         local bv = Instance.new("BodyVelocity")
         bv.Name = velocityHandlerName
         bv.Parent = root
@@ -321,10 +333,10 @@ local function MobileFly()
     end)
 
     mfly2 = RunService.RenderStepped:Connect(function()
-        root = LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
         camera = workspace.CurrentCamera
-        if LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
-            local humanoid = LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
+            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
             local VelocityHandler = root:FindFirstChild(velocityHandlerName)
             local GyroHandler = root:FindFirstChild(gyroHandlerName)
 
@@ -366,7 +378,7 @@ PlayerTab:Slider({
 
 -- Fly Toggle
 PlayerTab:Toggle({
-    Title = "Fly",
+    Title = "Fly", 
     Value = false,
     Callback = function(state)
         ActivateFly = state
@@ -376,7 +388,7 @@ PlayerTab:Toggle({
                     MobileFly()
                 else
                     NOFLY()
-                    task.wait()
+                    wait()
                     sFLY()
                 end
             elseif FLYING and not ActivateFly then
@@ -390,7 +402,7 @@ PlayerTab:Toggle({
     end
 })
 
--- F key toggle for fly
+-- F key toggle for fly (optional - you can remove this if not needed)
 UserInputService.InputBegan:Connect(function(input, processed)
     if processed then return end
     if input.KeyCode == Enum.KeyCode.F then
@@ -399,7 +411,7 @@ UserInputService.InputBegan:Connect(function(input, processed)
                 MobileFly()
             else
                 NOFLY()
-                task.wait()
+                wait()
                 sFLY()
             end
         elseif FLYING and ActivateFly then
@@ -412,16 +424,21 @@ UserInputService.InputBegan:Connect(function(input, processed)
     end
 end)
 
--- Noclip Toggle
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
 local noclipConnection
 local noclipEnabled = false
 
 PlayerTab:Toggle({
-    Title = "Noclip",
+    Title = "Noclip", 
     Value = false,
     Callback = function(state)
         noclipEnabled = state
+
         if state then
+            -- Start noclip
             noclipConnection = RunService.Stepped:Connect(function()
                 local character = LocalPlayer.Character
                 if character then
@@ -433,6 +450,7 @@ PlayerTab:Toggle({
                 end
             end)
         else
+            -- Stop noclip and restore collisions
             if noclipConnection then
                 noclipConnection:Disconnect()
                 noclipConnection = nil
@@ -446,13 +464,12 @@ PlayerTab:Toggle({
                 end
             end
         end
+
         print("Noclip", state)
     end
 })
 
--- ESP Tab
-local EspTpTab = Window:Tab({ Title = "ESP&TP", Icon = "send" })
-local SettingsTab = Window:Tab({ Title = "Settings", Icon = "settings" })
+local esptpTab = Window:Tab({ Title = "ESP & TP", Icon = "send" })
 
 -- ESP State Variables
 local ActiveEspItems = false
@@ -497,8 +514,10 @@ local function CreateEsp(Char, Color, Text, Parent, number)
 
     -- Distance Update Task
     task.spawn(function()
+        local RunService = game:GetService("RunService")
+        local Workspace = game:GetService("Workspace")
         while highlight.Parent and billboard.Parent and Parent.Parent do
-            local camera = workspace.CurrentCamera
+            local camera = Workspace.CurrentCamera
             if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
                 local distance = (camera.CFrame.Position - Parent.Position).Magnitude
                 label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
@@ -545,18 +564,18 @@ local function UpdateEnemiesEsp()
     if ActiveEspEnemy then
         for _, obj in pairs(game.Workspace.Characters:GetChildren()) do
             if obj:IsA("Model") and obj.PrimaryPart and
-               obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and
-               obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and
-               obj.Name ~= "Pelt Trader" then
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
                 CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
             end
         end
     else
         for _, obj in pairs(game.Workspace.Characters:GetChildren()) do
             if obj:IsA("Model") and obj.PrimaryPart and
-               obj.Name ~= "Lost Child" and obj.Name ~= "Lost Child2" and
-               obj.Name ~= "Lost Child3" and obj.Name ~= "Lost Child4" and
-               obj.Name ~= "Pelt Trader" then
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
                 RemoveEsp(obj, obj.PrimaryPart)
             end
         end
@@ -601,14 +620,15 @@ local function UpdatePeltTraderEsp()
     end
 end
 
--- Multi Dropdown for ESP Types
-EspTpTab:Dropdown({
+-- ESP Dropdown (Multi-select)
+esptpTab:Dropdown({
     Title = "ESP Types",
-    Options = {"Items", "Enemies", "Children", "Pelt Trader"},
-    CurrentOption = {},
+    Values = {"Items", "Enemies", "Children", "Pelt Trader"},
+    Value = {}, -- Empty initial selection
     Multi = true,
+    AllowNone = true,
     Flag = "EspTypes",
-    Callback = function(Selected)
+    Callback = function(values)
         -- Reset all ESP states
         ActiveEspItems = false
         ActiveEspEnemy = false
@@ -616,7 +636,7 @@ EspTpTab:Dropdown({
         ActiveEspPeltTrader = false
 
         -- Enable selected ESP types
-        for _, espType in pairs(Selected) do
+        for _, espType in pairs(values) do
             if espType == "Items" then
                 ActiveEspItems = true
             elseif espType == "Enemies" then
@@ -634,22 +654,23 @@ EspTpTab:Dropdown({
         UpdateChildrenEsp()
         UpdatePeltTraderEsp()
 
-        print("ESP Types Selected:", table.concat(Selected, ", "))
+        print("ESP Types Selected:", game:GetService("HttpService"):JSONEncode(values))
     end
 })
 
--- Distance ESP Toggle
-SettingsTab:Toggle({
+-- ESP Distance Toggle
+esptpTab:Toggle({
     Title = "Show Distance in ESP",
     Value = false,
     Flag = "EspDistance",
-    Callback = function(Value)
-        ActiveDistanceEsp = Value
+    Callback = function(state)
+        ActiveDistanceEsp = state
         -- Update all active ESPs to reflect distance change
         if ActiveEspItems then UpdateItemsEsp() end
         if ActiveEspEnemy then UpdateEnemiesEsp() end
         if ActiveEspChildren then UpdateChildrenEsp() end
         if ActiveEspPeltTrader then UpdatePeltTraderEsp() end
+        print("Show Distance in ESP:", state)
     end
 })
 
@@ -675,9 +696,9 @@ local function setupEspConnections()
     charactersConnection = game.Workspace.Characters.ChildAdded:Connect(function(child)
         if child:IsA("Model") and child.PrimaryPart then
             if ActiveEspEnemy and
-               child.Name ~= "Lost Child" and child.Name ~= "Lost Child2" and
-               child.Name ~= "Lost Child3" and child.Name ~= "Lost Child4" and
-               child.Name ~= "Pelt Trader" then
+               not (child.Name == "Lost Child" or child.Name == "Lost Child2" or
+                    child.Name == "Lost Child3" or child.Name == "Lost Child4" or
+                    child.Name == "Pelt Trader") then
                 CreateEsp(child, Color3.fromRGB(255, 0, 0), child.Name, child.PrimaryPart, 3)
             elseif ActiveEspChildren and
                (child.Name == "Lost Child" or child.Name == "Lost Child2" or
@@ -699,21 +720,8 @@ end
 -- Initialize ESP connections
 setupEspConnections()
 
+
 -- Window close callback
 Window:OnClose(function()
     print("Window closed.")
-    -- Cleanup ESP connections
-    if itemsConnection then itemsConnection:Disconnect() end
-    if charactersConnection then charactersConnection:Disconnect() end
-    -- Cleanup all ESPs
-    for _, obj in pairs(game.Workspace.Items:GetChildren()) do
-        if obj:IsA("Model") and obj.PrimaryPart then
-            RemoveEsp(obj, obj.PrimaryPart)
-        end
-    end
-    for _, obj in pairs(game.Workspace.Characters:GetChildren()) do
-        if obj:IsA("Model") and obj.PrimaryPart then
-            RemoveEsp(obj, obj.PrimaryPart)
-        end
-    end
 end)
