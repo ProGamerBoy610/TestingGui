@@ -10,11 +10,6 @@ local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Remove existing GUI if it exists
-if playerGui:FindFirstChild("FryzerHub") then
-    playerGui:FindFirstChild("FryzerHub"):Destroy()
-end
-
 -- Create main ScreenGui
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "FryzerHub"
