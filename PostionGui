@@ -52,13 +52,7 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     ScrollBarEnabled = true,
     KeySystem = {
-        Key = {"1234", "CM"},
-        Note = "Enter the key to proceed.",
-        URL = "https://your-key-link.com",
-        SaveKey = false,
-    },
-    
-    User = {
+        Key = {"1234", "CM_BEST"}
         Enabled = true,
         Anonymous = false,
         Username = LocalPlayer.DisplayName,
@@ -853,6 +847,149 @@ esptpTab:Button({
         end
     end
 })
+
+local BriaTab = Window:Tab({ Title = "OP", Icon = "send" })
+
+BTab:Paragraph({
+    Title = "It spawn the items to the player",
+    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
+})
+
+BTab:Paragraph({
+    Title = "If not working try again pressing the button over and over",
+    Content = "Items will be teleported to your current position."
+})
+
+local folder = workspace:FindFirstChild("Items")
+if not folder then
+    warn("Folder 'Items' not found in workspace.")
+    return
+end
+
+local selectedModelName = nil
+local modelMap = {}
+local uniqueNames = {}
+
+-- Temporary support baseplate (optional invisible platform)
+local function createSupportUnder(position)
+    local support = Instance.new("Part")
+    support.Size = Vector3.new(10, 1, 10)
+    support.Anchored = true
+    support.Transparency = 1
+    support.CanCollide = false
+    support.Position = position - Vector3.new(0, 2, 0) -- slightly below player position
+    support.Parent = workspace
+    game:GetService("Debris"):AddItem(support, 5)
+end
+
+-- Get player position
+local function getPlayerPosition()
+    local character = LocalPlayer.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        return character.HumanoidRootPart.Position
+    end
+    return Vector3.new(0, 50, 0) -- fallback position
+end
+
+-- Refresh model list
+local function refreshModels()
+    modelMap = {}
+    uniqueNames = {}
+
+    for _, obj in pairs(folder:GetDescendants()) do
+        local model = obj:IsA("Model") and obj or obj:IsA("BasePart") and obj:FindFirstAncestorOfClass("Model")
+        if model and not modelMap[model.Name] then
+            modelMap[model.Name] = {}
+            table.insert(uniqueNames, model.Name)
+        end
+        if model then
+            table.insert(modelMap[model.Name], model)
+        end
+    end
+end
+
+-- Initial refresh
+refreshModels()
+
+-- Create Dropdown
+local dropdown = BraTab:Dropdown({
+    Title = "Select Model",
+    Values = uniqueNames,
+    Value = uniqueNames[1] or nil,
+    Multi = false,
+    AllowNone = false,
+    Callback = function(selected)
+        selectedModelName = selected
+        print("Selected:", selected)
+    end
+})
+
+-- Refresh every 5 seconds
+task.spawn(function()
+    while true do
+        refreshModels()
+        dropdown:SetValues(uniqueNames)
+        task.wait(5)
+    end
+end)
+
+-- Button to move & unanchor models to player
+BraTab:Button({
+    Title = "Teleport Items to Me",
+    Desc = "Move selected models to your current position",
+    Callback = function()
+        if not selectedModelName or not modelMap[selectedModelName] then
+            warn("No model selected.")
+            return
+        end
+
+        local playerPosition = getPlayerPosition()
+        local offsetY = 2 -- Start items above player
+        local offsetX = 0
+        local itemCount = 0
+        
+        for _, model in pairs(modelMap[selectedModelName]) do
+            -- Set PrimaryPart if not already set
+            if not model.PrimaryPart then
+                local primary = model:FindFirstChildWhichIsA("BasePart")
+                if primary then model.PrimaryPart = primary end
+            end
+
+            if model.PrimaryPart then
+                -- Unanchor parts
+                for _, obj in ipairs(model:GetDescendants()) do
+                    if obj:IsA("BasePart") then
+                        obj.Anchored = false
+                        obj.Massless = false
+                        obj.CanCollide = true
+                    end
+                end
+
+                -- Create support platform below player position
+                createSupportUnder(playerPosition)
+
+                -- Calculate position around player (circular pattern for multiple items)
+                local angle = (itemCount * 60) * math.pi / 180 -- 60 degrees apart
+                local radius = 3 + math.floor(itemCount / 6) * 2 -- Increase radius every 6 items
+                local positionOffset = Vector3.new(
+                    math.cos(angle) * radius,
+                    offsetY,
+                    math.sin(angle) * radius
+                )
+                
+                -- Move model to player position with offset
+                local targetPosition = playerPosition + positionOffset
+                model:SetPrimaryPartCFrame(CFrame.new(targetPosition))
+                
+                itemCount += 1
+            end
+        end
+        
+        print("Teleported " .. itemCount .. " items to player position!")
+    end
+})
+
+
 
 -- Window close callback
 Window:OnClose(function()
