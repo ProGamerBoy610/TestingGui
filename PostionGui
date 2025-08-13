@@ -893,7 +893,7 @@ end)
 local initialItems = getItems()
 
 -- Create Dropdown
-dropdown = Tab:Dropdown({
+dropdown = esptpTab:Dropdown({
     Title = "Select Item",
     Values = initialItems,
     Value = initialItems[1] or "No items found",
