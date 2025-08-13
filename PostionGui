@@ -847,7 +847,7 @@ esptpTab:Button({
         end
     end
 })
-
+--[[
 local BriaTab = Window:Tab({ Title = "OP", Icon = "send" })
 
 BTab:Paragraph({
@@ -989,7 +989,7 @@ BraTab:Button({
     end
 })
 
-
+--]]
 
 -- Window close callback
 Window:OnClose(function()
