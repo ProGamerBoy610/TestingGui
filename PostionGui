@@ -747,100 +747,347 @@ esptpTab:Button({
     end
 })
 
+-- Item Teleporter with Auto-Detection Script
+-- Scans workspace.Items and creates teleport system
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local TweenService = game:GetService("TweenService")
 
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Configuration
+local SCAN_INTERVAL = 1 -- Check every 1 second
+local TELEPORT_OFFSET = Vector3.new(0, 5, 0) -- Teleport slightly above the item
+
+-- Variables
+local itemGroups = {}
 local selectedItem = nil
-local dropdown
-local lastValues = {}
+local currentConnection = nil
 
--- Function to get unique item names
-local function getUniqueItemNames()
-    local namesSet = {}
-    for _, obj in pairs(workspace.Items:GetChildren()) do
-        namesSet[obj.Name] = true
-    end
-
-    local uniqueNames = {}
-    for name in pairs(namesSet) do
-        table.insert(uniqueNames, name)
-    end
-    table.sort(uniqueNames) -- Sort alphabetically
-    return uniqueNames
+-- WindUI Notification function (replace with your notification system)
+local function notify(title, content, duration)
+    -- Replace this with your actual notification system
+    print("[" .. title .. "] " .. content)
+    -- Example for WindUI:
+    -- WindUI:Notify({
+    --     Title = title,
+    --     Content = content,
+    --     Duration = duration or 3
+    -- })
 end
 
--- Function to update dropdown if values changed
-local function updateDropdown()
-    local uniqueNames = getUniqueItemNames()
-
-    -- Check if values actually changed before updating
-    if #uniqueNames ~= #lastValues then
-        lastValues = uniqueNames
-        dropdown:SetValues(uniqueNames)
-    else
-        for i, v in ipairs(uniqueNames) do
-            if lastValues[i] ~= v then
-                lastValues = uniqueNames
-                dropdown:SetValues(uniqueNames)
-                break
+-- Function to get item position
+local function getItemPosition(item)
+    if item:IsA("BasePart") then
+        return item.Position
+    elseif item:IsA("Model") then
+        local primaryPart = item.PrimaryPart
+        if primaryPart then
+            return primaryPart.Position
+        else
+            -- Find the first part in the model
+            for _, child in pairs(item:GetChildren()) do
+                if child:IsA("BasePart") then
+                    return child.Position
+                end
             end
         end
     end
+    return nil
 end
 
--- Dropdown
-dropdown = esptpTab:Dropdown({
+-- Function to teleport player
+local function teleportToItem(item)
+    if not item or not item.Parent then
+        notify("Teleport Failed", "Item no longer exists!", 3)
+        return false
+    end
+    
+    local position = getItemPosition(item)
+    if not position then
+        notify("Teleport Failed", "Could not get item position!", 3)
+        return false
+    end
+    
+    -- Update character reference
+    character = player.Character
+    if not character then
+        notify("Teleport Failed", "Character not found!", 3)
+        return false
+    end
+    
+    humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then
+        notify("Teleport Failed", "HumanoidRootPart not found!", 3)
+        return false
+    end
+    
+    -- Teleport with offset
+    local teleportPosition = position + TELEPORT_OFFSET
+    humanoidRootPart.CFrame = CFrame.new(teleportPosition)
+    
+    notify("Teleported", "Teleported to " .. item.Name, 2)
+    return true
+end
+
+-- Function to scan workspace.Items
+local function scanItems()
+    itemGroups = {}
+    
+    if not workspace:FindFirstChild("Items") then
+        notify("Scan Error", "workspace.Items not found!", 3)
+        return {}
+    end
+    
+    local items = workspace.Items:GetChildren()
+    local itemCounts = {}
+    local itemInstances = {}
+    
+    -- Count items and store instances
+    for _, item in pairs(items) do
+        if item:IsA("BasePart") or item:IsA("Model") then
+            local itemName = item.Name
+            
+            if not itemCounts[itemName] then
+                itemCounts[itemName] = 0
+                itemInstances[itemName] = {}
+            end
+            
+            itemCounts[itemName] = itemCounts[itemName] + 1
+            table.insert(itemInstances[itemName], item)
+        end
+    end
+    
+    -- Create dropdown options
+    local dropdownValues = {}
+    for itemName, count in pairs(itemCounts) do
+        local displayName = itemName .. " (" .. count .. ")"
+        table.insert(dropdownValues, displayName)
+        itemGroups[displayName] = {
+            name = itemName,
+            count = count,
+            instances = itemInstances[itemName]
+        }
+    end
+    
+    table.sort(dropdownValues) -- Sort alphabetically
+    return dropdownValues
+end
+
+-- Function to find closest item of selected type
+local function findClosestItem(itemName)
+    if not itemGroups[itemName] or not itemGroups[itemName].instances then
+        return nil
+    end
+    
+    character = player.Character
+    if not character then return nil end
+    
+    humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
+    if not humanoidRootPart then return nil end
+    
+    local playerPosition = humanoidRootPart.Position
+    local closestItem = nil
+    local closestDistance = math.huge
+    
+    -- Find closest valid item
+    for _, item in pairs(itemGroups[itemName].instances) do
+        if item and item.Parent then
+            local itemPosition = getItemPosition(item)
+            if itemPosition then
+                local distance = (playerPosition - itemPosition).Magnitude
+                if distance < closestDistance then
+                    closestDistance = distance
+                    closestItem = item
+                end
+            end
+        end
+    end
+    
+    return closestItem
+end
+
+-- Function to start monitoring selected item
+local function startMonitoring(itemName)
+    if currentConnection then
+        currentConnection:Disconnect()
+    end
+    
+    currentConnection = RunService.Heartbeat:Connect(function()
+        wait(SCAN_INTERVAL)
+        
+        if not itemGroups[itemName] then
+            return
+        end
+        
+        -- Update item instances (check if they still exist)
+        local validInstances = {}
+        local count = 0
+        
+        if workspace:FindFirstChild("Items") then
+            for _, item in pairs(workspace.Items:GetChildren()) do
+                if item.Name == itemGroups[itemName].name and (item:IsA("BasePart") or item:IsA("Model")) then
+                    table.insert(validInstances, item)
+                    count = count + 1
+                end
+            end
+        end
+        
+        -- Update the group
+        itemGroups[itemName].instances = validInstances
+        itemGroups[itemName].count = count
+        
+        -- Notify if count changed significantly
+        if count == 0 then
+            notify("Items Gone", itemGroups[itemName].name .. " items no longer exist!", 3)
+        end
+    end)
+end
+
+-- Function to stop monitoring
+local function stopMonitoring()
+    if currentConnection then
+        currentConnection:Disconnect()
+        currentConnection = nil
+    end
+end
+
+-- Initial scan
+local initialItems = scanItems()
+
+-- Create the dropdown and button (replace this with your actual UI system)
+--[[
+Tab:Dropdown({
     Title = "Select Item",
-    Values = getUniqueItemNames(),
-    Value = nil,
+    Values = initialItems,
+    Value = initialItems[1] or "No items found",
     Multi = false,
     AllowNone = false,
     Callback = function(selected)
+        print("Selected item group:", selected)
         selectedItem = selected
-        print("Selected item:", selected)
+        
+        if selected and itemGroups[selected] then
+            notify("Item Selected", "Selected: " .. itemGroups[selected].name .. " (" .. itemGroups[selected].count .. " available)", 2)
+            startMonitoring(selected)
+        else
+            stopMonitoring()
+        end
     end
 })
 
--- Update dropdown every second
-task.spawn(function()
-    while task.wait(1) do
-        updateDropdown()
+Tab:Button({
+    Title = "Teleport to Item",
+    Desc = "Teleport to the closest selected item",
+    Callback = function()
+        if not selectedItem then
+            notify("No Selection", "Please select an item first!", 3)
+            return
+        end
+        
+        if not itemGroups[selectedItem] then
+            notify("Invalid Selection", "Selected item group no longer exists!", 3)
+            return
+        end
+        
+        local closestItem = findClosestItem(selectedItem)
+        if closestItem then
+            local success = teleportToItem(closestItem)
+            if success then
+                notify("Success", "Teleported to closest " .. itemGroups[selectedItem].name, 2)
+            end
+        else
+            notify("Not Found", "No " .. itemGroups[selectedItem].name .. " items available!", 3)
+        end
+    end
+})
+
+Tab:Button({
+    Title = "Refresh Items",
+    Desc = "Rescan workspace.Items for new items",
+    Callback = function()
+        local newItems = scanItems()
+        notify("Refreshed", "Found " .. #newItems .. " different item types", 2)
+        
+        -- You would need to update your dropdown here with newItems
+        -- This depends on your UI framework
+        print("Available items after refresh:")
+        for i, item in pairs(newItems) do
+            print(i .. ". " .. item)
+        end
+    end
+})
+]]
+
+-- Console version for testing (remove when integrating with UI)
+print("=== ITEM TELEPORTER LOADED ===")
+print("Available item groups:")
+for i, item in pairs(initialItems) do
+    print(i .. ". " .. item)
+end
+
+-- Example usage functions (for testing without UI)
+local function selectItemByIndex(index)
+    if initialItems[index] then
+        selectedItem = initialItems[index]
+        print("Selected:", selectedItem)
+        startMonitoring(selectedItem)
+        return true
+    end
+    return false
+end
+
+local function teleportToSelected()
+    if not selectedItem then
+        print("No item selected!")
+        return
+    end
+    
+    local closestItem = findClosestItem(selectedItem)
+    if closestItem then
+        teleportToItem(closestItem)
+    else
+        print("No items of type '" .. itemGroups[selectedItem].name .. "' found!")
+    end
+end
+
+-- Expose functions for console use
+_G.ItemTeleporter = {
+    scanItems = scanItems,
+    selectItem = selectItemByIndex,
+    teleport = teleportToSelected,
+    refresh = function()
+        initialItems = scanItems()
+        print("Refreshed! Available items:")
+        for i, item in pairs(initialItems) do
+            print(i .. ". " .. item)
+        end
+    end,
+    stopMonitoring = stopMonitoring
+}
+
+print("\nConsole commands:")
+print("_G.ItemTeleporter.refresh() - Refresh item list")
+print("_G.ItemTeleporter.selectItem(index) - Select item by number")
+print("_G.ItemTeleporter.teleport() - Teleport to selected item")
+print("_G.ItemTeleporter.stopMonitoring() - Stop monitoring")
+
+-- Auto-refresh every 30 seconds
+spawn(function()
+    while true do
+        wait(3)
+        scanItems()
     end
 end)
 
--- TP Button
-esptpTab:Button({
-    Title = "Teleport to Selected",
-    Desc = "Teleports you to the selected item",
-    Callback = function()
-        if not selectedItem then
-            WindUI:Notify({
-                Title = "Teleport Failed",
-                Content = "No item selected!",
-                Duration = 3
-            })
-            return
-        end
-
-        local target = workspace.Items:FindFirstChild(selectedItem)
-        if target and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = target.CFrame
-            WindUI:Notify({
-                Title = "Teleport",
-                Content = "Teleported to " .. selectedItem,
-                Duration = 3
-            })
-        else
-            WindUI:Notify({
-                Title = "Teleport Failed",
-                Content = selectedItem .. " not found!",
-                Duration = 3
-            })
-        end
-    end
-})
-
+-- Clean up on character respawn
+player.CharacterAdded:Connect(function(newCharacter)
+    character = newCharacter
+    humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+end)
 
 -- Window close callback
 Window:OnClose(function()
