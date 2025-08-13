@@ -85,8 +85,8 @@ local PlayerTab = Window:Tab({ Title = "Player", Icon = "user" })
 
 -- Welcome Paragraph
 PlayerTab:Paragraph({
-    Title = "Welcome to Fryzer Hub!",
-    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
+    Title = "Welcome to Fryzer Hub!Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully.",
+    Content = "Hello "
 })
 
 local Players = game:GetService("Players")
@@ -472,6 +472,229 @@ PlayerTab:Toggle({
 
 local esptpTab = Window:Tab({ Title = "ESP & TP", Icon = "send" })
 
+local healthBillboardEnabled = false
+local connections = {}
+local tracked = {}
+
+local SETTINGS = {
+    Name = "HealthBillboard",
+    MaxDistance = 250,
+    StudsOffset = Vector3.new(0, 3.5, 0),
+    TextFont = Enum.Font.GothamBold,
+    TextSize = 14,
+    AlwaysOnTop = true,
+    UpdateHz = 30,
+    UseBar = true,
+    ShowModelName = false,
+    BarHeight = 6,               -- smaller health bar
+    BorderThickness = 2.5,       -- black border thickness
+}
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+local function clamp(n, a, b) return math.max(a, math.min(b, n)) end
+
+local function lerpColor(c1, c2, t)
+    return Color3.new(
+        c1.R + (c2.R - c1.R) * t,
+        c1.G + (c2.G - c1.G) * t,
+        c1.B + (c2.B - c1.B) * t
+    )
+end
+
+local function colorByPercent(p)
+    p = clamp(p, 0, 1)
+    return lerpColor(Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 90), p)
+end
+
+local function findHead(model)
+    local head = model:FindFirstChild("Head")
+    if head and head:IsA("BasePart") then return head end
+    local best, bestY = nil, -math.huge
+    for _, obj in ipairs(model:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.CanCollide then
+            if obj.Position.Y > bestY then
+                bestY = obj.Position.Y
+                best = obj
+            end
+        end
+    end
+    return best
+end
+
+local function makeBillboard(humanoid, head, model)
+    if tracked[humanoid] and tracked[humanoid].Parent then return tracked[humanoid] end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = SETTINGS.Name
+    bb.Adornee = head
+    bb.AlwaysOnTop = SETTINGS.AlwaysOnTop
+    bb.Size = UDim2.fromOffset(160, SETTINGS.UseBar and (26 + SETTINGS.BarHeight) or 26)
+    bb.StudsOffset = SETTINGS.StudsOffset
+    bb.MaxDistance = SETTINGS.MaxDistance
+    bb.ResetOnSpawn = false
+    bb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    bb.Parent = head
+
+    local holder = Instance.new("Frame")
+    holder.Size = UDim2.fromScale(1, 1)
+    holder.BackgroundTransparency = 1
+    holder.Parent = bb
+
+    local text = Instance.new("TextLabel")
+    text.Name = "HPText"
+    text.Size = UDim2.new(1, -12, 0, 24)
+    text.Position = UDim2.fromOffset(6, 2)
+    text.BackgroundTransparency = 1
+    text.TextColor3 = Color3.new(1,1,1)
+    text.TextStrokeTransparency = 0.5
+    text.Font = SETTINGS.TextFont
+    text.TextSize = SETTINGS.TextSize
+    text.Parent = holder
+
+    local barFrame, barFill
+    if SETTINGS.UseBar then
+        barFrame = Instance.new("Frame")
+        barFrame.Name = "Bar"
+        barFrame.Size = UDim2.new(1, -12, 0, SETTINGS.BarHeight)
+        barFrame.Position = UDim2.fromOffset(6, 26)
+        barFrame.BackgroundColor3 = Color3.fromRGB(0,0,0) -- black border
+        barFrame.BorderSizePixel = SETTINGS.BorderThickness
+        barFrame.Parent = holder
+
+        barFill = Instance.new("Frame")
+        barFill.Name = "Fill"
+        barFill.Size = UDim2.fromScale(1, 1)
+        barFill.BackgroundColor3 = Color3.fromRGB(60, 255, 90)
+        barFill.BorderSizePixel = 0
+        barFill.Parent = barFrame
+    end
+
+    tracked[humanoid] = bb
+
+    local lastDisplayPct = 1
+    local function update()
+        if not healthBillboardEnabled then return end
+        local hp = clamp(humanoid.Health, 0, math.max(1, humanoid.MaxHealth))
+        local maxHp = math.max(1, humanoid.MaxHealth)
+        local pct = hp / maxHp
+        text.Text = string.format("%d / %d", math.floor(hp + 0.5), math.floor(maxHp + 0.5))
+
+        if barFill then
+            lastDisplayPct = lastDisplayPct + (pct - lastDisplayPct) * 0.35
+            barFill.Size = UDim2.fromScale(lastDisplayPct, 1)
+            barFill.BackgroundColor3 = colorByPercent(lastDisplayPct)
+        else
+            text.TextColor3 = colorByPercent(pct)
+        end
+    end
+
+    local healthConn = humanoid.HealthChanged:Connect(update)
+    local maxHealthConn = humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(update)
+    local diedConn = humanoid.Died:Connect(function()
+        if tracked[humanoid] then
+            tracked[humanoid]:Destroy()
+            tracked[humanoid] = nil
+        end
+    end)
+    local heartbeatConn = RunService.Heartbeat:Connect(update)
+
+    -- Store connections for cleanup
+    connections[humanoid] = {healthConn, maxHealthConn, diedConn, heartbeatConn}
+
+    update()
+end
+
+local function attachToModel(model)
+    if not model or not model:IsA("Model") then return end
+    if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end -- skip local player
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    local head = findHead(model)
+    if not head then return end
+    makeBillboard(humanoid, head, model)
+end
+
+local function enableHealthBillboards()
+    for _, hum in ipairs(workspace:GetDescendants()) do
+        if hum:IsA("Humanoid") and hum.Parent and hum.Parent:IsA("Model") then
+            attachToModel(hum.Parent)
+        end
+    end
+
+    connections.descendantAdded = workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("Humanoid") then
+            local model = obj.Parent
+            if model and model:IsA("Model") then
+                task.defer(function()
+                    attachToModel(model)
+                end)
+            end
+        end
+    end)
+
+    connections.playerAdded = Players.PlayerAdded:Connect(function(plr)
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character then attachToModel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end
+end
+
+local function disableHealthBillboards()
+    -- Disconnect all connections
+    for humanoid, connList in pairs(connections) do
+        if type(connList) == "table" then
+            for _, conn in ipairs(connList) do
+                conn:Disconnect()
+            end
+        elseif connList.Disconnect then
+            connList:Disconnect()
+        end
+    end
+    connections = {}
+
+    -- Remove all billboards
+    for humanoid, billboard in pairs(tracked) do
+        if billboard and billboard.Parent then
+            billboard:Destroy()
+        end
+    end
+    tracked = {}
+
+    -- Remove any existing billboards in workspace
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BillboardGui") and obj.Name == SETTINGS.Name then
+            obj:Destroy()
+        end
+    end
+end
+
+esptpTab:Toggle({
+    Title = "Health Billboard",
+    Value = false,
+    Callback = function(state)
+        healthBillboardEnabled = state
+        if state then
+            enableHealthBillboards()
+        else
+            disableHealthBillboards()
+        end
+    end
+})
+
 -- ESP State Variables
 local ActiveEspItems = false
 local ActiveEspEnemy = false
@@ -855,14 +1078,107 @@ esptpTab:Button({
     end
 })
 
-local BriaTab = Window:Tab({ Title = "OP", Icon = "send" })
+local BriaTab = Window:Tab({ Title = "Visual", Icon = "send" })
 
-BriaTab:Paragraph({
-    Title = "It spawn the items to the player",
-    Content = "Hello " .. LocalPlayer.DisplayName .. "! You're running WindUI successfully."
+BriaTab:Toggle({
+    Title = "No Fog", 
+    Value = false,
+    Callback = function(state)
+        local lighting = game:GetService("Lighting")
+        if state then
+            lighting.FogEnd = 1e6
+            lighting.FogStart = 1e6
+        else
+            lighting.FogEnd = 1000 -- Default-ish value
+            lighting.FogStart = 0
+        end
+    end
 })
 
-BriaTab:Paragraph({
+BriaTab:Slider({
+    Title = "Time of Day",
+    Description = "Adjust lighting between Day and Night",
+    Min = 0,
+    Max = 24,
+    Value = 12,
+    Callback = function(value)
+        local lighting = game:GetService("Lighting")
+        lighting.ClockTime = value
+    end
+})
+
+BriaTab:Toggle({
+    Title = "Player ESP",
+    Value = false,
+    Callback = function(state)
+        local players = game:GetService("Players")
+        local localPlayer = players.LocalPlayer
+
+        -- Function to create ESP highlight
+        local function addESP(character)
+            if not character:FindFirstChild("Highlight") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "Highlight"
+                highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+                highlight.FillTransparency = 0.5
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.OutlineTransparency = 0
+                highlight.Parent = character
+            end
+        end
+
+        -- Function to remove ESP
+        local function removeESP(character)
+            local highlight = character:FindFirstChild("Highlight")
+            if highlight then
+                highlight:Destroy()
+            end
+        end
+
+        if state then
+            -- Enable ESP for existing players
+            for _, player in pairs(players:GetPlayers()) do
+                if player ~= localPlayer and player.Character then
+                    addESP(player.Character)
+                end
+            end
+
+            -- Add ESP when new players spawn
+            players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(char)
+                    addESP(char)
+                end)
+            end)
+
+            -- Add ESP when existing players respawn
+            for _, player in pairs(players:GetPlayers()) do
+                if player ~= localPlayer then
+                    player.CharacterAdded:Connect(function(char)
+                        addESP(char)
+                    end)
+                end
+            end
+        else
+            -- Disable ESP for all players
+            for _, player in pairs(players:GetPlayers()) do
+                if player ~= localPlayer and player.Character then
+                    removeESP(player.Character)
+                end
+            end
+        end
+    end
+})
+
+--Op
+local BestTab = Window:Tab({ Title = "Best", Icon = "send" })
+
+BestTab:Paragraph({
+    Title = "Here were the best script",
+    Content = "Hello "
+})
+
+
+BestTab:Paragraph({
     Title = "If not working try again pressing the button over and over",
     Content = "Items will be teleported to your current position."
 })
@@ -919,7 +1235,7 @@ end
 refreshModels()
 
 -- Create Dropdown
-local dropdown = BriaTab:Dropdown({
+local dropdown = BestTab:Dropdown({
     Title = "Select Model",
     Values = uniqueNames,
     Value = uniqueNames[1] or nil,
@@ -941,7 +1257,7 @@ task.spawn(function()
 end)
 
 -- Button to move & unanchor models to player
-BriaTab:Button({
+BestTab:Button({
     Title = "Teleport Items to Me",
     Desc = "Move selected models to your current position",
     Callback = function()
@@ -996,7 +1312,42 @@ BriaTab:Button({
     end
 })
 
+bestTab:Button({
+    Title = "Don't Click Me pls!",
+    Desc = "Click This if your G*Y",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
+        WindUI:Notify({
+            Title = "WHY!!! Button Pressed",
+            Content = "Are you really G*Y",
+            Duration = 1
+        })
+    end
+})
 
+-- Info Tab
+local FTab = Window:Tab({
+    Title = "INFO",
+    Icon = "send"
+})
+
+FTab:Paragraph({
+    Title = "WE CAN SEE YOUR FEEDBACK FR PRESS THE DOWN BUTTON TO OPEN FEEDBACK GUI YOU CAN SENT US FEEDBACK AND WE ATUCALLY SEE IT",
+    Content = "OPEN"
+})
+
+FTab:Button({
+    Title = "FEEDBACK GUI",
+    Desc = "Open the feedback interface",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/FeedBack-Gui/refs/heads/main/Feedback%20gui"))()
+        WindUI:Notify({
+            Title = "Feedback GUI Loaded",
+            Content = "Feedback interface has been opened!",
+            Duration = 3
+        })
+    end
+})
 
 -- Window close callback
 Window:OnClose(function()
