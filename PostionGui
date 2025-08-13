@@ -44,7 +44,7 @@ local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
-    Author = "99 nights in forest",
+    Author = "99 nights in forset",
     Folder = "YourHub",
     Size = UDim2.fromOffset(580, 360),
     Transparent = true,
@@ -52,7 +52,13 @@ local Window = WindUI:CreateWindow({
     SideBarWidth = 200,
     ScrollBarEnabled = true,
     KeySystem = {
-        Key = {"1234", "CM_BEST"}
+        Key = {"1234", "CM"},
+        Note = "Enter the key to proceed.",
+        URL = "https://your-key-link.com",
+        SaveKey = false,
+    },
+    
+    User = {
         Enabled = true,
         Anonymous = false,
         Username = LocalPlayer.DisplayName,
@@ -62,6 +68,7 @@ local Window = WindUI:CreateWindow({
         end
     }
 })
+
 
 -- UI open button
 Window:EditOpenButton({
