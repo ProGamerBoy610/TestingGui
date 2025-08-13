@@ -747,10 +747,11 @@ esptpTab:Button({
     end
 })
 
--- Simple Item Teleporter
+-- Fixed Simple Item Teleporter
 local player = game.Players.LocalPlayer
 local selectedItem = ""
 local itemList = {}
+local dropdown = nil
 
 -- Get all unique items from workspace.Items
 local function getItems()
@@ -778,7 +779,20 @@ local function getItems()
         itemList[display] = items[name]
     end
     
+    table.sort(dropdownList) -- Sort alphabetically
     return dropdownList
+end
+
+-- Update dropdown with new items
+local function updateDropdown()
+    if dropdown then
+        local newItems = getItems()
+        dropdown:SetValues(newItems)
+        if #newItems > 0 and selectedItem == "" then
+            selectedItem = newItems[1]
+            dropdown:SetValue(newItems[1])
+        end
+    end
 end
 
 -- Find closest item
@@ -794,7 +808,23 @@ local function getClosestItem()
     
     for _, item in pairs(itemList[selectedItem]) do
         if item and item.Parent then
-            local itemPos = item:IsA("Model") and item.PrimaryPart and item.PrimaryPart.Position or item.Position
+            local itemPos
+            if item:IsA("Model") then
+                if item.PrimaryPart then
+                    itemPos = item.PrimaryPart.Position
+                else
+                    -- Find first part in model
+                    for _, child in pairs(item:GetChildren()) do
+                        if child:IsA("BasePart") then
+                            itemPos = child.Position
+                            break
+                        end
+                    end
+                end
+            elseif item:IsA("BasePart") then
+                itemPos = item.Position
+            end
+            
             if itemPos then
                 local dist = (playerPos - itemPos).Magnitude
                 if dist < closestDist then
@@ -810,35 +840,63 @@ end
 
 -- Teleport function
 local function teleport()
+    if selectedItem == "" then
+        print("Please select an item first!")
+        return
+    end
+    
     local item = getClosestItem()
     if not item then
-        print("No item found!")
+        print("No " .. selectedItem .. " found!")
         return
     end
     
     local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    if not char or not char:FindFirstChild("HumanoidRootPart") then 
+        print("Character not found!")
+        return 
+    end
     
-    local pos = item:IsA("Model") and item.PrimaryPart and item.PrimaryPart.Position or item.Position
+    local pos
+    if item:IsA("Model") then
+        if item.PrimaryPart then
+            pos = item.PrimaryPart.Position
+        else
+            for _, child in pairs(item:GetChildren()) do
+                if child:IsA("BasePart") then
+                    pos = child.Position
+                    break
+                end
+            end
+        end
+    elseif item:IsA("BasePart") then
+        pos = item.Position
+    end
+    
     if pos then
         char.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 5, 0))
-        print("Teleported to " .. item.Name)
+        print("Teleported to " .. item.Name .. " at " .. tostring(pos))
+    else
+        print("Could not get position of " .. item.Name)
     end
 end
 
--- Check items every second
+-- Auto-update every second
 spawn(function()
     while true do
         wait(1)
-        getItems()
+        updateDropdown()
     end
 end)
 
--- UI Components
-esptpTab:Dropdown({
+-- Initial scan
+local initialItems = getItems()
+
+-- Create Dropdown
+dropdown = Tab:Dropdown({
     Title = "Select Item",
-    Values = getItems(),
-    Value = getItems()[1] or "No items",
+    Values = initialItems,
+    Value = initialItems[1] or "No items found",
     Multi = false,
     AllowNone = false,
     Callback = function(selected)
@@ -847,13 +905,26 @@ esptpTab:Dropdown({
     end
 })
 
+-- Create Teleport Button
 esptpTab:Button({
     Title = "Teleport",
-    Desc = "Teleport to selected item",
+    Desc = "Teleport to closest selected item",
     Callback = function()
         teleport()
     end
 })
+
+-- Create Refresh Button
+esptpTab:Button({
+    Title = "Refresh Items",
+    Desc = "Manually refresh the item list",
+    Callback = function()
+        updateDropdown()
+        print("Item list refreshed!")
+    end
+})
+
+print("Item Teleporter loaded! Found " .. #initialItems .. " item types.")
 
 -- Window close callback
 Window:OnClose(function()
