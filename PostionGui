@@ -747,184 +747,112 @@ esptpTab:Button({
     end
 })
 
--- Fixed Simple Item Teleporter
-local player = game.Players.LocalPlayer
-local selectedItem = ""
-local itemList = {}
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+local ItemsFolder = workspace:FindFirstChild("Items")
+
+if not ItemsFolder then
+    warn("Items folder not found!")
+    return
+end
+
+-- UI State
+local uniqueModelNames = {}
+local modelMap = {}  -- Stores list of models by name
+local selectedModelName = nil
 local dropdown = nil
 
--- Get all unique items from workspace.Items
-local function getItems()
-    local items = {}
-    local counts = {}
-    
-    if workspace:FindFirstChild("Items") then
-        for _, item in pairs(workspace.Items:GetChildren()) do
+-- Refresh model list
+local function refreshModelList()
+    uniqueModelNames = {}
+    modelMap = {}
+
+    for _, item in pairs(ItemsFolder:GetDescendants()) do
+        if item:IsA("Model") then
             local name = item.Name
-            if not counts[name] then
-                counts[name] = 0
-                items[name] = {}
+            if not modelMap[name] then
+                modelMap[name] = {}
+                table.insert(uniqueModelNames, name)
             end
-            counts[name] = counts[name] + 1
-            table.insert(items[name], item)
+            table.insert(modelMap[name], item)
         end
     end
-    
-    -- Create dropdown list
-    local dropdownList = {}
-    itemList = {}
-    for name, count in pairs(counts) do
-        local display = name .. " (" .. count .. ")"
-        table.insert(dropdownList, display)
-        itemList[display] = items[name]
-    end
-    
-    table.sort(dropdownList) -- Sort alphabetically
-    return dropdownList
-end
 
--- Update dropdown with new items
-local function updateDropdown()
     if dropdown then
-        local newItems = getItems()
-        dropdown:SetValues(newItems)
-        if #newItems > 0 and selectedItem == "" then
-            selectedItem = newItems[1]
-            dropdown:SetValue(newItems[1])
-        end
+        dropdown:SetValues(uniqueModelNames)
     end
 end
 
--- Find closest item
-local function getClosestItem()
-    if selectedItem == "" or not itemList[selectedItem] then return nil end
-    
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then return nil end
-    
-    local playerPos = char.HumanoidRootPart.Position
-    local closest = nil
-    local closestDist = math.huge
-    
-    for _, item in pairs(itemList[selectedItem]) do
-        if item and item.Parent then
-            local itemPos
-            if item:IsA("Model") then
-                if item.PrimaryPart then
-                    itemPos = item.PrimaryPart.Position
-                else
-                    -- Find first part in model
-                    for _, child in pairs(item:GetChildren()) do
-                        if child:IsA("BasePart") then
-                            itemPos = child.Position
-                            break
-                        end
-                    end
-                end
-            elseif item:IsA("BasePart") then
-                itemPos = item.Position
-            end
-            
-            if itemPos then
-                local dist = (playerPos - itemPos).Magnitude
-                if dist < closestDist then
-                    closest = item
-                    closestDist = dist
-                end
-            end
-        end
-    end
-    
-    return closest
-end
-
--- Teleport function
-local function teleport()
-    if selectedItem == "" then
-        print("Please select an item first!")
-        return
-    end
-    
-    local item = getClosestItem()
-    if not item then
-        print("No " .. selectedItem .. " found!")
-        return
-    end
-    
-    local char = player.Character
-    if not char or not char:FindFirstChild("HumanoidRootPart") then 
-        print("Character not found!")
-        return 
-    end
-    
-    local pos
-    if item:IsA("Model") then
-        if item.PrimaryPart then
-            pos = item.PrimaryPart.Position
-        else
-            for _, child in pairs(item:GetChildren()) do
-                if child:IsA("BasePart") then
-                    pos = child.Position
-                    break
-                end
-            end
-        end
-    elseif item:IsA("BasePart") then
-        pos = item.Position
-    end
-    
-    if pos then
-        char.HumanoidRootPart.CFrame = CFrame.new(pos + Vector3.new(0, 5, 0))
-        print("Teleported to " .. item.Name .. " at " .. tostring(pos))
-    else
-        print("Could not get position of " .. item.Name)
-    end
-end
-
--- Auto-update every second
-spawn(function()
+-- Run refresh every 5 seconds
+task.spawn(function()
     while true do
-        wait(1)
-        updateDropdown()
+        refreshModelList()
+        task.wait(2)
     end
 end)
 
--- Initial scan
-local initialItems = getItems()
+-- Initial load
+refreshModelList()
 
 -- Create Dropdown
 dropdown = esptpTab:Dropdown({
     Title = "Select Item",
-    Values = initialItems,
-    Value = initialItems[1] or "No items found",
+    Values = uniqueModelNames,
+    Value = uniqueModelNames[1] or "None",
     Multi = false,
     AllowNone = false,
     Callback = function(selected)
-        selectedItem = selected
+        selectedModelName = selected
         print("Selected:", selected)
     end
 })
 
--- Create Teleport Button
+-- Find closest model
+local function getClosestModel(modelList)
+    local char = LocalPlayer.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp or not modelList then return nil end
+
+    local closest, minDist = nil, math.huge
+    for _, model in pairs(modelList) do
+        local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+        if primary then
+            local dist = (hrp.Position - primary.Position).Magnitude
+            if dist < minDist then
+                minDist = dist
+                closest = primary
+            end
+        end
+    end
+    return closest
+end
+
+-- Teleport Button
 esptpTab:Button({
-    Title = "Teleport",
-    Desc = "Teleport to closest selected item",
+    Title = "Teleport to Item",
+    Desc = "Teleport to closest model of selected name",
     Callback = function()
-        teleport()
+        if not selectedModelName or not modelMap[selectedModelName] then
+            warn("No model selected.")
+            return
+        end
+
+        local closestPart = getClosestModel(modelMap[selectedModelName])
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        if closestPart and hrp then
+            hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
+            WindUI:Notify({
+                Title = "Teleported!",
+                Content = "Teleported to nearest: " .. selectedModelName,
+                Duration = 3
+            })
+        else
+            warn("Could not find valid part to teleport.")
+        end
     end
 })
-
--- Create Refresh Button
-esptpTab:Button({
-    Title = "Refresh Items",
-    Desc = "Manually refresh the item list",
-    Callback = function()
-        updateDropdown()
-        print("Item list refreshed!")
-    end
-})
-
-print("Item Teleporter loaded! Found " .. #initialItems .. " item types.")
 
 -- Window close callback
 Window:OnClose(function()
