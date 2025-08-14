@@ -1010,7 +1010,7 @@ if ItemsFolder then
 end
 
 -- Visual Tab
-local VisualTab = Window:Tab({ Title = "Visual", Icon = "eye" })
+local VisualTab = Window:Tab({ Title = "Visual", Icon = "send" })
 
 VisualTab:Toggle({
     Title = "No Fog", 
@@ -1040,76 +1040,468 @@ VisualTab:Slider({
     end
 })
 
-VisualTab:Toggle({
-    Title = "Player ESP",
-    Value = false,
-    Callback = function(state)
-        local players = game:GetService("Players")
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
-        local function addESP(character)
-            if not character:FindFirstChild("Highlight") then
-                local highlight = Instance.new("Highlight")
-                highlight.Name = "Highlight"
-                highlight.FillColor = Color3.fromRGB(255, 0, 0)
-                highlight.FillTransparency = 0.5
-                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                highlight.OutlineTransparency = 0
-                highlight.Parent = character
-            end
+-- ESP Variables
+local playerESPEnabled = false
+local espConnections = {}
+local trackedPlayers = {}
+
+-- ESP Settings
+local ESP_SETTINGS = {
+    ShowNames = true,
+    ShowDistance = true,
+    ShowHealth = true,
+    MaxDistance = 500,
+    TextSize = 14,
+    OutlineColor = Color3.fromRGB(255, 255, 255),
+    FillColor = Color3.fromRGB(255, 0, 0),
+    FillTransparency = 0.7,
+    OutlineTransparency = 0,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    HealthBarEnabled = true,
+    HealthBarHeight = 4,
+}
+
+-- Create ESP for a player
+local function createPlayerESP(player)
+    if player == LocalPlayer then return end -- Don't ESP ourselves
+    if not player.Character then return end
+    if trackedPlayers[player] then return end -- Already has ESP
+    
+    local character = player.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not rootPart then return end
+    
+    -- Create Highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "PlayerESP_Highlight"
+    highlight.Adornee = character
+    highlight.FillColor = ESP_SETTINGS.FillColor
+    highlight.FillTransparency = ESP_SETTINGS.FillTransparency
+    highlight.OutlineColor = ESP_SETTINGS.OutlineColor
+    highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = character
+    
+    -- Create Billboard GUI
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PlayerESP_Billboard"
+    billboard.Size = UDim2.new(0, 200, 0, 100)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
+    billboard.Adornee = rootPart
+    billboard.Parent = rootPart
+    
+    -- Create main frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Parent = billboard
+    
+    -- Create name label
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(1, 0, 0, 20)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.DisplayName
+    nameLabel.TextColor3 = ESP_SETTINGS.TextColor
+    nameLabel.TextSize = ESP_SETTINGS.TextSize
+    nameLabel.TextStrokeTransparency = 0.5
+    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = frame
+    
+    -- Create distance label
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Name = "DistanceLabel"
+    distanceLabel.Size = UDim2.new(1, 0, 0, 15)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = "0m"
+    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    distanceLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    distanceLabel.TextStrokeTransparency = 0.5
+    distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    distanceLabel.Font = Enum.Font.Gotham
+    distanceLabel.Parent = frame
+    
+    -- Create health label
+    local healthLabel = Instance.new("TextLabel")
+    healthLabel.Name = "HealthLabel"
+    healthLabel.Size = UDim2.new(1, 0, 0, 15)
+    healthLabel.Position = UDim2.new(0, 0, 0, 35)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.Text = "100/100"
+    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    healthLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    healthLabel.TextStrokeTransparency = 0.5
+    healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    healthLabel.Font = Enum.Font.Gotham
+    healthLabel.Parent = frame
+    
+    -- Create health bar background
+    local healthBarBG = Instance.new("Frame")
+    healthBarBG.Name = "HealthBarBG"
+    healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
+    healthBarBG.Position = UDim2.new(0, 0, 0, 50)
+    healthBarBG.BackgroundColor3 = Color3.new(0, 0, 0)
+    healthBarBG.BorderSizePixel = 1
+    healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
+    healthBarBG.Parent = frame
+    
+    -- Create health bar fill
+    local healthBarFill = Instance.new("Frame")
+    healthBarFill.Name = "HealthBarFill"
+    healthBarFill.Size = UDim2.new(1, 0, 1, 0)
+    healthBarFill.Position = UDim2.new(0, 0, 0, 0)
+    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    healthBarFill.BorderSizePixel = 0
+    healthBarFill.Parent = healthBarBG
+    
+    -- Update function
+    local function updateESP()
+        if not playerESPEnabled then return end
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        local playerRoot = player.Character.HumanoidRootPart
+        local localRoot = LocalPlayer.Character.HumanoidRootPart
+        local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        
+        if not playerRoot or not localRoot or not playerHumanoid then return end
+        
+        -- Update distance
+        if ESP_SETTINGS.ShowDistance then
+            local distance = (localRoot.Position - playerRoot.Position).Magnitude
+            distanceLabel.Text = math.floor(distance) .. "m"
+            distanceLabel.Visible = true
+        else
+            distanceLabel.Visible = false
         end
-
-        local function removeESP(character)
-            local highlight = character:FindFirstChild("Highlight")
-            if highlight then
-                highlight:Destroy()
-            end
-        end
-
-        if state then
-            for _, player in pairs(players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character then
-                    addESP(player.Character)
+        
+        -- Update health
+        if ESP_SETTINGS.ShowHealth then
+            local health = math.floor(playerHumanoid.Health)
+            local maxHealth = math.floor(playerHumanoid.MaxHealth)
+            local healthPercent = health / maxHealth
+            
+            healthLabel.Text = health .. "/" .. maxHealth
+            healthLabel.Visible = true
+            
+            -- Update health bar
+            if ESP_SETTINGS.HealthBarEnabled then
+                healthBarBG.Visible = true
+                healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                
+                -- Color based on health percentage
+                if healthPercent > 0.6 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
+                    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                elseif healthPercent > 0.3 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+                else
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
                 end
-            end
-
-            players.PlayerAdded:Connect(function(player)
-                player.CharacterAdded:Connect(function(char)
-                    if state then
-                        addESP(char)
-                    end
-                end)
-            end)
-
-            for _, player in pairs(players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    player.CharacterAdded:Connect(function(char)
-                        if state then
-                            addESP(char)
-                        end
-                    end)
-                end
+            else
+                healthBarBG.Visible = false
             end
         else
-            for _, player in pairs(players:GetPlayers()) do
-                if player ~= LocalPlayer and player.Character then
-                    removeESP(player.Character)
-                end
+            healthLabel.Visible = false
+            healthBarBG.Visible = false
+        end
+        
+        -- Update name
+        if ESP_SETTINGS.ShowNames then
+            nameLabel.Text = player.DisplayName
+            nameLabel.Visible = true
+        else
+            nameLabel.Visible = false
+        end
+    end
+    
+    -- Store ESP components
+    trackedPlayers[player] = {
+        highlight = highlight,
+        billboard = billboard,
+        updateFunction = updateESP
+    }
+    
+    -- Connect update function
+    local connection = RunService.Heartbeat:Connect(updateESP)
+    espConnections[player] = connection
+    
+    -- Handle player leaving
+    local function onPlayerRemoving()
+        removePlayerESP(player)
+    end
+    
+    -- Connect to player removing (will be cleaned up when player leaves)
+    local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
+        if removedPlayer == player then
+            onPlayerRemoving()
+        end
+    end)
+    
+    -- Store the remove connection
+    if not espConnections[player] then
+        espConnections[player] = {}
+    end
+    if type(espConnections[player]) == "table" then
+        espConnections[player].removeConnection = removeConnection
+    end
+    
+    -- Initial update
+    updateESP()
+end
+
+-- Remove ESP for a player
+function removePlayerESP(player)
+    if trackedPlayers[player] then
+        -- Destroy ESP components
+        if trackedPlayers[player].highlight then
+            trackedPlayers[player].highlight:Destroy()
+        end
+        if trackedPlayers[player].billboard then
+            trackedPlayers[player].billboard:Destroy()
+        end
+        trackedPlayers[player] = nil
+    end
+    
+    -- Disconnect connections
+    if espConnections[player] then
+        if type(espConnections[player]) == "userdata" then
+            espConnections[player]:Disconnect()
+        elseif type(espConnections[player]) == "table" then
+            if espConnections[player].removeConnection then
+                espConnections[player].removeConnection:Disconnect()
             end
         end
+        espConnections[player] = nil
+    end
+end
+
+-- Enable ESP for all players
+local function enablePlayerESP()
+    playerESPEnabled = true
+    
+    -- Add ESP to existing players
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            createPlayerESP(player)
+        end
+    end
+    
+    -- Connect to new players joining
+    espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
+        if playerESPEnabled then
+            -- Wait for character to load
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    wait(1) -- Small delay to ensure everything is loaded
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end)
+    
+    -- Connect to existing players respawning
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    wait(1) -- Small delay to ensure everything is loaded
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end
+    
+    print("Player ESP Enabled")
+end
+
+-- Disable ESP for all players
+local function disablePlayerESP()
+    playerESPEnabled = false
+    
+    -- Remove ESP from all tracked players
+    for player, _ in pairs(trackedPlayers) do
+        removePlayerESP(player)
+    end
+    
+    -- Disconnect main connections
+    if espConnections.playerAdded then
+        espConnections.playerAdded:Disconnect()
+        espConnections.playerAdded = nil
+    end
+    
+    -- Clear all connections
+    for player, connection in pairs(espConnections) do
+        if type(connection) == "userdata" then
+            connection:Disconnect()
+        elseif type(connection) == "table" then
+            if connection.removeConnection then
+                connection.removeConnection:Disconnect()
+            end
+        end
+    end
+    espConnections = {}
+    
+    print("Player ESP Disabled")
+end
+
+-- Your Toggle Implementation
+VisualTab:Toggle({
+    Title = "Player ESP", 
+    Value = false,
+    Callback = function(state)
+        if state then
+            enablePlayerESP()
+        else
+            disablePlayerESP()
+        end
+        print("Player ESP is now:", state)
     end
 })
 
 -- Best Tab
-local BestTab = Window:Tab({ Title = "Best", Icon = "star" })
+local BestTab = Window:Tab({ Title = "Best", Icon = "send" })
 
 BestTab:Paragraph({
     Title = "Here are the best scripts",
     Content = "Welcome to the best features section!"
 })
 
-BestTab:Paragraph({
-    Title = "If not working try again pressing the button over and over",
-    Content = "Items will be teleported to your current position."
+-- Auto Chop Tree Script for WindUI
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 25
+
+-- Distance Slider
+BestTab:Slider({
+    Title = "Distance For Auto Chop Tree",
+    Value = {
+        Min = 0,
+        Max = 1000,
+        Default = 25
+    },
+    Callback = function(val)
+        DistanceForAutoChopTree = val
+        print("Auto Chop Tree distance set to:", val)
+    end
+})
+
+-- Auto Chop Tree Toggle
+bestTab:Toggle({
+    Title = "Auto Chop Tree", 
+    Value = false,
+    Callback = function(state)
+        ActiveAutoChopTree = state
+        print("Auto Chop Tree is now:", state)
+        
+        if ActiveAutoChopTree then
+            task.spawn(function()
+                while ActiveAutoChopTree do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                   player.Inventory:FindFirstChild("Good Axe") or 
+                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    
+                    -- Check trees in Foliage
+                    task.spawn(function()
+                        for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end 
+                    end)
+                    
+                    -- Check trees in Landmarks
+                    task.spawn(function()
+                        for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    
+                    wait(0.1)
+                end
+            end)
+        end
+    end
+})
+
+-- Auto Kill Aura Script for WindUI
+local ActiveKillAura = false
+local DistanceForKillAura = 25
+
+-- Distance Slider
+BestTab:Slider({
+    Title = "Distance For Kill Aura",
+    Value = {
+        Min = 25,
+        Max = 10000,
+        Default = 25
+    },
+    Callback = function(val)
+        DistanceForKillAura = val
+        print("Kill Aura distance set to:", val)
+    end
+})
+
+-- Kill Aura Toggle
+BestTab:Toggle({
+    Title = "Kill Aura", 
+    Value = false,
+    Callback = function(state)
+        ActiveKillAura = state
+        print("Kill Aura is now:", state)
+        
+        if ActiveKillAura then
+            task.spawn(function()
+                while ActiveKillAura do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                   player.Inventory:FindFirstChild("Good Axe") or 
+                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    
+                    task.spawn(function()
+                        for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                            if enemy:IsA("Model") and enemy.PrimaryPart then
+                                local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForKillAura then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    
+                    wait(0.1)
+                end
+            end)
+        end
+    end
 })
 
 -- Item Teleporter System for Best Tab
