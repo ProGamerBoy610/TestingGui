@@ -44,7 +44,7 @@ local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "rbxassetid://129260712070622",
     IconThemed = true,
-    Author = "Grow a garden",
+    Author = "99 nights in forest",
     Folder = "YourHub",
     Size = UDim2.fromOffset(580, 360),
     Transparent = true,
@@ -1383,15 +1383,15 @@ BestTab:Paragraph({
 
 -- Auto Chop Tree Script for WindUI
 local ActiveAutoChopTree = false
-local DistanceForAutoChopTree = 25
+local DistanceForAutoChopTree = 2500
 
 -- Distance Slider
 BestTab:Slider({
     Title = "Distance For Auto Chop Tree",
     Value = {
         Min = 0,
-        Max = 1000,
-        Default = 25
+        Max = 3000,
+        Default = 2500
     }, -- Added missing comma here
     Callback = function(val)
         DistanceForAutoChopTree = val
@@ -1451,7 +1451,7 @@ BestTab:Toggle({
 
 -- Auto Kill Aura Script for WindUI
 local ActiveKillAura = false
-local DistanceForKillAura = 25
+local DistanceForKillAura = 2500
 
 -- Distance Slider
 BestTab:Slider({
@@ -1459,7 +1459,7 @@ BestTab:Slider({
     Value = {
         Min = 25,
         Max = 10000,
-        Default = 25
+        Default = 2500
     }, -- Added missing comma here
     Callback = function(val)
         DistanceForKillAura = val
