@@ -1156,6 +1156,85 @@ BriaTab:Toggle({
                     player.CharacterAdded:Connect(function(char)
                         addESP(char)
                     end)
+-- Visual Tab (was incorrectly named BriaTab)
+local VisualTab = Window:Tab({ Title = "Visual", Icon = "send" })
+
+VisualTab:Toggle({
+    Title = "No Fog", 
+    Value = false,
+    Callback = function(state)
+        local lighting = game:GetService("Lighting")
+        if state then
+            lighting.FogEnd = 1e6
+            lighting.FogStart = 1e6
+        else
+            lighting.FogEnd = 1000 -- Default-ish value
+            lighting.FogStart = 0
+        end
+    end
+})
+
+VisualTab:Slider({
+    Title = "Time of Day",
+    Description = "Adjust lighting between Day and Night",
+    Min = 0,
+    Max = 24,
+    Value = 12,
+    Callback = function(value)
+        local lighting = game:GetService("Lighting")
+        lighting.ClockTime = value
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Player ESP",
+    Value = false,
+    Callback = function(state)
+        local players = game:GetService("Players")
+        local localPlayer = players.LocalPlayer
+
+        -- Function to create ESP highlight
+        local function addESP(character)
+            if not character:FindFirstChild("Highlight") then
+                local highlight = Instance.new("Highlight")
+                highlight.Name = "Highlight"
+                highlight.FillColor = Color3.fromRGB(255, 0, 0) -- Red
+                highlight.FillTransparency = 0.5
+                highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                highlight.OutlineTransparency = 0
+                highlight.Parent = character
+            end
+        end
+
+        -- Function to remove ESP
+        local function removeESP(character)
+            local highlight = character:FindFirstChild("Highlight")
+            if highlight then
+                highlight:Destroy()
+            end
+        end
+
+        if state then
+            -- Enable ESP for existing players
+            for _, player in pairs(players:GetPlayers()) do
+                if player ~= localPlayer and player.Character then
+                    addESP(player.Character)
+                end
+            end
+
+            -- Add ESP when new players spawn
+            players.PlayerAdded:Connect(function(player)
+                player.CharacterAdded:Connect(function(char)
+                    addESP(char)
+                end)
+            end)
+
+            -- Add ESP when existing players respawn
+            for _, player in pairs(players:GetPlayers()) do
+                if player ~= localPlayer then
+                    player.CharacterAdded:Connect(function(char)
+                        addESP(char)
+                    end)
                 end
             end
         else
@@ -1169,13 +1248,12 @@ BriaTab:Toggle({
     end
 })
 
---Op
+-- Best Tab
 local BestTab = Window:Tab({ Title = "Best", Icon = "send" })
 
 BestTab:Paragraph({
     Title = "Here were the best script",
-    Content = "Hello "
-})
+    Content = "Hello
 
 
 BestTab:Paragraph({
