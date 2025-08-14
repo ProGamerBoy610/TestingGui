@@ -1400,7 +1400,7 @@ BestTab:Slider({
 })
 
 -- Auto Chop Tree Toggle
-bestTab:Toggle({
+BestTab:Toggle({
     Title = "Auto Chop Tree", 
     Value = false,
     Callback = function(state)
