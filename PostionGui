@@ -1392,7 +1392,7 @@ BestTab:Slider({
         Min = 0,
         Max = 1000,
         Default = 25
-    },
+    }, -- Added missing comma here
     Callback = function(val)
         DistanceForAutoChopTree = val
         print("Auto Chop Tree distance set to:", val)
@@ -1460,7 +1460,7 @@ BestTab:Slider({
         Min = 25,
         Max = 10000,
         Default = 25
-    },
+    }, -- Added missing comma here
     Callback = function(val)
         DistanceForKillAura = val
         print("Kill Aura distance set to:", val)
