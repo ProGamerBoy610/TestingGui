@@ -1,5 +1,5 @@
--- Modern Hub GUI for Roblox Executor (Improved Version)
--- Now with text labels in header and fixed overlays
+-- Modern Hub GUI for Roblox Executor (Updated with Text Labels)
+-- Compatible with Fryzer Circle Toggle
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -53,13 +53,13 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 100
 ScreenGui.Enabled = true
 
--- Create Main Frame
+-- Create Main Frame (Much Smaller)
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Config.Colors.Primary
 MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 450, 0, 300)
+MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Much smaller size
 MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -75,28 +75,13 @@ MainStroke.Color = Config.Colors.StrokeGreen
 MainStroke.Thickness = 2
 MainStroke.Parent = MainFrame
 
--- Create Shadow (NO OVERLAY BACKGROUND)
-local Shadow = Instance.new("Frame")
-Shadow.Name = "Shadow"
-Shadow.Parent = ScreenGui
-Shadow.BackgroundColor3 = Config.Colors.Shadow
-Shadow.BackgroundTransparency = 0.8
-Shadow.BorderSizePixel = 0
-Shadow.Size = UDim2.new(0, 460, 0, 310)
-Shadow.Position = UDim2.new(0.5, -230, 0.5, -155)
-Shadow.ZIndex = MainFrame.ZIndex - 1
-
-local ShadowCorner = Instance.new("UICorner")
-ShadowCorner.CornerRadius = UDim.new(0, 10)
-ShadowCorner.Parent = Shadow
-
--- Header Frame (EXPANDED FOR TEXT LABELS)
+-- Header Frame
 local HeaderFrame = Instance.new("Frame")
 HeaderFrame.Name = "Header"
 HeaderFrame.Parent = MainFrame
 HeaderFrame.BackgroundColor3 = Config.Colors.Secondary
 HeaderFrame.BorderSizePixel = 0
-HeaderFrame.Size = UDim2.new(1, 0, 0, 60) -- Expanded header for text labels
+HeaderFrame.Size = UDim2.new(1, 0, 0, 40) -- Smaller header
 HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
 
 local HeaderCorner = Instance.new("UICorner")
@@ -111,17 +96,17 @@ HeaderFix.BorderSizePixel = 0
 HeaderFix.Size = UDim2.new(1, 0, 0, 10)
 HeaderFix.Position = UDim2.new(0, 0, 1, -10)
 
--- Main Title Label
+-- Title Label
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "Title"
 TitleLabel.Parent = HeaderFrame
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Size = UDim2.new(1, -80, 0, 20)
-TitleLabel.Position = UDim2.new(0, 10, 0, 5)
+TitleLabel.Position = UDim2.new(0, 10, 0, 2)
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.Text = "MODERN HUB"
 TitleLabel.TextColor3 = Config.Colors.Text
-TitleLabel.TextSize = 16
+TitleLabel.TextSize = 14
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Subtitle Label
@@ -129,26 +114,13 @@ local SubtitleLabel = Instance.new("TextLabel")
 SubtitleLabel.Name = "Subtitle"
 SubtitleLabel.Parent = HeaderFrame
 SubtitleLabel.BackgroundTransparency = 1
-SubtitleLabel.Size = UDim2.new(1, -80, 0, 14)
-SubtitleLabel.Position = UDim2.new(0, 10, 0, 25)
+SubtitleLabel.Size = UDim2.new(1, -80, 0, 12)
+SubtitleLabel.Position = UDim2.new(0, 10, 0, 22)
 SubtitleLabel.Font = Enum.Font.Gotham
 SubtitleLabel.Text = "Advanced Script Hub"
 SubtitleLabel.TextColor3 = Config.Colors.TextSecondary
-SubtitleLabel.TextSize = 11
+SubtitleLabel.TextSize = 10
 SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-
--- Version Label (NEW)
-local VersionLabel = Instance.new("TextLabel")
-VersionLabel.Name = "Version"
-VersionLabel.Parent = HeaderFrame
-VersionLabel.BackgroundTransparency = 1
-VersionLabel.Size = UDim2.new(1, -80, 0, 12)
-VersionLabel.Position = UDim2.new(0, 10, 0, 42)
-VersionLabel.Font = Enum.Font.GothamMedium
-VersionLabel.Text = "Version 3.8 | Status: Online"
-VersionLabel.TextColor3 = Config.Colors.Success
-VersionLabel.TextSize = 9
-VersionLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Control Buttons Container
 local ControlsFrame = Instance.new("Frame")
@@ -182,21 +154,21 @@ CloseButton.Text = "×"
 CloseButton.TextColor3 = Config.Colors.Text
 CloseButton.TextSize = 16
 
--- Content Container (ADJUSTED FOR NEW HEADER SIZE)
+-- Content Container
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "Content"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Size = UDim2.new(1, 0, 1, -60) -- Adjusted for new header size
-ContentFrame.Position = UDim2.new(0, 0, 0, 60)
+ContentFrame.Size = UDim2.new(1, 0, 1, -40)
+ContentFrame.Position = UDim2.new(0, 0, 0, 40)
 
--- Left Sidebar for Tabs
+-- Left Sidebar for Tabs (Smaller)
 local SidebarFrame = Instance.new("Frame")
 SidebarFrame.Name = "Sidebar"
 SidebarFrame.Parent = ContentFrame
 SidebarFrame.BackgroundColor3 = Config.Colors.Secondary
 SidebarFrame.BorderSizePixel = 0
-SidebarFrame.Size = UDim2.new(0, 120, 1, 0)
+SidebarFrame.Size = UDim2.new(0, 120, 1, 0) -- Smaller sidebar
 SidebarFrame.Position = UDim2.new(0, 0, 0, 0)
 
 -- Add green stroke to sidebar
@@ -268,7 +240,7 @@ function Library:CreateTab(name, icon)
     TabButton.Parent = TabScrollFrame
     TabButton.BackgroundColor3 = Config.Colors.Primary
     TabButton.BorderSizePixel = 0
-    TabButton.Size = UDim2.new(1, 0, 0, 30)
+    TabButton.Size = UDim2.new(1, 0, 0, 30) -- Smaller tab buttons
     TabButton.Font = Enum.Font.Gotham
     TabButton.Text = (icon and icon .. " " or "") .. name
     TabButton.TextColor3 = Config.Colors.TextSecondary
@@ -372,7 +344,7 @@ function Library:CreateButton(tab, text, callback)
     Button.Parent = tab.Content
     Button.BackgroundColor3 = Config.Colors.Secondary
     Button.BorderSizePixel = 0
-    Button.Size = UDim2.new(1, 0, 0, 28)
+    Button.Size = UDim2.new(1, 0, 0, 28) -- Smaller buttons
     Button.Font = Enum.Font.Gotham
     Button.Text = text
     Button.TextColor3 = Config.Colors.Text
@@ -453,7 +425,7 @@ function Library:CreateToggle(tab, text, default, callback)
     Toggle.Parent = tab.Content
     Toggle.BackgroundColor3 = Config.Colors.Secondary
     Toggle.BorderSizePixel = 0
-    Toggle.Size = UDim2.new(1, 0, 0, 28)
+    Toggle.Size = UDim2.new(1, 0, 0, 28) -- Smaller toggles
     Toggle.LayoutOrder = #tab.Components + 1
     
     local ToggleCorner = Instance.new("UICorner")
@@ -539,7 +511,7 @@ function Library:CreateLabel(tab, text, color)
     LabelFrame.Parent = tab.Content
     LabelFrame.BackgroundColor3 = Config.Colors.Warning
     LabelFrame.BorderSizePixel = 0
-    LabelFrame.Size = UDim2.new(1, 0, 0, 25)
+    LabelFrame.Size = UDim2.new(1, 0, 0, 25) -- Smaller labels
     LabelFrame.LayoutOrder = #tab.Components + 1
     
     local LabelCorner = Instance.new("UICorner")
@@ -574,12 +546,54 @@ function Library:CreateLabel(tab, text, color)
     return {Label = LabelFrame, SetText = function(newText) Label.Text = newText end}
 end
 
+-- NEW FUNCTION: Create Text Label (Like button but only shows text)
+function Library:CreateTextLabel(tab, text, color)
+    local TextLabelFrame = Instance.new("Frame")
+    TextLabelFrame.Name = text
+    TextLabelFrame.Parent = tab.Content
+    TextLabelFrame.BackgroundColor3 = Config.Colors.Secondary
+    TextLabelFrame.BorderSizePixel = 0
+    TextLabelFrame.Size = UDim2.new(1, 0, 0, 28) -- Same size as buttons
+    TextLabelFrame.LayoutOrder = #tab.Components + 1
+    
+    local TextLabelCorner = Instance.new("UICorner")
+    TextLabelCorner.CornerRadius = UDim.new(0, 4)
+    TextLabelCorner.Parent = TextLabelFrame
+    
+    -- Add green stroke
+    local TextLabelStroke = Instance.new("UIStroke")
+    TextLabelStroke.Color = Config.Colors.StrokeGreen
+    TextLabelStroke.Thickness = 1
+    TextLabelStroke.Parent = TextLabelFrame
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Parent = TextLabelFrame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Size = UDim2.new(1, -16, 1, 0)
+    TextLabel.Position = UDim2.new(0, 8, 0, 0)
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.Text = text
+    TextLabel.TextColor3 = color or Config.Colors.Text
+    TextLabel.TextSize = 11
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    table.insert(tab.Components, TextLabelFrame)
+    
+    -- Update tab content size
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {Frame = TextLabelFrame, SetText = function(newText) TextLabel.Text = newText end}
+end
+
 -- Control Button Functions
 MinimizeButton.MouseButton1Click:Connect(function()
     ScreenGui.Enabled = false
 end)
 
--- FIXED Close Confirmation Dialog (NO FULLSCREEN OVERLAY)
+-- Close Confirmation Dialog (FIXED - No background overlay)
 local function CreateConfirmDialog()
     local ConfirmGui = Instance.new("ScreenGui")
     ConfirmGui.Name = "ConfirmDialog"
@@ -587,7 +601,7 @@ local function CreateConfirmDialog()
     ConfirmGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ConfirmGui.DisplayOrder = 200
     
-    -- REMOVED THE FULLSCREEN OVERLAY - NO MORE BLACK BACKGROUND
+    -- REMOVED: No overlay/background frame that covers full screen
     
     local ConfirmFrame = Instance.new("Frame")
     ConfirmFrame.Parent = ConfirmGui
@@ -662,10 +676,10 @@ local function CreateConfirmDialog()
     ConfirmButtonCorner.CornerRadius = UDim.new(0, 4)
     ConfirmButtonCorner.Parent = ConfirmButton
     
-    -- Animate in (NO SCALING FROM 0)
-    ConfirmFrame.Position = UDim2.new(0.5, -150, 0.3, -60)
+    -- Animate in
+    ConfirmFrame.Size = UDim2.new(0, 0, 0, 0)
     TweenService:Create(ConfirmFrame, Config.Animations.Bounce, {
-        Position = UDim2.new(0.5, -150, 0.5, -60)
+        Size = UDim2.new(0, 300, 0, 120)
     }):Play()
     
     CancelButton.MouseButton1Click:Connect(function()
@@ -673,8 +687,15 @@ local function CreateConfirmDialog()
     end)
     
     ConfirmButton.MouseButton1Click:Connect(function()
+        -- Close both GUIs when confirmed
         ScreenGui:Destroy()
         ConfirmGui:Destroy()
+        
+        -- Also close the circle toggle GUI
+        local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
+        if fryzerGUI then
+            fryzerGUI:Destroy()
+        end
     end)
     
     -- Hover effects
@@ -730,18 +751,11 @@ end)
 
 -- Animate GUI entrance
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
-Shadow.Size = UDim2.new(0, 0, 0, 0)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-Shadow.Position = UDim2.new(0.5, 0, 0.5, 0)
 
 TweenService:Create(MainFrame, Config.Animations.Bounce, {
     Size = UDim2.new(0, 450, 0, 300),
     Position = UDim2.new(0.5, -225, 0.5, -150)
-}):Play()
-
-TweenService:Create(Shadow, Config.Animations.Bounce, {
-    Size = UDim2.new(0, 460, 0, 310),
-    Position = UDim2.new(0.5, -230, 0.5, -155)
 }):Play()
 
 -- Example Usage - Create tabs and components immediately
@@ -760,6 +774,7 @@ end)
 Library:CreateToggle(homeTab, "Enable Feature", false, function(value)
     print("Toggle:", value)
 end)
+Library:CreateTextLabel(homeTab, "This is a text label - no click action", Config.Colors.TextSecondary)
 
 -- SPECIAL Tab Components
 Library:CreateButton(specialTab, "Special Function", function()
@@ -768,6 +783,7 @@ end)
 Library:CreateToggle(specialTab, "Special Toggle", true, function(value)
     print("Special toggle:", value)
 end)
+Library:CreateTextLabel(specialTab, "Special Info: Read-only text display", Config.Colors.Accent)
 
 -- MAIN Tab Components
 Library:CreateButton(mainTab, "Main Feature 1", function()
@@ -779,6 +795,7 @@ end)
 Library:CreateToggle(mainTab, "Main Toggle", false, function(value)
     print("Main toggle:", value)
 end)
+Library:CreateTextLabel(mainTab, "Status: All systems operational", Config.Colors.Success)
 
 -- SPAWNER Tab Components
 Library:CreateLabel(spawnerTab, "SPAWNER SCRIPT", Config.Colors.Text)
@@ -795,6 +812,7 @@ Library:CreateLabel(spawnerTab, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
 Library:CreateToggle(spawnerTab, "Allow Gift Spawned Pets ^.^", false, function(value)
     print("Allow Gift Pets:", value)
 end)
+Library:CreateTextLabel(spawnerTab, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
 
 -- DESTROY Tab Components
 Library:CreateButton(destroyTab, "Destroy Function 1", function()
@@ -806,6 +824,7 @@ end)
 Library:CreateToggle(destroyTab, "Auto Destroy", false, function(value)
     print("Auto Destroy:", value)
 end)
+Library:CreateTextLabel(destroyTab, "Warning: Use destroy functions carefully", Config.Colors.Warning)
 
 -- SETTINGS Tab Components
 Library:CreateToggle(settingsTab, "Sound Effects", true, function(value)
@@ -817,6 +836,7 @@ end)
 Library:CreateButton(settingsTab, "Reset Settings", function()
     print("Settings reset!")
 end)
+Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
 print("🎉 Modern Hub GUI loaded successfully!")
 print("📱 Use the circle toggle to show/hide the GUI")
