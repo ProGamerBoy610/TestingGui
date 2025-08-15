@@ -1,5 +1,5 @@
--- Modern Hub GUI for Roblox Executor (Compact Version)
--- Compatible with Fryzer Circle Toggle
+-- Modern Hub GUI for Roblox Executor (Improved Version)
+-- Now with text labels in header and fixed overlays
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -53,13 +53,13 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 100
 ScreenGui.Enabled = true
 
--- Create Main Frame (Much Smaller)
+-- Create Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Config.Colors.Primary
 MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Much smaller size
+MainFrame.Size = UDim2.new(0, 450, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 MainFrame.Active = true
 MainFrame.Draggable = true
@@ -75,7 +75,7 @@ MainStroke.Color = Config.Colors.StrokeGreen
 MainStroke.Thickness = 2
 MainStroke.Parent = MainFrame
 
--- Create Shadow
+-- Create Shadow (NO OVERLAY BACKGROUND)
 local Shadow = Instance.new("Frame")
 Shadow.Name = "Shadow"
 Shadow.Parent = ScreenGui
@@ -90,13 +90,13 @@ local ShadowCorner = Instance.new("UICorner")
 ShadowCorner.CornerRadius = UDim.new(0, 10)
 ShadowCorner.Parent = Shadow
 
--- Header Frame
+-- Header Frame (EXPANDED FOR TEXT LABELS)
 local HeaderFrame = Instance.new("Frame")
 HeaderFrame.Name = "Header"
 HeaderFrame.Parent = MainFrame
 HeaderFrame.BackgroundColor3 = Config.Colors.Secondary
 HeaderFrame.BorderSizePixel = 0
-HeaderFrame.Size = UDim2.new(1, 0, 0, 40) -- Smaller header
+HeaderFrame.Size = UDim2.new(1, 0, 0, 60) -- Expanded header for text labels
 HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
 
 local HeaderCorner = Instance.new("UICorner")
@@ -111,17 +111,17 @@ HeaderFix.BorderSizePixel = 0
 HeaderFix.Size = UDim2.new(1, 0, 0, 10)
 HeaderFix.Position = UDim2.new(0, 0, 1, -10)
 
--- Title Label
+-- Main Title Label
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Name = "Title"
 TitleLabel.Parent = HeaderFrame
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Size = UDim2.new(1, -80, 0, 20)
-TitleLabel.Position = UDim2.new(0, 10, 0, 2)
+TitleLabel.Position = UDim2.new(0, 10, 0, 5)
 TitleLabel.Font = Enum.Font.GothamBold
 TitleLabel.Text = "MODERN HUB"
 TitleLabel.TextColor3 = Config.Colors.Text
-TitleLabel.TextSize = 14
+TitleLabel.TextSize = 16
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Subtitle Label
@@ -129,13 +129,26 @@ local SubtitleLabel = Instance.new("TextLabel")
 SubtitleLabel.Name = "Subtitle"
 SubtitleLabel.Parent = HeaderFrame
 SubtitleLabel.BackgroundTransparency = 1
-SubtitleLabel.Size = UDim2.new(1, -80, 0, 12)
-SubtitleLabel.Position = UDim2.new(0, 10, 0, 22)
+SubtitleLabel.Size = UDim2.new(1, -80, 0, 14)
+SubtitleLabel.Position = UDim2.new(0, 10, 0, 25)
 SubtitleLabel.Font = Enum.Font.Gotham
 SubtitleLabel.Text = "Advanced Script Hub"
 SubtitleLabel.TextColor3 = Config.Colors.TextSecondary
-SubtitleLabel.TextSize = 10
+SubtitleLabel.TextSize = 11
 SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+
+-- Version Label (NEW)
+local VersionLabel = Instance.new("TextLabel")
+VersionLabel.Name = "Version"
+VersionLabel.Parent = HeaderFrame
+VersionLabel.BackgroundTransparency = 1
+VersionLabel.Size = UDim2.new(1, -80, 0, 12)
+VersionLabel.Position = UDim2.new(0, 10, 0, 42)
+VersionLabel.Font = Enum.Font.GothamMedium
+VersionLabel.Text = "Version 3.8 | Status: Online"
+VersionLabel.TextColor3 = Config.Colors.Success
+VersionLabel.TextSize = 9
+VersionLabel.TextXAlignment = Enum.TextXAlignment.Left
 
 -- Control Buttons Container
 local ControlsFrame = Instance.new("Frame")
@@ -169,21 +182,21 @@ CloseButton.Text = "×"
 CloseButton.TextColor3 = Config.Colors.Text
 CloseButton.TextSize = 16
 
--- Content Container
+-- Content Container (ADJUSTED FOR NEW HEADER SIZE)
 local ContentFrame = Instance.new("Frame")
 ContentFrame.Name = "Content"
 ContentFrame.Parent = MainFrame
 ContentFrame.BackgroundTransparency = 1
-ContentFrame.Size = UDim2.new(1, 0, 1, -40)
-ContentFrame.Position = UDim2.new(0, 0, 0, 40)
+ContentFrame.Size = UDim2.new(1, 0, 1, -60) -- Adjusted for new header size
+ContentFrame.Position = UDim2.new(0, 0, 0, 60)
 
--- Left Sidebar for Tabs (Smaller)
+-- Left Sidebar for Tabs
 local SidebarFrame = Instance.new("Frame")
 SidebarFrame.Name = "Sidebar"
 SidebarFrame.Parent = ContentFrame
 SidebarFrame.BackgroundColor3 = Config.Colors.Secondary
 SidebarFrame.BorderSizePixel = 0
-SidebarFrame.Size = UDim2.new(0, 120, 1, 0) -- Smaller sidebar
+SidebarFrame.Size = UDim2.new(0, 120, 1, 0)
 SidebarFrame.Position = UDim2.new(0, 0, 0, 0)
 
 -- Add green stroke to sidebar
@@ -255,7 +268,7 @@ function Library:CreateTab(name, icon)
     TabButton.Parent = TabScrollFrame
     TabButton.BackgroundColor3 = Config.Colors.Primary
     TabButton.BorderSizePixel = 0
-    TabButton.Size = UDim2.new(1, 0, 0, 30) -- Smaller tab buttons
+    TabButton.Size = UDim2.new(1, 0, 0, 30)
     TabButton.Font = Enum.Font.Gotham
     TabButton.Text = (icon and icon .. " " or "") .. name
     TabButton.TextColor3 = Config.Colors.TextSecondary
@@ -359,7 +372,7 @@ function Library:CreateButton(tab, text, callback)
     Button.Parent = tab.Content
     Button.BackgroundColor3 = Config.Colors.Secondary
     Button.BorderSizePixel = 0
-    Button.Size = UDim2.new(1, 0, 0, 28) -- Smaller buttons
+    Button.Size = UDim2.new(1, 0, 0, 28)
     Button.Font = Enum.Font.Gotham
     Button.Text = text
     Button.TextColor3 = Config.Colors.Text
@@ -440,7 +453,7 @@ function Library:CreateToggle(tab, text, default, callback)
     Toggle.Parent = tab.Content
     Toggle.BackgroundColor3 = Config.Colors.Secondary
     Toggle.BorderSizePixel = 0
-    Toggle.Size = UDim2.new(1, 0, 0, 28) -- Smaller toggles
+    Toggle.Size = UDim2.new(1, 0, 0, 28)
     Toggle.LayoutOrder = #tab.Components + 1
     
     local ToggleCorner = Instance.new("UICorner")
@@ -526,7 +539,7 @@ function Library:CreateLabel(tab, text, color)
     LabelFrame.Parent = tab.Content
     LabelFrame.BackgroundColor3 = Config.Colors.Warning
     LabelFrame.BorderSizePixel = 0
-    LabelFrame.Size = UDim2.new(1, 0, 0, 25) -- Smaller labels
+    LabelFrame.Size = UDim2.new(1, 0, 0, 25)
     LabelFrame.LayoutOrder = #tab.Components + 1
     
     local LabelCorner = Instance.new("UICorner")
@@ -566,7 +579,7 @@ MinimizeButton.MouseButton1Click:Connect(function()
     ScreenGui.Enabled = false
 end)
 
--- Close Confirmation Dialog
+-- FIXED Close Confirmation Dialog (NO FULLSCREEN OVERLAY)
 local function CreateConfirmDialog()
     local ConfirmGui = Instance.new("ScreenGui")
     ConfirmGui.Name = "ConfirmDialog"
@@ -574,12 +587,7 @@ local function CreateConfirmDialog()
     ConfirmGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ConfirmGui.DisplayOrder = 200
     
-    local Overlay = Instance.new("Frame")
-    Overlay.Parent = ConfirmGui
-    Overlay.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Overlay.BackgroundTransparency = 0.5
-    Overlay.BorderSizePixel = 0
-    Overlay.Size = UDim2.new(1, 0, 1, 0)
+    -- REMOVED THE FULLSCREEN OVERLAY - NO MORE BLACK BACKGROUND
     
     local ConfirmFrame = Instance.new("Frame")
     ConfirmFrame.Parent = ConfirmGui
@@ -654,10 +662,10 @@ local function CreateConfirmDialog()
     ConfirmButtonCorner.CornerRadius = UDim.new(0, 4)
     ConfirmButtonCorner.Parent = ConfirmButton
     
-    -- Animate in
-    ConfirmFrame.Size = UDim2.new(0, 0, 0, 0)
+    -- Animate in (NO SCALING FROM 0)
+    ConfirmFrame.Position = UDim2.new(0.5, -150, 0.3, -60)
     TweenService:Create(ConfirmFrame, Config.Animations.Bounce, {
-        Size = UDim2.new(0, 300, 0, 120)
+        Position = UDim2.new(0.5, -150, 0.5, -60)
     }):Play()
     
     CancelButton.MouseButton1Click:Connect(function()
