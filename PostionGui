@@ -64,12 +64,7 @@ MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Add corner rounding
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 10)
-MainCorner.Parent = MainFrame
-
--- Add GREEN border stroke
+-- Add corner rounding (REMOVED UICorner for cleaner look)
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Color = Config.Colors.StrokeGreen
 MainStroke.Thickness = 2
@@ -85,7 +80,7 @@ HeaderFrame.Size = UDim2.new(1, 0, 0, 40) -- Smaller header
 HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
 
 local HeaderCorner = Instance.new("UICorner")
-HeaderCorner.CornerRadius = UDim.new(0, 10)
+HeaderCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
 HeaderCorner.Parent = HeaderFrame
 
 -- Fix header corners (only top corners rounded)
@@ -611,7 +606,7 @@ local function CreateConfirmDialog()
     ConfirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
     
     local ConfirmCorner = Instance.new("UICorner")
-    ConfirmCorner.CornerRadius = UDim.new(0, 10)
+    ConfirmCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
     ConfirmCorner.Parent = ConfirmFrame
     
     local ConfirmStroke = Instance.new("UIStroke")
@@ -658,7 +653,7 @@ local function CreateConfirmDialog()
     CancelButton.TextSize = 11
     
     local CancelCorner = Instance.new("UICorner")
-    CancelCorner.CornerRadius = UDim.new(0, 4)
+    CancelCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
     CancelCorner.Parent = CancelButton
     
     local ConfirmButton = Instance.new("TextButton")
@@ -673,7 +668,7 @@ local function CreateConfirmDialog()
     ConfirmButton.TextSize = 11
     
     local ConfirmButtonCorner = Instance.new("UICorner")
-    ConfirmButtonCorner.CornerRadius = UDim.new(0, 4)
+    ConfirmButtonCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
     ConfirmButtonCorner.Parent = ConfirmButton
     
     -- Animate in
@@ -718,34 +713,28 @@ CloseButton.MouseButton1Click:Connect(function()
     CreateConfirmDialog()
 end)
 
--- Control button hover effects
+-- Control button hover effects (FIXED - No blue background)
 MinimizeButton.MouseEnter:Connect(function()
     TweenService:Create(MinimizeButton, Config.Animations.Fast, {
-        TextColor3 = Config.Colors.Accent,
-        BackgroundTransparency = 0.9,
-        BackgroundColor3 = Config.Colors.Accent
+        TextColor3 = Config.Colors.Accent
     }):Play()
 end)
 
 MinimizeButton.MouseLeave:Connect(function()
     TweenService:Create(MinimizeButton, Config.Animations.Fast, {
-        TextColor3 = Config.Colors.Text,
-        BackgroundTransparency = 1
+        TextColor3 = Config.Colors.Text
     }):Play()
 end)
 
 CloseButton.MouseEnter:Connect(function()
     TweenService:Create(CloseButton, Config.Animations.Fast, {
-        TextColor3 = Config.Colors.Error,
-        BackgroundTransparency = 0.9,
-        BackgroundColor3 = Config.Colors.Error
+        TextColor3 = Config.Colors.Error
     }):Play()
 end)
 
 CloseButton.MouseLeave:Connect(function()
     TweenService:Create(CloseButton, Config.Animations.Fast, {
-        TextColor3 = Config.Colors.Text,
-        BackgroundTransparency = 1
+        TextColor3 = Config.Colors.Text
     }):Play()
 end)
 
@@ -759,12 +748,41 @@ TweenService:Create(MainFrame, Config.Animations.Bounce, {
 }):Play()
 
 -- Example Usage - Create tabs and components immediately
-local homeTab = Library:CreateTab("HOME", "🏠")
-local specialTab = Library:CreateTab("SPECIAL", "⭐")
-local mainTab = Library:CreateTab("MAIN", "🎯")
-local spawnerTab = Library:CreateTab("SPAWNER", "🎪")
-local destroyTab = Library:CreateTab("DESTROY", "💥")
-local settingsTab = Library:CreateTab("SETTINGS", "⚙️")
+local infoTab = Library:CreateTab("INFO") -- New INFO tab without emoji
+local homeTab = Library:CreateTab("HOME")
+local specialTab = Library:CreateTab("SPECIAL")
+local mainTab = Library:CreateTab("MAIN")
+local spawnerTab = Library:CreateTab("SPAWNER")
+local destroyTab = Library:CreateTab("DESTROY")
+local settingsTab = Library:CreateTab("SETTINGS")
+
+-- Timer variables
+local scriptStartTime = tick()
+local timerLabel = nil
+
+-- Function to format time
+local function FormatTime(seconds)
+    local hours = math.floor(seconds / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", hours, minutes, secs)
+end
+
+-- INFO Tab Components (First tab)
+Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
+Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
+timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
+
+-- Update timer every second
+spawn(function()
+    while ScreenGui.Parent do
+        wait(1)
+        local timeUsed = tick() - scriptStartTime
+        if timerLabel and timerLabel.SetText then
+            timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
+        end
+    end
+end)
 
 -- HOME Tab Components
 Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
