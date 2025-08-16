@@ -1,143 +1,834 @@
--- Fryzer Hub - Debug Version
--- This will help identify what's working and what's not
+-- Load the library
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
-print("🔄 Starting Fryzer Hub Debug...")
+-- Create all tabs
+local infoTab = Library:CreateTab("INFO")
+local mainTab = Library:CreateTab("USER")
+local espTab = Library:CreateTab("ESP")
+local destroyTab = Library:CreateTab("DESTROY")
 
--- Step 1: Load circle toggle
-print("📍 Step 1: Loading circle toggle...")
-local success1, error1 = pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
+
+-- INFO Tab Components
+Library:CreateLabel(infoTab, "99 Nights In The Forest v3.9")
+Library:CreateTextLabel(infoTab, "The Script Hub")
+Library:CreateTextLabel(infoTab, "Created by: Fryzer")
+Library:CreateLabel(mainTab, "Join Discord")
+Library:CreateButton(infoTab, "Join Discord Server", function()
+    print("🔗 Discord link clicked!")
+    -- Add your discord invite link here
 end)
 
-if success1 then
-    print("✅ Circle toggle loaded successfully")
-else
-    print("❌ Circle toggle failed to load: " .. tostring(error1))
-end
 
--- Step 2: Load main library
-print("📍 Step 2: Loading main library...")
-local success2, error2 = pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-end)
+-- UserTab
 
-if success2 then
-    print("✅ Main library loaded successfully")
-else
-    print("❌ Main library failed to load: " .. tostring(error2))
-end
+Library:CreateLabel(mainTab, "Player Scripts")
 
--- Step 3: Check if Library exists
-print("📍 Step 3: Checking for Library object...")
-local waitTime = 0
-while not Library and waitTime < 10 do
-    wait(0.1)
-    waitTime = waitTime + 0.1
-    print("⏳ Waiting for Library... (" .. waitTime .. "s)")
-end
+-- Services
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
-if Library then
-    print("✅ Library object found!")
-    print("📋 Library methods available:")
-    for key, value in pairs(Library) do
-        if type(value) == "function" then
-            print("  - " .. key .. "()")
+local LocalPlayer = Players.LocalPlayer
+
+-- Default values
+local defaultSpeed = 16
+local defaultJumpHeight = 7.2
+local iyflyspeed = 1
+local vehicleflyspeed = 1
+
+-- Global variables
+_G.CurrentWalkSpeed = defaultSpeed
+_G.CurrentJumpHeight = defaultJumpHeight
+
+-- WalkSpeed Toggle
+Library:CreateToggle(mainTab, "WalkSpeed", false, function(state)
+    if state then
+        -- Set to current value when enabled
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = _G.CurrentWalkSpeed or defaultSpeed
+        end
+    else
+        -- Reset to default when disabled
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.WalkSpeed = defaultSpeed
         end
     end
-else
-    print("❌ Library object not found after 10 seconds!")
-    print("🔧 Creating basic fallback library...")
-    
-    -- Create a simple fallback library
-    Library = {}
-    function Library:CreateTab(name)
-        print("📁 Tab created: " .. name)
-        return {name = name}
-    end
-    function Library:CreateButton(tab, name, callback)
-        print("🔘 Button created: " .. name .. " in tab " .. (tab.name or "unknown"))
-        return {name = name, callback = callback}
-    end
-    function Library:CreateToggle(tab, name, default, callback)
-        print("🔄 Toggle created: " .. name .. " in tab " .. (tab.name or "unknown"))
-        return {name = name, callback = callback}
-    end
-    function Library:CreateSlider(tab, name, min, max, default, callback)
-        print("📊 Slider created: " .. name .. " in tab " .. (tab.name or "unknown"))
-        return {name = name, callback = callback}
-    end
-    function Library:CreateDropdown(tab, name, options, default, callback)
-        print("📋 Dropdown created: " .. name .. " in tab " .. (tab.name or "unknown"))
-        return {name = name, callback = callback}
-    end
-    function Library:CreateTextBox(tab, name, placeholder, callback)
-        print("📝 TextBox created: " .. name .. " in tab " .. (tab.name or "unknown"))
-        return {name = name, callback = callback}
-    end
-    function Library:CreateLabel(tab, text)
-        print("🏷️ Label created: " .. text .. " in tab " .. (tab.name or "unknown"))
-        return {text = text}
-    end
-    function Library:CreateTextLabel(tab, text, color)
-        print("📄 TextLabel created: " .. text .. " in tab " .. (tab.name or "unknown"))
-        return {text = text}
-    end
-end
-
--- Step 4: Check if Config exists
-print("📍 Step 4: Checking for Config object...")
-if not Config then
-    print("⚠️ Config not found, creating default config...")
-    Config = {
-        Colors = {
-            Background = Color3.fromRGB(25, 25, 25),
-            Accent = Color3.fromRGB(0, 162, 255),
-            Primary = Color3.fromRGB(70, 130, 255),
-            Success = Color3.fromRGB(46, 204, 113),
-            Warning = Color3.fromRGB(241, 196, 15),
-            Text = Color3.fromRGB(255, 255, 255),
-            TextSecondary = Color3.fromRGB(170, 170, 170)
-        }
-    }
-    print("✅ Default config created")
-else
-    print("✅ Config object found!")
-end
-
--- Step 5: Try creating a simple tab to test
-print("📍 Step 5: Testing tab creation...")
-local success3, error3 = pcall(function()
-    local testTab = Library:CreateTab("TEST")
-    Library:CreateButton(testTab, "Test Button", function()
-        print("🎉 Test button clicked!")
-    end)
+    print("✅ WalkSpeed", state and "ON" or "OFF")
 end)
 
-if success3 then
-    print("✅ Test tab and button created successfully!")
-else
-    print("❌ Failed to create test tab: " .. tostring(error3))
+-- Speed Slider
+Library:CreateSlider(mainTab, "Speed Changer", 16, 100, 16, function(val)
+    _G.CurrentWalkSpeed = val
+    -- Update immediately if character exists
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = val
+    end
+    print("📏 WalkSpeed set to:", val)
+end)
+
+-- Jump Power Toggle
+Library:CreateToggle(mainTab, "Enable Jump Power", false, function(state)
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        if state then
+            humanoid.UseJumpPower = false -- Ensure JumpHeight is used
+            humanoid.JumpHeight = _G.CurrentJumpHeight or defaultJumpHeight
+        else
+            humanoid.JumpHeight = defaultJumpHeight
+        end
+    end
+    print("✅ Jump Height", state and "ON" or "OFF")
+end)
+
+-- Jump Power Slider
+Library:CreateSlider(mainTab, "Jump Power", 7, 50, 7, function(val)
+    _G.CurrentJumpHeight = val
+    local humanoid = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid")
+    if humanoid then
+        humanoid.JumpHeight = val
+    end
+    print("📏 Jump Height set to:", val)
+end)
+
+-- Fly System Variables
+local IYMouse = Players.LocalPlayer:GetMouse()
+local FLYING = false
+local QEfly = true
+local ActivateFly = false
+local flyKeyDown, flyKeyUp
+local mfly1, mfly2
+local velocityHandlerName = "BodyVelocity"
+local gyroHandlerName = "BodyGyro"
+
+-- Fly Functions
+local function sFLY(vfly)
+    repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat wait() until IYMouse
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+
+    local function FLY()
+        FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        task.spawn(function()
+            repeat wait()
+                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+            until not FLYING
+            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            SPEED = 0
+            BG:Destroy()
+            BV:Destroy()
+            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            end
+        end)
+    end
+    
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 's' then
+            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'd' then 
+            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif QEfly and KEY:lower() == 'e' then
+            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+        elseif QEfly and KEY:lower() == 'q' then
+            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+        end
+        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+    
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = 0
+        elseif KEY:lower() == 's' then
+            CONTROL.B = 0
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = 0
+        elseif KEY:lower() == 'd' then
+            CONTROL.R = 0
+        elseif KEY:lower() == 'e' then
+            CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then
+            CONTROL.E = 0
+        end
+    end)
+    FLY()
 end
 
-print("🔍 Debug complete! Now running main script...")
+local function NOFLY()
+    FLYING = false
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+end
 
--- Now run your original script
-local tabs = {
-    info = Library:CreateTab("INFO"),
-    home = Library:CreateTab("HOME"), 
-    special = Library:CreateTab("SPECIAL"),
-    main = Library:CreateTab("MAIN"),
-    spawner = Library:CreateTab("SPAWNER"),
-    destroy = Library:CreateTab("DESTROY"),
-    settings = Library:CreateTab("SETTINGS"),
-    player = Library:CreateTab("PLAYER")
+local function UnMobileFly()
+    pcall(function()
+        FLYING = false
+        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        root:FindFirstChild(velocityHandlerName):Destroy()
+        root:FindFirstChild(gyroHandlerName):Destroy()
+        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+        mfly1:Disconnect()
+        mfly2:Disconnect()
+    end)
+end
+
+local function MobileFly()
+    UnMobileFly()
+    FLYING = true
+
+    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local camera = workspace.CurrentCamera
+    local v3none = Vector3.new()
+    local v3zero = Vector3.new(0, 0, 0)
+    local v3inf = Vector3.new(9e9, 9e9, 9e9)
+
+    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = v3zero
+    bv.Velocity = v3zero
+
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = v3inf
+    bg.P = 1000
+    bg.D = 50
+
+    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = velocityHandlerName
+        bv.Parent = root
+        bv.MaxForce = v3zero
+        bv.Velocity = v3zero
+
+        local bg = Instance.new("BodyGyro")
+        bg.Name = gyroHandlerName
+        bg.Parent = root
+        bg.MaxTorque = v3inf
+        bg.P = 1000
+        bg.D = 50
+    end)
+
+    mfly2 = RunService.RenderStepped:Connect(function()
+        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        camera = workspace.CurrentCamera
+        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
+            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
+            local GyroHandler = root:FindFirstChild(gyroHandlerName)
+
+            VelocityHandler.MaxForce = v3inf
+            GyroHandler.MaxTorque = v3inf
+            humanoid.PlatformStand = true
+            GyroHandler.CFrame = camera.CoordinateFrame
+            VelocityHandler.Velocity = v3none
+
+            local direction = controlModule:GetMoveVector()
+            if direction.X > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.X < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.Z > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+            if direction.Z < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+        end
+    end)
+end
+
+-- Fly Speed Slider
+Library:CreateSlider(mainTab, "Fly Speed", 1, 100, 10, function(val)
+    iyflyspeed = val / 10 -- Convert to decimal
+    print("📏 Fly Speed set to:", val .. "%")
+end)
+
+-- Fly Toggle
+Library:CreateToggle(mainTab, "Fly", false, function(state)
+    ActivateFly = state
+    task.spawn(function()
+        if not FLYING and ActivateFly then
+            if UserInputService.TouchEnabled then
+                MobileFly()
+            else
+                NOFLY()
+                wait()
+                sFLY()
+            end
+        elseif FLYING and not ActivateFly then
+            if UserInputService.TouchEnabled then
+                UnMobileFly()
+            else
+                NOFLY()
+            end
+        end
+    end)
+    print("✅ Fly", state and "ON" or "OFF")
+end)
+
+-- Noclip System
+local noclipConnection
+local noclipEnabled = false
+
+Library:CreateToggle(mainTab, "Noclip", false, function(state)
+    noclipEnabled = state
+
+    if state then
+        -- Start noclip
+        noclipConnection = RunService.Stepped:Connect(function()
+            local character = LocalPlayer.Character
+            if character then
+                for _, part in pairs(character:GetDescendants()) do
+                    if part:IsA("BasePart") and part.CanCollide then
+                        part.CanCollide = false
+                    end
+                end
+            end
+        end)
+    else
+        -- Stop noclip and restore collisions
+        if noclipConnection then
+            noclipConnection:Disconnect()
+            noclipConnection = nil
+        end
+        local character = LocalPlayer.Character
+        if character then
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = true
+                end
+            end
+        end
+    end
+
+    print("✅ Noclip", state and "ON" or "OFF")
+end)
+
+-- Additional utility button for testing
+Library:CreateButton(mainTab, "Reset Character", function()
+    if LocalPlayer.Character then
+        LocalPlayer.Character:BreakJoints()
+    end
+    print("✅ Character reset!")
+end)
+
+-- ESP TAB
+-- Services
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- Health Billboard System
+local healthBillboardEnabled = false
+local connections = {}
+local tracked = {}
+
+local SETTINGS = {
+    Name = "HealthBillboard",
+    MaxDistance = 250,
+    StudsOffset = Vector3.new(0, 3.5, 0),
+    TextFont = Enum.Font.GothamBold,
+    TextSize = 14,
+    AlwaysOnTop = true,
+    UpdateHz = 30,
+    UseBar = true,
+    ShowModelName = false,
+    BarHeight = 6,
+    BorderThickness = 2.5,
 }
 
-print("📁 All tabs created!")
+local function clamp(n, a, b) return math.max(a, math.min(b, n)) end
 
--- Add a simple test button to see if it works
-Library:CreateButton(tabs.info, "Debug Test", function()
-    print("🎯 Debug button works!")
+local function lerpColor(c1, c2, t)
+    return Color3.new(
+        c1.R + (c2.R - c1.R) * t,
+        c1.G + (c2.G - c1.G) * t,
+        c1.B + (c2.B - c1.B) * t
+    )
+end
+
+local function colorByPercent(p)
+    p = clamp(p, 0, 1)
+    return lerpColor(Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 90), p)
+end
+
+local function findHead(model)
+    local head = model:FindFirstChild("Head")
+    if head and head:IsA("BasePart") then return head end
+    local best, bestY = nil, -math.huge
+    for _, obj in ipairs(model:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.CanCollide then
+            if obj.Position.Y > bestY then
+                bestY = obj.Position.Y
+                best = obj
+            end
+        end
+    end
+    return best
+end
+
+local function makeBillboard(humanoid, head, model)
+    if tracked[humanoid] and tracked[humanoid].Parent then return tracked[humanoid] end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = SETTINGS.Name
+    bb.Adornee = head
+    bb.AlwaysOnTop = SETTINGS.AlwaysOnTop
+    bb.Size = UDim2.fromOffset(160, SETTINGS.UseBar and (26 + SETTINGS.BarHeight) or 26)
+    bb.StudsOffset = SETTINGS.StudsOffset
+    bb.MaxDistance = SETTINGS.MaxDistance
+    bb.ResetOnSpawn = false
+    bb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    bb.Parent = head
+
+    local holder = Instance.new("Frame")
+    holder.Size = UDim2.fromScale(1, 1)
+    holder.BackgroundTransparency = 1
+    holder.Parent = bb
+
+    local text = Instance.new("TextLabel")
+    text.Name = "HPText"
+    text.Size = UDim2.new(1, -12, 0, 24)
+    text.Position = UDim2.fromOffset(6, 2)
+    text.BackgroundTransparency = 1
+    text.TextColor3 = Color3.new(1,1,1)
+    text.TextStrokeTransparency = 0.5
+    text.Font = SETTINGS.TextFont
+    text.TextSize = SETTINGS.TextSize
+    text.Parent = holder
+
+    local barFrame, barFill
+    if SETTINGS.UseBar then
+        barFrame = Instance.new("Frame")
+        barFrame.Name = "Bar"
+        barFrame.Size = UDim2.new(1, -12, 0, SETTINGS.BarHeight)
+        barFrame.Position = UDim2.fromOffset(6, 26)
+        barFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        barFrame.BorderSizePixel = SETTINGS.BorderThickness
+        barFrame.Parent = holder
+
+        barFill = Instance.new("Frame")
+        barFill.Name = "Fill"
+        barFill.Size = UDim2.fromScale(1, 1)
+        barFill.BackgroundColor3 = Color3.fromRGB(60, 255, 90)
+        barFill.BorderSizePixel = 0
+        barFill.Parent = barFrame
+    end
+
+    tracked[humanoid] = bb
+
+    local lastDisplayPct = 1
+    local function update()
+        if not healthBillboardEnabled then return end
+        local hp = clamp(humanoid.Health, 0, math.max(1, humanoid.MaxHealth))
+        local maxHp = math.max(1, humanoid.MaxHealth)
+        local pct = hp / maxHp
+        text.Text = string.format("%d / %d", math.floor(hp + 0.5), math.floor(maxHp + 0.5))
+
+        if barFill then
+            lastDisplayPct = lastDisplayPct + (pct - lastDisplayPct) * 0.35
+            barFill.Size = UDim2.fromScale(lastDisplayPct, 1)
+            barFill.BackgroundColor3 = colorByPercent(lastDisplayPct)
+        else
+            text.TextColor3 = colorByPercent(pct)
+        end
+    end
+
+    local healthConn = humanoid.HealthChanged:Connect(update)
+    local maxHealthConn = humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(update)
+    local diedConn = humanoid.Died:Connect(function()
+        if tracked[humanoid] then
+            tracked[humanoid]:Destroy()
+            tracked[humanoid] = nil
+        end
+    end)
+    local heartbeatConn = RunService.Heartbeat:Connect(update)
+
+    connections[humanoid] = {healthConn, maxHealthConn, diedConn, heartbeatConn}
+
+    update()
+end
+
+local function attachToModel(model)
+    if not model or not model:IsA("Model") then return end
+    if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    local head = findHead(model)
+    if not head then return end
+    makeBillboard(humanoid, head, model)
+end
+
+local function enableHealthBillboards()
+    for _, hum in ipairs(workspace:GetDescendants()) do
+        if hum:IsA("Humanoid") and hum.Parent and hum.Parent:IsA("Model") then
+            attachToModel(hum.Parent)
+        end
+    end
+
+    connections.descendantAdded = workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("Humanoid") then
+            local model = obj.Parent
+            if model and model:IsA("Model") then
+                task.defer(function()
+                    attachToModel(model)
+                end)
+            end
+        end
+    end)
+
+    connections.playerAdded = Players.PlayerAdded:Connect(function(plr)
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character then attachToModel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end
+end
+
+local function disableHealthBillboards()
+    for humanoid, connList in pairs(connections) do
+        if type(connList) == "table" then
+            for _, conn in ipairs(connList) do
+                conn:Disconnect()
+            end
+        elseif connList.Disconnect then
+            connList:Disconnect()
+        end
+    end
+    connections = {}
+
+    for humanoid, billboard in pairs(tracked) do
+        if billboard and billboard.Parent then
+            billboard:Destroy()
+        end
+    end
+    tracked = {}
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BillboardGui") and obj.Name == SETTINGS.Name then
+            obj:Destroy()
+        end
+    end
+end
+
+-- Health Billboard Toggle
+Library:CreateToggle(espTab, "Health Billboard", false, function(state)
+    healthBillboardEnabled = state
+    if state then
+        enableHealthBillboards()
+    else
+        disableHealthBillboards()
+    end
+    print("✅ Health Billboard", state and "ON" or "OFF")
 end)
 
-print("🎉 Script loaded! Check console for debug info.")
+-- ESP System Variables
+local ActiveEspItems = false
+local ActiveEspEnemy = false
+local ActiveEspChildren = false
+local ActiveEspPeltTrader = false
+local ActiveDistanceEsp = false
+
+local function CreateEsp(Char, Color, Text, Parent, number)
+    if not Char or not Parent or not Parent:IsA("BasePart") then return end
+    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = Char
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, number or 2, 0)
+    billboard.Adornee = Parent
+    billboard.Parent = Parent
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        while highlight.Parent and billboard.Parent and Parent.Parent do
+            local camera = workspace.CurrentCamera
+            if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
+                local distance = (camera.CFrame.Position - Parent.Position).Magnitude
+                label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
+            else
+                label.Text = Text
+            end
+            RunService.Heartbeat:Wait()
+        end
+        if highlight.Parent then highlight:Destroy() end
+        if billboard.Parent then billboard:Destroy() end
+    end)
+end
+
+local function RemoveEsp(Char, Parent)
+    if Char and Char:FindFirstChildOfClass("Highlight") then
+        Char:FindFirstChildOfClass("Highlight"):Destroy()
+    end
+    if Parent and Parent:FindFirstChild("ESP") then
+        Parent:FindFirstChild("ESP"):Destroy()
+    end
+end
+
+local function UpdateItemsEsp()
+    if not workspace:FindFirstChild("Items") then return end
+    if ActiveEspItems then
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                CreateEsp(obj, Color3.fromRGB(255, 255, 0), obj.Name, obj.PrimaryPart, 2)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateEnemiesEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspEnemy then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateChildrenEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspChildren then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdatePeltTraderEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspPeltTrader then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 255), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+-- ESP Items Toggle
+Library:CreateToggle(espTab, "ESP Items", false, function(state)
+    ActiveEspItems = state
+    UpdateItemsEsp()
+    print("✅ ESP Items", state and "ON" or "OFF")
+end)
+
+-- ESP Enemies Toggle
+Library:CreateToggle(espTab, "ESP Enemies", false, function(state)
+    ActiveEspEnemy = state
+    UpdateEnemiesEsp()
+    print("✅ ESP Enemies", state and "ON" or "OFF")
+end)
+
+-- ESP Children Toggle
+Library:CreateToggle(espTab, "ESP Children", false, function(state)
+    ActiveEspChildren = state
+    UpdateChildrenEsp()
+    print("✅ ESP Children", state and "ON" or "OFF")
+end)
+
+-- ESP Pelt Trader Toggle
+Library:CreateToggle(espTab, "ESP Pelt Trader", false, function(state)
+    ActiveEspPeltTrader = state
+    UpdatePeltTraderEsp()
+    print("✅ ESP Pelt Trader", state and "ON" or "OFF")
+end)
+
+-- Show Distance Toggle
+Library:CreateToggle(espTab, "Show Distance in ESP", false, function(state)
+    ActiveDistanceEsp = state
+    if ActiveEspItems then UpdateItemsEsp() end
+    if ActiveEspEnemy then UpdateEnemiesEsp() end
+    if ActiveEspChildren then UpdateChildrenEsp() end
+    if ActiveEspPeltTrader then UpdatePeltTraderEsp() end
+    print("✅ Show Distance in ESP", state and "ON" or "OFF")
+end)
+
+-- Clear All ESP Button
+Library:CreateButton(espTab, "Clear All ESP", function()
+    ActiveEspItems = false
+    ActiveEspEnemy = false
+    ActiveEspChildren = false
+    ActiveEspPeltTrader = false
+    
+    UpdateItemsEsp()
+    UpdateEnemiesEsp()
+    UpdateChildrenEsp()
+    UpdatePeltTraderEsp()
+    
+    print("✅ All ESP cleared!")
+end)
+
+-- ESP Color Theme Dropdown
+Library:CreateDropdown(espTab, "ESP Color Theme", {"Default", "Bright", "Dark", "Neon"}, "Default", function(value)
+    print("🎨 ESP Color Theme selected:", value)
+    -- You can modify the colors based on the selected theme here
+    if value == "Bright" then
+        -- Bright colors
+    elseif value == "Dark" then
+        -- Dark colors  
+    elseif value == "Neon" then
+        -- Neon colors
+    end
+end)
+
+-- Setup ESP connections for dynamic updates
+local function setupEspConnections()
+    if workspace:FindFirstChild("Items") then
+        workspace.Items.ChildAdded:Connect(function(child)
+            if ActiveEspItems and child:IsA("Model") and child.PrimaryPart then
+                CreateEsp(child, Color3.fromRGB(255, 255, 0), child.Name, child.PrimaryPart, 2)
+            end
+        end)
+
+        workspace.Items.ChildRemoved:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                RemoveEsp(child, child.PrimaryPart)
+            end
+        end)
+    end
+
+    if workspace:FindFirstChild("Characters") then
+        workspace.Characters.ChildAdded:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                if ActiveEspEnemy and
+                   not (child.Name == "Lost Child" or child.Name == "Lost Child2" or
+                        child.Name == "Lost Child3" or child.Name == "Lost Child4" or
+                        child.Name == "Pelt Trader") then
+                    CreateEsp(child, Color3.fromRGB(255, 0, 0), child.Name, child.PrimaryPart, 3)
+                elseif ActiveEspChildren and
+                   (child.Name == "Lost Child" or child.Name == "Lost Child2" or
+                    child.Name == "Lost Child3" or child.Name == "Lost Child4") then
+                    CreateEsp(child, Color3.fromRGB(0, 255, 0), child.Name, child.PrimaryPart, 3)
+                elseif ActiveEspPeltTrader and child.Name == "Pelt Trader" then
+                    CreateEsp(child, Color3.fromRGB(0, 255, 255), child.Name, child.PrimaryPart, 3)
+                end
+            end
+        end)
+
+        workspace.Characters.ChildRemoved:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                RemoveEsp(child, child.PrimaryPart)
+            end
+        end)
+    end
+end
+
+setupEspConnections()
+
+-- Load circle toggle LAST
+print("Loading Toggle...")
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
+
+-- Don't remove this
+return Library
