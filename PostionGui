@@ -5,14 +5,19 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGa
 local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
 local espTab = Library:CreateTab("ESP")
+local tpTab = Library:CreateTab("TP")
 local destroyTab = Library:CreateTab("DESTROY")
 
 
 -- INFO Tab Components
 Library:CreateLabel(infoTab, "99 Nights In The Forest v3.9")
-Library:CreateTextLabel(infoTab, "The Script Hub")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
+
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
-Library:CreateLabel(mainTab, "Join Discord")
+Library:CreateLabel(infoTab, "Join Discord")
 Library:CreateButton(infoTab, "Join Discord Server", function()
     print("🔗 Discord link clicked!")
     -- Add your discord invite link here
@@ -356,6 +361,9 @@ end)
 
 -- ESP TAB
 -- Services
+
+Library:CreateLabel(espTab, "ESP")
+
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -825,6 +833,211 @@ local function setupEspConnections()
 end
 
 setupEspConnections()
+
+-- TP TAB
+
+-- Services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Teleport to Campfire Button
+Library:CreateButton(tpTab, "Tp to Campfire", function()
+    local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+        print("✅ Teleported to campfire successfully!")
+    else
+        print("❌ Teleport failed - Character not found!")
+    end
+end)
+
+-- Item Teleport System
+local ItemsFolder = workspace:FindFirstChild("Items")
+
+if ItemsFolder then
+    local uniqueModelNames = {}
+    local modelMap = {}
+    local selectedModelName = nil
+
+    local function refreshModelList()
+        uniqueModelNames = {}
+        modelMap = {}
+
+        for _, item in pairs(ItemsFolder:GetDescendants()) do
+            if item:IsA("Model") then
+                local name = item.Name
+                if not modelMap[name] then
+                    modelMap[name] = {}
+                    table.insert(uniqueModelNames, name)
+                end
+                table.insert(modelMap[name], item)
+            end
+        end
+
+        print("📦 Found", #uniqueModelNames, "unique item types")
+    end
+
+    -- Auto-refresh item list every 5 seconds
+    task.spawn(function()
+        while true do
+            refreshModelList()
+            task.wait(5)
+        end
+    end)
+
+    -- Initial refresh
+    refreshModelList()
+
+    -- Item Selection Dropdown
+    Library:CreateDropdown(tpTab, "Select Item to Teleport", uniqueModelNames, uniqueModelNames[1] or "None", function(selected)
+        selectedModelName = selected
+        print("🎯 Selected item:", selected)
+    end)
+
+    local function getClosestModel(modelList)
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp or not modelList then return nil end
+
+        local closest, minDist = nil, math.huge
+        for _, model in pairs(modelList) do
+            local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+            if primary then
+                local dist = (hrp.Position - primary.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    closest = primary
+                end
+            end
+        end
+        return closest
+    end
+
+    -- Teleport to Selected Item Button
+    Library:CreateButton(tpTab, "Teleport to Item", function()
+        if not selectedModelName or not modelMap[selectedModelName] then
+            print("❌ No item selected or item not found!")
+            return
+        end
+
+        local closestPart = getClosestModel(modelMap[selectedModelName])
+        local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+        if closestPart and hrp then
+            hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
+            print("✅ Teleported to nearest:", selectedModelName)
+        else
+            print("❌ Could not find valid item to teleport to!")
+        end
+    end)
+
+    -- Refresh Item List Button
+    Library:CreateButton(tpTab, "Refresh Item List", function()
+        refreshModelList()
+        print("🔄 Item list refreshed!")
+    end)
+else
+    print("❌ Items folder not found in workspace!")
+end
+
+-- Quick Teleport Buttons for Common Locations
+Library:CreateButton(tpTab, "Tp to Spawn", function()
+    local spawnPosition = Vector3.new(0, 10, 0) -- Adjust coordinates as needed
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(spawnPosition)
+        print("✅ Teleported to spawn!")
+    else
+        print("❌ Teleport failed - Character not found!")
+    end
+end)
+
+-- Teleport to Random Item Button
+Library:CreateButton(tpTab, "Tp to Random Item", function()
+    if ItemsFolder then
+        local allItems = {}
+        for _, item in pairs(ItemsFolder:GetChildren()) do
+            if item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) then
+                table.insert(allItems, item)
+            end
+        end
+        
+        if #allItems > 0 then
+            local randomItem = allItems[math.random(1, #allItems)]
+            local targetPart = randomItem.PrimaryPart or randomItem:FindFirstChildWhichIsA("BasePart")
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+            
+            if targetPart and hrp then
+                hrp.CFrame = targetPart.CFrame + Vector3.new(0, 5, 0)
+                print("✅ Teleported to random item:", randomItem.Name)
+            else
+                print("❌ Failed to teleport to random item!")
+            end
+        else
+            print("❌ No items found to teleport to!")
+        end
+    else
+        print("❌ Items folder not found!")
+    end
+end)
+
+-- Teleport Safe Mode Toggle
+local safeTeleportMode = false
+Library:CreateToggle(tpTab, "Safe Teleport Mode", false, function(state)
+    safeTeleportMode = state
+    print("✅ Safe Teleport Mode", state and "ON" or "OFF")
+    if state then
+        print("📝 Safe mode adds 10 studs height to teleports")
+    end
+end)
+
+-- Enhanced teleport function with safe mode
+local function safeTeleport(targetCFrame, locationName)
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        print("❌ Teleport failed - Character not found!")
+        return false
+    end
+    
+    local finalCFrame = targetCFrame
+    if safeTeleportMode then
+        finalCFrame = targetCFrame + Vector3.new(0, 10, 0) -- Add extra height for safety
+    end
+    
+    hrp.CFrame = finalCFrame
+    print("✅ Safely teleported to:", locationName or "Unknown location")
+    return true
+end
+
+-- Teleport History (Simple implementation)
+local teleportHistory = {}
+local maxHistorySize = 5
+
+local function addToHistory(position, name)
+    table.insert(teleportHistory, 1, {pos = position, name = name, time = tick()})
+    if #teleportHistory > maxHistorySize then
+        table.remove(teleportHistory, maxHistorySize + 1)
+    end
+end
+
+-- Teleport to Last Location Button
+Library:CreateButton(tpTab, "Tp to Last Location", function()
+    if #teleportHistory > 0 then
+        local lastLocation = teleportHistory[1]
+        safeTeleport(CFrame.new(lastLocation.pos), "Last Location: " .. lastLocation.name)
+    else
+        print("❌ No teleport history found!")
+    end
+end)
+
+-- Store current position before teleporting (call this before any teleport)
+local function storeCurrentPosition(destinationName)
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        addToHistory(hrp.Position, destinationName or "Unknown")
+    end
+end
 
 -- Load circle toggle LAST
 print("Loading Toggle...")
