@@ -1,84 +1,129 @@
-print("Fryzer")
+-- Fryzer Hub - Complete Single Script
+-- Usage: loadstring(game:HttpGet("your-script-url"))()
 
--- Fryzer Hub - Unified Loader
--- Circle toggle + MainTop + Tabs + Items
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Load circle toggle
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
-end)
-
--- Load maintop (defines Library + Config globally)
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-end)
-
--- Wait until Library is ready
-repeat task.wait() until Library and typeof(Library.CreateTab or Library.AddTab) == "function"
+-- Load the GUI library components
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
 -- Create tabs
-local infoTab     = Library:CreateTab("INFO")
-local homeTab     = Library:CreateTab("HOME")
-local specialTab  = Library:CreateTab("SPECIAL")
-local mainTab     = Library:CreateTab("MAIN")
-local spawnerTab  = Library:CreateTab("SPAWNER")
-local destroyTab  = Library:CreateTab("DESTROY")
+local infoTab = Library:CreateTab("INFO")
+local homeTab = Library:CreateTab("HOME")
+local specialTab = Library:CreateTab("SPECIAL")
+local mainTab = Library:CreateTab("MAIN")
+local spawnerTab = Library:CreateTab("SPAWNER")
+local destroyTab = Library:CreateTab("DESTROY")
 local settingsTab = Library:CreateTab("SETTINGS")
 
--- Timer setup
+-- Timer variables
 local scriptStartTime = tick()
-local timerLabel
-local function FormatTime(sec)
-    local h = math.floor(sec/3600)
-    local m = math.floor((sec%3600)/60)
-    local s = math.floor(sec%60)
-    return string.format("%02d:%02d:%02d",h,m,s)
+local timerLabel = nil
+
+-- Function to format time
+local function FormatTime(seconds)
+    local hours = math.floor(seconds / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", hours, minutes, secs)
 end
 
--- INFO Tab
-timerLabel = Library:AddLabel(infoTab, "Time Used: 00:00:00")
-Library:AddLabel(infoTab, "Welcome to Fryzer Hub")
-Library:AddLabel(infoTab, "Player: " .. LocalPlayer.Name)
+-- INFO Tab Components
+Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
+Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
+timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
 
-task.spawn(function()
-    while task.wait(1) do
-        local t = tick() - scriptStartTime
+-- Update timer every second
+spawn(function()
+    while ScreenGui.Parent do
+        wait(1)
+        local timeUsed = tick() - scriptStartTime
         if timerLabel and timerLabel.SetText then
-            timerLabel.SetText("Time Used: " .. FormatTime(t))
-        elseif timerLabel and timerLabel.Text then
-            timerLabel.Text = "Time Used: " .. FormatTime(t)
+            timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
         end
     end
 end)
 
--- HOME Tab
-Library:AddLabel(homeTab, "Welcome to Modern Hub!")
-Library:AddButton(homeTab, "Test Button", function() print("Button clicked!") end)
-Library:AddToggle(homeTab, "Enable Feature", false, function(v) print("Toggle:", v) end)
-Library:AddSlider(homeTab, "Speed", 1, 100, 50, function(v) print("Speed:", v) end)
-Library:AddDropdown(homeTab, "Mode", {"Walk","Run","Fly","Teleport"}, "Walk", function(v) print("Mode:", v) end)
-Library:AddTextBox(homeTab, "Player Name", "Enter name", function(txt) print("Player:", txt) end)
+-- HOME Tab Components
+Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
+Library:CreateButton(homeTab, "Test Button", function()
+    print("Button clicked!")
+end)
+Library:CreateToggle(homeTab, "Enable Feature", false, function(value)
+    print("Toggle:", value)
+end)
+Library:CreateTextLabel(homeTab, "This is a text label - no click action", Config.Colors.TextSecondary)
+Library:CreateSlider(homeTab, "Speed", 1, 100, 50, function(value)
+    print("Speed set to:", value)
+end)
+Library:CreateDropdown(homeTab, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Walk", function(value)
+    print("Mode selected:", value)
+end)
+Library:CreateTextBox(homeTab, "Player Name", "Enter player name...", function(text)
+    print("Player name entered:", text)
+end)
 
--- SPECIAL Tab
-Library:AddButton(specialTab, "Special Function", function() print("Special executed!") end)
-Library:AddToggle(specialTab, "Special Toggle", true, function(v) print("Special toggle:", v) end)
+-- SPECIAL Tab Components
+Library:CreateButton(specialTab, "Special Function", function()
+    print("Special function executed!")
+end)
+Library:CreateToggle(specialTab, "Special Toggle", true, function(value)
+    print("Special toggle:", value)
+end)
+Library:CreateTextLabel(specialTab, "Special Info: Read-only text display", Config.Colors.Accent)
 
--- MAIN Tab
-Library:AddButton(mainTab, "Main Feature 1", function() print("Main feature 1!") end)
-Library:AddButton(mainTab, "Main Feature 2", function() print("Main feature 2!") end)
+-- MAIN Tab Components
+Library:CreateButton(mainTab, "Main Feature 1", function()
+    print("Main feature 1 activated!")
+end)
+Library:CreateButton(mainTab, "Main Feature 2", function()
+    print("Main feature 2 activated!")
+end)
+Library:CreateToggle(mainTab, "Main Toggle", false, function(value)
+    print("Main toggle:", value)
+end)
+Library:CreateTextLabel(mainTab, "Status: All systems operational", Config.Colors.Success)
 
--- SPAWNER Tab
-Library:AddLabel(spawnerTab, "SPAWNER SCRIPT")
-Library:AddButton(spawnerTab, "Dark Spawner [Mobile]", function() print("Dark Spawner!") end)
+-- SPAWNER Tab Components
+Library:CreateLabel(spawnerTab, "SPAWNER SCRIPT", Config.Colors.Text)
+Library:CreateButton(spawnerTab, "Dark Spawner [ Mobile Only ]", function()
+    print("Dark Spawner executed!")
+end)
+Library:CreateToggle(spawnerTab, "ReModified v3.8 || Dark Spawner", true, function(value)
+    print("ReModified:", value)
+end)
+Library:CreateToggle(spawnerTab, "Pet Placer v1.0 [ Not Animated ]", false, function(value)
+    print("Pet Placer:", value)
+end)
+Library:CreateLabel(spawnerTab, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
+Library:CreateToggle(spawnerTab, "Allow Gift Spawned Pets ^.^", false, function(value)
+    print("Allow Gift Pets:", value)
+end)
+Library:CreateTextLabel(spawnerTab, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
 
--- DESTROY Tab
-Library:AddButton(destroyTab, "Destroy Function 1", function() print("Destroy 1!") end)
+-- DESTROY Tab Components
+Library:CreateButton(destroyTab, "Destroy Function 1", function()
+    print("Destroy function 1!")
+end)
+Library:CreateButton(destroyTab, "Destroy Function 2", function()
+    print("Destroy function 2!")
+end)
+Library:CreateToggle(destroyTab, "Auto Destroy", false, function(value)
+    print("Auto Destroy:", value)
+end)
+Library:CreateTextLabel(destroyTab, "Warning: Use destroy functions carefully", Config.Colors.Warning)
 
--- SETTINGS Tab
-Library:AddToggle(settingsTab, "Sound Effects", true, function(v) print("Sound:", v) end)
-Library:AddLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1")
+-- SETTINGS Tab Components
+Library:CreateToggle(settingsTab, "Sound Effects", true, function(value)
+    print("Sound Effects:", value)
+end)
+Library:CreateToggle(settingsTab, "Auto Save", false, function(value)
+    print("Auto Save:", value)
+end)
+Library:CreateButton(settingsTab, "Reset Settings", function()
+    print("Settings reset!")
+end)
+Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
-print("🎉 Fryzer Hub GUI fully loaded!")
+print("🎉 Modern Hub GUI loaded successfully!")
+print("📱 Use the circle toggle to show/hide the GUI")
+
+return Library
