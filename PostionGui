@@ -1,6 +1,9 @@
 -- Load the library
+print("LMain")
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
+print("CMain")
 
+print("LTABS")
 -- Create all tabs
 local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
@@ -8,7 +11,7 @@ local espTab = Library:CreateTab("VISUAL")
 local tpTab = Library:CreateTab("TP")
 local destroyTab = Library:CreateTab("DESTROY")
 
-print("Tabs")
+print("CTabs")
 
 -- INFO Tab Components
 Library:CreateLabel(infoTab, "99 Nights In The Forest v3.9")
