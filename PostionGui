@@ -4,30 +4,43 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGa
 -- Create all tabs
 local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
-local espTab = Library:CreateTab("ESP")
+local espTab = Library:CreateTab("VISUAL")
 local tpTab = Library:CreateTab("TP")
 local destroyTab = Library:CreateTab("DESTROY")
 
 
 -- INFO Tab Components
 Library:CreateLabel(infoTab, "99 Nights In The Forest v3.9")
+
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
 
+-- Services
 local RunService = game:GetService("RunService")
-local startTime = tick() -- time when script runs
 
--- create the label
-local timerLabel = Library:CreateTextLabel(infoTab, "Timer: 0s")
+-- SOLUTION 1: If Library:CreateTextLabel exists (your preferred way)
+local startTime = tick()
 
--- update it every frame
-RunService.Heartbeat:Connect(function()
-    local elapsed = math.floor(tick() - startTime)
-    timerLabel.Text = "Timer: " .. elapsed .. "s"
-end)
+-- Create the label (assuming this function exists in your library)
+local timerLabel = Library:CreateTextLabel and Library:CreateTextLabel(infoTab, "Timer: 0s")
 
+if timerLabel then
+    -- Update it every frame
+    RunService.Heartbeat:Connect(function()
+        local elapsed = math.floor(tick() - startTime)
+        local hours = math.floor(elapsed / 3600)
+        local minutes = math.floor((elapsed % 3600) / 60)
+        local seconds = elapsed % 60
+        
+        if hours > 0 then
+            timerLabel.Text = string.format("Timer: %02d:%02d:%02d", hours, minutes, seconds)
+        else
+            timerLabel.Text = string.format("Timer: %02d:%02d", minutes, seconds)
+        end
+    end)
+end
 
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
 Library:CreateLabel(infoTab, "Join Discord")
@@ -374,6 +387,7 @@ end)
 
 -- ESP TAB
 -- Services
+
 
 Library:CreateLabel(espTab, "ESP")
 
@@ -847,6 +861,421 @@ end
 
 setupEspConnections()
 
+Library:CreateLabel(espTab, "PLAYER ESP")
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+
+-- Player ESP Variables
+local playerESPEnabled = false
+local trackedPlayers = {}
+local espConnections = {}
+
+-- ESP Settings
+local ESP_SETTINGS = {
+    FillColor = Color3.fromRGB(255, 0, 0),
+    FillTransparency = 0.8,
+    OutlineColor = Color3.fromRGB(255, 255, 255),
+    OutlineTransparency = 0,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    TextSize = 14,
+    MaxDistance = 1000,
+    ShowDistance = true,
+    ShowHealth = true,
+    ShowNames = true,
+    HealthBarEnabled = true,
+    HealthBarHeight = 4
+}
+
+-- Create ESP for a player
+local function createPlayerESP(player)
+    if player == LocalPlayer then return end -- Don't ESP ourselves
+    if not player.Character then return end
+    if trackedPlayers[player] then return end -- Already has ESP
+    
+    local character = player.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not rootPart then return end
+    
+    -- Create Highlight
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "PlayerESP_Highlight"
+    highlight.Adornee = character
+    highlight.FillColor = ESP_SETTINGS.FillColor
+    highlight.FillTransparency = ESP_SETTINGS.FillTransparency
+    highlight.OutlineColor = ESP_SETTINGS.OutlineColor
+    highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = character
+    
+    -- Create Billboard GUI
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PlayerESP_Billboard"
+    billboard.Size = UDim2.new(0, 200, 0, 100)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
+    billboard.Adornee = rootPart
+    billboard.Parent = rootPart
+    
+    -- Create main frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Parent = billboard
+    
+    -- Create name label
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(1, 0, 0, 20)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.DisplayName
+    nameLabel.TextColor3 = ESP_SETTINGS.TextColor
+    nameLabel.TextSize = ESP_SETTINGS.TextSize
+    nameLabel.TextStrokeTransparency = 0.5
+    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = frame
+    
+    -- Create distance label
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Name = "DistanceLabel"
+    distanceLabel.Size = UDim2.new(1, 0, 0, 15)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = "0m"
+    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    distanceLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    distanceLabel.TextStrokeTransparency = 0.5
+    distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    distanceLabel.Font = Enum.Font.Gotham
+    distanceLabel.Parent = frame
+    
+    -- Create health label
+    local healthLabel = Instance.new("TextLabel")
+    healthLabel.Name = "HealthLabel"
+    healthLabel.Size = UDim2.new(1, 0, 0, 15)
+    healthLabel.Position = UDim2.new(0, 0, 0, 35)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.Text = "100/100"
+    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    healthLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    healthLabel.TextStrokeTransparency = 0.5
+    healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    healthLabel.Font = Enum.Font.Gotham
+    healthLabel.Parent = frame
+    
+    -- Create health bar background
+    local healthBarBG = Instance.new("Frame")
+    healthBarBG.Name = "HealthBarBG"
+    healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
+    healthBarBG.Position = UDim2.new(0, 0, 0, 50)
+    healthBarBG.BackgroundColor3 = Color3.new(0, 0, 0)
+    healthBarBG.BorderSizePixel = 1
+    healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
+    healthBarBG.Parent = frame
+    
+    -- Create health bar fill
+    local healthBarFill = Instance.new("Frame")
+    healthBarFill.Name = "HealthBarFill"
+    healthBarFill.Size = UDim2.new(1, 0, 1, 0)
+    healthBarFill.Position = UDim2.new(0, 0, 0, 0)
+    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    healthBarFill.BorderSizePixel = 0
+    healthBarFill.Parent = healthBarBG
+    
+    -- Update function
+    local function updateESP()
+        if not playerESPEnabled then return end
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        local playerRoot = player.Character.HumanoidRootPart
+        local localRoot = LocalPlayer.Character.HumanoidRootPart
+        local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        
+        if not playerRoot or not localRoot or not playerHumanoid then return end
+        
+        -- Update distance
+        if ESP_SETTINGS.ShowDistance then
+            local distance = (localRoot.Position - playerRoot.Position).Magnitude
+            distanceLabel.Text = math.floor(distance) .. "m"
+            distanceLabel.Visible = true
+        else
+            distanceLabel.Visible = false
+        end
+        
+        -- Update health
+        if ESP_SETTINGS.ShowHealth then
+            local health = math.floor(playerHumanoid.Health)
+            local maxHealth = math.floor(playerHumanoid.MaxHealth)
+            local healthPercent = health / maxHealth
+            
+            healthLabel.Text = health .. "/" .. maxHealth
+            healthLabel.Visible = true
+            
+            -- Update health bar
+            if ESP_SETTINGS.HealthBarEnabled then
+                healthBarBG.Visible = true
+                healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                
+                -- Color based on health percentage
+                if healthPercent > 0.6 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
+                    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                elseif healthPercent > 0.3 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+                else
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+                end
+            else
+                healthBarBG.Visible = false
+            end
+        else
+            healthLabel.Visible = false
+            healthBarBG.Visible = false
+        end
+        
+        -- Update name
+        if ESP_SETTINGS.ShowNames then
+            nameLabel.Text = player.DisplayName
+            nameLabel.Visible = true
+        else
+            nameLabel.Visible = false
+        end
+    end
+    
+    -- Store ESP components
+    trackedPlayers[player] = {
+        highlight = highlight,
+        billboard = billboard,
+        updateFunction = updateESP
+    }
+    
+    -- Connect update function
+    local connection = RunService.Heartbeat:Connect(updateESP)
+    espConnections[player] = connection
+    
+    -- Handle player leaving
+    local function onPlayerRemoving()
+        removePlayerESP(player)
+    end
+    
+    -- Connect to player removing (will be cleaned up when player leaves)
+    local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
+        if removedPlayer == player then
+            onPlayerRemoving()
+        end
+    end)
+    
+    -- Store the remove connection
+    if not espConnections[player] then
+        espConnections[player] = {}
+    end
+    if type(espConnections[player]) == "table" then
+        espConnections[player].removeConnection = removeConnection
+    end
+    
+    -- Initial update
+    updateESP()
+end
+
+-- Remove ESP for a player
+local function removePlayerESP(player)
+    if trackedPlayers[player] then
+        -- Destroy ESP components
+        if trackedPlayers[player].highlight then
+            trackedPlayers[player].highlight:Destroy()
+        end
+        if trackedPlayers[player].billboard then
+            trackedPlayers[player].billboard:Destroy()
+        end
+        trackedPlayers[player] = nil
+    end
+    
+    -- Disconnect connections
+    if espConnections[player] then
+        if type(espConnections[player]) == "userdata" then
+            espConnections[player]:Disconnect()
+        elseif type(espConnections[player]) == "table" then
+            if espConnections[player].removeConnection then
+                espConnections[player].removeConnection:Disconnect()
+            end
+        end
+        espConnections[player] = nil
+    end
+end
+
+-- Enable ESP for all players
+local function enablePlayerESP()
+    playerESPEnabled = true
+    
+    -- Add ESP to existing players
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            createPlayerESP(player)
+        end
+    end
+    
+    -- Connect to new players joining
+    espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
+        if playerESPEnabled then
+            -- Wait for character to load
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    wait(1) -- Small delay to ensure everything is loaded
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end)
+    
+    -- Connect to existing players respawning
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    wait(1) -- Small delay to ensure everything is loaded
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end
+    
+    print("✅ Player ESP Enabled")
+end
+
+-- Disable ESP for all players
+local function disablePlayerESP()
+    playerESPEnabled = false
+    
+    -- Remove ESP from all tracked players
+    for player, _ in pairs(trackedPlayers) do
+        removePlayerESP(player)
+    end
+    
+    -- Disconnect main connections
+    if espConnections.playerAdded then
+        espConnections.playerAdded:Disconnect()
+        espConnections.playerAdded = nil
+    end
+    
+    -- Clear all connections
+    for player, connection in pairs(espConnections) do
+        if type(connection) == "userdata" then
+            connection:Disconnect()
+        elseif type(connection) == "table" then
+            if connection.removeConnection then
+                connection.removeConnection:Disconnect()
+            end
+        end
+    end
+    espConnections = {}
+    
+    print("❌ Player ESP Disabled")
+end
+
+-- Main Player ESP Toggle
+Library:CreateToggle(espTab, "Player ESP", false, function(state)
+    if state then
+        enablePlayerESP()
+    else
+        disablePlayerESP()
+    end
+    print("✅ Player ESP", state and "ON" or "OFF")
+end)
+
+-- ESP Feature Toggles
+Library:CreateToggle(espTab, "Show Player Names", true, function(state)
+    ESP_SETTINGS.ShowNames = state
+    print("✅ Show Player Names", state and "ON" or "OFF")
+end)
+
+Library:CreateToggle(espTab, "Show Player Distance", true, function(state)
+    ESP_SETTINGS.ShowDistance = state
+    print("✅ Show Player Distance", state and "ON" or "OFF")
+end)
+
+Library:CreateToggle(espTab, "Show Player Health", true, function(state)
+    ESP_SETTINGS.ShowHealth = state
+    print("✅ Show Player Health", state and "ON" or "OFF")
+end)
+
+Library:CreateToggle(espTab, "Show Health Bar", true, function(state)
+    ESP_SETTINGS.HealthBarEnabled = state
+    print("✅ Show Health Bar", state and "ON" or "OFF")
+end)
+
+-- ESP Distance Slider
+Library:CreateSlider(espTab, "ESP Max Distance", 100, 2000, 1000, function(value)
+    ESP_SETTINGS.MaxDistance = value
+    print("📏 ESP Max Distance set to:", value)
+end)
+
+-- ESP Text Size Slider
+Library:CreateSlider(espTab, "ESP Text Size", 8, 24, 14, function(value)
+    ESP_SETTINGS.TextSize = value
+    print("📏 ESP Text Size set to:", value)
+end)
+
+-- ESP Color Theme Dropdown
+Library:CreateDropdown(espTab, "Player ESP Color", {"Red", "Blue", "Green", "Yellow", "Purple", "Cyan"}, "Red", function(value)
+    if value == "Red" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(255, 0, 0)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(255, 255, 255)
+    elseif value == "Blue" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(0, 0, 255)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(255, 255, 255)
+    elseif value == "Green" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(0, 255, 0)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(255, 255, 255)
+    elseif value == "Yellow" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(255, 255, 0)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(0, 0, 0)
+    elseif value == "Purple" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(128, 0, 128)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(255, 255, 255)
+    elseif value == "Cyan" then
+        ESP_SETTINGS.FillColor = Color3.fromRGB(0, 255, 255)
+        ESP_SETTINGS.OutlineColor = Color3.fromRGB(0, 0, 0)
+    end
+    print("🎨 Player ESP Color changed to:", value)
+end)
+
+-- Refresh Player ESP Button
+Library:CreateButton(espTab, "Refresh Player ESP", function()
+    if playerESPEnabled then
+        -- Remove all current ESP
+        for player, _ in pairs(trackedPlayers) do
+            removePlayerESP(player)
+        end
+        
+        -- Re-add ESP to all players
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and player.Character then
+                createPlayerESP(player)
+            end
+        end
+        
+        print("🔄 Player ESP refreshed!")
+    else
+        print("❌ Player ESP is not enabled!")
+    end
+end)
+
+-- Clear All Player ESP Button
+Library:CreateButton(espTab, "Clear All Player ESP", function()
+    disablePlayerESP()
+    print("✅ All Player ESP cleared!")
+end)
+
 -- TP TAB
 
 -- Services
@@ -997,7 +1426,7 @@ end)
 
 -- Teleport Safe Mode Toggle
 local safeTeleportMode = false
-Library:CreateToggle(tpTab, "Safe Teleport Mode", false, function(state)
+Library:CreateToggle(tpTab, "Safe TP Mode", false, function(state)
     safeTeleportMode = state
     print("✅ Safe Teleport Mode", state and "ON" or "OFF")
     if state then
@@ -1023,34 +1452,6 @@ local function safeTeleport(targetCFrame, locationName)
     return true
 end
 
--- Teleport History (Simple implementation)
-local teleportHistory = {}
-local maxHistorySize = 5
-
-local function addToHistory(position, name)
-    table.insert(teleportHistory, 1, {pos = position, name = name, time = tick()})
-    if #teleportHistory > maxHistorySize then
-        table.remove(teleportHistory, maxHistorySize + 1)
-    end
-end
-
--- Teleport to Last Location Button
-Library:CreateButton(tpTab, "Tp to Last Location", function()
-    if #teleportHistory > 0 then
-        local lastLocation = teleportHistory[1]
-        safeTeleport(CFrame.new(lastLocation.pos), "Last Location: " .. lastLocation.name)
-    else
-        print("❌ No teleport history found!")
-    end
-end)
-
--- Store current position before teleporting (call this before any teleport)
-local function storeCurrentPosition(destinationName)
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        addToHistory(hrp.Position, destinationName or "Unknown")
-    end
-end
 
 -- Load circle toggle LAST
 print("Loading Toggle...")
