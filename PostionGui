@@ -1,28 +1,23 @@
--- Fryzer Hub - Single Script Loader
--- Load Circle Toggle + MainTop + Tabs/Components in one place
+-- Fryzer Hub - Unified Loader
+-- Loads circle toggle + main hub + tabs
 
 --// Services
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 --// Load Circle Toggle
-local success1, err1 = pcall(function()
+pcall(function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 end)
-if not success1 then warn("Circle Toggle failed:", err1) end
 
---// Load MainTop (Library, Config, ScreenGui setup)
+--// Load MainTop (returns Library)
 local Library, Config, ScreenGui
-local success2, err2 = pcall(function()
+pcall(function()
     Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 end)
-if not success2 then warn("MainTop failed:", err2) end
 
---// Fallback check
-if not Library or not Config then
-    warn("❌ Library or Config failed to load.")
-    return
-end
+--// Safety wait until Library is ready
+repeat task.wait() until Library and typeof(Library.CreateTab) == "function"
 
 --// Tabs
 local infoTab = Library:CreateTab("INFO")
@@ -35,12 +30,12 @@ local settingsTab = Library:CreateTab("SETTINGS")
 
 --// Timer
 local scriptStartTime = tick()
-local timerLabel = nil
+local timerLabel
 local function FormatTime(seconds)
-    local hours = math.floor(seconds / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local secs = math.floor(seconds % 60)
-    return string.format("%02d:%02d:%02d", hours, minutes, secs)
+    local h = math.floor(seconds / 3600)
+    local m = math.floor((seconds % 3600) / 60)
+    local s = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", h, m, s)
 end
 
 -- INFO Tab
@@ -48,10 +43,9 @@ Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
 Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
 timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
 
--- Update Timer
+-- Timer loop
 task.spawn(function()
-    while ScreenGui and ScreenGui.Parent do
-        task.wait(1)
+    while task.wait(1) do
         local timeUsed = tick() - scriptStartTime
         if timerLabel and timerLabel.SetText then
             timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
@@ -63,44 +57,27 @@ end)
 Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
 Library:CreateButton(homeTab, "Test Button", function() print("Button clicked!") end)
 Library:CreateToggle(homeTab, "Enable Feature", false, function(v) print("Toggle:", v) end)
-Library:CreateTextLabel(homeTab, "This is a text label - no click action", Config.Colors.TextSecondary)
-Library:CreateSlider(homeTab, "Speed", 1, 100, 50, function(v) print("Speed set to:", v) end)
+Library:CreateSlider(homeTab, "Speed", 1, 100, 50, function(v) print("Speed:", v) end)
 Library:CreateDropdown(homeTab, "Mode", {"Walk","Run","Fly","Teleport"}, "Walk", function(v) print("Mode:", v) end)
 Library:CreateTextBox(homeTab, "Player Name", "Enter player name...", function(txt) print("Player:", txt) end)
 
 -- SPECIAL Tab
 Library:CreateButton(specialTab, "Special Function", function() print("Special executed!") end)
 Library:CreateToggle(specialTab, "Special Toggle", true, function(v) print("Special toggle:", v) end)
-Library:CreateTextLabel(specialTab, "Special Info: Read-only", Config.Colors.Accent)
 
 -- MAIN Tab
 Library:CreateButton(mainTab, "Main Feature 1", function() print("Main feature 1!") end)
 Library:CreateButton(mainTab, "Main Feature 2", function() print("Main feature 2!") end)
-Library:CreateToggle(mainTab, "Main Toggle", false, function(v) print("Main toggle:", v) end)
-Library:CreateTextLabel(mainTab, "Status: All systems operational", Config.Colors.Success)
 
 -- SPAWNER Tab
 Library:CreateLabel(spawnerTab, "SPAWNER SCRIPT", Config.Colors.Text)
 Library:CreateButton(spawnerTab, "Dark Spawner [ Mobile Only ]", function() print("Dark Spawner!") end)
-Library:CreateToggle(spawnerTab, "ReModified v3.8 || Dark Spawner", true, function(v) print("ReModified:", v) end)
-Library:CreateToggle(spawnerTab, "Pet Placer v1.0 [Not Animated]", false, function(v) print("Pet Placer:", v) end)
-Library:CreateLabel(spawnerTab, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
-Library:CreateToggle(spawnerTab, "Allow Gift Spawned Pets ^.^", false, function(v) print("Gift Pets:", v) end)
-Library:CreateTextLabel(spawnerTab, "Note: Mobile optimized", Config.Colors.TextSecondary)
 
 -- DESTROY Tab
 Library:CreateButton(destroyTab, "Destroy Function 1", function() print("Destroy 1!") end)
-Library:CreateButton(destroyTab, "Destroy Function 2", function() print("Destroy 2!") end)
-Library:CreateToggle(destroyTab, "Auto Destroy", false, function(v) print("Auto Destroy:", v) end)
-Library:CreateTextLabel(destroyTab, "Warning: Use carefully", Config.Colors.Warning)
 
 -- SETTINGS Tab
 Library:CreateToggle(settingsTab, "Sound Effects", true, function(v) print("Sound:", v) end)
-Library:CreateToggle(settingsTab, "Auto Save", false, function(v) print("Auto Save:", v) end)
-Library:CreateButton(settingsTab, "Reset Settings", function() print("Settings reset!") end)
 Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
-print("🎉 Modern Hub GUI loaded successfully!")
-print("📱 Use the circle toggle to show/hide the GUI")
-
-return Library
+print("🎉 Fryzer Hub GUI fully loaded!")
