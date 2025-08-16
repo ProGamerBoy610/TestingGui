@@ -1,514 +1,16 @@
--- Fryzer Hub - Complete Self-Contained Script
+-- Fryzer Hub - Complete Combined Script
 -- Usage: loadstring(game:HttpGet("your-script-url"))()
 
-local Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local LocalPlayer = Players.LocalPlayer
+-- Load circle toggle and main library
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
+loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
--- Configuration
-local Config = {
-    Colors = {
-        Primary = Color3.fromRGB(88, 101, 242),
-        Secondary = Color3.fromRGB(64, 68, 75),
-        Accent = Color3.fromRGB(114, 137, 218),
-        Success = Color3.fromRGB(67, 181, 129),
-        Warning = Color3.fromRGB(250, 166, 26),
-        Error = Color3.fromRGB(240, 71, 71),
-        Text = Color3.fromRGB(255, 255, 255),
-        TextSecondary = Color3.fromRGB(185, 187, 190),
-        Background = Color3.fromRGB(54, 57, 63),
-        BackgroundSecondary = Color3.fromRGB(47, 49, 54)
-    }
-}
-
--- Create ScreenGui
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "FryzerHub"
-ScreenGui.ResetOnSpawn = false
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-
--- Toggle Button (Circle)
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Name = "ToggleButton"
-ToggleButton.Size = UDim2.new(0, 50, 0, 50)
-ToggleButton.Position = UDim2.new(0, 20, 0, 20)
-ToggleButton.BackgroundColor3 = Config.Colors.Primary
-ToggleButton.BorderSizePixel = 0
-ToggleButton.Font = Enum.Font.GothamBold
-ToggleButton.Text = "FH"
-ToggleButton.TextColor3 = Config.Colors.Text
-ToggleButton.TextScaled = true
-ToggleButton.Parent = ScreenGui
-
-local ToggleCorner = Instance.new("UICorner")
-ToggleCorner.CornerRadius = UDim.new(0.5, 0)
-ToggleCorner.Parent = ToggleButton
-
--- Main Frame
-local MainFrame = Instance.new("Frame")
-MainFrame.Name = "MainFrame"
-MainFrame.Size = UDim2.new(0, 600, 0, 400)
-MainFrame.Position = UDim2.new(0.5, -300, 0.5, -200)
-MainFrame.BackgroundColor3 = Config.Colors.Background
-MainFrame.BorderSizePixel = 0
-MainFrame.Active = true
-MainFrame.Draggable = true
-MainFrame.Visible = true
-MainFrame.Parent = ScreenGui
-
-local MainCorner = Instance.new("UICorner")
-MainCorner.CornerRadius = UDim.new(0, 12)
-MainCorner.Parent = MainFrame
-
--- Title Bar
-local TitleBar = Instance.new("Frame")
-TitleBar.Name = "TitleBar"
-TitleBar.Size = UDim2.new(1, 0, 0, 30)
-TitleBar.BackgroundColor3 = Config.Colors.Primary
-TitleBar.BorderSizePixel = 0
-TitleBar.Parent = MainFrame
-
-local TitleCorner = Instance.new("UICorner")
-TitleCorner.CornerRadius = UDim.new(0, 12)
-TitleCorner.Parent = TitleBar
-
-local TitleFix = Instance.new("Frame")
-TitleFix.Size = UDim2.new(1, 0, 0, 12)
-TitleFix.Position = UDim2.new(0, 0, 1, -12)
-TitleFix.BackgroundColor3 = Config.Colors.Primary
-TitleFix.BorderSizePixel = 0
-TitleFix.Parent = TitleBar
-
-local TitleLabel = Instance.new("TextLabel")
-TitleLabel.Size = UDim2.new(1, -60, 1, 0)
-TitleLabel.BackgroundTransparency = 1
-TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "Fryzer Hub"
-TitleLabel.TextColor3 = Config.Colors.Text
-TitleLabel.TextScaled = true
-TitleLabel.Parent = TitleBar
-
--- Close Button
-local CloseButton = Instance.new("TextButton")
-CloseButton.Size = UDim2.new(0, 30, 0, 30)
-CloseButton.Position = UDim2.new(1, -30, 0, 0)
-CloseButton.BackgroundColor3 = Config.Colors.Error
-CloseButton.BorderSizePixel = 0
-CloseButton.Font = Enum.Font.GothamBold
-CloseButton.Text = "X"
-CloseButton.TextColor3 = Config.Colors.Text
-CloseButton.TextScaled = true
-CloseButton.Parent = TitleBar
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(0, 12)
-CloseCorner.Parent = CloseButton
-
--- Tab Container
-local TabContainer = Instance.new("Frame")
-TabContainer.Size = UDim2.new(1, 0, 0, 40)
-TabContainer.Position = UDim2.new(0, 0, 0, 30)
-TabContainer.BackgroundColor3 = Config.Colors.BackgroundSecondary
-TabContainer.BorderSizePixel = 0
-TabContainer.Parent = MainFrame
-
-local TabLayout = Instance.new("UIListLayout")
-TabLayout.FillDirection = Enum.FillDirection.Horizontal
-TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
-TabLayout.Parent = TabContainer
-
--- Content Frame
-local ContentFrame = Instance.new("ScrollingFrame")
-ContentFrame.Size = UDim2.new(1, 0, 1, -70)
-ContentFrame.Position = UDim2.new(0, 0, 0, 70)
-ContentFrame.BackgroundColor3 = Config.Colors.Background
-ContentFrame.BorderSizePixel = 0
-ContentFrame.ScrollBarThickness = 6
-ContentFrame.Parent = MainFrame
-
-local ContentLayout = Instance.new("UIListLayout")
-ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
-ContentLayout.Padding = UDim.new(0, 5)
-ContentLayout.Parent = ContentFrame
-
-local ContentPadding = Instance.new("UIPadding")
-ContentPadding.PaddingAll = UDim.new(0, 10)
-ContentPadding.Parent = ContentFrame
-
--- Library Creation
-local Library = {}
-local Tabs = {}
-local CurrentTab = nil
-
--- Toggle functionality
-local isVisible = true
-ToggleButton.MouseButton1Click:Connect(function()
-    isVisible = not isVisible
-    MainFrame.Visible = isVisible
-end)
-
-CloseButton.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-end)
-
--- Library Functions
-function Library:CreateTab(name)
-    local tabButton = Instance.new("TextButton")
-    tabButton.Size = UDim2.new(0, 100, 1, 0)
-    tabButton.BackgroundColor3 = Config.Colors.Secondary
-    tabButton.BorderSizePixel = 0
-    tabButton.Font = Enum.Font.Gotham
-    tabButton.Text = name
-    tabButton.TextColor3 = Config.Colors.Text
-    tabButton.TextScaled = true
-    tabButton.Parent = TabContainer
-    
-    local tabCorner = Instance.new("UICorner")
-    tabCorner.CornerRadius = UDim.new(0, 6)
-    tabCorner.Parent = tabButton
-    
-    local tab = {
-        Name = name,
-        Button = tabButton,
-        Content = {},
-        Active = false
-    }
-    
-    tabButton.MouseButton1Click:Connect(function()
-        Library:SwitchTab(tab)
-    end)
-    
-    Tabs[name] = tab
-    
-    if not CurrentTab then
-        Library:SwitchTab(tab)
-    end
-    
-    return tab
+-- Wait for Library to be available
+while not Library do
+    wait(0.1)
 end
 
-function Library:SwitchTab(tab)
-    if CurrentTab then
-        CurrentTab.Active = false
-        CurrentTab.Button.BackgroundColor3 = Config.Colors.Secondary
-    end
-    
-    CurrentTab = tab
-    tab.Active = true
-    tab.Button.BackgroundColor3 = Config.Colors.Primary
-    
-    -- Clear content frame
-    for _, child in pairs(ContentFrame:GetChildren()) do
-        if child:IsA("GuiObject") and child ~= ContentLayout and child ~= ContentPadding then
-            child:Destroy()
-        end
-    end
-    
-    -- Add tab content
-    for _, item in pairs(tab.Content) do
-        item.Parent = ContentFrame
-    end
-    
-    ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-end
-
-function Library:CreateButton(tab, text, callback)
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 0, 35)
-    button.BackgroundColor3 = Config.Colors.Primary
-    button.BorderSizePixel = 0
-    button.Font = Enum.Font.Gotham
-    button.Text = text
-    button.TextColor3 = Config.Colors.Text
-    button.TextScaled = true
-    
-    local buttonCorner = Instance.new("UICorner")
-    buttonCorner.CornerRadius = UDim.new(0, 6)
-    buttonCorner.Parent = button
-    
-    button.MouseButton1Click:Connect(callback)
-    
-    table.insert(tab.Content, button)
-    
-    if tab.Active then
-        button.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return button
-end
-
-function Library:CreateToggle(tab, text, defaultValue, callback)
-    local toggleFrame = Instance.new("Frame")
-    toggleFrame.Size = UDim2.new(1, 0, 0, 35)
-    toggleFrame.BackgroundColor3 = Config.Colors.BackgroundSecondary
-    toggleFrame.BorderSizePixel = 0
-    
-    local toggleCorner = Instance.new("UICorner")
-    toggleCorner.CornerRadius = UDim.new(0, 6)
-    toggleCorner.Parent = toggleFrame
-    
-    local toggleLabel = Instance.new("TextLabel")
-    toggleLabel.Size = UDim2.new(1, -50, 1, 0)
-    toggleLabel.BackgroundTransparency = 1
-    toggleLabel.Font = Enum.Font.Gotham
-    toggleLabel.Text = text
-    toggleLabel.TextColor3 = Config.Colors.Text
-    toggleLabel.TextScaled = true
-    toggleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    toggleLabel.Parent = toggleFrame
-    
-    local toggleButton = Instance.new("TextButton")
-    toggleButton.Size = UDim2.new(0, 40, 0, 20)
-    toggleButton.Position = UDim2.new(1, -45, 0.5, -10)
-    toggleButton.BackgroundColor3 = defaultValue and Config.Colors.Success or Config.Colors.Error
-    toggleButton.BorderSizePixel = 0
-    toggleButton.Text = defaultValue and "ON" or "OFF"
-    toggleButton.TextColor3 = Config.Colors.Text
-    toggleButton.Font = Enum.Font.GothamBold
-    toggleButton.TextScaled = true
-    toggleButton.Parent = toggleFrame
-    
-    local toggleButtonCorner = Instance.new("UICorner")
-    toggleButtonCorner.CornerRadius = UDim.new(0, 10)
-    toggleButtonCorner.Parent = toggleButton
-    
-    local currentValue = defaultValue
-    
-    toggleButton.MouseButton1Click:Connect(function()
-        currentValue = not currentValue
-        toggleButton.BackgroundColor3 = currentValue and Config.Colors.Success or Config.Colors.Error
-        toggleButton.Text = currentValue and "ON" or "OFF"
-        callback(currentValue)
-    end)
-    
-    table.insert(tab.Content, toggleFrame)
-    
-    if tab.Active then
-        toggleFrame.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return toggleFrame
-end
-
-function Library:CreateTextLabel(tab, text, color)
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 0, 25)
-    label.BackgroundTransparency = 1
-    label.Font = Enum.Font.Gotham
-    label.Text = text
-    label.TextColor3 = color or Config.Colors.Text
-    label.TextScaled = true
-    label.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local labelObj = {
-        Label = label,
-        SetText = function(newText)
-            label.Text = newText
-        end
-    }
-    
-    table.insert(tab.Content, label)
-    
-    if tab.Active then
-        label.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return labelObj
-end
-
-function Library:CreateLabel(tab, text, color)
-    return Library:CreateTextLabel(tab, text, color)
-end
-
-function Library:CreateSlider(tab, text, min, max, defaultValue, callback)
-    local sliderFrame = Instance.new("Frame")
-    sliderFrame.Size = UDim2.new(1, 0, 0, 50)
-    sliderFrame.BackgroundColor3 = Config.Colors.BackgroundSecondary
-    sliderFrame.BorderSizePixel = 0
-    
-    local sliderCorner = Instance.new("UICorner")
-    sliderCorner.CornerRadius = UDim.new(0, 6)
-    sliderCorner.Parent = sliderFrame
-    
-    local sliderLabel = Instance.new("TextLabel")
-    sliderLabel.Size = UDim2.new(1, 0, 0, 25)
-    sliderLabel.BackgroundTransparency = 1
-    sliderLabel.Font = Enum.Font.Gotham
-    sliderLabel.Text = text .. ": " .. defaultValue
-    sliderLabel.TextColor3 = Config.Colors.Text
-    sliderLabel.TextScaled = true
-    sliderLabel.Parent = sliderFrame
-    
-    local sliderBar = Instance.new("Frame")
-    sliderBar.Size = UDim2.new(1, -20, 0, 5)
-    sliderBar.Position = UDim2.new(0, 10, 1, -15)
-    sliderBar.BackgroundColor3 = Config.Colors.Secondary
-    sliderBar.BorderSizePixel = 0
-    sliderBar.Parent = sliderFrame
-    
-    local sliderBarCorner = Instance.new("UICorner")
-    sliderBarCorner.CornerRadius = UDim.new(0, 2.5)
-    sliderBarCorner.Parent = sliderBar
-    
-    local sliderFill = Instance.new("Frame")
-    sliderFill.Size = UDim2.new((defaultValue - min) / (max - min), 0, 1, 0)
-    sliderFill.BackgroundColor3 = Config.Colors.Primary
-    sliderFill.BorderSizePixel = 0
-    sliderFill.Parent = sliderBar
-    
-    local sliderFillCorner = Instance.new("UICorner")
-    sliderFillCorner.CornerRadius = UDim.new(0, 2.5)
-    sliderFillCorner.Parent = sliderFill
-    
-    local currentValue = defaultValue
-    local dragging = false
-    
-    local function updateSlider(input)
-        local relativeX = (input.Position.X - sliderBar.AbsolutePosition.X) / sliderBar.AbsoluteSize.X
-        relativeX = math.clamp(relativeX, 0, 1)
-        currentValue = min + (max - min) * relativeX
-        currentValue = math.floor(currentValue)
-        
-        sliderFill.Size = UDim2.new(relativeX, 0, 1, 0)
-        sliderLabel.Text = text .. ": " .. currentValue
-        callback(currentValue)
-    end
-    
-    sliderBar.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = true
-            updateSlider(input)
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-            updateSlider(input)
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
-            dragging = false
-        end
-    end)
-    
-    table.insert(tab.Content, sliderFrame)
-    
-    if tab.Active then
-        sliderFrame.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return sliderFrame
-end
-
-function Library:CreateDropdown(tab, text, options, defaultValue, callback)
-    local dropdownFrame = Instance.new("Frame")
-    dropdownFrame.Size = UDim2.new(1, 0, 0, 35)
-    dropdownFrame.BackgroundColor3 = Config.Colors.BackgroundSecondary
-    dropdownFrame.BorderSizePixel = 0
-    
-    local dropdownCorner = Instance.new("UICorner")
-    dropdownCorner.CornerRadius = UDim.new(0, 6)
-    dropdownCorner.Parent = dropdownFrame
-    
-    local dropdownButton = Instance.new("TextButton")
-    dropdownButton.Size = UDim2.new(1, 0, 1, 0)
-    dropdownButton.BackgroundTransparency = 1
-    dropdownButton.Font = Enum.Font.Gotham
-    dropdownButton.Text = text .. ": " .. defaultValue
-    dropdownButton.TextColor3 = Config.Colors.Text
-    dropdownButton.TextScaled = true
-    dropdownButton.Parent = dropdownFrame
-    
-    local currentValue = defaultValue
-    local currentIndex = 1
-    
-    for i, option in ipairs(options) do
-        if option == defaultValue then
-            currentIndex = i
-            break
-        end
-    end
-    
-    dropdownButton.MouseButton1Click:Connect(function()
-        currentIndex = currentIndex + 1
-        if currentIndex > #options then
-            currentIndex = 1
-        end
-        currentValue = options[currentIndex]
-        dropdownButton.Text = text .. ": " .. currentValue
-        callback(currentValue)
-    end)
-    
-    table.insert(tab.Content, dropdownFrame)
-    
-    if tab.Active then
-        dropdownFrame.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return dropdownFrame
-end
-
-function Library:CreateTextBox(tab, text, placeholder, callback)
-    local textboxFrame = Instance.new("Frame")
-    textboxFrame.Size = UDim2.new(1, 0, 0, 35)
-    textboxFrame.BackgroundColor3 = Config.Colors.BackgroundSecondary
-    textboxFrame.BorderSizePixel = 0
-    
-    local textboxCorner = Instance.new("UICorner")
-    textboxCorner.CornerRadius = UDim.new(0, 6)
-    textboxCorner.Parent = textboxFrame
-    
-    local textboxLabel = Instance.new("TextLabel")
-    textboxLabel.Size = UDim2.new(0.4, 0, 1, 0)
-    textboxLabel.BackgroundTransparency = 1
-    textboxLabel.Font = Enum.Font.Gotham
-    textboxLabel.Text = text .. ":"
-    textboxLabel.TextColor3 = Config.Colors.Text
-    textboxLabel.TextScaled = true
-    textboxLabel.TextXAlignment = Enum.TextXAlignment.Left
-    textboxLabel.Parent = textboxFrame
-    
-    local textbox = Instance.new("TextBox")
-    textbox.Size = UDim2.new(0.6, -10, 0.8, 0)
-    textbox.Position = UDim2.new(0.4, 5, 0.1, 0)
-    textbox.BackgroundColor3 = Config.Colors.Secondary
-    textbox.BorderSizePixel = 0
-    textbox.Font = Enum.Font.Gotham
-    textbox.PlaceholderText = placeholder
-    textbox.Text = ""
-    textbox.TextColor3 = Config.Colors.Text
-    textbox.TextScaled = true
-    textbox.Parent = textboxFrame
-    
-    local textboxInputCorner = Instance.new("UICorner")
-    textboxInputCorner.CornerRadius = UDim.new(0, 4)
-    textboxInputCorner.Parent = textbox
-    
-    textbox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            callback(textbox.Text)
-        end
-    end)
-    
-    table.insert(tab.Content, textboxFrame)
-    
-    if tab.Active then
-        textboxFrame.Parent = ContentFrame
-        ContentFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
-    end
-    
-    return textboxFrame
-end
-
--- Create tabs and components
+-- Create tabs
 local infoTab = Library:CreateTab("INFO")
 local homeTab = Library:CreateTab("HOME")
 local specialTab = Library:CreateTab("SPECIAL")
@@ -516,6 +18,7 @@ local mainTab = Library:CreateTab("MAIN")
 local spawnerTab = Library:CreateTab("SPAWNER")
 local destroyTab = Library:CreateTab("DESTROY")
 local settingsTab = Library:CreateTab("SETTINGS")
+local playerTab = Library:CreateTab("PLAYER")
 
 -- Timer variables
 local scriptStartTime = tick()
@@ -531,12 +34,36 @@ end
 
 -- INFO Tab Components
 Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
-Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
+Library:CreateTextLabel(infoTab, "Player: " .. game.Players.LocalPlayer.Name, Config.Colors.Text)
 timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
+
+Library:CreateLabel(infoTab, "Fryzer Hub")
+Library:CreateTextLabel(infoTab, "Welcome " .. game.Players.LocalPlayer.DisplayName .. "!", Config.Colors.Text)
+Library:CreateTextLabel(infoTab, "Make Sure to only Execute scripts 1x", Config.Colors.TextSecondary)
+
+Library:CreateButton(infoTab, "Fruit Stealer", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
+end)
+
+Library:CreateButton(infoTab, "Pet duper", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
+end)
+
+Library:CreateButton(infoTab, "Jandel Chat System", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
+end)
+
+Library:CreateTextLabel(infoTab, "Make Sure To sent Only Feedback", Config.Colors.TextSecondary)
+
+Library:CreateLabel(infoTab, "FeedBack")
+
+Library:CreateButton(infoTab, "Open feedback Gui", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/FeedBack-Gui/refs/heads/main/Feedback%20gui"))()
+end)
 
 -- Update timer every second
 spawn(function()
-    while ScreenGui.Parent do
+    while ScreenGui and ScreenGui.Parent do
         wait(1)
         local timeUsed = tick() - scriptStartTime
         if timerLabel and timerLabel.SetText then
@@ -562,6 +89,124 @@ Library:CreateDropdown(homeTab, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Wal
 end)
 Library:CreateTextBox(homeTab, "Player Name", "Enter player name...", function(text)
     print("Player name entered:", text)
+end)
+
+-- PLAYER Tab Components (Walk Speed & Teleport)
+local defaultWalkSpeed = 16
+local currentWalkSpeed = defaultWalkSpeed
+
+-- Walk Speed Slider
+Library:CreateSlider(playerTab, "Walk Speed", 1, 200, defaultWalkSpeed, function(value)
+    currentWalkSpeed = value
+    local LocalPlayer = game.Players.LocalPlayer
+    
+    -- Apply speed to current character
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = value
+        print("Walk speed changed to:", value)
+    end
+    
+    -- Show notification for significant speed changes
+    if value >= 100 then
+        print("Speed Boost: Super speed activated! (" .. value .. ")")
+    elseif value <= 5 then
+        print("Slow Mode: Slow speed activated (" .. value .. ")")
+    end
+end)
+
+-- Reset Speed Button
+Library:CreateButton(playerTab, "Reset Walk Speed", function()
+    local LocalPlayer = game.Players.LocalPlayer
+    currentWalkSpeed = defaultWalkSpeed
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid.WalkSpeed = defaultWalkSpeed
+        print("Walk speed reset to default:", defaultWalkSpeed)
+    else
+        print("Reset Failed: Character not found!")
+    end
+end)
+
+-- Teleport locations
+local locations = {
+    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
+    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
+    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
+    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
+    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
+    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
+    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
+    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
+    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
+    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
+}
+
+local selectedLocation = "Event Area"
+
+Library:CreateTextLabel(playerTab, "Select a location and click teleport", Config.Colors.TextSecondary)
+
+-- Dropdown to choose teleport location
+Library:CreateDropdown(playerTab, "Select Location", {
+    "Event Area", 
+    "Gear Shop", 
+    "Pet Eggs Shop", 
+    "Cosmetics Shop", 
+    "Garden 1", 
+    "Garden 2", 
+    "Garden 3", 
+    "Garden 4", 
+    "Garden 5", 
+    "Garden 6"
+}, "Event Area", function(selected)
+    selectedLocation = selected
+    print("Location Selected: " .. selected)
+end)
+
+-- Teleport Button
+Library:CreateButton(playerTab, "Teleport to Location", function()
+    local pos = locations[selectedLocation]
+    local LocalPlayer = game.Players.LocalPlayer
+    
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+        print("Teleported to " .. selectedLocation)
+    else
+        print("Teleport failed - character not found")
+    end
+end)
+
+Library:CreateLabel(playerTab, "QUICK TELEPORTS", Config.Colors.Accent)
+
+Library:CreateButton(playerTab, "Event Area", function()
+    local LocalPlayer = game.Players.LocalPlayer
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Event Area"])
+        print("Quick teleport: Event Area!")
+    end
+end)
+
+Library:CreateButton(playerTab, "Gear Shop", function()
+    local LocalPlayer = game.Players.LocalPlayer
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Gear Shop"])
+        print("Quick teleport: Gear Shop!")
+    end
+end)
+
+Library:CreateButton(playerTab, "Pet Eggs Shop", function()
+    local LocalPlayer = game.Players.LocalPlayer
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Pet Eggs Shop"])
+        print("Quick teleport: Pet Eggs Shop!")
+    end
+end)
+
+Library:CreateButton(playerTab, "Garden 1", function()
+    local LocalPlayer = game.Players.LocalPlayer
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Garden 1"])
+        print("Quick teleport: Garden 1!")
+    end
 end)
 
 -- SPECIAL Tab Components
@@ -627,6 +272,6 @@ end)
 Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
 print("🎉 Fryzer Hub GUI loaded successfully!")
-print("📱 Use the FH circle button to show/hide the GUI")
+print("📱 Use the circle toggle to show/hide the GUI")
 
 return Library
