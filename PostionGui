@@ -16,9 +16,22 @@ local LocalPlayer = Players.LocalPlayer
 
 Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
 
+local RunService = game:GetService("RunService")
+local startTime = tick() -- time when script runs
+
+-- create the label
+local timerLabel = Library:CreateTextLabel(infoTab, "Timer: 0s")
+
+-- update it every frame
+RunService.Heartbeat:Connect(function()
+    local elapsed = math.floor(tick() - startTime)
+    timerLabel.Text = "Timer: " .. elapsed .. "s"
+end)
+
+
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
 Library:CreateLabel(infoTab, "Join Discord")
-Library:CreateButton(infoTab, "Join Discord Server", function()
+Library:CreateButton(infoTab, "Join Discord For More Scripts", function()
     print("🔗 Discord link clicked!")
     -- Add your discord invite link here
 end)
