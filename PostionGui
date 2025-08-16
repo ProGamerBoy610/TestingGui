@@ -1,133 +1,93 @@
--- Fryzer Hub - Complete Combined Script
--- Usage: loadstring(game:HttpGet("your-script-url"))()
+-- Fryzer Hub - Compressed Loadstring Version
+-- Usage: loadstring(game:HttpGet("your-github-raw-url"))()
 
--- Load circle toggle and main library
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
+while not Library do wait(0.1) end
 
--- Wait for Library to be available
-while not Library do
-    wait(0.1)
-end
+local tabs = {
+    info = Library:CreateTab("INFO"),
+    home = Library:CreateTab("HOME"), 
+    special = Library:CreateTab("SPECIAL"),
+    main = Library:CreateTab("MAIN"),
+    spawner = Library:CreateTab("SPAWNER"),
+    destroy = Library:CreateTab("DESTROY"),
+    settings = Library:CreateTab("SETTINGS"),
+    player = Library:CreateTab("PLAYER")
+}
 
--- Create tabs
-local infoTab = Library:CreateTab("INFO")
-local homeTab = Library:CreateTab("HOME")
-local specialTab = Library:CreateTab("SPECIAL")
-local mainTab = Library:CreateTab("MAIN")
-local spawnerTab = Library:CreateTab("SPAWNER")
-local destroyTab = Library:CreateTab("DESTROY")
-local settingsTab = Library:CreateTab("SETTINGS")
-local playerTab = Library:CreateTab("PLAYER")
-
--- Timer variables
 local scriptStartTime = tick()
 local timerLabel = nil
+local function FormatTime(s) local h,m=math.floor(s/3600),math.floor((s%3600)/60) return string.format("%02d:%02d:%02d",h,m,math.floor(s%60)) end
 
--- Function to format time
-local function FormatTime(seconds)
-    local hours = math.floor(seconds / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local secs = math.floor(seconds % 60)
-    return string.format("%02d:%02d:%02d", hours, minutes, secs)
-end
+-- INFO Tab
+Library:CreateTextLabel(tabs.info, "Welcome to Fryzer Hub", Config.Colors.Accent)
+Library:CreateTextLabel(tabs.info, "Player: " .. game.Players.LocalPlayer.Name, Config.Colors.Text)
+timerLabel = Library:CreateTextLabel(tabs.info, "Time Used: 00:00:00", Config.Colors.Success)
+Library:CreateLabel(tabs.info, "Fryzer Hub")
+Library:CreateTextLabel(tabs.info, "Welcome " .. game.Players.LocalPlayer.DisplayName .. "!", Config.Colors.Text)
+Library:CreateTextLabel(tabs.info, "Make Sure to only Execute scripts 1x", Config.Colors.TextSecondary)
 
--- INFO Tab Components
-Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
-Library:CreateTextLabel(infoTab, "Player: " .. game.Players.LocalPlayer.Name, Config.Colors.Text)
-timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
-
-Library:CreateLabel(infoTab, "Fryzer Hub")
-Library:CreateTextLabel(infoTab, "Welcome " .. game.Players.LocalPlayer.DisplayName .. "!", Config.Colors.Text)
-Library:CreateTextLabel(infoTab, "Make Sure to only Execute scripts 1x", Config.Colors.TextSecondary)
-
-Library:CreateButton(infoTab, "Fruit Stealer", function()
+Library:CreateButton(tabs.info, "Fruit Stealer", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
 end)
 
-Library:CreateButton(infoTab, "Pet duper", function()
+Library:CreateButton(tabs.info, "Pet duper", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
 end)
 
-Library:CreateButton(infoTab, "Jandel Chat System", function()
+Library:CreateButton(tabs.info, "Jandel Chat System", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
 end)
 
-Library:CreateTextLabel(infoTab, "Make Sure To sent Only Feedback", Config.Colors.TextSecondary)
-
-Library:CreateLabel(infoTab, "FeedBack")
-
-Library:CreateButton(infoTab, "Open feedback Gui", function()
+Library:CreateTextLabel(tabs.info, "Make Sure To sent Only Feedback", Config.Colors.TextSecondary)
+Library:CreateLabel(tabs.info, "FeedBack")
+Library:CreateButton(tabs.info, "Open feedback Gui", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/FeedBack-Gui/refs/heads/main/Feedback%20gui"))()
 end)
 
--- Update timer every second
 spawn(function()
     while ScreenGui and ScreenGui.Parent do
         wait(1)
-        local timeUsed = tick() - scriptStartTime
         if timerLabel and timerLabel.SetText then
-            timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
+            timerLabel.SetText("Time Used: " .. FormatTime(tick() - scriptStartTime))
         end
     end
 end)
 
--- HOME Tab Components
-Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
-Library:CreateButton(homeTab, "Test Button", function()
-    print("Button clicked!")
-end)
-Library:CreateToggle(homeTab, "Enable Feature", false, function(value)
-    print("Toggle:", value)
-end)
-Library:CreateTextLabel(homeTab, "This is a text label - no click action", Config.Colors.TextSecondary)
-Library:CreateSlider(homeTab, "Speed", 1, 100, 50, function(value)
-    print("Speed set to:", value)
-end)
-Library:CreateDropdown(homeTab, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Walk", function(value)
-    print("Mode selected:", value)
-end)
-Library:CreateTextBox(homeTab, "Player Name", "Enter player name...", function(text)
-    print("Player name entered:", text)
-end)
+-- HOME Tab
+Library:CreateLabel(tabs.home, "Welcome to Modern Hub!", Config.Colors.Text)
+Library:CreateButton(tabs.home, "Test Button", function() print("Button clicked!") end)
+Library:CreateToggle(tabs.home, "Enable Feature", false, function(v) print("Toggle:", v) end)
+Library:CreateTextLabel(tabs.home, "This is a text label - no click action", Config.Colors.TextSecondary)
+Library:CreateSlider(tabs.home, "Speed", 1, 100, 50, function(v) print("Speed set to:", v) end)
+Library:CreateDropdown(tabs.home, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Walk", function(v) print("Mode selected:", v) end)
+Library:CreateTextBox(tabs.home, "Player Name", "Enter player name...", function(t) print("Player name entered:", t) end)
 
--- PLAYER Tab Components (Walk Speed & Teleport)
+-- PLAYER Tab
 local defaultWalkSpeed = 16
 local currentWalkSpeed = defaultWalkSpeed
 
--- Walk Speed Slider
-Library:CreateSlider(playerTab, "Walk Speed", 1, 200, defaultWalkSpeed, function(value)
-    currentWalkSpeed = value
+Library:CreateSlider(tabs.player, "Walk Speed", 1, 200, defaultWalkSpeed, function(v)
+    currentWalkSpeed = v
     local LocalPlayer = game.Players.LocalPlayer
-    
-    -- Apply speed to current character
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = value
-        print("Walk speed changed to:", value)
+        LocalPlayer.Character.Humanoid.WalkSpeed = v
+        print("Walk speed changed to:", v)
     end
-    
-    -- Show notification for significant speed changes
-    if value >= 100 then
-        print("Speed Boost: Super speed activated! (" .. value .. ")")
-    elseif value <= 5 then
-        print("Slow Mode: Slow speed activated (" .. value .. ")")
-    end
+    if v >= 100 then print("Speed Boost: Super speed activated! (" .. v .. ")")
+    elseif v <= 5 then print("Slow Mode: Slow speed activated (" .. v .. ")") end
 end)
 
--- Reset Speed Button
-Library:CreateButton(playerTab, "Reset Walk Speed", function()
+Library:CreateButton(tabs.player, "Reset Walk Speed", function()
     local LocalPlayer = game.Players.LocalPlayer
     currentWalkSpeed = defaultWalkSpeed
-    
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         LocalPlayer.Character.Humanoid.WalkSpeed = defaultWalkSpeed
         print("Walk speed reset to default:", defaultWalkSpeed)
-    else
-        print("Reset Failed: Character not found!")
-    end
+    else print("Reset Failed: Character not found!") end
 end)
 
--- Teleport locations
 local locations = {
     ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
     ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
@@ -143,135 +103,65 @@ local locations = {
 
 local selectedLocation = "Event Area"
 
-Library:CreateTextLabel(playerTab, "Select a location and click teleport", Config.Colors.TextSecondary)
-
--- Dropdown to choose teleport location
-Library:CreateDropdown(playerTab, "Select Location", {
-    "Event Area", 
-    "Gear Shop", 
-    "Pet Eggs Shop", 
-    "Cosmetics Shop", 
-    "Garden 1", 
-    "Garden 2", 
-    "Garden 3", 
-    "Garden 4", 
-    "Garden 5", 
-    "Garden 6"
-}, "Event Area", function(selected)
-    selectedLocation = selected
-    print("Location Selected: " .. selected)
+Library:CreateTextLabel(tabs.player, "Select a location and click teleport", Config.Colors.TextSecondary)
+Library:CreateDropdown(tabs.player, "Select Location", {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"}, "Event Area", function(s)
+    selectedLocation = s
+    print("Location Selected: " .. s)
 end)
 
--- Teleport Button
-Library:CreateButton(playerTab, "Teleport to Location", function()
+Library:CreateButton(tabs.player, "Teleport to Location", function()
     local pos = locations[selectedLocation]
     local LocalPlayer = game.Players.LocalPlayer
-    
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
         print("Teleported to " .. selectedLocation)
-    else
-        print("Teleport failed - character not found")
-    end
+    else print("Teleport failed - character not found") end
 end)
 
-Library:CreateLabel(playerTab, "QUICK TELEPORTS", Config.Colors.Accent)
+Library:CreateLabel(tabs.player, "QUICK TELEPORTS", Config.Colors.Accent)
 
-Library:CreateButton(playerTab, "Event Area", function()
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Event Area"])
-        print("Quick teleport: Event Area!")
-    end
-end)
+for name, pos in pairs({["Event Area"]=locations["Event Area"], ["Gear Shop"]=locations["Gear Shop"], ["Pet Eggs Shop"]=locations["Pet Eggs Shop"], ["Garden 1"]=locations["Garden 1"]}) do
+    Library:CreateButton(tabs.player, name, function()
+        local LocalPlayer = game.Players.LocalPlayer
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+            print("Quick teleport: " .. name .. "!")
+        end
+    end)
+end
 
-Library:CreateButton(playerTab, "Gear Shop", function()
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Gear Shop"])
-        print("Quick teleport: Gear Shop!")
-    end
-end)
+-- SPECIAL Tab
+Library:CreateButton(tabs.special, "Special Function", function() print("Special function executed!") end)
+Library:CreateToggle(tabs.special, "Special Toggle", true, function(v) print("Special toggle:", v) end)
+Library:CreateTextLabel(tabs.special, "Special Info: Read-only text display", Config.Colors.Accent)
 
-Library:CreateButton(playerTab, "Pet Eggs Shop", function()
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Pet Eggs Shop"])
-        print("Quick teleport: Pet Eggs Shop!")
-    end
-end)
+-- MAIN Tab
+Library:CreateButton(tabs.main, "Main Feature 1", function() print("Main feature 1 activated!") end)
+Library:CreateButton(tabs.main, "Main Feature 2", function() print("Main feature 2 activated!") end)
+Library:CreateToggle(tabs.main, "Main Toggle", false, function(v) print("Main toggle:", v) end)
+Library:CreateTextLabel(tabs.main, "Status: All systems operational", Config.Colors.Success)
 
-Library:CreateButton(playerTab, "Garden 1", function()
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(locations["Garden 1"])
-        print("Quick teleport: Garden 1!")
-    end
-end)
+-- SPAWNER Tab
+Library:CreateLabel(tabs.spawner, "SPAWNER SCRIPT", Config.Colors.Text)
+Library:CreateButton(tabs.spawner, "Dark Spawner [ Mobile Only ]", function() print("Dark Spawner executed!") end)
+Library:CreateToggle(tabs.spawner, "ReModified v3.8 || Dark Spawner", true, function(v) print("ReModified:", v) end)
+Library:CreateToggle(tabs.spawner, "Pet Placer v1.0 [ Not Animated ]", false, function(v) print("Pet Placer:", v) end)
+Library:CreateLabel(tabs.spawner, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
+Library:CreateToggle(tabs.spawner, "Allow Gift Spawned Pets ^.^", false, function(v) print("Allow Gift Pets:", v) end)
+Library:CreateTextLabel(tabs.spawner, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
 
--- SPECIAL Tab Components
-Library:CreateButton(specialTab, "Special Function", function()
-    print("Special function executed!")
-end)
-Library:CreateToggle(specialTab, "Special Toggle", true, function(value)
-    print("Special toggle:", value)
-end)
-Library:CreateTextLabel(specialTab, "Special Info: Read-only text display", Config.Colors.Accent)
+-- DESTROY Tab
+Library:CreateButton(tabs.destroy, "Destroy Function 1", function() print("Destroy function 1!") end)
+Library:CreateButton(tabs.destroy, "Destroy Function 2", function() print("Destroy function 2!") end)
+Library:CreateToggle(tabs.destroy, "Auto Destroy", false, function(v) print("Auto Destroy:", v) end)
+Library:CreateTextLabel(tabs.destroy, "Warning: Use destroy functions carefully", Config.Colors.Warning)
 
--- MAIN Tab Components
-Library:CreateButton(mainTab, "Main Feature 1", function()
-    print("Main feature 1 activated!")
-end)
-Library:CreateButton(mainTab, "Main Feature 2", function()
-    print("Main feature 2 activated!")
-end)
-Library:CreateToggle(mainTab, "Main Toggle", false, function(value)
-    print("Main toggle:", value)
-end)
-Library:CreateTextLabel(mainTab, "Status: All systems operational", Config.Colors.Success)
-
--- SPAWNER Tab Components
-Library:CreateLabel(spawnerTab, "SPAWNER SCRIPT", Config.Colors.Text)
-Library:CreateButton(spawnerTab, "Dark Spawner [ Mobile Only ]", function()
-    print("Dark Spawner executed!")
-end)
-Library:CreateToggle(spawnerTab, "ReModified v3.8 || Dark Spawner", true, function(value)
-    print("ReModified:", value)
-end)
-Library:CreateToggle(spawnerTab, "Pet Placer v1.0 [ Not Animated ]", false, function(value)
-    print("Pet Placer:", value)
-end)
-Library:CreateLabel(spawnerTab, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
-Library:CreateToggle(spawnerTab, "Allow Gift Spawned Pets ^.^", false, function(value)
-    print("Allow Gift Pets:", value)
-end)
-Library:CreateTextLabel(spawnerTab, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
-
--- DESTROY Tab Components
-Library:CreateButton(destroyTab, "Destroy Function 1", function()
-    print("Destroy function 1!")
-end)
-Library:CreateButton(destroyTab, "Destroy Function 2", function()
-    print("Destroy function 2!")
-end)
-Library:CreateToggle(destroyTab, "Auto Destroy", false, function(value)
-    print("Auto Destroy:", value)
-end)
-Library:CreateTextLabel(destroyTab, "Warning: Use destroy functions carefully", Config.Colors.Warning)
-
--- SETTINGS Tab Components
-Library:CreateToggle(settingsTab, "Sound Effects", true, function(value)
-    print("Sound Effects:", value)
-end)
-Library:CreateToggle(settingsTab, "Auto Save", false, function(value)
-    print("Auto Save:", value)
-end)
-Library:CreateButton(settingsTab, "Reset Settings", function()
-    print("Settings reset!")
-end)
-Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
+-- SETTINGS Tab
+Library:CreateToggle(tabs.settings, "Sound Effects", true, function(v) print("Sound Effects:", v) end)
+Library:CreateToggle(tabs.settings, "Auto Save", false, function(v) print("Auto Save:", v) end)
+Library:CreateButton(tabs.settings, "Reset Settings", function() print("Settings reset!") end)
+Library:CreateTextLabel(tabs.settings, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
 print("🎉 Fryzer Hub GUI loaded successfully!")
 print("📱 Use the circle toggle to show/hide the GUI")
-
 return Library
