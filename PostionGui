@@ -1,10 +1,127 @@
--- Fryzer Hub - Compressed Loadstring Version
--- Usage: loadstring(game:HttpGet("your-github-raw-url"))()
+-- Fryzer Hub - Debug Version
+-- This will help identify what's working and what's not
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-while not Library do wait(0.1) end
+print("🔄 Starting Fryzer Hub Debug...")
 
+-- Step 1: Load circle toggle
+print("📍 Step 1: Loading circle toggle...")
+local success1, error1 = pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
+end)
+
+if success1 then
+    print("✅ Circle toggle loaded successfully")
+else
+    print("❌ Circle toggle failed to load: " .. tostring(error1))
+end
+
+-- Step 2: Load main library
+print("📍 Step 2: Loading main library...")
+local success2, error2 = pcall(function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
+end)
+
+if success2 then
+    print("✅ Main library loaded successfully")
+else
+    print("❌ Main library failed to load: " .. tostring(error2))
+end
+
+-- Step 3: Check if Library exists
+print("📍 Step 3: Checking for Library object...")
+local waitTime = 0
+while not Library and waitTime < 10 do
+    wait(0.1)
+    waitTime = waitTime + 0.1
+    print("⏳ Waiting for Library... (" .. waitTime .. "s)")
+end
+
+if Library then
+    print("✅ Library object found!")
+    print("📋 Library methods available:")
+    for key, value in pairs(Library) do
+        if type(value) == "function" then
+            print("  - " .. key .. "()")
+        end
+    end
+else
+    print("❌ Library object not found after 10 seconds!")
+    print("🔧 Creating basic fallback library...")
+    
+    -- Create a simple fallback library
+    Library = {}
+    function Library:CreateTab(name)
+        print("📁 Tab created: " .. name)
+        return {name = name}
+    end
+    function Library:CreateButton(tab, name, callback)
+        print("🔘 Button created: " .. name .. " in tab " .. (tab.name or "unknown"))
+        return {name = name, callback = callback}
+    end
+    function Library:CreateToggle(tab, name, default, callback)
+        print("🔄 Toggle created: " .. name .. " in tab " .. (tab.name or "unknown"))
+        return {name = name, callback = callback}
+    end
+    function Library:CreateSlider(tab, name, min, max, default, callback)
+        print("📊 Slider created: " .. name .. " in tab " .. (tab.name or "unknown"))
+        return {name = name, callback = callback}
+    end
+    function Library:CreateDropdown(tab, name, options, default, callback)
+        print("📋 Dropdown created: " .. name .. " in tab " .. (tab.name or "unknown"))
+        return {name = name, callback = callback}
+    end
+    function Library:CreateTextBox(tab, name, placeholder, callback)
+        print("📝 TextBox created: " .. name .. " in tab " .. (tab.name or "unknown"))
+        return {name = name, callback = callback}
+    end
+    function Library:CreateLabel(tab, text)
+        print("🏷️ Label created: " .. text .. " in tab " .. (tab.name or "unknown"))
+        return {text = text}
+    end
+    function Library:CreateTextLabel(tab, text, color)
+        print("📄 TextLabel created: " .. text .. " in tab " .. (tab.name or "unknown"))
+        return {text = text}
+    end
+end
+
+-- Step 4: Check if Config exists
+print("📍 Step 4: Checking for Config object...")
+if not Config then
+    print("⚠️ Config not found, creating default config...")
+    Config = {
+        Colors = {
+            Background = Color3.fromRGB(25, 25, 25),
+            Accent = Color3.fromRGB(0, 162, 255),
+            Primary = Color3.fromRGB(70, 130, 255),
+            Success = Color3.fromRGB(46, 204, 113),
+            Warning = Color3.fromRGB(241, 196, 15),
+            Text = Color3.fromRGB(255, 255, 255),
+            TextSecondary = Color3.fromRGB(170, 170, 170)
+        }
+    }
+    print("✅ Default config created")
+else
+    print("✅ Config object found!")
+end
+
+-- Step 5: Try creating a simple tab to test
+print("📍 Step 5: Testing tab creation...")
+local success3, error3 = pcall(function()
+    local testTab = Library:CreateTab("TEST")
+    Library:CreateButton(testTab, "Test Button", function()
+        print("🎉 Test button clicked!")
+    end)
+end)
+
+if success3 then
+    print("✅ Test tab and button created successfully!")
+else
+    print("❌ Failed to create test tab: " .. tostring(error3))
+end
+
+print("🔍 Debug complete! Now running main script...")
+
+-- Now run your original script
 local tabs = {
     info = Library:CreateTab("INFO"),
     home = Library:CreateTab("HOME"), 
@@ -16,152 +133,11 @@ local tabs = {
     player = Library:CreateTab("PLAYER")
 }
 
-local scriptStartTime = tick()
-local timerLabel = nil
-local function FormatTime(s) local h,m=math.floor(s/3600),math.floor((s%3600)/60) return string.format("%02d:%02d:%02d",h,m,math.floor(s%60)) end
+print("📁 All tabs created!")
 
--- INFO Tab
-Library:CreateTextLabel(tabs.info, "Welcome to Fryzer Hub", Config.Colors.Accent)
-Library:CreateTextLabel(tabs.info, "Player: " .. game.Players.LocalPlayer.Name, Config.Colors.Text)
-timerLabel = Library:CreateTextLabel(tabs.info, "Time Used: 00:00:00", Config.Colors.Success)
-Library:CreateLabel(tabs.info, "Fryzer Hub")
-Library:CreateTextLabel(tabs.info, "Welcome " .. game.Players.LocalPlayer.DisplayName .. "!", Config.Colors.Text)
-Library:CreateTextLabel(tabs.info, "Make Sure to only Execute scripts 1x", Config.Colors.TextSecondary)
-
-Library:CreateButton(tabs.info, "Fruit Stealer", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
+-- Add a simple test button to see if it works
+Library:CreateButton(tabs.info, "Debug Test", function()
+    print("🎯 Debug button works!")
 end)
 
-Library:CreateButton(tabs.info, "Pet duper", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
-end)
-
-Library:CreateButton(tabs.info, "Jandel Chat System", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
-end)
-
-Library:CreateTextLabel(tabs.info, "Make Sure To sent Only Feedback", Config.Colors.TextSecondary)
-Library:CreateLabel(tabs.info, "FeedBack")
-Library:CreateButton(tabs.info, "Open feedback Gui", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/FeedBack-Gui/refs/heads/main/Feedback%20gui"))()
-end)
-
-spawn(function()
-    while ScreenGui and ScreenGui.Parent do
-        wait(1)
-        if timerLabel and timerLabel.SetText then
-            timerLabel.SetText("Time Used: " .. FormatTime(tick() - scriptStartTime))
-        end
-    end
-end)
-
--- HOME Tab
-Library:CreateLabel(tabs.home, "Welcome to Modern Hub!", Config.Colors.Text)
-Library:CreateButton(tabs.home, "Test Button", function() print("Button clicked!") end)
-Library:CreateToggle(tabs.home, "Enable Feature", false, function(v) print("Toggle:", v) end)
-Library:CreateTextLabel(tabs.home, "This is a text label - no click action", Config.Colors.TextSecondary)
-Library:CreateSlider(tabs.home, "Speed", 1, 100, 50, function(v) print("Speed set to:", v) end)
-Library:CreateDropdown(tabs.home, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Walk", function(v) print("Mode selected:", v) end)
-Library:CreateTextBox(tabs.home, "Player Name", "Enter player name...", function(t) print("Player name entered:", t) end)
-
--- PLAYER Tab
-local defaultWalkSpeed = 16
-local currentWalkSpeed = defaultWalkSpeed
-
-Library:CreateSlider(tabs.player, "Walk Speed", 1, 200, defaultWalkSpeed, function(v)
-    currentWalkSpeed = v
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = v
-        print("Walk speed changed to:", v)
-    end
-    if v >= 100 then print("Speed Boost: Super speed activated! (" .. v .. ")")
-    elseif v <= 5 then print("Slow Mode: Slow speed activated (" .. v .. ")") end
-end)
-
-Library:CreateButton(tabs.player, "Reset Walk Speed", function()
-    local LocalPlayer = game.Players.LocalPlayer
-    currentWalkSpeed = defaultWalkSpeed
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        LocalPlayer.Character.Humanoid.WalkSpeed = defaultWalkSpeed
-        print("Walk speed reset to default:", defaultWalkSpeed)
-    else print("Reset Failed: Character not found!") end
-end)
-
-local locations = {
-    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
-    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
-    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
-    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
-    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
-    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
-    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
-    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
-    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
-    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
-}
-
-local selectedLocation = "Event Area"
-
-Library:CreateTextLabel(tabs.player, "Select a location and click teleport", Config.Colors.TextSecondary)
-Library:CreateDropdown(tabs.player, "Select Location", {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"}, "Event Area", function(s)
-    selectedLocation = s
-    print("Location Selected: " .. s)
-end)
-
-Library:CreateButton(tabs.player, "Teleport to Location", function()
-    local pos = locations[selectedLocation]
-    local LocalPlayer = game.Players.LocalPlayer
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-        print("Teleported to " .. selectedLocation)
-    else print("Teleport failed - character not found") end
-end)
-
-Library:CreateLabel(tabs.player, "QUICK TELEPORTS", Config.Colors.Accent)
-
-for name, pos in pairs({["Event Area"]=locations["Event Area"], ["Gear Shop"]=locations["Gear Shop"], ["Pet Eggs Shop"]=locations["Pet Eggs Shop"], ["Garden 1"]=locations["Garden 1"]}) do
-    Library:CreateButton(tabs.player, name, function()
-        local LocalPlayer = game.Players.LocalPlayer
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-            print("Quick teleport: " .. name .. "!")
-        end
-    end)
-end
-
--- SPECIAL Tab
-Library:CreateButton(tabs.special, "Special Function", function() print("Special function executed!") end)
-Library:CreateToggle(tabs.special, "Special Toggle", true, function(v) print("Special toggle:", v) end)
-Library:CreateTextLabel(tabs.special, "Special Info: Read-only text display", Config.Colors.Accent)
-
--- MAIN Tab
-Library:CreateButton(tabs.main, "Main Feature 1", function() print("Main feature 1 activated!") end)
-Library:CreateButton(tabs.main, "Main Feature 2", function() print("Main feature 2 activated!") end)
-Library:CreateToggle(tabs.main, "Main Toggle", false, function(v) print("Main toggle:", v) end)
-Library:CreateTextLabel(tabs.main, "Status: All systems operational", Config.Colors.Success)
-
--- SPAWNER Tab
-Library:CreateLabel(tabs.spawner, "SPAWNER SCRIPT", Config.Colors.Text)
-Library:CreateButton(tabs.spawner, "Dark Spawner [ Mobile Only ]", function() print("Dark Spawner executed!") end)
-Library:CreateToggle(tabs.spawner, "ReModified v3.8 || Dark Spawner", true, function(v) print("ReModified:", v) end)
-Library:CreateToggle(tabs.spawner, "Pet Placer v1.0 [ Not Animated ]", false, function(v) print("Pet Placer:", v) end)
-Library:CreateLabel(tabs.spawner, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
-Library:CreateToggle(tabs.spawner, "Allow Gift Spawned Pets ^.^", false, function(v) print("Allow Gift Pets:", v) end)
-Library:CreateTextLabel(tabs.spawner, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
-
--- DESTROY Tab
-Library:CreateButton(tabs.destroy, "Destroy Function 1", function() print("Destroy function 1!") end)
-Library:CreateButton(tabs.destroy, "Destroy Function 2", function() print("Destroy function 2!") end)
-Library:CreateToggle(tabs.destroy, "Auto Destroy", false, function(v) print("Auto Destroy:", v) end)
-Library:CreateTextLabel(tabs.destroy, "Warning: Use destroy functions carefully", Config.Colors.Warning)
-
--- SETTINGS Tab
-Library:CreateToggle(tabs.settings, "Sound Effects", true, function(v) print("Sound Effects:", v) end)
-Library:CreateToggle(tabs.settings, "Auto Save", false, function(v) print("Auto Save:", v) end)
-Library:CreateButton(tabs.settings, "Reset Settings", function() print("Settings reset!") end)
-Library:CreateTextLabel(tabs.settings, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
-
-print("🎉 Fryzer Hub GUI loaded successfully!")
-print("📱 Use the circle toggle to show/hide the GUI")
-return Library
+print("🎉 Script loaded! Check console for debug info.")
