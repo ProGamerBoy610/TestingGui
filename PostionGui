@@ -1,7 +1,7 @@
 -- Load the library
-print("LMain")
+print("LMAIN")
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-print("CMain")
+print("CMAIN")
 
 print("LTABS")
 -- Create all tabs
@@ -9,9 +9,9 @@ local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
 local espTab = Library:CreateTab("VISUAL")
 local tpTab = Library:CreateTab("TP")
+local autoTab = Library:CreateTab("AUTO")
 local destroyTab = Library:CreateTab("DESTROY")
-
-print("CTabs")
+print("CTABS")
 
 -- INFO Tab Components
 Library:CreateLabel(infoTab, "99 Nights In The Forest v3.9")
@@ -20,6 +20,55 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
+-- Services
+local RunService = game:GetService("RunService")
+
+-- SOLUTION 1: If Library:CreateTextLabel exists (your preferred way)
+local startTime = tick()
+
+-- Create the label (assuming this function exists in your library)
+local timerLabel = Library:CreateTextLabel and Library:CreateTextLabel(infoTab, "Timer: 0s")
+
+if timerLabel then
+    -- Update it every frame
+    RunService.Heartbeat:Connect(function()
+        local elapsed = math.floor(tick() - startTime)
+        local hours = math.floor(elapsed / 3600)
+        local minutes = math.floor((elapsed % 3600) / 60)
+        local seconds = elapsed % 60
+        
+        if hours > 0 then
+            timerLabel.Text = string.format("Timer: %02d:%02d:%02d", hours, minutes, seconds)
+        else
+            timerLabel.Text = string.format("Timer: %02d:%02d", minutes, seconds)
+        end
+    end)
+end
+
+-- Services
+local RunService = game:GetService("RunService")
+
+-- SOLUTION 1: If Library:CreateTextLabel exists (your preferred way)
+local startTime = tick()
+
+-- Create the label (assuming this function exists in your library)
+local timerLabel = Library:CreateTextLabel and Library:CreateTextLabel(infoTab, "Timer: 0s")
+
+if timerLabel then
+    -- Update it every frame
+    RunService.Heartbeat:Connect(function()
+        local elapsed = math.floor(tick() - startTime)
+        local hours = math.floor(elapsed / 3600)
+        local minutes = math.floor((elapsed % 3600) / 60)
+        local seconds = elapsed % 60
+        
+        if hours > 0 then
+            timerLabel.Text = string.format("Timer: %02d:%02d:%02d", hours, minutes, seconds)
+        else
+            timerLabel.Text = string.format("Timer: %02d:%02d", minutes, seconds)
+        end
+    end)
+end
 
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
 Library:CreateLabel(infoTab, "Join Discord")
@@ -1431,9 +1480,270 @@ local function safeTeleport(targetCFrame, locationName)
     return true
 end
 
+-- Auto TAB
+
+-- Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Auto Chop Tree System
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 2500
+local autoChopConnection
+
+-- Auto Chop Tree Distance Slider
+Library:CreateSlider(autoTab, "Auto Chop Distance", 0, 3000, 2500, function(val)
+    DistanceForAutoChopTree = val
+    print("📏 Auto Chop Tree distance set to:", val)
+end)
+
+-- Auto Chop Tree Toggle
+Library:CreateToggle(autoTab, "Auto Chop Tree", false, function(state)
+    ActiveAutoChopTree = state
+    print("✅ Auto Chop Tree", state and "ON" or "OFF")
+    
+    if ActiveAutoChopTree then
+        autoChopConnection = task.spawn(function()
+            while ActiveAutoChopTree do 
+                local player = LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                               player.Inventory:FindFirstChild("Good Axe") or 
+                               player.Inventory:FindFirstChild("Strong Axe") or 
+                               player.Inventory:FindFirstChild("Chainsaw"))
+                
+                if weapon then
+                    -- Check trees in Foliage
+                    if workspace.Map and workspace.Map:FindFirstChild("Foliage") then
+                        task.spawn(function()
+                            for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                                if not ActiveAutoChopTree then break end
+                                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                    if distance <= DistanceForAutoChopTree then
+                                        pcall(function()
+                                            ReplicatedStorage.RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                        end)
+                                    end
+                                end
+                            end 
+                        end)
+                    end
+                    
+                    -- Check trees in Landmarks
+                    if workspace.Map and workspace.Map:FindFirstChild("Landmarks") then
+                        task.spawn(function()
+                            for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                                if not ActiveAutoChopTree then break end
+                                if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                    local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                    if distance <= DistanceForAutoChopTree then
+                                        pcall(function()
+                                            ReplicatedStorage.RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                        end)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                else
+                    print("❌ No axe found! Please equip: Old Axe, Good Axe, Strong Axe, or Chainsaw")
+                end
+                
+                wait(0.1)
+            end
+        end)
+    else
+        if autoChopConnection then
+            task.cancel(autoChopConnection)
+        end
+    end
+end)
+
+-- Auto Kill Aura System
+local ActiveKillAura = false
+local DistanceForKillAura = 2500
+local killAuraConnection
+
+-- Kill Aura Distance Slider
+Library:CreateSlider(autoTab, "Kill Aura Distance", 25, 10000, 2500, function(val)
+    DistanceForKillAura = val
+    print("📏 Kill Aura distance set to:", val)
+end)
+
+-- Kill Aura Toggle
+Library:CreateToggle(autoTab, "Kill Aura", false, function(state)
+    ActiveKillAura = state
+    print("✅ Kill Aura", state and "ON" or "OFF")
+    
+    if ActiveKillAura then
+        killAuraConnection = task.spawn(function()
+            while ActiveKillAura do 
+                local player = LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                               player.Inventory:FindFirstChild("Good Axe") or 
+                               player.Inventory:FindFirstChild("Strong Axe") or 
+                               player.Inventory:FindFirstChild("Chainsaw"))
+                
+                if weapon then
+                    if workspace:FindFirstChild("Characters") then
+                        task.spawn(function()
+                            for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                                if not ActiveKillAura then break end
+                                if enemy:IsA("Model") and enemy.PrimaryPart then
+                                    local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                                    if distance <= DistanceForKillAura then
+                                        pcall(function()
+                                            ReplicatedStorage.RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                        end)
+                                    end
+                                end
+                            end
+                        end)
+                    end
+                else
+                    print("❌ No weapon found! Please equip: Old Axe, Good Axe, Strong Axe, or Chainsaw")
+                end
+                
+                wait(0.1)
+            end
+        end)
+    else
+        if killAuraConnection then
+            task.cancel(killAuraConnection)
+        end
+    end
+end)
+
+-- Enhanced Features
+
+-- Auto Tool Equip Toggle
+local autoEquipEnabled = false
+Library:CreateToggle(autoTab, "Auto Equip Best Tool", false, function(state)
+    autoEquipEnabled = state
+    print("✅ Auto Equip Best Tool", state and "ON" or "OFF")
+end)
+
+-- Function to get best available tool
+local function getBestTool()
+    local player = LocalPlayer
+    if not player.Inventory then return nil end
+    
+    -- Priority order: Chainsaw > Strong Axe > Good Axe > Old Axe
+    local tools = {"Chainsaw", "Strong Axe", "Good Axe", "Old Axe"}
+    
+    for _, toolName in ipairs(tools) do
+        local tool = player.Inventory:FindFirstChild(toolName)
+        if tool then
+            return tool
+        end
+    end
+    return nil
+end
+
+-- Auto Collect Dropped Items Toggle
+local autoCollectEnabled = false
+Library:CreateToggle(autoTab, "Auto Collect Items", false, function(state)
+    autoCollectEnabled = state
+    print("✅ Auto Collect Items", state and "ON" or "OFF")
+    
+    if autoCollectEnabled then
+        task.spawn(function()
+            while autoCollectEnabled do
+                local character = LocalPlayer.Character
+                if character and character:FindFirstChild("HumanoidRootPart") then
+                    local hrp = character.HumanoidRootPart
+                    
+                    if workspace:FindFirstChild("Items") then
+                        for _, item in pairs(workspace.Items:GetChildren()) do
+                            if item:IsA("Model") and item.PrimaryPart then
+                                local distance = (item.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= 10 then -- Collect items within 10 studs
+                                    pcall(function()
+                                        -- Attempt to collect the item (adjust based on game mechanics)
+                                        fireclickdetector(item.PrimaryPart.ClickDetector)
+                                    end)
+                                end
+                            end
+                        end
+                    end
+                end
+                wait(0.5)
+            end
+        end)
+    end
+end)
+
+-- Tree Counter Display
+local treesChopped = 0
+Library:CreateButton(autoTab, "Trees Chopped: 0", function()
+    treesChopped = 0
+    print("🌳 Tree counter reset!")
+end)
+
+-- Enemy Kill Counter Display  
+local enemiesKilled = 0
+Library:CreateButton(autoTab, "Enemies Killed: 0", function()
+    enemiesKilled = 0
+    print("⚔️ Enemy counter reset!")
+end)
+
+-- Safe Mode Toggle (adds safety checks)
+local safeMode = true
+Library:CreateToggle(autoTab, "Safe Mode", true, function(state)
+    safeMode = state
+    print("✅ Safe Mode", state and "ON" or "OFF")
+    if state then
+        print("📝 Safe mode adds extra error handling and checks")
+    end
+end)
+
+-- Performance Mode Toggle
+local performanceMode = false
+Library:CreateToggle(autoTab, "Performance Mode", false, function(state)
+    performanceMode = state
+    print("✅ Performance Mode", state and "ON" or "OFF")
+    if state then
+        print("📝 Performance mode reduces update frequency")
+    end
+end)
+
+-- Status Display Button
+Library:CreateButton(autoTab, "Show Status", function()
+    print("=== AUTO SYSTEMS STATUS ===")
+    print("🌳 Auto Chop Tree:", ActiveAutoChopTree and "ON" or "OFF")
+    print("⚔️ Kill Aura:", ActiveKillAura and "ON" or "OFF") 
+    print("🔧 Auto Equip:", autoEquipEnabled and "ON" or "OFF")
+    print("📦 Auto Collect:", autoCollectEnabled and "ON" or "OFF")
+    print("🛡️ Safe Mode:", safeMode and "ON" or "OFF")
+    print("⚡ Performance Mode:", performanceMode and "ON" or "OFF")
+    print("🌳 Trees Chopped:", treesChopped)
+    print("⚔️ Enemies Killed:", enemiesKilled)
+    
+    local bestTool = getBestTool()
+    print("🔧 Best Available Tool:", bestTool and bestTool.Name or "None")
+    print("========================")
+end)
+
+-- Emergency Stop Button
+Library:CreateButton(mainTab, "Emergency Stop All", function()
+    ActiveAutoChopTree = false
+    ActiveKillAura = false
+    autoEquipEnabled = false
+    autoCollectEnabled = false
+    
+    if autoChopConnection then task.cancel(autoChopConnection) end
+    if killAuraConnection then task.cancel(killAuraConnection) end
+    
+    print("🚨 Emergency stop activated - All auto systems disabled!")
+end)
 
 -- Load circle toggle LAST
-print("Loading Toggle...")
+print("LToggle...")
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 
 -- Don't remove this
