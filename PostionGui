@@ -20,56 +20,6 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
 Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
--- Services
-local RunService = game:GetService("RunService")
-
--- SOLUTION 1: If Library:CreateTextLabel exists (your preferred way)
-local startTime = tick()
-
--- Create the label (assuming this function exists in your library)
-local timerLabel = Library:CreateTextLabel and Library:CreateTextLabel(infoTab, "Timer: 0s")
-
-if timerLabel then
-    -- Update it every frame
-    RunService.Heartbeat:Connect(function()
-        local elapsed = math.floor(tick() - startTime)
-        local hours = math.floor(elapsed / 3600)
-        local minutes = math.floor((elapsed % 3600) / 60)
-        local seconds = elapsed % 60
-        
-        if hours > 0 then
-            timerLabel.Text = string.format("Timer: %02d:%02d:%02d", hours, minutes, seconds)
-        else
-            timerLabel.Text = string.format("Timer: %02d:%02d", minutes, seconds)
-        end
-    end)
-end
-
--- Services
-local RunService = game:GetService("RunService")
-
--- SOLUTION 1: If Library:CreateTextLabel exists (your preferred way)
-local startTime = tick()
-
--- Create the label (assuming this function exists in your library)
-local timerLabel = Library:CreateTextLabel and Library:CreateTextLabel(infoTab, "Timer: 0s")
-
-if timerLabel then
-    -- Update it every frame
-    RunService.Heartbeat:Connect(function()
-        local elapsed = math.floor(tick() - startTime)
-        local hours = math.floor(elapsed / 3600)
-        local minutes = math.floor((elapsed % 3600) / 60)
-        local seconds = elapsed % 60
-        
-        if hours > 0 then
-            timerLabel.Text = string.format("Timer: %02d:%02d:%02d", hours, minutes, seconds)
-        else
-            timerLabel.Text = string.format("Timer: %02d:%02d", minutes, seconds)
-        end
-    end)
-end
-
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
 Library:CreateLabel(infoTab, "Join Discord")
 Library:CreateButton(infoTab, "Join Discord For More Scripts", function()
