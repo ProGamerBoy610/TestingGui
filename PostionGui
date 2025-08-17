@@ -1460,29 +1460,77 @@ Library:CreateToggle(autoTab, "Auto Chop Tree", false, function(state)
                                player.Inventory:FindFirstChild("Strong Axe") or 
                                player.Inventory:FindFirstChild("Chainsaw"))
                 
-                -- Check trees in Foliage
-                task.spawn(function()
-                    for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                            if distance <= DistanceForAutoChopTree then
-                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                            end
-                        end
-                    end 
-                end)
+                if not weapon then
+                    print("🌳 No weapon found in inventory!")
+                    wait(1)
+                    continue
+                end
                 
-                -- Check trees in Landmarks
-                task.spawn(function()
-                    for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                local treesFound = 0
+                local treesChopped = 0
+                
+                -- Check trees in Foliage
+                if workspace.Map:FindFirstChild("Foliage") then
+                    for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                        if tree:IsA("Model") and tree.PrimaryPart then
+                            treesFound = treesFound + 1
                             local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                            
+                            -- Debug: Check tree names and distance
                             if distance <= DistanceForAutoChopTree then
-                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                print("🌳 Found tree:", tree.Name, "Distance:", math.floor(distance))
+                                
+                                if tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2" or 
+                                   tree.Name:find("Tree") or tree.Name:find("tree") then
+                                    local success, result = pcall(function()
+                                        return game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    end)
+                                    if success then
+                                        treesChopped = treesChopped + 1
+                                        print("🌳 Chopped:", tree.Name)
+                                    else
+                                        print("🌳 Failed to chop:", tree.Name, result)
+                                    end
+                                end
                             end
                         end
                     end
-                end)
+                else
+                    print("🌳 Foliage folder not found!")
+                end
+                
+                -- Check trees in Landmarks
+                if workspace.Map:FindFirstChild("Landmarks") then
+                    for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                        if tree:IsA("Model") and tree.PrimaryPart then
+                            treesFound = treesFound + 1
+                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                            
+                            if distance <= DistanceForAutoChopTree then
+                                print("🌳 Found landmark tree:", tree.Name, "Distance:", math.floor(distance))
+                                
+                                if tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2" or 
+                                   tree.Name:find("Tree") or tree.Name:find("tree") then
+                                    local success, result = pcall(function()
+                                        return game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    end)
+                                    if success then
+                                        treesChopped = treesChopped + 1
+                                        print("🌳 Chopped landmark:", tree.Name)
+                                    else
+                                        print("🌳 Failed to chop landmark:", tree.Name, result)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                else
+                    print("🌳 Landmarks folder not found!")
+                end
+                
+                if treesFound == 0 then
+                    print("🌳 No trees found in range!")
+                end
                 
                 wait(0.1)
             end
