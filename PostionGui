@@ -1430,6 +1430,118 @@ local function safeTeleport(targetCFrame, locationName)
     return true
 end
 
+-- Auto Chop Tree Script converted to custom library components
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 2500
+
+-- Auto Kill Aura Script variables
+local ActiveKillAura = false
+local DistanceForKillAura = 2500
+
+-- Distance Slider for Auto Chop Tree
+Library:CreateSlider(autoTab, "Distance For Auto Chop Tree", 0, 3000, 2500, function(val)
+    DistanceForAutoChopTree = val
+    print("🌳 Auto Chop Tree distance set to:", val)
+end)
+
+-- Auto Chop Tree Toggle
+Library:CreateToggle(autoTab, "Auto Chop Tree", false, function(state)
+    ActiveAutoChopTree = state
+    print("🌳", state and "Auto Chop Tree ON" or "Auto Chop Tree OFF")
+    
+    if ActiveAutoChopTree then
+        task.spawn(function()
+            while ActiveAutoChopTree do 
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                               player.Inventory:FindFirstChild("Good Axe") or 
+                               player.Inventory:FindFirstChild("Strong Axe") or 
+                               player.Inventory:FindFirstChild("Chainsaw"))
+                
+                -- Check trees in Foliage
+                task.spawn(function()
+                    for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                            if distance <= DistanceForAutoChopTree then
+                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                            end
+                        end
+                    end 
+                end)
+                
+                -- Check trees in Landmarks
+                task.spawn(function()
+                    for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                            if distance <= DistanceForAutoChopTree then
+                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                            end
+                        end
+                    end
+                end)
+                
+                wait(0.1)
+            end
+        end)
+    end
+end)
+
+-- Distance Slider for Kill Aura
+Library:CreateSlider(autoTab, "Distance For Kill Aura", 25, 10000, 2500, function(val)
+    DistanceForKillAura = val
+    print("⚔️ Kill Aura distance set to:", val)
+end)
+
+-- Kill Aura Toggle
+Library:CreateToggle(autoTab, "Kill Aura", false, function(state)
+    ActiveKillAura = state
+    print("⚔️", state and "Kill Aura ON" or "Kill Aura OFF")
+    
+    if ActiveKillAura then
+        task.spawn(function()
+            while ActiveKillAura do 
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                               player.Inventory:FindFirstChild("Good Axe") or 
+                               player.Inventory:FindFirstChild("Strong Axe") or 
+                               player.Inventory:FindFirstChild("Chainsaw"))
+                
+                task.spawn(function()
+                    for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                        if enemy:IsA("Model") and enemy.PrimaryPart then
+                            local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                            if distance <= DistanceForKillAura then
+                                local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                            end
+                        end
+                    end
+                end)
+                
+                wait(0.1)
+            end
+        end)
+    end
+end)
+
+-- Optional: Add weapon selector dropdown
+Library:CreateDropdown(autoTab, "Preferred Weapon", {"Old Axe", "Good Axe", "Strong Axe", "Chainsaw"}, "Chainsaw", function(value)
+    print("🪓 Preferred weapon selected:", value)
+    -- You could modify the weapon selection logic to prioritize the selected weapon
+end)
+
+-- Optional: Add quick action buttons
+Library:CreateButton(autoTab, "Stop All Features", function()
+    ActiveAutoChopTree = false
+    ActiveKillAura = false
+    print("🛑 All features stopped!")
+end)
+
 -- Load circle toggle LAST
 print("LToggle...")
 
