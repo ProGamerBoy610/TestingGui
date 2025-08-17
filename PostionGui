@@ -1,9 +1,11 @@
 
+
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
 print("CMAIN")
 
 print("LTABS")
+
 -- Create all tabs
 local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
@@ -11,6 +13,7 @@ local espTab = Library:CreateTab("VISUAL")
 local tpTab = Library:CreateTab("TP")
 local autoTab = Library:CreateTab("AUTO")
 local destroyTab = Library:CreateTab("DESTROY")
+
 print("CTABS")
 
 -- INFO Tab Components
@@ -21,10 +24,11 @@ local LocalPlayer = Players.LocalPlayer
 
 Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
 Library:CreateTextLabel(infoTab, "Created by: Fryzer")
-Library:CreateLabel(infoTab, "Join Discord")
-Library:CreateButton(infoTab, "Join Discord For More Scripts", function()
-    print("🔗 Discord link clicked!")
-    -- Add your discord invite link here
+Library:CreateLabel(infoTab, "Join Discord For More Scripts")
+Library:CreateButton(mainTab, "Copy Discord Link", function()
+    local discordUrl = "https://discord.gg/rpE4Eet7"
+    setclipboard(discordUrl)
+    print("📋 Discord invite copied to clipboard!")
 end)
 
 
@@ -361,6 +365,39 @@ Library:CreateButton(mainTab, "Reset Character", function()
         LocalPlayer.Character:BreakJoints()
     end
     print("✅ Character reset!")
+end)
+
+-- Infinite Jump Script
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+
+local InfiniteJumpEnabled = false
+local jumpConnection = nil
+
+-- Infinite Jump Toggle
+Library:CreateToggle(mainTab, "Infinite Jump", false, function(state)
+    InfiniteJumpEnabled = state
+    print("🦘", state and "Infinite Jump ON" or "Infinite Jump OFF")
+    
+    if state then
+        -- Connect the jump function
+        jumpConnection = UserInputService.JumpRequest:Connect(function()
+            if InfiniteJumpEnabled then
+                local character = Players.LocalPlayer.Character
+                if character and character:FindFirstChildOfClass("Humanoid") then
+                    character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+                end
+            end
+        end)
+        print("🦘 Infinite jump activated - jump anywhere!")
+    else
+        -- Disconnect the jump function
+        if jumpConnection then
+            jumpConnection:Disconnect()
+            jumpConnection = nil
+        end
+        print("🦘 Infinite jump disabled - normal jumping restored")
+    end
 end)
 
 -- ESP TAB
@@ -1254,6 +1291,54 @@ Library:CreateButton(espTab, "Clear All Player ESP", function()
     print("✅ All Player ESP cleared!")
 end)
 
+Library:CreateLabel(espTab, "PLAYER Vision")
+
+-- No Fog and Night Vision Script
+local Lighting = game:GetService("Lighting")
+
+-- Store original lighting values
+local originalFogEnd = Lighting.FogEnd
+local originalFogStart = Lighting.FogStart
+local originalBrightness = Lighting.Brightness
+local originalAmbient = Lighting.Ambient
+local originalOutdoorAmbient = Lighting.OutdoorAmbient
+
+-- No Fog Toggle
+Library:CreateToggle(espTab, "No Fog", false, function(state)
+    print("🌫️", state and "No Fog ON" or "No Fog OFF")
+    
+    if state then
+        -- Remove fog
+        Lighting.FogEnd = math.huge
+        Lighting.FogStart = 0
+        print("🌫️ Fog removed - unlimited view distance!")
+    else
+        -- Restore original fog
+        Lighting.FogEnd = originalFogEnd
+        Lighting.FogStart = originalFogStart
+        print("🌫️ Fog restored to original settings")
+    end
+end)
+
+-- Night Vision Toggle
+Library:CreateToggle(espTab, "Night Vision", false, function(state)
+    print("🌙", state and "Night Vision ON" or "Night Vision OFF")
+    
+    if state then
+        -- Enable night vision
+        Lighting.Brightness = 10
+        Lighting.Ambient = Color3.fromRGB(255, 255, 255)
+        Lighting.OutdoorAmbient = Color3.fromRGB(255, 255, 255)
+        print("🌙 Night vision activated - everything is bright!")
+    else
+        -- Restore original lighting
+        Lighting.Brightness = originalBrightness
+        Lighting.Ambient = originalAmbient
+        Lighting.OutdoorAmbient = originalOutdoorAmbient
+        print("🌙 Night vision disabled - lighting restored")
+    end
+end)
+
 -- TP TAB
 
 -- Services
@@ -1430,113 +1515,149 @@ local function safeTeleport(targetCFrame, locationName)
     return true
 end
 
--- Auto Chop Tree Script converted to custom library components
-local ActiveAutoChopTree = false
-local DistanceForAutoChopTree = 2500
+
+-- Sky Platform Script variables
+local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local RunService = game:GetService("RunService")
+
+local isOnPlatform = false
+local skyPlatform = nil
+local platformConnection = nil
+
+-- Create infinite platform function
+local function createSkyPlatform(playerPosition)
+    if skyPlatform then
+        skyPlatform:Destroy()
+    end
+    
+    -- Create platform part (invisible)
+    skyPlatform = Instance.new("Part")
+    skyPlatform.Name = "SkyPlatform"
+    skyPlatform.Size = Vector3.new(50, 1, 50) -- Starting size
+    skyPlatform.Position = Vector3.new(playerPosition.X, 200, playerPosition.Z)
+    skyPlatform.Anchored = true
+    skyPlatform.Transparency = 1 -- Make invisible
+    skyPlatform.CanCollide = true -- Still walkable
+    skyPlatform.TopSurface = Enum.SurfaceType.Smooth
+    skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
+    skyPlatform.Parent = workspace
+    
+    -- Make platform expand infinitely as player moves
+    platformConnection = RunService.Heartbeat:Connect(function()
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform then
+            local humanoidRootPart = Player.Character.HumanoidRootPart
+            local playerPos = humanoidRootPart.Position
+            
+            -- Check if player is still at sky level
+            if playerPos.Y > 150 then
+                -- Update platform position and size based on player position
+                local distance = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(skyPlatform.Position.X, skyPlatform.Position.Z)).Magnitude
+                
+                if distance > 20 then
+                    -- Move platform closer to player
+                    skyPlatform.Position = Vector3.new(playerPos.X, 200, playerPos.Z)
+                end
+                
+                -- Keep platform large enough
+                local minSize = 100
+                if skyPlatform.Size.X < minSize then
+                    skyPlatform.Size = Vector3.new(minSize, 1, minSize)
+                end
+            end
+        end
+    end)
+end
+
+-- Teleport to sky platform function
+local function teleportToSky()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    
+    -- Create platform
+    createSkyPlatform(humanoidRootPart.Position)
+    
+    -- Teleport player
+    humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 205, humanoidRootPart.Position.Z)
+    
+    isOnPlatform = true
+    print("☁️ Teleported to invisible sky platform!")
+end
+
+-- Teleport back to ground function
+local function teleportToGround()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    local currentPosition = humanoidRootPart.Position
+    
+    -- Raycast straight down from current position to find ground
+    local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0))
+    
+    if raycast then
+        -- Teleport to ground + 5 studs above surface
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
+    else
+        -- Fallback: teleport to default ground level
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
+    end
+    
+    -- Destroy platform
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    
+    -- Disconnect platform update
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    
+    isOnPlatform = false
+    print("☁️ Teleported back to ground!")
+end
+
+-- Sky Platform Toggle
+Library:CreateToggle(tpTab, "Tp to Sky", false, function(state)
+    print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
+    
+    if state then
+        teleportToSky()
+    else
+        teleportToGround()
+    end
+end)
+
+-- Clean up functions for player events
+local function cleanupSkyPlatform()
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    isOnPlatform = false
+end
+
+-- Clean up when player resets
+Player.CharacterRemoving:Connect(cleanupSkyPlatform)
 
 -- Auto Kill Aura Script variables
 local ActiveKillAura = false
 local DistanceForKillAura = 2500
 
--- Distance Slider for Auto Chop Tree
-Library:CreateSlider(autoTab, "Distance For Auto Chop Tree", 0, 3000, 2500, function(val)
-    DistanceForAutoChopTree = val
-    print("🌳 Auto Chop Tree distance set to:", val)
-end)
-
--- Auto Chop Tree Toggle
-Library:CreateToggle(autoTab, "Auto Chop Tree", false, function(state)
-    ActiveAutoChopTree = state
-    print("🌳", state and "Auto Chop Tree ON" or "Auto Chop Tree OFF")
-    
-    if ActiveAutoChopTree then
-        task.spawn(function()
-            while ActiveAutoChopTree do 
-                local player = game.Players.LocalPlayer
-                local character = player.Character or player.CharacterAdded:Wait()
-                local hrp = character:WaitForChild("HumanoidRootPart")
-                local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                               player.Inventory:FindFirstChild("Good Axe") or 
-                               player.Inventory:FindFirstChild("Strong Axe") or 
-                               player.Inventory:FindFirstChild("Chainsaw"))
-                
-                if not weapon then
-                    print("🌳 No weapon found in inventory!")
-                    wait(1)
-                    continue
-                end
-                
-                local treesFound = 0
-                local treesChopped = 0
-                
-                -- Check trees in Foliage
-                if workspace.Map:FindFirstChild("Foliage") then
-                    for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                        if tree:IsA("Model") and tree.PrimaryPart then
-                            treesFound = treesFound + 1
-                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                            
-                            -- Debug: Check tree names and distance
-                            if distance <= DistanceForAutoChopTree then
-                                print("🌳 Found tree:", tree.Name, "Distance:", math.floor(distance))
-                                
-                                if tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2" or 
-                                   tree.Name:find("Tree") or tree.Name:find("tree") then
-                                    local success, result = pcall(function()
-                                        return game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                                    end)
-                                    if success then
-                                        treesChopped = treesChopped + 1
-                                        print("🌳 Chopped:", tree.Name)
-                                    else
-                                        print("🌳 Failed to chop:", tree.Name, result)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                else
-                    print("🌳 Foliage folder not found!")
-                end
-                
-                -- Check trees in Landmarks
-                if workspace.Map:FindFirstChild("Landmarks") then
-                    for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-                        if tree:IsA("Model") and tree.PrimaryPart then
-                            treesFound = treesFound + 1
-                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                            
-                            if distance <= DistanceForAutoChopTree then
-                                print("🌳 Found landmark tree:", tree.Name, "Distance:", math.floor(distance))
-                                
-                                if tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2" or 
-                                   tree.Name:find("Tree") or tree.Name:find("tree") then
-                                    local success, result = pcall(function()
-                                        return game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                                    end)
-                                    if success then
-                                        treesChopped = treesChopped + 1
-                                        print("🌳 Chopped landmark:", tree.Name)
-                                    else
-                                        print("🌳 Failed to chop landmark:", tree.Name, result)
-                                    end
-                                end
-                            end
-                        end
-                    end
-                else
-                    print("🌳 Landmarks folder not found!")
-                end
-                
-                if treesFound == 0 then
-                    print("🌳 No trees found in range!")
-                end
-                
-                wait(0.1)
-            end
-        end)
-    end
-end)
 
 -- Distance Slider for Kill Aura
 Library:CreateSlider(autoTab, "Distance For Kill Aura", 25, 10000, 2500, function(val)
@@ -1577,23 +1698,28 @@ Library:CreateToggle(autoTab, "Kill Aura", false, function(state)
     end
 end)
 
--- Optional: Add weapon selector dropdown
-Library:CreateDropdown(autoTab, "Preferred Weapon", {"Old Axe", "Good Axe", "Strong Axe", "Chainsaw"}, "Chainsaw", function(value)
-    print("🪓 Preferred weapon selected:", value)
-    -- You could modify the weapon selection logic to prioritize the selected weapon
-end)
+Library:CreateLabel(destroyTab, "USE THIS SCRIPT SAFELY")
 
--- Optional: Add quick action buttons
-Library:CreateButton(autoTab, "Stop All Features", function()
-    ActiveAutoChopTree = false
-    ActiveKillAura = false
-    print("🛑 All features stopped!")
+Library:CreateButton(destroyTab, "Load Fling All Script", function()
+    print("Load Fling All Script..")
+    local success, result = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
+    end)
+    
+    if success then
+        print("✅ Fling All script loaded successfully!")
+    else
+        print("❌ Failed to load Fling All script:", result)
+    end
 end)
 
 -- Load circle toggle LAST
 print("LToggle...")
 
+-- Don't remove this
+
+
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 
--- Don't remove this
 return Library
