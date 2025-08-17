@@ -1,10 +1,4 @@
-print("LMAIN")
-
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-
-print("CMAIN")
-
-print("LTABS")
+local Fryzer = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
 -- Create all tabs
 local infoTab = Library:CreateTab("INFO")
@@ -1748,7 +1742,9 @@ end)
 
 -- Load circle toggle LAST
 print("LToggle...")
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 
 -- Don't remove this
+
 return Library
