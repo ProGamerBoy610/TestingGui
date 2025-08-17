@@ -1,6 +1,5 @@
 local Fryzer = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
--- Create all tabs
 local infoTab = Library:CreateTab("INFO")
 local mainTab = Library:CreateTab("USER")
 local espTab = Library:CreateTab("VISUAL")
