@@ -1,6 +1,9 @@
 -- Modern Hub GUI for Roblox Executor with Integrated Fryzer Notification System
 -- Compatible with Fryzer Circle Toggle
-print("notificationv1")
+-- Notifications only triggered by "Activate Feature" button in HOME tab
+
+print("1")
+
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -41,7 +44,9 @@ local Config = {
         Bounce = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     }
 }
-print("notificaion v2")
+
+print("2")
+
 -- Notification System Configuration
 local NOTIFY_CONFIG = {
     NOTIFICATION_SIZE = UDim2.new(0, 350, 0, 80),
@@ -467,7 +472,6 @@ function Library:CreateTab(name, icon)
     
     TabButton.MouseButton1Click:Connect(function()
         Library:SelectTab(Tab)
-        FryzerNotify("Switched to " .. name .. " tab", 3)
     end)
     
     TabButton.MouseEnter:Connect(function()
@@ -560,8 +564,6 @@ function Library:CreateButton(tab, text, callback)
             callback()
         end
         
-        FryzerNotify("Button clicked: " .. text, 3)
-        
         spawn(function()
             wait(1)
             TweenService:Create(StatusBox, Config.Animations.Normal, {
@@ -643,8 +645,6 @@ function Library:CreateToggle(tab, text, default, callback)
         if callback then
             callback(isToggled)
         end
-        
-        FryzerNotify(text .. " toggled " .. (isToggled and "ON" or "OFF"), 3)
     end)
     
     ToggleButton.MouseEnter:Connect(function()
@@ -810,8 +810,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
         if callback then
             callback(currentValue)
         end
-        
-        FryzerNotify(text .. " set to " .. currentValue, 3)
     end
     
     SliderButton.InputBegan:Connect(function(input)
@@ -972,8 +970,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
             if callback then
                 callback(option)
             end
-            
-            FryzerNotify(text .. " set to " .. option, 3)
         end)
         
         OptionButton.MouseEnter:Connect(function()
@@ -1146,7 +1142,6 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
         
         if callback and enterPressed then
             callback(TextBox.Text)
-            FryzerNotify("Text entered: " .. TextBox.Text, 3)
         end
     end)
     
@@ -1163,7 +1158,6 @@ end
 -- Control Button Functions
 MinimizeButton.MouseButton1Click:Connect(function()
     ScreenGui.Enabled = false
-    FryzerNotify("Hub minimized", 3)
     
     local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
     if fryzerGUI and fryzerGUI:FindFirstChild("CircleFrame") then
@@ -1266,7 +1260,6 @@ local function CreateConfirmDialog()
     
     CancelButton.MouseButton1Click:Connect(function()
         ConfirmGui:Destroy()
-        FryzerNotify("Close cancelled", 3)
     end)
     
     ConfirmButton.MouseButton1Click:Connect(function()
@@ -1276,7 +1269,6 @@ local function CreateConfirmDialog()
         if fryzerGUI then
             fryzerGUI:Destroy()
         end
-        FryzerNotify("Hub closed", 3)
     end)
     
     CancelButton.MouseEnter:Connect(function()
@@ -1359,8 +1351,8 @@ end
 Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
 Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
 timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
-Library:CreateButton(infoTab, "Test Notification", function()
-    FryzerNotify("This is a test notification!", 5)
+Library:CreateButton(infoTab, "Test Button", function()
+    print("Test button clicked!")
 end)
 
 -- Update timer
@@ -1375,13 +1367,12 @@ spawn(function()
 end)
 
 -- HOME Tab Components
-Library:CreateButton(homeTab, "Test Notification", function()
-    FryzerNotify("This is a test notification!", 5)
-end)
-
 Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
 Library:CreateButton(homeTab, "Test Button", function()
     print("Button clicked!")
+end)
+Library:CreateButton(homeTab, "Activate Feature", function()
+    FryzerNotify("Feature Activated!", 4)
 end)
 Library:CreateToggle(homeTab, "Enable Feature", false, function(value)
     print("Toggle:", value)
@@ -1459,14 +1450,8 @@ Library:CreateButton(settingsTab, "Reset Settings", function()
 end)
 Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
--- Initialize notification system
-spawn(function()
-    wait(0.5)
-    FryzerNotify("Welcome to Fryzer Hub", 5)
-end)
-
 print("🎉 Fryzer Hub with Notification System loaded successfully!")
 print("📱 Use the circle toggle to show/hide the GUI")
-print("Usage: FryzerNotify('Your message here', duration)")
+print("Usage: Notifications only trigger via 'Activate Feature' button in HOME tab")
 
 return Library
