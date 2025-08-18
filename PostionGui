@@ -1,5 +1,4 @@
--- MY HUB FULL CODE
--- Modern Hub GUI for Roblox Executor (Updated with Fixed Dropdown System)
+-- Modern Hub GUI for Roblox Executor with Integrated Fryzer Notification System
 -- Compatible with Fryzer Circle Toggle
 
 local Players = game:GetService("Players")
@@ -14,8 +13,11 @@ local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 if PlayerGui:FindFirstChild("ModernHubGUI") then
     PlayerGui:FindFirstChild("ModernHubGUI"):Destroy()
 end
+if PlayerGui:FindFirstChild("FryzerNotifications") then
+    PlayerGui:FindFirstChild("FryzerNotifications"):Destroy()
+end
 
--- Configuration
+-- Configuration for Hub
 local Config = {
     Colors = {
         Primary = Color3.fromRGB(15, 15, 20),
@@ -40,153 +42,219 @@ local Config = {
     }
 }
 
--- Compact Notification System for Hub Integration
--- Add this code after your Config table and before Library creation
-
--- Notification Configuration
-local NotifyConfig = {
-    Size = UDim2.new(0, 300, 0, 70),
-    OffsetX = -320,
-    StartY = 100,
-    Spacing = 80,
-    Duration = 3,
-    SlideSpeed = 0.4,
-    Colors = {
-        Background = Color3.fromRGB(25, 25, 35),
-        Border = Color3.fromRGB(0, 255, 0),
-        Title = Color3.fromRGB(255, 255, 255),
-        Progress = Color3.fromRGB(0, 255, 0)
-    }
+-- Notification System Configuration
+local NOTIFY_CONFIG = {
+    NOTIFICATION_SIZE = UDim2.new(0, 350, 0, 80),
+    POSITION_OFFSET = UDim2.new(1, -370, 0, 200),
+    BACKGROUND_COLOR = Color3.fromRGB(25, 25, 35),
+    BORDER_COLOR = Color3.fromRGB(100, 200, 255),
+    TITLE_COLOR = Color3.fromRGB(255, 255, 255),
+    SUBTITLE_COLOR = Color3.fromRGB(180, 180, 180),
+    PROGRESS_COLOR = Color3.fromRGB(100, 200, 255),
+    SLIDE_SPEED = 0.5,
+    FADE_SPEED = 0.3,
+    DEFAULT_DURATION = 5,
+    TITLE_FONT = Enum.Font.GothamBold,
+    SUBTITLE_FONT = Enum.Font.Gotham,
 }
 
 -- Notification Manager
-local NotifyManager = {
-    ActiveNotifications = {},
-    NotificationCount = 0
-}
+local NotificationManager = {}
+NotificationManager.ActiveNotifications = {}
+NotificationManager.NotificationCount = 0
 
--- Create notification function
-local function CreateNotification(title, duration)
-    duration = duration or NotifyConfig.Duration
-    NotifyManager.NotificationCount = NotifyManager.NotificationCount + 1
+-- Create Notification GUI Container
+local function createNotificationGui()
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "FryzerNotifications"
+    screenGui.ResetOnSpawn = false
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    screenGui.Parent = PlayerGui
+    return screenGui
+end
+
+local NotificationGui = PlayerGui:FindFirstChild("FryzerNotifications") or createNotificationGui()
+
+-- Create individual notification
+local function createNotification(subtitle, duration)
+    duration = duration or NOTIFY_CONFIG.DEFAULT_DURATION
     
-    local notifId = NotifyManager.NotificationCount
-    local yPos = NotifyConfig.StartY + (#NotifyManager.ActiveNotifications * NotifyConfig.Spacing)
+    NotificationManager.NotificationCount = NotificationManager.NotificationCount + 1
+    local notificationId = NotificationManager.NotificationCount
     
     -- Main Frame
-    local frame = Instance.new("Frame")
-    frame.Name = "Notification_" .. notifId
-    frame.Size = NotifyConfig.Size
-    frame.Position = UDim2.new(1, 0, 0, yPos)
-    frame.BackgroundColor3 = NotifyConfig.Colors.Background
-    frame.BorderSizePixel = 0
-    frame.Parent = ScreenGui
-    frame.ZIndex = 200
+    local notificationFrame = Instance.new("Frame")
+    notificationFrame.Name = "Notification_" .. notificationId
+    notificationFrame.Size = NOTIFY_CONFIG.NOTIFICATION_SIZE
+    notificationFrame.Position = UDim2.new(1, 0, 0, 20 + (#NotificationManager.ActiveNotifications * 90))
+    notificationFrame.BackgroundColor3 = NOTIFY_CONFIG.BACKGROUND_COLOR
+    notificationFrame.BorderSizePixel = 0
+    notificationFrame.Parent = NotificationGui
     
-    -- Stroke
+    -- Rounded corners
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 8)
+    corner.Parent = notificationFrame
+    
+    -- Border/Stroke
     local stroke = Instance.new("UIStroke")
-    stroke.Color = NotifyConfig.Colors.Border
+    stroke.Color = NOTIFY_CONFIG.BORDER_COLOR
     stroke.Thickness = 2
-    stroke.Parent = frame
+    stroke.Parent = notificationFrame
     
-    -- Title
+    -- Drop shadow effect
+    local shadow = Instance.new("Frame")
+    shadow.Name = "Shadow"
+    shadow.Size = UDim2.new(1, 4, 1, 4)
+    shadow.Position = UDim2.new(0, 2, 0, 2)
+    shadow.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    shadow.BackgroundTransparency = 0.8
+    shadow.BorderSizePixel = 0
+    shadow.ZIndex = notificationFrame.ZIndex - 1
+    shadow.Parent = notificationFrame
+    
+    local shadowCorner = Instance.new("UICorner")
+    shadowCorner.CornerRadius = UDim.new(0, 8)
+    shadowCorner.Parent = shadow
+    
+    -- Title Label
     local titleLabel = Instance.new("TextLabel")
+    titleLabel.Name = "Title"
     titleLabel.Size = UDim2.new(1, -20, 0, 25)
     titleLabel.Position = UDim2.new(0, 10, 0, 5)
     titleLabel.BackgroundTransparency = 1
     titleLabel.Text = "Fryzer Hub"
-    titleLabel.TextColor3 = NotifyConfig.Colors.Title
-    titleLabel.TextSize = 12
-    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextColor3 = NOTIFY_CONFIG.TITLE_COLOR
+    titleLabel.TextScaled = true
+    titleLabel.Font = NOTIFY_CONFIG.TITLE_FONT
     titleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    titleLabel.Parent = frame
+    titleLabel.Parent = notificationFrame
     
-    -- Message
-    local messageLabel = Instance.new("TextLabel")
-    messageLabel.Size = UDim2.new(1, -20, 0, 20)
-    messageLabel.Position = UDim2.new(0, 10, 0, 25)
-    messageLabel.BackgroundTransparency = 1
-    messageLabel.Text = title
-    messageLabel.TextColor3 = NotifyConfig.Colors.Title
-    messageLabel.TextSize = 10
-    messageLabel.Font = Enum.Font.Gotham
-    messageLabel.TextXAlignment = Enum.TextXAlignment.Left
-    messageLabel.TextWrapped = true
-    messageLabel.Parent = frame
+    -- Subtitle Label
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Name = "Subtitle"
+    subtitleLabel.Size = UDim2.new(1, -20, 0, 20)
+    subtitleLabel.Position = UDim2.new(0, 10, 0, 45)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Text = subtitle or "Notification"
+    subtitleLabel.TextColor3 = NOTIFY_CONFIG.SUBTITLE_COLOR
+    subtitleLabel.TextScaled = true
+    subtitleLabel.Font = NOTIFY_CONFIG.SUBTITLE_FONT
+    subtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    subtitleLabel.Parent = notificationFrame
     
     -- Progress Bar Background
     local progressBg = Instance.new("Frame")
-    progressBg.Size = UDim2.new(1, -20, 0, 3)
-    progressBg.Position = UDim2.new(0, 10, 1, -8)
+    progressBg.Name = "ProgressBackground"
+    progressBg.Size = UDim2.new(1, -20, 0, 4)
+    progressBg.Position = UDim2.new(0, 10, 1, -10)
     progressBg.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     progressBg.BorderSizePixel = 0
-    progressBg.Parent = frame
+    progressBg.Parent = notificationFrame
+    
+    local progressBgCorner = Instance.new("UICorner")
+    progressBgCorner.CornerRadius = UDim.new(0, 2)
+    progressBgCorner.Parent = progressBg
     
     -- Progress Bar
     local progressBar = Instance.new("Frame")
+    progressBar.Name = "ProgressBar"
     progressBar.Size = UDim2.new(1, 0, 1, 0)
     progressBar.Position = UDim2.new(0, 0, 0, 0)
-    progressBar.BackgroundColor3 = NotifyConfig.Colors.Progress
+    progressBar.BackgroundColor3 = NOTIFY_CONFIG.PROGRESS_COLOR
     progressBar.BorderSizePixel = 0
     progressBar.Parent = progressBg
     
+    local progressCorner = Instance.new("UICorner")
+    progressCorner.CornerRadius = UDim.new(0, 2)
+    progressCorner.Parent = progressBar
+    
     -- Add to active notifications
-    table.insert(NotifyManager.ActiveNotifications, {
-        frame = frame,
-        id = notifId
+    table.insert(NotificationManager.ActiveNotifications, {
+        frame = notificationFrame,
+        id = notificationId,
+        duration = duration,
+        startTime = tick()
     })
     
-    -- Animations
-    local slideIn = TweenService:Create(frame, 
-        TweenInfo.new(NotifyConfig.SlideSpeed, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
-        {Position = UDim2.new(1, NotifyConfig.OffsetX, 0, yPos)}
+    -- Slide in animation
+    local slideIn = TweenService:Create(
+        notificationFrame,
+        TweenInfo.new(NOTIFY_CONFIG.SLIDE_SPEED, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+        {Position = NOTIFY_CONFIG.POSITION_OFFSET}
     )
+    slideIn:Play()
     
-    local progressTween = TweenService:Create(progressBar,
+    -- Progress bar animation
+    local progressTween = TweenService:Create(
+        progressBar,
         TweenInfo.new(duration, Enum.EasingStyle.Linear),
         {Size = UDim2.new(0, 0, 1, 0)}
     )
-    
-    slideIn:Play()
     progressTween:Play()
     
-    -- Auto remove
-    spawn(function()
-        wait(duration)
-        
-        -- Remove from active list
-        for i, notif in pairs(NotifyManager.ActiveNotifications) do
-            if notif.id == notifId then
-                table.remove(NotifyManager.ActiveNotifications, i)
-                break
-            end
+    -- Auto-dismiss after duration
+    wait(duration)
+    
+    -- Remove from active notifications
+    for i, notification in ipairs(NotificationManager.ActiveNotifications) do
+        if notification.id == notificationId then
+            table.remove(NotificationManager.ActiveNotifications, i)
+            break
         end
-        
-        -- Slide out
-        local slideOut = TweenService:Create(frame,
-            TweenInfo.new(NotifyConfig.SlideSpeed, Enum.EasingStyle.Back, Enum.EasingDirection.In),
-            {Position = UDim2.new(1, 0, 0, yPos)}
-        )
-        
-        slideOut:Play()
-        slideOut.Completed:Connect(function()
-            frame:Destroy()
-            
-            -- Reposition remaining notifications
-            for i, notif in pairs(NotifyManager.ActiveNotifications) do
-                local newY = NotifyConfig.StartY + ((i-1) * NotifyConfig.Spacing)
-                TweenService:Create(notif.frame,
-                    TweenInfo.new(0.3, Enum.EasingStyle.Quad),
-                    {Position = UDim2.new(1, NotifyConfig.OffsetX, 0, newY)}
-                ):Play()
-            end
-        end)
+    end
+    
+    -- Slide out animation
+    local slideOut = TweenService:Create(
+        notificationFrame,
+        TweenInfo.new(NOTIFY_CONFIG.SLIDE_SPEED, Enum.EasingStyle.Back, Enum.EasingDirection.In),
+        {Position = UDim2.new(1, 0, 0, notificationFrame.Position.Y.Offset)}
+    )
+    
+    slideOut:Play()
+    slideOut.Completed:Connect(function()
+        notificationFrame:Destroy()
+        -- Reposition remaining notifications
+        for i, notification in ipairs(NotificationManager.ActiveNotifications) do
+            local newPos = UDim2.new(1, -370, 0, 20 + ((i-1) * 90))
+            TweenService:Create(
+                notification.frame,
+                TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+                {Position = newPos}
+            ):Play()
+        end
+    end)
+    
+    return notificationFrame
+end
+
+-- Main notification function
+function NotificationManager:SendNotification(subtitle, duration)
+    spawn(function()
+        createNotification(subtitle, duration)
     end)
 end
 
--- Add to Library
-function Library:Notify(title, duration)
-    CreateNotification(title, duration)
+-- Customization functions
+function NotificationManager:SetColors(background, border, title, subtitle, progress)
+    if background then NOTIFY_CONFIG.BACKGROUND_COLOR = background end
+    if border then NOTIFY_CONFIG.BORDER_COLOR = border end
+    if title then NOTIFY_CONFIG.TITLE_COLOR = title end
+    if subtitle then NOTIFY_CONFIG.SUBTITLE_COLOR = subtitle end
+    if progress then NOTIFY_CONFIG.PROGRESS_COLOR = progress end
+end
+
+function NotificationManager:SetDuration(duration)
+    NOTIFY_CONFIG.DEFAULT_DURATION = duration
+end
+
+function NotificationManager:SetSize(size)
+    NOTIFY_CONFIG.NOTIFICATION_SIZE = size
+end
+
+-- Global notification function
+getgenv().FryzerNotify = function(subtitle, duration)
+    NotificationManager:SendNotification(subtitle, duration)
 end
 
 -- Create Library
@@ -203,18 +271,18 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 100
 ScreenGui.Enabled = true
 
--- Create Main Frame (Much Smaller)
+-- Create Main Frame
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
 MainFrame.BackgroundColor3 = Config.Colors.Primary
 MainFrame.BorderSizePixel = 0
-MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Much smaller size
+MainFrame.Size = UDim2.new(0, 450, 0, 300)
 MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
 MainFrame.Active = true
 MainFrame.Draggable = true
 
--- Add corner rounding (REMOVED UICorner for cleaner look)
+-- Add green stroke
 local MainStroke = Instance.new("UIStroke")
 MainStroke.Color = Config.Colors.StrokeGreen
 MainStroke.Thickness = 2
@@ -226,20 +294,8 @@ HeaderFrame.Name = "Header"
 HeaderFrame.Parent = MainFrame
 HeaderFrame.BackgroundColor3 = Config.Colors.Secondary
 HeaderFrame.BorderSizePixel = 0
-HeaderFrame.Size = UDim2.new(1, 0, 0, 40) -- Smaller header
+HeaderFrame.Size = UDim2.new(1, 0, 0, 40)
 HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
-
-local HeaderCorner = Instance.new("UICorner")
-HeaderCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
-HeaderCorner.Parent = HeaderFrame
-
--- Fix header corners (only top corners rounded)
-local HeaderFix = Instance.new("Frame")
-HeaderFix.Parent = HeaderFrame
-HeaderFix.BackgroundColor3 = Config.Colors.Secondary
-HeaderFix.BorderSizePixel = 0
-HeaderFix.Size = UDim2.new(1, 0, 0, 10)
-HeaderFix.Position = UDim2.new(0, 0, 1, -10)
 
 -- Title Label
 local TitleLabel = Instance.new("TextLabel")
@@ -307,13 +363,13 @@ ContentFrame.BackgroundTransparency = 1
 ContentFrame.Size = UDim2.new(1, 0, 1, -40)
 ContentFrame.Position = UDim2.new(0, 0, 0, 40)
 
--- Left Sidebar for Tabs (Smaller)
+-- Left Sidebar for Tabs
 local SidebarFrame = Instance.new("Frame")
 SidebarFrame.Name = "Sidebar"
 SidebarFrame.Parent = ContentFrame
 SidebarFrame.BackgroundColor3 = Config.Colors.Secondary
 SidebarFrame.BorderSizePixel = 0
-SidebarFrame.Size = UDim2.new(0, 120, 1, 0) -- Smaller sidebar
+SidebarFrame.Size = UDim2.new(0, 120, 1, 0)
 SidebarFrame.Position = UDim2.new(0, 0, 0, 0)
 
 -- Add green stroke to sidebar
@@ -373,30 +429,24 @@ ContentLayout.Parent = ContentScrollFrame
 ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ContentLayout.Padding = UDim.new(0, 6)
 
--- Functions
+-- Library Functions
 function Library:CreateTab(name, icon)
     local Tab = {}
     Tab.Name = name
     Tab.Components = {}
     
-    -- Create Tab Button
     local TabButton = Instance.new("TextButton")
     TabButton.Name = name
     TabButton.Parent = TabScrollFrame
     TabButton.BackgroundColor3 = Config.Colors.Primary
     TabButton.BorderSizePixel = 0
-    TabButton.Size = UDim2.new(1, 0, 0, 30) -- Smaller tab buttons
+    TabButton.Size = UDim2.new(1, 0, 0, 30)
     TabButton.Font = Enum.Font.Gotham
     TabButton.Text = (icon and icon .. " " or "") .. name
     TabButton.TextColor3 = Config.Colors.TextSecondary
     TabButton.TextSize = 11
     TabButton.TextXAlignment = Enum.TextXAlignment.Center
     
-    local TabCorner = Instance.new("UICorner")
-    TabCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    TabCorner.Parent = TabButton
-    
-    -- Create Tab Content Frame
     local TabContent = Instance.new("Frame")
     TabContent.Name = name .. "Content"
     TabContent.Parent = ContentScrollFrame
@@ -410,18 +460,16 @@ function Library:CreateTab(name, icon)
     TabContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
     TabContentLayout.Padding = UDim.new(0, 5)
     
-    -- Update tab content size when items are added
     TabContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabContent.Size = UDim2.new(1, 0, 0, TabContentLayout.AbsoluteContentSize.Y)
         ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
     end)
     
-    -- Tab Selection Logic
     TabButton.MouseButton1Click:Connect(function()
         Library:SelectTab(Tab)
+        FryzerNotify("Switched to " .. name .. " tab", 3)
     end)
     
-    -- Hover Effects
     TabButton.MouseEnter:Connect(function()
         if Library.CurrentTab ~= Tab then
             TweenService:Create(TabButton, Config.Animations.Fast, {
@@ -446,12 +494,10 @@ function Library:CreateTab(name, icon)
     
     table.insert(Library.Tabs, Tab)
     
-    -- Auto-select first tab
     if #Library.Tabs == 1 then
         Library:SelectTab(Tab)
     end
     
-    -- Update canvas size
     TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
     TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
@@ -461,7 +507,6 @@ function Library:CreateTab(name, icon)
 end
 
 function Library:SelectTab(tab)
-    -- Deselect current tab
     if Library.CurrentTab then
         TweenService:Create(Library.CurrentTab.Button, Config.Animations.Normal, {
             BackgroundColor3 = Config.Colors.Primary,
@@ -470,7 +515,6 @@ function Library:SelectTab(tab)
         Library.CurrentTab.Content.Visible = false
     end
     
-    -- Select new tab
     Library.CurrentTab = tab
     TweenService:Create(tab.Button, Config.Animations.Normal, {
         BackgroundColor3 = Config.Colors.TabActive,
@@ -478,35 +522,27 @@ function Library:SelectTab(tab)
     }):Play()
     tab.Content.Visible = true
     
-    -- Update content canvas size
     ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
 end
 
--- Component Creation Functions
 function Library:CreateButton(tab, text, callback)
     local Button = Instance.new("TextButton")
     Button.Name = text
     Button.Parent = tab.Content
     Button.BackgroundColor3 = Config.Colors.Secondary
     Button.BorderSizePixel = 0
-    Button.Size = UDim2.new(1, 0, 0, 28) -- Smaller buttons
+    Button.Size = UDim2.new(1, 0, 0, 28)
     Button.Font = Enum.Font.Gotham
     Button.Text = text
     Button.TextColor3 = Config.Colors.Text
     Button.TextSize = 11
     Button.LayoutOrder = #tab.Components + 1
     
-    local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    ButtonCorner.Parent = Button
-    
-    -- Add green stroke
     local ButtonStroke = Instance.new("UIStroke")
     ButtonStroke.Color = Config.Colors.StrokeGreen
     ButtonStroke.Thickness = 1
     ButtonStroke.Parent = Button
     
-    -- Status indicator
     local StatusBox = Instance.new("Frame")
     StatusBox.Name = "StatusBox"
     StatusBox.Parent = Button
@@ -515,23 +551,17 @@ function Library:CreateButton(tab, text, callback)
     StatusBox.Size = UDim2.new(0, 16, 0, 16)
     StatusBox.Position = UDim2.new(1, -20, 0.5, -8)
     
-    local StatusCorner = Instance.new("UICorner")
-    StatusCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    StatusCorner.Parent = StatusBox
-    
-    -- Button functionality
     Button.MouseButton1Click:Connect(function()
-        -- Green flash effect
         TweenService:Create(StatusBox, Config.Animations.Fast, {
             BackgroundColor3 = Config.Colors.Success
         }):Play()
         
-        -- Call callback if provided
         if callback then
             callback()
         end
         
-        -- Return to normal after 1 second
+        FryzerNotify("Button clicked: " .. text, 3)
+        
         spawn(function()
             wait(1)
             TweenService:Create(StatusBox, Config.Animations.Normal, {
@@ -540,7 +570,6 @@ function Library:CreateButton(tab, text, callback)
         end)
     end)
     
-    -- Hover effects
     Button.MouseEnter:Connect(function()
         TweenService:Create(Button, Config.Animations.Fast, {
             BackgroundColor3 = Config.Colors.Border
@@ -555,7 +584,6 @@ function Library:CreateButton(tab, text, callback)
     
     table.insert(tab.Components, Button)
     
-    -- Update tab content size
     tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
         ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
@@ -570,14 +598,9 @@ function Library:CreateToggle(tab, text, default, callback)
     Toggle.Parent = tab.Content
     Toggle.BackgroundColor3 = Config.Colors.Secondary
     Toggle.BorderSizePixel = 0
-    Toggle.Size = UDim2.new(1, 0, 0, 28) -- Smaller toggles
+    Toggle.Size = UDim2.new(1, 0, 0, 28)
     Toggle.LayoutOrder = #tab.Components + 1
     
-    local ToggleCorner = Instance.new("UICorner")
-    ToggleCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    ToggleCorner.Parent = Toggle
-    
-    -- Add green stroke
     local ToggleStroke = Instance.new("UIStroke")
     ToggleStroke.Color = Config.Colors.StrokeGreen
     ToggleStroke.Thickness = 1
@@ -608,10 +631,6 @@ function Library:CreateToggle(tab, text, default, callback)
     StatusBox.Size = UDim2.new(0, 16, 0, 16)
     StatusBox.Position = UDim2.new(1, -20, 0.5, -8)
     
-    local StatusCorner = Instance.new("UICorner")
-    StatusCorner.CornerRadius = UDim.new(0, 0) -- No corners  
-    StatusCorner.Parent = StatusBox
-    
     local isToggled = default or false
     
     ToggleButton.MouseButton1Click:Connect(function()
@@ -624,9 +643,10 @@ function Library:CreateToggle(tab, text, default, callback)
         if callback then
             callback(isToggled)
         end
+        
+        FryzerNotify(text .. " toggled " .. (isToggled and "ON" or "OFF"), 3)
     end)
     
-    -- Hover effects
     ToggleButton.MouseEnter:Connect(function()
         TweenService:Create(Toggle, Config.Animations.Fast, {
             BackgroundColor3 = Config.Colors.Border
@@ -641,7 +661,6 @@ function Library:CreateToggle(tab, text, default, callback)
     
     table.insert(tab.Components, Toggle)
     
-    -- Update tab content size
     tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
         ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
@@ -656,14 +675,9 @@ function Library:CreateLabel(tab, text, color)
     LabelFrame.Parent = tab.Content
     LabelFrame.BackgroundColor3 = Config.Colors.Warning
     LabelFrame.BorderSizePixel = 0
-    LabelFrame.Size = UDim2.new(1, 0, 0, 25) -- Smaller labels
+    LabelFrame.Size = UDim2.new(1, 0, 0, 25)
     LabelFrame.LayoutOrder = #tab.Components + 1
     
-    local LabelCorner = Instance.new("UICorner")
-    LabelCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    LabelCorner.Parent = LabelFrame
-    
-    -- Add green stroke
     local LabelStroke = Instance.new("UIStroke")
     LabelStroke.Color = Config.Colors.StrokeGreen
     LabelStroke.Thickness = 1
@@ -682,7 +696,6 @@ function Library:CreateLabel(tab, text, color)
     
     table.insert(tab.Components, LabelFrame)
     
-    -- Update tab content size
     tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
         ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
@@ -691,21 +704,15 @@ function Library:CreateLabel(tab, text, color)
     return {Label = LabelFrame, SetText = function(newText) Label.Text = newText end}
 end
 
--- NEW FUNCTION: Create Text Label (Like button but only shows text)
 function Library:CreateTextLabel(tab, text, color)
     local TextLabelFrame = Instance.new("Frame")
     TextLabelFrame.Name = text
     TextLabelFrame.Parent = tab.Content
     TextLabelFrame.BackgroundColor3 = Config.Colors.Secondary
     TextLabelFrame.BorderSizePixel = 0
-    TextLabelFrame.Size = UDim2.new(1, 0, 0, 28) -- Same size as buttons
+    TextLabelFrame.Size = UDim2.new(1, 0, 0, 28)
     TextLabelFrame.LayoutOrder = #tab.Components + 1
     
-    local TextLabelCorner = Instance.new("UICorner")
-    TextLabelCorner.CornerRadius = UDim.new(0, 0) -- No corners
-    TextLabelCorner.Parent = TextLabelFrame
-    
-    -- Add green stroke
     local TextLabelStroke = Instance.new("UIStroke")
     TextLabelStroke.Color = Config.Colors.StrokeGreen
     TextLabelStroke.Thickness = 1
@@ -724,7 +731,6 @@ function Library:CreateTextLabel(tab, text, color)
     
     table.insert(tab.Components, TextLabelFrame)
     
-    -- Update tab content size
     tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
         tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
         ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
@@ -733,7 +739,6 @@ function Library:CreateTextLabel(tab, text, color)
     return {Frame = TextLabelFrame, SetText = function(newText) TextLabel.Text = newText end}
 end
 
--- NEW FUNCTION: Create Slider
 function Library:CreateSlider(tab, text, min, max, default, callback)
     local SliderFrame = Instance.new("Frame")
     SliderFrame.Name = text
@@ -743,16 +748,11 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     SliderFrame.Size = UDim2.new(1, 0, 0, 45)
     SliderFrame.LayoutOrder = #tab.Components + 1
     
-    local SliderCorner = Instance.new("UICorner")
-    SliderCorner.CornerRadius = UDim.new(0, 0)
-    SliderCorner.Parent = SliderFrame
-    
     local SliderStroke = Instance.new("UIStroke")
     SliderStroke.Color = Config.Colors.StrokeGreen
     SliderStroke.Thickness = 1
     SliderStroke.Parent = SliderFrame
     
-    -- Label
     local SliderLabel = Instance.new("TextLabel")
     SliderLabel.Parent = SliderFrame
     SliderLabel.BackgroundTransparency = 1
@@ -764,7 +764,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     SliderLabel.TextSize = 11
     SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Value Label
     local ValueLabel = Instance.new("TextLabel")
     ValueLabel.Parent = SliderFrame
     ValueLabel.BackgroundTransparency = 1
@@ -776,7 +775,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     ValueLabel.TextSize = 10
     ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
     
-    -- Slider Track
     local SliderTrack = Instance.new("Frame")
     SliderTrack.Parent = SliderFrame
     SliderTrack.BackgroundColor3 = Config.Colors.Border
@@ -784,7 +782,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     SliderTrack.Size = UDim2.new(1, -16, 0, 4)
     SliderTrack.Position = UDim2.new(0, 8, 1, -12)
     
-    -- Slider Fill
     local SliderFill = Instance.new("Frame")
     SliderFill.Parent = SliderTrack
     SliderFill.BackgroundColor3 = Config.Colors.StrokeGreen
@@ -792,7 +789,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     SliderFill.Size = UDim2.new((default or min) / max, 0, 1, 0)
     SliderFill.Position = UDim2.new(0, 0, 0, 0)
     
-    -- Slider Button
     local SliderButton = Instance.new("TextButton")
     SliderButton.Parent = SliderFrame
     SliderButton.BackgroundTransparency = 1
@@ -814,6 +810,8 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
         if callback then
             callback(currentValue)
         end
+        
+        FryzerNotify(text .. " set to " .. currentValue, 3)
     end
     
     SliderButton.InputBegan:Connect(function(input)
@@ -845,7 +843,6 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     return {Slider = SliderFrame, SetValue = function(value) currentValue = value ValueLabel.Text = tostring(value) SliderFill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0) end}
 end
 
--- FIXED DROPDOWN FUNCTION - Complete rewrite with proper z-index handling
 function Library:CreateDropdown(tab, text, options, default, callback)
     local DropdownFrame = Instance.new("Frame")
     DropdownFrame.Name = text
@@ -854,18 +851,13 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     DropdownFrame.BorderSizePixel = 0
     DropdownFrame.Size = UDim2.new(1, 0, 0, 28)
     DropdownFrame.LayoutOrder = #tab.Components + 1
-    DropdownFrame.ZIndex = 1  -- Base z-index
-    
-    local DropdownCorner = Instance.new("UICorner")
-    DropdownCorner.CornerRadius = UDim.new(0, 0)
-    DropdownCorner.Parent = DropdownFrame
+    DropdownFrame.ZIndex = 1
     
     local DropdownStroke = Instance.new("UIStroke")
     DropdownStroke.Color = Config.Colors.StrokeGreen
     DropdownStroke.Thickness = 1
     DropdownStroke.Parent = DropdownFrame
     
-    -- Main Button
     local DropdownButton = Instance.new("TextButton")
     DropdownButton.Parent = DropdownFrame
     DropdownButton.BackgroundTransparency = 1
@@ -879,7 +871,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     DropdownButton.TextTruncate = Enum.TextTruncate.AtEnd
     DropdownButton.ZIndex = 2
     
-    -- Arrow
     local Arrow = Instance.new("TextLabel")
     Arrow.Parent = DropdownFrame
     Arrow.BackgroundTransparency = 1
@@ -892,27 +883,20 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     Arrow.TextXAlignment = Enum.TextXAlignment.Center
     Arrow.ZIndex = 2
     
-    -- Create Options Frame OUTSIDE of the dropdown frame hierarchy
-    -- This prevents clipping and z-index issues
     local OptionsFrame = Instance.new("Frame")
     OptionsFrame.Name = text .. "_Options"
-    OptionsFrame.Parent = ScreenGui  -- Parent to ScreenGui instead of DropdownFrame
+    OptionsFrame.Parent = ScreenGui
     OptionsFrame.BackgroundColor3 = Config.Colors.Primary
     OptionsFrame.BorderSizePixel = 0
-    OptionsFrame.Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, math.min(#options * 25, 150)) -- Max height of 150
+    OptionsFrame.Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, math.min(#options * 25, 150))
     OptionsFrame.Visible = false
-    OptionsFrame.ZIndex = 100  -- Very high z-index to appear above everything
-    
-    local OptionsCorner = Instance.new("UICorner")
-    OptionsCorner.CornerRadius = UDim.new(0, 0)
-    OptionsCorner.Parent = OptionsFrame
+    OptionsFrame.ZIndex = 100
     
     local OptionsStroke = Instance.new("UIStroke")
     OptionsStroke.Color = Config.Colors.StrokeGreen
     OptionsStroke.Thickness = 1
     OptionsStroke.Parent = OptionsFrame
     
-    -- Add scrolling if too many options
     local OptionsScrollFrame = Instance.new("ScrollingFrame")
     OptionsScrollFrame.Parent = OptionsFrame
     OptionsScrollFrame.BackgroundTransparency = 1
@@ -932,25 +916,18 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     local currentValue = default or options[1] or "None"
     local isOpen = false
     
-    -- Function to update options frame position
     local function UpdateOptionsPosition()
         local dropdownPos = DropdownFrame.AbsolutePosition
         local dropdownSize = DropdownFrame.AbsoluteSize
-        
-        -- Position below the dropdown
         local newX = dropdownPos.X
         local newY = dropdownPos.Y + dropdownSize.Y + 2
-        
-        -- Check if it would go off screen bottom
         local screenHeight = ScreenGui.AbsoluteSize.Y
         local optionsHeight = OptionsFrame.AbsoluteSize.Y
         
         if newY + optionsHeight > screenHeight then
-            -- Position above the dropdown instead
             newY = dropdownPos.Y - optionsHeight - 2
         end
         
-        -- Check if it would go off screen right
         local screenWidth = ScreenGui.AbsoluteSize.X
         local optionsWidth = OptionsFrame.AbsoluteSize.X
         
@@ -962,7 +939,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
         OptionsFrame.Size = UDim2.new(0, dropdownSize.X, 0, math.min(#options * 25, 150))
     end
     
-    -- Create option buttons
     for i, option in pairs(options) do
         local OptionButton = Instance.new("TextButton")
         OptionButton.Parent = OptionsScrollFrame
@@ -977,7 +953,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
         OptionButton.LayoutOrder = i
         OptionButton.ZIndex = 102
         
-        -- Add padding to text
         local OptionPadding = Instance.new("UIPadding")
         OptionPadding.Parent = OptionButton
         OptionPadding.PaddingLeft = UDim.new(0, 8)
@@ -990,7 +965,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
             isOpen = false
             Arrow.Text = "▼"
             
-            -- Animate arrow rotation
             TweenService:Create(Arrow, Config.Animations.Fast, {
                 Rotation = 0
             }):Play()
@@ -998,9 +972,10 @@ function Library:CreateDropdown(tab, text, options, default, callback)
             if callback then
                 callback(option)
             end
+            
+            FryzerNotify(text .. " set to " .. option, 3)
         end)
         
-        -- Hover effect
         OptionButton.MouseEnter:Connect(function()
             TweenService:Create(OptionButton, Config.Animations.Fast, {
                 BackgroundColor3 = Config.Colors.Border
@@ -1014,7 +989,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
         end)
     end
     
-    -- Main dropdown click handler
     DropdownButton.MouseButton1Click:Connect(function()
         isOpen = not isOpen
         OptionsFrame.Visible = isOpen
@@ -1022,38 +996,22 @@ function Library:CreateDropdown(tab, text, options, default, callback)
         if isOpen then
             UpdateOptionsPosition()
             Arrow.Text = "▲"
-            -- Animate arrow rotation
             TweenService:Create(Arrow, Config.Animations.Fast, {
                 Rotation = 180
             }):Play()
             
-            -- Animate options frame appearance
             OptionsFrame.Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, 0)
             TweenService:Create(OptionsFrame, Config.Animations.Normal, {
                 Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, math.min(#options * 25, 150))
             }):Play()
         else
             Arrow.Text = "▼"
-            -- Animate arrow rotation
             TweenService:Create(Arrow, Config.Animations.Fast, {
                 Rotation = 0
             }):Play()
         end
     end)
     
-    -- Close dropdown when clicking elsewhere
-    local function CloseDropdown()
-        if isOpen then
-            isOpen = false
-            OptionsFrame.Visible = false
-            Arrow.Text = "▼"
-            TweenService:Create(Arrow, Config.Animations.Fast, {
-                Rotation = 0
-            }):Play()
-        end
-    end
-    
-    -- Connect to UserInputService to detect clicks outside
     UserInputService.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             if isOpen then
@@ -1063,7 +1021,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
                 local optionsPos = OptionsFrame.AbsolutePosition
                 local optionsSize = OptionsFrame.AbsoluteSize
                 
-                -- Check if click is outside both dropdown and options
                 local clickInDropdown = mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
                                        mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y
                 
@@ -1071,13 +1028,17 @@ function Library:CreateDropdown(tab, text, options, default, callback)
                                       mousePos.Y >= optionsPos.Y and mousePos.Y <= optionsPos.Y + optionsSize.Y
                 
                 if not clickInDropdown and not clickInOptions then
-                    CloseDropdown()
+                    isOpen = false
+                    OptionsFrame.Visible = false
+                    Arrow.Text = "▼"
+                    TweenService:Create(Arrow, Config.Animations.Fast, {
+                        Rotation = 0
+                    }):Play()
                 end
             end
         end
     end)
     
-    -- Update position when parent moves (for draggable GUI)
     spawn(function()
         while DropdownFrame.Parent do
             if isOpen then
@@ -1087,14 +1048,12 @@ function Library:CreateDropdown(tab, text, options, default, callback)
         end
     end)
     
-    -- Clean up options frame when dropdown is destroyed
     DropdownFrame.AncestryChanged:Connect(function()
         if not DropdownFrame.Parent then
             OptionsFrame:Destroy()
         end
     end)
     
-    -- Hover effects for main dropdown
     DropdownButton.MouseEnter:Connect(function()
         if not isOpen then
             TweenService:Create(DropdownFrame, Config.Animations.Fast, {
@@ -1130,7 +1089,6 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     }
 end
 
--- NEW FUNCTION: Create TextBox
 function Library:CreateTextBox(tab, text, placeholder, callback)
     local TextBoxFrame = Instance.new("Frame")
     TextBoxFrame.Name = text
@@ -1140,16 +1098,11 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
     TextBoxFrame.Size = UDim2.new(1, 0, 0, 45)
     TextBoxFrame.LayoutOrder = #tab.Components + 1
     
-    local TextBoxCorner = Instance.new("UICorner")
-    TextBoxCorner.CornerRadius = UDim.new(0, 0)
-    TextBoxCorner.Parent = TextBoxFrame
-    
     local TextBoxStroke = Instance.new("UIStroke")
     TextBoxStroke.Color = Config.Colors.StrokeGreen
     TextBoxStroke.Thickness = 1
     TextBoxStroke.Parent = TextBoxFrame
     
-    -- Label
     local TextBoxLabel = Instance.new("TextLabel")
     TextBoxLabel.Parent = TextBoxFrame
     TextBoxLabel.BackgroundTransparency = 1
@@ -1161,7 +1114,6 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
     TextBoxLabel.TextSize = 11
     TextBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- TextBox
     local TextBox = Instance.new("TextBox")
     TextBox.Parent = TextBoxFrame
     TextBox.BackgroundColor3 = Config.Colors.Primary
@@ -1181,7 +1133,6 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
     TextBoxInputStroke.Thickness = 1
     TextBoxInputStroke.Parent = TextBox
     
-    -- Focus effects
     TextBox.Focused:Connect(function()
         TweenService:Create(TextBoxInputStroke, Config.Animations.Fast, {
             Color = Config.Colors.StrokeGreen
@@ -1195,6 +1146,7 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
         
         if callback and enterPressed then
             callback(TextBox.Text)
+            FryzerNotify("Text entered: " .. TextBox.Text, 3)
         end
     end)
     
@@ -1211,15 +1163,14 @@ end
 -- Control Button Functions
 MinimizeButton.MouseButton1Click:Connect(function()
     ScreenGui.Enabled = false
+    FryzerNotify("Hub minimized", 3)
     
-    -- Update circle toggle color when minimized
     local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
     if fryzerGUI and fryzerGUI:FindFirstChild("CircleFrame") then
         local circleFrame = fryzerGUI.CircleFrame
         local textLabel = circleFrame:FindFirstChild("TextLabel")
         local gradient = circleFrame:FindFirstChild("UIGradient")
         
-        -- Set to inactive appearance
         TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
             BackgroundColor3 = Color3.fromRGB(20, 20, 20),
             BorderColor3 = Color3.fromRGB(40, 40, 40)
@@ -1240,7 +1191,6 @@ MinimizeButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Close Confirmation Dialog (FIXED - No background overlay)
 local function CreateConfirmDialog()
     local ConfirmGui = Instance.new("ScreenGui")
     ConfirmGui.Name = "ConfirmDialog"
@@ -1248,18 +1198,12 @@ local function CreateConfirmDialog()
     ConfirmGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     ConfirmGui.DisplayOrder = 200
     
-    -- REMOVED: No overlay/background frame that covers full screen
-    
     local ConfirmFrame = Instance.new("Frame")
     ConfirmFrame.Parent = ConfirmGui
     ConfirmFrame.BackgroundColor3 = Config.Colors.Primary
     ConfirmFrame.BorderSizePixel = 0
     ConfirmFrame.Size = UDim2.new(0, 300, 0, 120)
     ConfirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
-    
-    local ConfirmCorner = Instance.new("UICorner")
-    ConfirmCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
-    ConfirmCorner.Parent = ConfirmFrame
     
     local ConfirmStroke = Instance.new("UIStroke")
     ConfirmStroke.Color = Config.Colors.StrokeGreen
@@ -1304,10 +1248,6 @@ local function CreateConfirmDialog()
     CancelButton.TextColor3 = Config.Colors.Text
     CancelButton.TextSize = 11
     
-    local CancelCorner = Instance.new("UICorner")
-    CancelCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
-    CancelCorner.Parent = CancelButton
-    
     local ConfirmButton = Instance.new("TextButton")
     ConfirmButton.Parent = ButtonsFrame
     ConfirmButton.BackgroundColor3 = Config.Colors.Error
@@ -1319,11 +1259,6 @@ local function CreateConfirmDialog()
     ConfirmButton.TextColor3 = Config.Colors.Text
     ConfirmButton.TextSize = 11
     
-    local ConfirmButtonCorner = Instance.new("UICorner")
-    ConfirmButtonCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
-    ConfirmButtonCorner.Parent = ConfirmButton
-    
-    -- Animate in
     ConfirmFrame.Size = UDim2.new(0, 0, 0, 0)
     TweenService:Create(ConfirmFrame, Config.Animations.Bounce, {
         Size = UDim2.new(0, 300, 0, 120)
@@ -1331,21 +1266,19 @@ local function CreateConfirmDialog()
     
     CancelButton.MouseButton1Click:Connect(function()
         ConfirmGui:Destroy()
+        FryzerNotify("Close cancelled", 3)
     end)
     
     ConfirmButton.MouseButton1Click:Connect(function()
-        -- Close both GUIs when confirmed
         ScreenGui:Destroy()
         ConfirmGui:Destroy()
-        
-        -- Also close the circle toggle GUI
         local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
         if fryzerGUI then
             fryzerGUI:Destroy()
         end
+        FryzerNotify("Hub closed", 3)
     end)
     
-    -- Hover effects
     CancelButton.MouseEnter:Connect(function()
         TweenService:Create(CancelButton, Config.Animations.Fast, {BackgroundColor3 = Config.Colors.Border}):Play()
     end)
@@ -1365,7 +1298,6 @@ CloseButton.MouseButton1Click:Connect(function()
     CreateConfirmDialog()
 end)
 
--- Control button hover effects (FIXED - Reset on mouse leave)
 local minimizeHovered = false
 
 MinimizeButton.MouseEnter:Connect(function()
@@ -1403,8 +1335,8 @@ TweenService:Create(MainFrame, Config.Animations.Bounce, {
     Position = UDim2.new(0.5, -225, 0.5, -150)
 }):Play()
 
--- Example Usage - Create tabs and components immediately
-local infoTab = Library:CreateTab("INFO") -- New INFO tab without emoji
+-- Example Usage
+local infoTab = Library:CreateTab("INFO")
 local homeTab = Library:CreateTab("HOME")
 local specialTab = Library:CreateTab("SPECIAL")
 local mainTab = Library:CreateTab("MAIN")
@@ -1416,7 +1348,6 @@ local settingsTab = Library:CreateTab("SETTINGS")
 local scriptStartTime = tick()
 local timerLabel = nil
 
--- Function to format time
 local function FormatTime(seconds)
     local hours = math.floor(seconds / 3600)
     local minutes = math.floor((seconds % 3600) / 60)
@@ -1424,12 +1355,15 @@ local function FormatTime(seconds)
     return string.format("%02d:%02d:%02d", hours, minutes, secs)
 end
 
--- INFO Tab Components (First tab)
+-- INFO Tab Components
 Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
 Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
 timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
+Library:CreateButton(infoTab, "Test Notification", function()
+    FryzerNotify("This is a test notification!", 5)
+end)
 
--- Update timer every second
+-- Update timer
 spawn(function()
     while ScreenGui.Parent do
         wait(1)
@@ -1437,25 +1371,6 @@ spawn(function()
         if timerLabel and timerLabel.SetText then
             timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
         end
-    end
-end)
--- ai tab
-
--- Example usage in buttons:
-Library:CreateButton(homeTab, "Test Notification", function()
-    Library:Notify("Button was clicked!", 3)
-end)
-
-Library:CreateButton(spawnerTab, "Dark Spawner", function()
-    Library:Notify("Dark Spawner Activated", 5)
-    -- Your spawner code here
-end)
-
-Library:CreateToggle(mainTab, "Feature Toggle", false, function(value)
-    if value then
-        Library:Notify("Feature Enabled", 2)
-    else
-        Library:Notify("Feature Disabled", 2)
     end
 end)
 
@@ -1540,7 +1455,14 @@ Library:CreateButton(settingsTab, "Reset Settings", function()
 end)
 Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
 
-print("🎉 Modern Hub GUI loaded successfully!")
+-- Initialize notification system
+spawn(function()
+    wait(0.5)
+    FryzerNotify("Welcome to Fryzer Hub", 5)
+end)
+
+print("🎉 Fryzer Hub with Notification System loaded successfully!")
 print("📱 Use the circle toggle to show/hide the GUI")
+print("Usage: FryzerNotify('Your message here', duration)")
 
 return Library
