@@ -1,6 +1,6 @@
 -- Modern Hub GUI for Roblox Executor with Integrated Fryzer Notification System
 -- Compatible with Fryzer Circle Toggle
-
+print("notificationv1")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
@@ -41,7 +41,7 @@ local Config = {
         Bounce = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
     }
 }
-
+print("notificaion v2")
 -- Notification System Configuration
 local NOTIFY_CONFIG = {
     NOTIFICATION_SIZE = UDim2.new(0, 350, 0, 80),
@@ -1375,6 +1375,10 @@ spawn(function()
 end)
 
 -- HOME Tab Components
+Library:CreateButton(homeTab, "Test Notification", function()
+    FryzerNotify("This is a test notification!", 5)
+end)
+
 Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
 Library:CreateButton(homeTab, "Test Button", function()
     print("Button clicked!")
