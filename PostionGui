@@ -16,192 +16,94 @@ local BlurEffect = Instance.new("BlurEffect")
 BlurEffect.Size = 15
 BlurEffect.Parent = game.Lighting
 
--- Main Frame with gradient background
+-- Main Frame - smaller and simpler
 local MainFrame = Instance.new("Frame")
 MainFrame.Parent = ScreenGui
-MainFrame.Size = UDim2.new(0, 420, 0, 320)
+MainFrame.Size = UDim2.new(0, 300, 0, 220)
 MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
 MainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-MainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 22)
+MainFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
 MainFrame.BorderSizePixel = 0
-MainFrame.ClipsDescendants = true
 
--- Gradient background
-local UIGradient = Instance.new("UIGradient")
-UIGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(25, 25, 35)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(15, 15, 20))
-}
-UIGradient.Rotation = 45
-UIGradient.Parent = MainFrame
-
--- Modern border with glow effect
+-- Simple border
 local UIStroke = Instance.new("UIStroke")
 UIStroke.Parent = MainFrame
-UIStroke.Color = Color3.fromRGB(88, 101, 242)
-UIStroke.Thickness = 2
-UIStroke.Transparency = 0.3
+UIStroke.Color = Color3.fromRGB(75, 75, 85)
+UIStroke.Thickness = 1
 
 local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim.new(0, 16)
+UICorner.CornerRadius = UDim.new(0, 8)
 UICorner.Parent = MainFrame
 
--- Animated glow effect
-local GlowFrame = Instance.new("Frame")
-GlowFrame.Parent = MainFrame
-GlowFrame.Size = UDim2.new(1, 10, 1, 10)
-GlowFrame.Position = UDim2.new(0, -5, 0, -5)
-GlowFrame.BackgroundTransparency = 1
-GlowFrame.ZIndex = -1
-
--- Top accent bar
-local AccentBar = Instance.new("Frame")
-AccentBar.Parent = MainFrame
-AccentBar.Size = UDim2.new(1, 0, 0, 3)
-AccentBar.Position = UDim2.new(0, 0, 0, 0)
-AccentBar.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
-AccentBar.BorderSizePixel = 0
-
-local AccentGradient = Instance.new("UIGradient")
-AccentGradient.Color = ColorSequence.new{
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(88, 101, 242)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(162, 155, 254)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(88, 101, 242))
-}
-AccentGradient.Parent = AccentBar
-
--- Title with enhanced styling
+-- Title
 local TitleLabel = Instance.new("TextLabel")
 TitleLabel.Parent = MainFrame
-TitleLabel.Size = UDim2.new(1, 0, 0, 60)
-TitleLabel.Position = UDim2.new(0, 0, 0, 20)
+TitleLabel.Size = UDim2.new(1, 0, 0, 40)
+TitleLabel.Position = UDim2.new(0, 0, 0, 10)
 TitleLabel.BackgroundTransparency = 1
 TitleLabel.Text = "FRYZER HUB"
 TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-TitleLabel.TextSize = 32
+TitleLabel.TextSize = 22
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.TextStrokeTransparency = 0.5
-TitleLabel.TextStrokeColor3 = Color3.fromRGB(88, 101, 242)
 
--- Subtitle with better positioning
+-- Subtitle
 local SubtitleLabel = Instance.new("TextLabel")
 SubtitleLabel.Parent = MainFrame
-SubtitleLabel.Size = UDim2.new(1, 0, 0, 25)
-SubtitleLabel.Position = UDim2.new(0, 0, 0, 75)
+SubtitleLabel.Size = UDim2.new(1, 0, 0, 20)
+SubtitleLabel.Position = UDim2.new(0, 0, 0, 45)
 SubtitleLabel.BackgroundTransparency = 1
-SubtitleLabel.Text = "Authentication Required"
-SubtitleLabel.TextColor3 = Color3.fromRGB(162, 155, 254)
-SubtitleLabel.TextSize = 16
+SubtitleLabel.Text = "Key System"
+SubtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+SubtitleLabel.TextSize = 14
 SubtitleLabel.Font = Enum.Font.Gotham
-SubtitleLabel.TextTransparency = 0.3
 
--- Status indicator
-local StatusLabel = Instance.new("TextLabel")
-StatusLabel.Parent = MainFrame
-StatusLabel.Size = UDim2.new(0.8, 0, 0, 20)
-StatusLabel.Position = UDim2.new(0.1, 0, 0, 105)
-StatusLabel.BackgroundTransparency = 1
-StatusLabel.Text = ""
-StatusLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
-StatusLabel.TextSize = 14
-StatusLabel.Font = Enum.Font.Gotham
-StatusLabel.TextXAlignment = Enum.TextXAlignment.Center
-
--- Enhanced Key TextBox
+-- Key TextBox
 local KeyBox = Instance.new("TextBox")
 KeyBox.Parent = MainFrame
-KeyBox.Size = UDim2.new(0.8, 0, 0, 45)
-KeyBox.Position = UDim2.new(0.1, 0, 0, 130)
-KeyBox.BackgroundColor3 = Color3.fromRGB(35, 35, 45)
+KeyBox.Size = UDim2.new(0.85, 0, 0, 35)
+KeyBox.Position = UDim2.new(0.075, 0, 0, 80)
+KeyBox.BackgroundColor3 = Color3.fromRGB(55, 55, 65)
 KeyBox.TextColor3 = Color3.fromRGB(255, 255, 255)
-KeyBox.PlaceholderText = "Enter your access key..."
-KeyBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 150)
-KeyBox.TextSize = 16
-KeyBox.Font = Enum.Font.Gotham
+KeyBox.PlaceholderText = "Enter Key"
+KeyBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+KeyBox.TextSize = 14
+KeyBox.Font = Enum.Font.SourceSans
 KeyBox.ClearTextOnFocus = false
-KeyBox.TextXAlignment = Enum.TextXAlignment.Center
 
 local KeyBoxCorner = Instance.new("UICorner")
-KeyBoxCorner.CornerRadius = UDim.new(0, 8)
+KeyBoxCorner.CornerRadius = UDim.new(0, 6)
 KeyBoxCorner.Parent = KeyBox
 
-local KeyBoxStroke = Instance.new("UIStroke")
-KeyBoxStroke.Parent = KeyBox
-KeyBoxStroke.Color = Color3.fromRGB(60, 60, 70)
-KeyBoxStroke.Thickness = 1
-
--- Enhanced button creation function
+-- Simple button creation function
 local function CreateButton(name, posY, color, callback)
     local Button = Instance.new("TextButton")
     Button.Parent = MainFrame
-    Button.Size = UDim2.new(0.8, 0, 0, 38)
-    Button.Position = UDim2.new(0.1, 0, 0, posY)
+    Button.Size = UDim2.new(0.85, 0, 0, 30)
+    Button.Position = UDim2.new(0.075, 0, 0, posY)
     Button.BackgroundColor3 = color
     Button.Text = name
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Button.TextSize = 15
-    Button.Font = Enum.Font.GothamSemibold
-    Button.AutoButtonColor = false
+    Button.TextSize = 14
+    Button.Font = Enum.Font.SourceSans
+    Button.AutoButtonColor = true
     
     local ButtonCorner = Instance.new("UICorner")
-    ButtonCorner.CornerRadius = UDim.new(0, 8)
+    ButtonCorner.CornerRadius = UDim.new(0, 6)
     ButtonCorner.Parent = Button
-    
-    local ButtonStroke = Instance.new("UIStroke")
-    ButtonStroke.Parent = Button
-    ButtonStroke.Color = Color3.fromRGB(255, 255, 255)
-    ButtonStroke.Thickness = 1
-    ButtonStroke.Transparency = 0.8
-    
-    -- Button hover effects
-    Button.MouseEnter:Connect(function()
-        Button:TweenSize(UDim2.new(0.82, 0, 0, 40), "Out", "Quad", 0.2, true)
-        ButtonStroke.Transparency = 0.5
-    end)
-    
-    Button.MouseLeave:Connect(function()
-        Button:TweenSize(UDim2.new(0.8, 0, 0, 38), "Out", "Quad", 0.2, true)
-        ButtonStroke.Transparency = 0.8
-    end)
     
     Button.MouseButton1Click:Connect(callback)
     return Button
 end
 
--- Function to show status message
-local function ShowStatus(message, color, duration)
-    StatusLabel.Text = message
-    StatusLabel.TextColor3 = color
-    StatusLabel.TextTransparency = 0
-    
-    if duration then
-        wait(duration)
-        StatusLabel:TweenSizeAndPosition(
-            StatusLabel.Size,
-            StatusLabel.Position,
-            "Out", "Quad", 0.3, true
-        )
-        StatusLabel.TextTransparency = 1
-    end
-end
-
 -- Function to run the main script
 local function RunMainScript()
-    ShowStatus("Access Granted! Loading...", Color3.fromRGB(100, 255, 100), nil)
-    
-    -- Fade out animation
-    MainFrame:TweenSizeAndPosition(
-        UDim2.new(0, 0, 0, 0),
-        UDim2.new(0.5, 0, 0.5, 0),
-        "Out", "Back", 0.5, true
-    )
-    
-    wait(0.5)
+    -- Simple fade out
+    MainFrame:TweenSize(UDim2.new(0, 0, 0, 0), "Out", "Quad", 0.3, true)
+    wait(0.4)
     BlurEffect:Destroy()
     ScreenGui:Destroy()
     
-
-    local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
 local infoTab = Library:CreateTab("INFO")
 local autoTab = Library:CreateTab("AUTO FARM")
@@ -1022,44 +924,80 @@ return Library
 end
 
 -- Get Key Button
-CreateButton("📋 Get Key", 185, Color3.fromRGB(52, 152, 219), function()
+CreateButton("Get Key", 125, Color3.fromRGB(70, 130, 180), function()
     setclipboard(getKeyUrl)
-    ShowStatus("Key link copied to clipboard!", Color3.fromRGB(100, 255, 100), 2)
 end)
 
--- Check Key Button
-CreateButton("🔑 Verify Key", 230, Color3.fromRGB(88, 101, 242), function()
-    if KeyBox.Text == "" then
-        ShowStatus("Please enter a key first!", Color3.fromRGB(255, 100, 100), 2)
-        return
+-- Check Key Button  
+CreateButton("Check Key", 165, Color3.fromRGB(60, 180, 75), function()
+    if KeyBox.Text == correctKey then
+        wait(2) -- Loading delay
+        RunMainScript()
+    else
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Wrong Key"
+        wait(1)
+        KeyBox.PlaceholderText = "Enter Key"
     end
+end)
+
+-- Support Button (replaces Discord)
+CreateButton("Support", 205, Color3.fromRGB(128, 90, 213), function()
+    -- Opens a simple support window instead of Discord
+    local supportGui = Instance.new("ScreenGui")
+    supportGui.Parent = game.CoreGui
     
-    ShowStatus("Verifying key...", Color3.fromRGB(255, 200, 100), nil)
+    local supportFrame = Instance.new("Frame")
+    supportFrame.Parent = supportGui
+    supportFrame.Size = UDim2.new(0, 250, 0, 150)
+    supportFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+    supportFrame.AnchorPoint = Vector2.new(0.5, 0.5)
+    supportFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     
-    spawn(function()
-        wait(2) -- Brief verification delay
-        
-        if KeyBox.Text == correctKey then
-            ShowStatus("Key verified! Initializing...", Color3.fromRGB(100, 255, 100), nil)
-            wait(1)
-            RunMainScript()
-        else
-            ShowStatus("Invalid key! Please try again.", Color3.fromRGB(255, 100, 100), 3)
-            KeyBox.Text = ""
-        end
+    local supportCorner = Instance.new("UICorner")
+    supportCorner.CornerRadius = UDim.new(0, 8)
+    supportCorner.Parent = supportFrame
+    
+    local supportTitle = Instance.new("TextLabel")
+    supportTitle.Parent = supportFrame
+    supportTitle.Size = UDim2.new(1, 0, 0, 30)
+    supportTitle.Position = UDim2.new(0, 0, 0, 10)
+    supportTitle.BackgroundTransparency = 1
+    supportTitle.Text = "Support"
+    supportTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
+    supportTitle.TextSize = 16
+    supportTitle.Font = Enum.Font.SourceSansBold
+    
+    local supportText = Instance.new("TextLabel")
+    supportText.Parent = supportFrame
+    supportText.Size = UDim2.new(0.9, 0, 0, 60)
+    supportText.Position = UDim2.new(0.05, 0, 0, 45)
+    supportText.BackgroundTransparency = 1
+    supportText.Text = "Need help? Contact us at:\nsupport@fryzer.com"
+    supportText.TextColor3 = Color3.fromRGB(200, 200, 200)
+    supportText.TextSize = 14
+    supportText.Font = Enum.Font.SourceSans
+    supportText.TextWrapped = true
+    
+    local closeButton = Instance.new("TextButton")
+    closeButton.Parent = supportFrame
+    closeButton.Size = UDim2.new(0, 60, 0, 25)
+    closeButton.Position = UDim2.new(0.5, -30, 0, 115)
+    closeButton.BackgroundColor3 = Color3.fromRGB(180, 60, 60)
+    closeButton.Text = "Close"
+    closeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    closeButton.TextSize = 12
+    closeButton.Font = Enum.Font.SourceSans
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 4)
+    closeCorner.Parent = closeButton
+    
+    closeButton.MouseButton1Click:Connect(function()
+        supportGui:Destroy()
     end)
 end)
 
--- Join Discord Button
-CreateButton("💬 Join Discord", 275, Color3.fromRGB(114, 137, 218), function()
-    setclipboard(discordInvite)
-    ShowStatus("Discord invite copied!", Color3.fromRGB(100, 255, 100), 2)
-end)
-
--- Entrance animation
+-- Simple entrance animation
 MainFrame.Size = UDim2.new(0, 0, 0, 0)
-MainFrame:TweenSizeAndPosition(
-    UDim2.new(0, 420, 0, 320),
-    UDim2.new(0.5, 0, 0.5, 0),
-    "Out", "Back", 0.7, true
-)
+MainFrame:TweenSize(UDim2.new(0, 300, 0, 220), "Out", "Quad", 0.4, true)
