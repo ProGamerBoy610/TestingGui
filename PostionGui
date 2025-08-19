@@ -23,9 +23,7 @@ end)
 Library:CreateLabel(infoTab, "BECOME A TESTER")
 Library:CreateTextLabel(infoTab, "Join Discord For Testing New Scripts For Free And Keyless")
 
-
 -- AUTO FARM
-
 Library:CreateLabel(autoTab, "AUTO FARM")
 Library:CreateTextLabel(autoTab, "It will find your garden and collect fruit and sell")
 
@@ -94,7 +92,6 @@ local autoFarmRunning = false
 print("🌱 Auto Farm System Loaded...")
 
 -- Add controls to your existing hub
--- Replace 'mainTab' with your actual tab variable name
 Library:CreateToggle(autoTab, "Auto Farm", false, function(value)
     FARM_ENABLED = value
     if value then
@@ -146,14 +143,12 @@ local function findPlayerFarm()
     
     print("🔍 Searching for " .. player.Name .. "'s farm...")
     
-    -- Check if Farm folder exists
     local farmFolder = workspace:FindFirstChild("Farm")
     if not farmFolder then
         warn("❌ Farm folder not found in workspace")
         return nil
     end
     
-    -- Look through all farms to find the player's farm
     for _, farm in pairs(farmFolder:GetChildren()) do
         if farm.Name == "Farm" then
             local success, result = pcall(function()
@@ -194,7 +189,6 @@ local function getPlantsInFarm(farm)
             if plantsPhysical then
                 for _, plant in pairs(plantsPhysical:GetChildren()) do
                     if plant:IsA("Model") then
-                        -- Find ProximityPrompt in the plant
                         for _, child in pairs(plant:GetDescendants()) do
                             if child:IsA("ProximityPrompt") then
                                 table.insert(plants, {
@@ -226,7 +220,6 @@ local function farmForDuration()
     local plantsHarvested = 0
     
     while (tick() - farmingStartTime) < FARM_DURATION and FARM_ENABLED do
-        -- Get current plants in farm
         local plants = getPlantsInFarm(playerFarm)
         
         if #plants == 0 then
@@ -235,11 +228,9 @@ local function farmForDuration()
         else
             print("🌾 Found " .. #plants .. " plants to harvest")
             
-            -- Harvest all available plants
             for _, plantData in pairs(plants) do
                 if not FARM_ENABLED then break end
                 
-                -- Check if we still have time
                 if (tick() - farmingStartTime) >= FARM_DURATION then
                     print("⏰ " .. FARM_DURATION .. " second farming time reached")
                     break
@@ -248,20 +239,16 @@ local function farmForDuration()
                 local plant = plantData.model
                 local prompt = plantData.prompt
                 
-                -- Check if plant still exists
                 if plant and plant.Parent and prompt and prompt.Parent then
-                    -- Get plant position
                     local plantPosition = plant:GetModelCFrame()
                     local plantSize = plant:GetExtentsSize()
                     local plantHeight = plantSize.Y / 2 + 3
                     
                     print("🌱 Harvesting " .. plantData.name .. " (" .. (plantsHarvested + 1) .. ")")
                     
-                    -- Teleport to plant
                     if teleportTo(plantPosition + Vector3.new(0, plantHeight, 0)) then
                         wait(0.5)
                         
-                        -- Try to click proximity prompt
                         if clickProximityPrompt(prompt) then
                             plantsHarvested = plantsHarvested + 1
                             print("✅ Harvested " .. plantData.name)
@@ -270,12 +257,10 @@ local function farmForDuration()
                         end
                     end
                     
-                    -- Small delay between plants
                     wait(0.3)
                 end
             end
             
-            -- After harvesting all visible plants, wait a bit before checking again
             wait(1)
         end
     end
@@ -291,14 +276,12 @@ local function waitAndSell()
     print("⏳ === WAITING PHASE (" .. WAIT_DURATION .. " seconds) + SELLING ===")
     local waitStartTime = tick()
     
-    -- Teleport to selling location (Steven's location)
     local sellLocation = CFrame.new(86.58584594726562, 2.999999761581421, 0.426784485578537)
     print("💰 Teleporting to sell location...")
     
     if teleportTo(sellLocation) then
-        wait(1) -- Wait a moment at the location
+        wait(1)
         
-        -- Fire the sell inventory remote
         local success = pcall(function()
             game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
             print("✅ Sell_Inventory remote fired!")
@@ -311,12 +294,11 @@ local function waitAndSell()
         warn("❌ Failed to teleport to sell location")
     end
     
-    -- Continue waiting for the remaining time
     while (tick() - waitStartTime) < WAIT_DURATION and FARM_ENABLED do
         local remainingTime = WAIT_DURATION - (tick() - waitStartTime)
         if remainingTime > 0 then
             print("💤 Waiting at sell location... " .. math.ceil(remainingTime) .. " seconds remaining")
-            wait(3) -- Update every 3 seconds during wait
+            wait(3)
         end
     end
     
@@ -332,7 +314,6 @@ function startTimedAutoFarm()
     
     autoFarmRunning = true
     
-    -- Find player's farm first
     playerFarm = findPlayerFarm()
     
     if not playerFarm then
@@ -345,20 +326,17 @@ function startTimedAutoFarm()
     
     local cycleCount = 0
     
-    -- Main cycle loop
     spawn(function()
         while FARM_ENABLED and autoFarmRunning do
             cycleCount = cycleCount + 1
             print("🔄 === CYCLE " .. cycleCount .. " START ===")
             
-            -- Check if character exists
             if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
                 print("⚠️ Waiting for character to spawn...")
                 player.CharacterAdded:Wait()
                 wait(2)
             end
             
-            -- Phase 1: Farm for specified duration
             local success = pcall(function()
                 farmForDuration()
             end)
@@ -369,7 +347,6 @@ function startTimedAutoFarm()
             
             if not FARM_ENABLED or not autoFarmRunning then break end
             
-            -- Phase 2: Wait and sell inventory
             success = pcall(function()
                 waitAndSell()
             end)
@@ -413,6 +390,7 @@ _G.FindPlayerFarmAgain = function()
     return playerFarm
 end
 
+-- Revised "Collect More" Functionality
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
@@ -426,20 +404,25 @@ local proximityPrompts = {}
 -- Function to find all proximity prompts in the game
 local function findProximityPrompts()
     proximityPrompts = {}
+    local count = 0
     
-    -- Search in workspace
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("ProximityPrompt") then
-            table.insert(proximityPrompts, obj)
+    pcall(function()
+        for _, obj in pairs(workspace:GetDescendants()) do
+            if obj:IsA("ProximityPrompt") and obj.Parent and obj.Enabled then
+                table.insert(proximityPrompts, obj)
+                count = count + 1
+            end
         end
-    end
+    end)
     
-    return #proximityPrompts
+    print("🔍 Found " .. count .. " valid proximity prompts")
+    return count
 end
 
 -- Function to get the closest proximity prompt to the player
 local function getClosestProximityPrompt()
     if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+        print("⚠️ No character or HumanoidRootPart found")
         return nil
     end
     
@@ -448,16 +431,27 @@ local function getClosestProximityPrompt()
     local closestDistance = math.huge
     
     for _, prompt in pairs(proximityPrompts) do
-        if prompt.Parent and prompt.Enabled then
-            local promptPosition = prompt.Parent.Position
-            local distance = (playerPosition - promptPosition).Magnitude
+        if prompt and prompt.Parent and prompt.Enabled then
+            local success, promptPosition = pcall(function()
+                return prompt.Parent.Position
+            end)
             
-            -- Check if within range
-            if distance <= prompt.MaxActivationDistance and distance < closestDistance then
-                closestDistance = distance
-                closestPrompt = prompt
+            if success and promptPosition then
+                local distance = (playerPosition - promptPosition).Magnitude
+                if distance <= prompt.MaxActivationDistance and distance < closestDistance then
+                    closestDistance = distance
+                    closestPrompt = prompt
+                end
+            else
+                print("⚠️ Failed to get position for prompt: " .. tostring(prompt))
             end
         end
+    end
+    
+    if closestPrompt then
+        print("📍 Closest prompt found at distance: " .. closestDistance)
+    else
+        print("⚠️ No valid proximity prompt found within range")
     end
     
     return closestPrompt
@@ -470,25 +464,29 @@ local function startAutoPressing()
     isRunning = true
     print("✅ Auto Proximity Started")
     
-    -- Find all proximity prompts
+    -- Initial prompt search
     local promptCount = findProximityPrompts()
     print("Found " .. promptCount .. " proximity prompts")
     
     -- Start the auto-pressing loop
     autoConnection = RunService.Heartbeat:Connect(function()
-        -- Refresh prompts occasionally
-        if math.random(1, 60) == 1 then -- Every ~1 second
+        -- Refresh prompts every 0.5 seconds
+        if tick() % 0.5 < 0.01 then
             findProximityPrompts()
         end
         
-        -- Find the closest prompt
         local closestPrompt = getClosestProximityPrompt()
         
         if closestPrompt then
-            -- Trigger the proximity prompt
-            pcall(function()
+            local success = pcall(function()
                 fireproximityprompt(closestPrompt)
+                print("✅ Triggered proximity prompt: " .. tostring(closestPrompt))
             end)
+            if not success then
+                print("⚠️ Failed to trigger proximity prompt")
+            end
+            -- Small delay to respect game cooldowns
+            wait(0.1)
         end
     end)
 end
@@ -507,7 +505,7 @@ local function stopAutoPressing()
 end
 
 -- Auto Proximity Toggle Control
-Library:CreateToggle(autoTab, "Auto Proximity", false, function(value)
+Library:CreateToggle(autoTab, "Collect More", false, function(value)
     if value then
         startAutoPressing()
     else
@@ -633,7 +631,6 @@ local seeds = {
     "Watermelon"
 }
 
--- Add "ALL" option to the seeds list
 local dropdownOptions = {"ALL"}
 for _, seed in ipairs(seeds) do
     table.insert(dropdownOptions, seed)
@@ -648,13 +645,11 @@ local function buySelectedSeeds()
     buyingSeeds = true
     
     if selectedSeed == "ALL" then
-        -- Buy all seeds if "ALL" is selected
         for _, seed in ipairs(seeds) do
             BuySeedStock:FireServer(seed)
             task.wait(0.1)
         end
     else
-        -- Buy individual selected seed
         BuySeedStock:FireServer(selectedSeed)
         task.wait(0.1)
     end
@@ -684,19 +679,12 @@ local function sellAllInventory()
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
-    -- Save the player's current position
     local originalPosition = humanoidRootPart.CFrame
-
-    -- Target coordinates (adjusted to be closer to sell area)
     local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
 
-    -- Teleport the player
     humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    
-    -- Wait longer for the game to register the position
     wait(0.5)
     
-    -- Try multiple times to fire the remote event
     for i = 1, 3 do
         pcall(function()
             game:GetService("ReplicatedStorage").GameEvents.Sell_Inventory:FireServer()
@@ -704,10 +692,7 @@ local function sellAllInventory()
         wait(0.2)
     end
 
-    -- Wait longer before teleporting back
     wait(2)
-    
-    -- Teleport back to original position
     humanoidRootPart.CFrame = originalPosition
 end
 
@@ -716,19 +701,12 @@ local function sellItem()
     local character = player.Character or player.CharacterAdded:Wait()
     local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
     
-    -- Save the player's current position
     local originalPosition = humanoidRootPart.CFrame
-
-    -- Target coordinates (adjusted to be closer to sell area)
     local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
 
-    -- Teleport the player
     humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    
-    -- Wait longer for the game to register the position
     wait(0.5)
     
-    -- Try multiple times to fire the remote event
     for i = 1, 3 do
         pcall(function()
             game:GetService("ReplicatedStorage").GameEvents.Sell_Item:FireServer()
@@ -736,10 +714,7 @@ local function sellItem()
         wait(0.2)
     end
 
-    -- Wait longer before teleporting back
     wait(2)
-    
-    -- Teleport back to original position
     humanoidRootPart.CFrame = originalPosition
 end
 
@@ -770,16 +745,14 @@ local function enableGUI()
         local gearFrame = frame:WaitForChild("Gear")
         local petsFrame = frame:WaitForChild("Pets")
 
-        -- Store original states
         originalStates = {
-            teleportUI = teleportUI.Enabled,  -- ScreenGui uses Enabled, not Visible
+            teleportUI = teleportUI.Enabled,
             frame = frame.Visible,
             gear = gearFrame.Visible,
             pets = petsFrame.Visible,
         }
 
-        -- Enable all GUI elements
-        teleportUI.Enabled = true  -- ScreenGui property
+        teleportUI.Enabled = true
         frame.Visible = true
         gearFrame.Visible = true
         petsFrame.Visible = true
@@ -797,7 +770,6 @@ local function disableGUI()
         local gearFrame = frame:WaitForChild("Gear")
         local petsFrame = frame:WaitForChild("Pets")
 
-        -- Restore original states
         teleportUI.Enabled = originalStates.teleportUI or false
         frame.Visible = originalStates.frame or false
         gearFrame.Visible = originalStates.gear or false
@@ -817,27 +789,22 @@ Library:CreateToggle(selsedTab, "Enable Teleport GUI", false, function(state)
 end)
 
 -- SCRIPT TAB MORE SCRIPTS
-
 Library:CreateLabel(scriptTab, "MORE SCRIPTS")
--- Jandel Chat System Button
 Library:CreateButton(scriptTab, "Jandel Chat System", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
     print("✅ Jandel Chat System - Script has been executed!")
 end)
 
--- Pet Dupers Button
 Library:CreateButton(scriptTab, "Pet Dupers (Can't Gift)", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
     print("✅ Pet Dupers - Script has been executed!")
 end)
 
--- Item Stealer Button
 Library:CreateButton(scriptTab, "Item Stealer", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
     print("✅ Item Stealer - Script has been executed!")
 end)
 
--- Admin Commander Button
 Library:CreateButton(scriptTab, "Admin Commander (SPAWN ALL THINGS)", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"))()
     print("✅ Admin Commander - Script has been executed!")
