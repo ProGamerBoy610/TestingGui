@@ -507,7 +507,7 @@ local function stopAutoPressing()
 end
 
 -- Auto Proximity Toggle Control
-Library:CreateToggle(mainTab, "Auto Proximity", false, function(value)
+Library:CreateToggle(autoTab, "Auto Proximity", false, function(value)
     if value then
         startAutoPressing()
     else
