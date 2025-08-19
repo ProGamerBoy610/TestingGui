@@ -14,9 +14,10 @@ gui.Name = "ScriptHub"
 gui.ResetOnSpawn = false
 gui.Parent = playerGui
 
--- Main Frame (compact size)
+-- Auto-calculate frame height based on number of scripts
+local frameHeight = 35 + (#scripts * 30) -- 35 for header, 30 per script
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 200, 0, 160)
+frame.Size = UDim2.new(0, 200, 0, frameHeight)
 frame.Position = UDim2.new(0, 20, 0, 20)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.BorderSizePixel = 0
@@ -74,12 +75,18 @@ container.Position = UDim2.new(0, 8, 0, 30)
 container.BackgroundTransparency = 1
 container.Parent = frame
 
--- Scripts data
+-- ═══════════════════════════════════════════════════════════════
+-- ADD YOUR SCRIPTS HERE - Just add a new line with name and URL!
+-- ═══════════════════════════════════════════════════════════════
 local scripts = {
-    {name = "Dex Explorer", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()'},
-    {name = "Infinite Yield", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()'},
-    {name = "RemoteSpy", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"))()'},
-    {name = "Rayfield UI", code = 'local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() Rayfield:CreateWindow({Name = "Rayfield Example", LoadingTitle = "Rayfield Interface Suite", LoadingSubtitle = "by Sirius"})'}
+    {name = "Dex Explorer", url = "https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"},
+    {name = "Infinite Yield", url = "https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"},
+    {name = "RemoteSpy", url = "https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"},
+    {name = "Rayfield UI", url = "https://sirius.menu/rayfield"},
+    
+    -- ADD MORE SCRIPTS BELOW (copy the format above):
+    -- {name = "Script Name", url = "https://your-script-url-here"},
+    -- {name = "Another Script", url = "https://another-url-here"},
 }
 
 -- Create buttons
@@ -113,7 +120,7 @@ for i, script in ipairs(scripts) do
     -- Execute script on click
     btn.MouseButton1Click:Connect(function()
         local success, error = pcall(function()
-            loadstring(script.code)()
+            loadstring(game:HttpGet(script.url))()
         end)
         if not success then
             warn("Script execution failed:", error)
