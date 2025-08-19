@@ -21,7 +21,7 @@ Library:CreateButton(infoTab, "Copy Discord Link", function()
     print("📋 Discord invite copied to clipboard!")
 end)
 Library:CreateLabel(infoTab, "BECOME A TESTER")
-Library:CreateLabel(infoTab, "Join Discord For Testing New Scripts For Free And Keyless")
+Library:CreateTextLabel(infoTab, "Join Discord For Testing New Scripts For Free And Keyless")
 
 
 -- AUTO FARM
@@ -507,7 +507,7 @@ local function stopAutoPressing()
 end
 
 -- Auto Proximity Toggle Control
-Library:CreateToggle(autoTab, "Collect more", false, function(value)
+Library:CreateToggle(mainTab, "Auto Proximity", false, function(value)
     if value then
         startAutoPressing()
     else
@@ -818,7 +818,7 @@ end)
 
 -- SCRIPT TAB MORE SCRIPTS
 
-Library:CreateLabel(selsedTab, "MORE SCRIPTS")
+Library:CreateLabel(scriptTab, "MORE SCRIPTS")
 -- Jandel Chat System Button
 Library:CreateButton(scriptTab, "Jandel Chat System", function()
     loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
