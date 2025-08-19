@@ -1,4 +1,5 @@
-print("HI")
+-- FRYZER HUB Key System GUI
+-- Easy to edit: Change the correctKey variable and the URLs below
 
 local correctKey = "YOUR_CORRECT_KEY_HERE"  -- Edit this to your actual key
 local getKeyUrl = "https://example.com/getkey"  -- Edit this to the URL where users can get the key
@@ -97,35 +98,11 @@ local function CreateButton(name, posY, callback)
     return Button
 end
 
--- Get Key Button
-CreateButton("Get Key", 150, function()
-    setclipboard(getKeyUrl)
-    -- Optional: Add a notification or something, but keeping simple
-end)
-
--- Check Key Button
-CreateButton("Check Key", 190, function()
-    if KeyBox.Text == correctKey then
-        -- Wait 10-15 seconds to "load"
-        wait(10 + math.random(5))
-        -- Destroy GUI
-        ScreenGui:Destroy()
-        -- Run the main code below
-        -- MAIN CODE STARTS HERE
-    else
-        -- Wrong key, maybe shake or change color, but simple for now
-        KeyBox.Text = ""
-        KeyBox.PlaceholderText = "Invalid Key"
-        wait(1)
-        KeyBox.PlaceholderText = "Enter Key Here"
-    end
-end)
-
--- Join Discord Button
-CreateButton("Join Discord", 230, function()
-    setclipboard(discordInvite)
-end)
-
+-- Function to run the main script
+local function RunMainScript()
+    -- Destroy GUI
+    ScreenGui:Destroy()
+    
 local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
 
 local infoTab = Library:CreateTab("INFO")
@@ -943,3 +920,31 @@ end)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
 
 return Library
+
+end
+
+-- Get Key Button
+CreateButton("Get Key", 150, function()
+    setclipboard(getKeyUrl)
+end)
+
+-- Check Key Button
+CreateButton("Check Key", 190, function()
+    if KeyBox.Text == correctKey then
+        -- Wait 10-15 seconds to "load"
+        wait(10 + math.random(5))
+        -- Run the main script
+        RunMainScript()
+    else
+        -- Wrong key feedback
+        KeyBox.Text = ""
+        KeyBox.PlaceholderText = "Invalid Key"
+        wait(1)
+        KeyBox.PlaceholderText = "Enter Key Here"
+    end
+end)
+
+-- Join Discord Button
+CreateButton("Join Discord", 230, function()
+    setclipboard(discordInvite)
+end)
