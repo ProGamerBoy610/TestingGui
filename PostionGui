@@ -2,8 +2,9 @@ local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGa
 
 local infoTab = Library:CreateTab("INFO")
 local autoTab = Library:CreateTab("AUTO FARM")
-local guiTab = Library:CreateTab("SHOPS")
+local guiTab = Library:CreateTab("SCREEN")
 local selsedTab = Library:CreateTab("BUY&SELL")
+local scriptTab = Library:CreateTab("SCRIPTS")
 
 -- INFO Tab Components
 Library:CreateLabel(infoTab, "GROW A GARDEN v2.77")
@@ -19,41 +20,59 @@ Library:CreateButton(infoTab, "Copy Discord Link", function()
     setclipboard(discordUrl)
     print("📋 Discord invite copied to clipboard!")
 end)
+Library:CreateLabel(infoTab, "BECOME A TESTER")
+Library:CreateLabel(infoTab, "Join Discord For Testing New Scripts For Free And Keyless")
 
--- Button Component
-Library:CreateButton(infoTab, "Features Name", function() 
-    print("✅features working!") 
-end)
-
--- Toggle Component
-Library:CreateToggle(infoTab, "Enable Toggle", true, function(value) 
-    print("📢", value and "ON" or "OFF") 
-end)
-
--- Slider Component
-Library:CreateSlider(infoTab, "Slider", 50, 150, 100, function(value) 
-    print("📏 UI Scale:", value .. "%") 
-end)
-
--- Dropdown Component
-Library:CreateDropdown(infoTab, "Theme", {"Dark", "Light", "Blue", "Red"}, "Dark", function(value) 
-    print("🎨 Theme selected:", value) 
-end)
-
--- Auto Farm Toggle
-Library:CreateToggle(infoTab, "Auto Farm", false, function(value)
-    print("🌱 Auto Farm:", value and "ENABLED" or "DISABLED")
-end)
-
--- Farm Duration Slider
-Library:CreateSlider(infoTab, "Farm Duration", 10, 120, 30, function(value)
-    print("⏱️ Farm Duration:", value .. " seconds")
-end)
 
 -- AUTO FARM
 
 Library:CreateLabel(autoTab, "AUTO FARM")
 Library:CreateTextLabel(autoTab, "It will find your garden and collect fruit and sell")
+
+-- Anti-AFK Script Variables
+local antiAfkEnabled = false
+local antiAfkConnection = nil
+
+-- Function to start Anti-AFK
+local function startAntiAfk()
+    if antiAfkEnabled then return end
+    
+    antiAfkEnabled = true
+    print("✅ Anti-AFK Started")
+    
+    local VirtualUser = game:GetService("VirtualUser")
+    local Players = game:GetService("Players")
+    local player = Players.LocalPlayer
+    
+    -- Connect to the Idled event
+    antiAfkConnection = player.Idled:Connect(function()
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+        print("🔄 Anti-AFK: Prevented idle kick")
+    end)
+end
+
+-- Function to stop Anti-AFK
+local function stopAntiAfk()
+    if not antiAfkEnabled then return end
+    
+    antiAfkEnabled = false
+    print("❌ Anti-AFK Stopped")
+    
+    if antiAfkConnection then
+        antiAfkConnection:Disconnect()
+        antiAfkConnection = nil
+    end
+end
+
+-- Anti-AFK Toggle
+Library:CreateToggle(autoTab, "Anti-AFK", false, function(value)
+    if value then
+        startAntiAfk()
+    else
+        stopAntiAfk()
+    end
+end)
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -496,6 +515,7 @@ Library:CreateToggle(autoTab, "Collect more", false, function(value)
     end
 end)
 
+-- SHOP
 Library:CreateLabel(guiTab, "SHOWS THE SHOP ")
 
 local Players = game:GetService("Players")
@@ -536,6 +556,46 @@ end)
 -- Cosmetic Shop Toggle
 Library:CreateToggle(guiTab, "Cosmetic Shop", false, function(value)
     toggleGUI("CosmeticShop_UI", value)
+end)
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- Teleport locations
+local locations = {
+    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
+    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
+    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
+    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
+    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
+    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
+    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
+    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
+    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
+    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
+}
+
+local selectedLocation = "Event Area"
+
+-- Dropdown to select teleport location
+Library:CreateDropdown(guiTab, "Select Location", 
+    {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"}, 
+    "Event Area", 
+    function(value)
+        selectedLocation = value
+        print("📍 Location selected:", value)
+    end
+)
+
+-- Teleport Button
+Library:CreateButton(guiTab, "Teleport", function()
+    local pos = locations[selectedLocation]
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
+        print("✅ Teleported to " .. selectedLocation)
+    else
+        print("❌ Teleport Failed - Try Again")
+    end
 end)
 
 Library:CreateLabel(selsedTab, "SEEDS")
@@ -614,7 +674,174 @@ Library:CreateButton(selsedTab, "Buy Selected Seeds", function()
     buySelectedSeeds()
 end)
 
-Library:CreateLabel(selsedTab, "GROW A GARDEN v2.77")
+Library:CreateLabel(selsedTab, "SELL")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- Function to sell all inventory
+local function sellAllInventory()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- Save the player's current position
+    local originalPosition = humanoidRootPart.CFrame
+
+    -- Target coordinates (adjusted to be closer to sell area)
+    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
+
+    -- Teleport the player
+    humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    
+    -- Wait longer for the game to register the position
+    wait(0.5)
+    
+    -- Try multiple times to fire the remote event
+    for i = 1, 3 do
+        pcall(function()
+            game:GetService("ReplicatedStorage").GameEvents.Sell_Inventory:FireServer()
+        end)
+        wait(0.2)
+    end
+
+    -- Wait longer before teleporting back
+    wait(2)
+    
+    -- Teleport back to original position
+    humanoidRootPart.CFrame = originalPosition
+end
+
+-- Function to sell item in hand
+local function sellItem()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+    
+    -- Save the player's current position
+    local originalPosition = humanoidRootPart.CFrame
+
+    -- Target coordinates (adjusted to be closer to sell area)
+    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
+
+    -- Teleport the player
+    humanoidRootPart.CFrame = CFrame.new(targetPosition)
+    
+    -- Wait longer for the game to register the position
+    wait(0.5)
+    
+    -- Try multiple times to fire the remote event
+    for i = 1, 3 do
+        pcall(function()
+            game:GetService("ReplicatedStorage").GameEvents.Sell_Item:FireServer()
+        end)
+        wait(0.2)
+    end
+
+    -- Wait longer before teleporting back
+    wait(2)
+    
+    -- Teleport back to original position
+    humanoidRootPart.CFrame = originalPosition
+end
+
+-- Sell All Button
+Library:CreateButton(selsedTab, "Sell All", function()
+    sellAllInventory()
+    print("💰 Sell All - Got the money?")
+end)
+
+-- Sell Item Button
+Library:CreateButton(selsedTab, "Sell Item", function()
+    sellItem()
+    print("💰 Sell Item - Got the money?")
+end)
+
+Library:CreateLabel(selsedTab, "BUTTONS")
+
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local originalStates = {}
+
+-- Function to enable Teleport GUI
+local function enableGUI()
+    pcall(function()
+        local playerGui = player:WaitForChild("PlayerGui")
+        local teleportUI = playerGui:WaitForChild("Teleport_UI")
+        local frame = teleportUI:WaitForChild("Frame")
+        local gearFrame = frame:WaitForChild("Gear")
+        local petsFrame = frame:WaitForChild("Pets")
+
+        -- Store original states
+        originalStates = {
+            teleportUI = teleportUI.Enabled,  -- ScreenGui uses Enabled, not Visible
+            frame = frame.Visible,
+            gear = gearFrame.Visible,
+            pets = petsFrame.Visible,
+        }
+
+        -- Enable all GUI elements
+        teleportUI.Enabled = true  -- ScreenGui property
+        frame.Visible = true
+        gearFrame.Visible = true
+        petsFrame.Visible = true
+        
+        print("✅ Teleport GUI enabled")
+    end)
+end
+
+-- Function to disable Teleport GUI
+local function disableGUI()
+    pcall(function()
+        local playerGui = player:WaitForChild("PlayerGui")
+        local teleportUI = playerGui:WaitForChild("Teleport_UI")
+        local frame = teleportUI:WaitForChild("Frame")
+        local gearFrame = frame:WaitForChild("Gear")
+        local petsFrame = frame:WaitForChild("Pets")
+
+        -- Restore original states
+        teleportUI.Enabled = originalStates.teleportUI or false
+        frame.Visible = originalStates.frame or false
+        gearFrame.Visible = originalStates.gear or false
+        petsFrame.Visible = originalStates.pets or false
+        
+        print("❌ Teleport GUI disabled")
+    end)
+end
+
+-- Teleport GUI Toggle
+Library:CreateToggle(selsedTab, "Enable Teleport GUI", false, function(state)
+    if state then
+        enableGUI()
+    else
+        disableGUI()
+    end
+end)
+
+-- SCRIPT TAB MORE SCRIPTS
+
+Library:CreateLabel(selsedTab, "MORE SCRIPTS")
+-- Jandel Chat System Button
+Library:CreateButton(scriptTab, "Jandel Chat System", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
+    print("✅ Jandel Chat System - Script has been executed!")
+end)
+
+-- Pet Dupers Button
+Library:CreateButton(scriptTab, "Pet Dupers (Can't Gift)", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
+    print("✅ Pet Dupers - Script has been executed!")
+end)
+
+-- Item Stealer Button
+Library:CreateButton(scriptTab, "Item Stealer", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
+    print("✅ Item Stealer - Script has been executed!")
+end)
+
+-- Admin Commander Button
+Library:CreateButton(scriptTab, "Admin Commander (SPAWN ALL THINGS)", function()
+    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"))()
+    print("✅ Admin Commander - Script has been executed!")
+end)
 
 -- Don't remove this
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
