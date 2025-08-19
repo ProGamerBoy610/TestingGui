@@ -1,816 +1,153 @@
-local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/maintop.lua"))()
-
-local infoTab = Library:CreateTab("INFO")
-local autoTab = Library:CreateTab("AUTO FARM")
-local guiTab = Library:CreateTab("SCREEN")
-local selsedTab = Library:CreateTab("BUY&SELL")
-local scriptTab = Library:CreateTab("SCRIPTS")
-
--- INFO Tab Components
-Library:CreateLabel(infoTab, "GROW A GARDEN v2.77")
+-- Minimal Script Hub GUI for Executors
+-- Compact draggable interface with popular scripts
 
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-Library:CreateTextLabel(infoTab, "Welcome, " .. LocalPlayer.Name)
-Library:CreateTextLabel(infoTab, "Version - 2.77")
-Library:CreateLabel(infoTab, "Join Discord For More Scripts")
-Library:CreateButton(infoTab, "Copy Discord Link", function()
-    local discordUrl = "https://discord.gg/rpE4Eet7"
-    setclipboard(discordUrl)
-    print("📋 Discord invite copied to clipboard!")
-end)
-Library:CreateLabel(infoTab, "BECOME A TESTER")
-Library:CreateTextLabel(infoTab, "Join Discord For Testing New Scripts For Free And Keyless")
-
--- AUTO FARM
-Library:CreateLabel(autoTab, "AUTO FARM")
-Library:CreateTextLabel(autoTab, "It will find your garden and collect fruit and sell")
-
--- Anti-AFK Script Variables
-local antiAfkEnabled = false
-local antiAfkConnection = nil
-
--- Function to start Anti-AFK
-local function startAntiAfk()
-    if antiAfkEnabled then return end
-    
-    antiAfkEnabled = true
-    print("✅ Anti-AFK Started")
-    
-    local VirtualUser = game:GetService("VirtualUser")
-    local Players = game:GetService("Players")
-    local player = Players.LocalPlayer
-    
-    -- Connect to the Idled event
-    antiAfkConnection = player.Idled:Connect(function()
-        VirtualUser:CaptureController()
-        VirtualUser:ClickButton2(Vector2.new())
-        print("🔄 Anti-AFK: Prevented idle kick")
-    end)
-end
-
--- Function to stop Anti-AFK
-local function stopAntiAfk()
-    if not antiAfkEnabled then return end
-    
-    antiAfkEnabled = false
-    print("❌ Anti-AFK Stopped")
-    
-    if antiAfkConnection then
-        antiAfkConnection:Disconnect()
-        antiAfkConnection = nil
-    end
-end
-
--- Anti-AFK Toggle
-Library:CreateToggle(autoTab, "Anti-AFK", false, function(value)
-    if value then
-        startAntiAfk()
-    else
-        stopAntiAfk()
-    end
-end)
-
-local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
-local RunService = game:GetService("RunService")
 
-local player = Players.LocalPlayer
-
--- Configuration (now controlled by UI)
-local FARM_ENABLED = false -- Default to off, controlled by toggle
-local FARM_DURATION = 30 -- Controlled by slider
-local WAIT_DURATION = 5
-local TELEPORT_SPEED = 0.3
-
--- Variables
-local playerFarm = nil
-local currentFarmingConnection = nil
-local autoFarmRunning = false
-
-print("🌱 Auto Farm System Loaded...")
-
--- Add controls to your existing hub
-Library:CreateToggle(autoTab, "Auto Farm", false, function(value)
-    FARM_ENABLED = value
-    if value then
-        print("✅ Auto Farm Enabled")
-        if not autoFarmRunning then
-            startTimedAutoFarm()
-        end
-    else
-        print("❌ Auto Farm Disabled")
-        stopTimedAutoFarm()
-    end
-end)
-
-Library:CreateSlider(autoTab, "Farm Duration (seconds)", 10, 120, 30, function(value)
-    FARM_DURATION = value
-    print("⏱️ Farm Duration set to:", value .. " seconds")
-end)
-
--- Function to teleport smoothly
-local function teleportTo(targetPosition)
-    local character = player.Character
-    if not character then return false end
-    
-    local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
-    if not humanoidRootPart then return false end
-    
-    local tweenInfo = TweenInfo.new(TELEPORT_SPEED, Enum.EasingStyle.Quart, Enum.EasingDirection.Out)
-    local tween = TweenService:Create(humanoidRootPart, tweenInfo, {CFrame = targetPosition})
-    
-    tween:Play()
-    tween.Completed:Wait()
-    return true
-end
-
--- Function to click proximity prompt
-local function clickProximityPrompt(prompt)
-    if prompt and prompt:IsA("ProximityPrompt") then
-        local success = pcall(function()
-            fireproximityprompt(prompt)
-        end)
-        return success
-    end
-    return false
-end
-
--- Function to find the local player's farm
-local function findPlayerFarm()
-    local workspace = game:GetService("Workspace")
-    
-    print("🔍 Searching for " .. player.Name .. "'s farm...")
-    
-    local farmFolder = workspace:FindFirstChild("Farm")
-    if not farmFolder then
-        warn("❌ Farm folder not found in workspace")
-        return nil
-    end
-    
-    for _, farm in pairs(farmFolder:GetChildren()) do
-        if farm.Name == "Farm" then
-            local success, result = pcall(function()
-                local important = farm:FindFirstChild("Important")
-                if important then
-                    local data = important:FindFirstChild("Data")
-                    if data then
-                        local owner = data:FindFirstChild("Owner")
-                        if owner and owner.Value == player.Name then
-                            return farm
-                        end
-                    end
-                end
-                return nil
-            end)
-            
-            if success and result then
-                print("✅ Found " .. player.Name .. "'s farm!")
-                return result
-            end
-        end
-    end
-    
-    warn("❌ Could not find farm owned by: " .. player.Name)
-    return nil
-end
-
--- Function to get all plants in the player's farm
-local function getPlantsInFarm(farm)
-    if not farm then return {} end
-    
-    local plants = {}
-    
-    pcall(function()
-        local important = farm:FindFirstChild("Important")
-        if important then
-            local plantsPhysical = important:FindFirstChild("Plants_Physical")
-            if plantsPhysical then
-                for _, plant in pairs(plantsPhysical:GetChildren()) do
-                    if plant:IsA("Model") then
-                        for _, child in pairs(plant:GetDescendants()) do
-                            if child:IsA("ProximityPrompt") then
-                                table.insert(plants, {
-                                    model = plant,
-                                    prompt = child,
-                                    name = plant.Name
-                                })
-                                break
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end)
-    
-    return plants
-end
-
--- Function to farm for specified duration
-local function farmForDuration()
-    if not playerFarm then
-        print("❌ No farm found, skipping farming phase")
-        return
-    end
-    
-    print("🌱 === FARMING PHASE (" .. FARM_DURATION .. " seconds) ===")
-    local farmingStartTime = tick()
-    local plantsHarvested = 0
-    
-    while (tick() - farmingStartTime) < FARM_DURATION and FARM_ENABLED do
-        local plants = getPlantsInFarm(playerFarm)
-        
-        if #plants == 0 then
-            print("🔍 No plants found, waiting for plants to grow...")
-            wait(2)
-        else
-            print("🌾 Found " .. #plants .. " plants to harvest")
-            
-            for _, plantData in pairs(plants) do
-                if not FARM_ENABLED then break end
-                
-                if (tick() - farmingStartTime) >= FARM_DURATION then
-                    print("⏰ " .. FARM_DURATION .. " second farming time reached")
-                    break
-                end
-                
-                local plant = plantData.model
-                local prompt = plantData.prompt
-                
-                if plant and plant.Parent and prompt and prompt.Parent then
-                    local plantPosition = plant:GetModelCFrame()
-                    local plantSize = plant:GetExtentsSize()
-                    local plantHeight = plantSize.Y / 2 + 3
-                    
-                    print("🌱 Harvesting " .. plantData.name .. " (" .. (plantsHarvested + 1) .. ")")
-                    
-                    if teleportTo(plantPosition + Vector3.new(0, plantHeight, 0)) then
-                        wait(0.5)
-                        
-                        if clickProximityPrompt(prompt) then
-                            plantsHarvested = plantsHarvested + 1
-                            print("✅ Harvested " .. plantData.name)
-                        else
-                            print("⚠️ Failed to harvest " .. plantData.name)
-                        end
-                    end
-                    
-                    wait(0.3)
-                end
-            end
-            
-            wait(1)
-        end
-    end
-    
-    local farmingTime = tick() - farmingStartTime
-    print("📊 Farming phase complete!")
-    print("⏱️ Farmed for: " .. math.floor(farmingTime) .. " seconds")
-    print("🌱 Plants harvested: " .. plantsHarvested)
-end
-
--- Function to wait and sell inventory
-local function waitAndSell()
-    print("⏳ === WAITING PHASE (" .. WAIT_DURATION .. " seconds) + SELLING ===")
-    local waitStartTime = tick()
-    
-    local sellLocation = CFrame.new(86.58584594726562, 2.999999761581421, 0.426784485578537)
-    print("💰 Teleporting to sell location...")
-    
-    if teleportTo(sellLocation) then
-        wait(1)
-        
-        local success = pcall(function()
-            game:GetService("ReplicatedStorage"):WaitForChild("GameEvents"):WaitForChild("Sell_Inventory"):FireServer()
-            print("✅ Sell_Inventory remote fired!")
-        end)
-        
-        if not success then
-            warn("❌ Failed to fire Sell_Inventory remote")
-        end
-    else
-        warn("❌ Failed to teleport to sell location")
-    end
-    
-    while (tick() - waitStartTime) < WAIT_DURATION and FARM_ENABLED do
-        local remainingTime = WAIT_DURATION - (tick() - waitStartTime)
-        if remainingTime > 0 then
-            print("💤 Waiting at sell location... " .. math.ceil(remainingTime) .. " seconds remaining")
-            wait(3)
-        end
-    end
-    
-    print("✅ Wait phase complete!")
-end
-
--- Main farming loop
-function startTimedAutoFarm()
-    if autoFarmRunning then return end
-    
-    print("🚀 Starting Timed Auto Farm System...")
-    print("⏱️ Cycle: " .. FARM_DURATION .. "s Farming → " .. WAIT_DURATION .. "s Waiting → Repeat")
-    
-    autoFarmRunning = true
-    
-    playerFarm = findPlayerFarm()
-    
-    if not playerFarm then
-        warn("❌ Cannot start auto farm - player farm not found")
-        autoFarmRunning = false
-        return
-    end
-    
-    print("🏡 Player farm located! Starting timed cycles...")
-    
-    local cycleCount = 0
-    
-    spawn(function()
-        while FARM_ENABLED and autoFarmRunning do
-            cycleCount = cycleCount + 1
-            print("🔄 === CYCLE " .. cycleCount .. " START ===")
-            
-            if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-                print("⚠️ Waiting for character to spawn...")
-                player.CharacterAdded:Wait()
-                wait(2)
-            end
-            
-            local success = pcall(function()
-                farmForDuration()
-            end)
-            
-            if not success then
-                warn("⚠️ Error during farming phase")
-            end
-            
-            if not FARM_ENABLED or not autoFarmRunning then break end
-            
-            success = pcall(function()
-                waitAndSell()
-            end)
-            
-            if not success then
-                warn("⚠️ Error during waiting phase")
-            end
-            
-            print("✅ === CYCLE " .. cycleCount .. " COMPLETE ===")
-            print("")
-        end
-        
-        autoFarmRunning = false
-        print("🛑 Timed Auto Farm stopped!")
-    end)
-end
-
--- Function to stop the auto farm
-function stopTimedAutoFarm()
-    FARM_ENABLED = false
-    autoFarmRunning = false
-    
-    if currentFarmingConnection then
-        currentFarmingConnection:Disconnect()
-        currentFarmingConnection = nil
-    end
-    
-    print("🛑 Timed Auto Farm stopped!")
-end
-
--- Global functions for external control (optional)
-_G.StopTimedAutoFarm = stopTimedAutoFarm
-_G.StartTimedAutoFarm = startTimedAutoFarm
-
-_G.GetPlayerFarm = function()
-    return playerFarm
-end
-
-_G.FindPlayerFarmAgain = function()
-    playerFarm = findPlayerFarm()
-    return playerFarm
-end
-
--- Revised "Collect More" Functionality
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-
--- Variables for auto-pressing
-local isRunning = false
-local autoConnection = nil
-local proximityPrompts = {}
-
--- Function to find all proximity prompts in the game
-local function findProximityPrompts()
-    proximityPrompts = {}
-    local count = 0
-    
-    pcall(function()
-        for _, obj in pairs(workspace:GetDescendants()) do
-            if obj:IsA("ProximityPrompt") and obj.Parent and obj.Enabled then
-                table.insert(proximityPrompts, obj)
-                count = count + 1
-            end
-        end
-    end)
-    
-    print("🔍 Found " .. count .. " valid proximity prompts")
-    return count
-end
-
--- Function to get the closest proximity prompt to the player
-local function getClosestProximityPrompt()
-    if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-        print("⚠️ No character or HumanoidRootPart found")
-        return nil
-    end
-    
-    local playerPosition = player.Character.HumanoidRootPart.Position
-    local closestPrompt = nil
-    local closestDistance = math.huge
-    
-    for _, prompt in pairs(proximityPrompts) do
-        if prompt and prompt.Parent and prompt.Enabled then
-            local success, promptPosition = pcall(function()
-                return prompt.Parent.Position
-            end)
-            
-            if success and promptPosition then
-                local distance = (playerPosition - promptPosition).Magnitude
-                if distance <= prompt.MaxActivationDistance and distance < closestDistance then
-                    closestDistance = distance
-                    closestPrompt = prompt
-                end
-            else
-                print("⚠️ Failed to get position for prompt: " .. tostring(prompt))
-            end
-        end
-    end
-    
-    if closestPrompt then
-        print("📍 Closest prompt found at distance: " .. closestDistance)
-    else
-        print("⚠️ No valid proximity prompt found within range")
-    end
-    
-    return closestPrompt
-end
-
--- Function to start auto-pressing
-local function startAutoPressing()
-    if isRunning then return end
-    
-    isRunning = true
-    print("✅ Auto Proximity Started")
-    
-    -- Initial prompt search
-    local promptCount = findProximityPrompts()
-    print("Found " .. promptCount .. " proximity prompts")
-    
-    -- Start the auto-pressing loop
-    autoConnection = RunService.Heartbeat:Connect(function()
-        -- Refresh prompts every 0.5 seconds
-        if tick() % 0.5 < 0.01 then
-            findProximityPrompts()
-        end
-        
-        local closestPrompt = getClosestProximityPrompt()
-        
-        if closestPrompt then
-            local success = pcall(function()
-                fireproximityprompt(closestPrompt)
-                print("✅ Triggered proximity prompt: " .. tostring(closestPrompt))
-            end)
-            if not success then
-                print("⚠️ Failed to trigger proximity prompt")
-            end
-            -- Small delay to respect game cooldowns
-            wait(0.1)
-        end
-    end)
-end
-
--- Function to stop auto-pressing
-local function stopAutoPressing()
-    if not isRunning then return end
-    
-    isRunning = false
-    print("❌ Auto Proximity Stopped")
-    
-    if autoConnection then
-        autoConnection:Disconnect()
-        autoConnection = nil
-    end
-end
-
--- Auto Proximity Toggle Control
-Library:CreateToggle(autoTab, "Collect More", false, function(value)
-    if value then
-        startAutoPressing()
-    else
-        stopAutoPressing()
-    end
-end)
-
--- SHOP
-Library:CreateLabel(guiTab, "SHOWS THE SHOP ")
-
-local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
 
--- Function to toggle GUI visibility
-local function toggleGUI(guiName, enabled)
-    local gui = playerGui:FindFirstChild(guiName)
-    if gui then
-        gui.Enabled = enabled
-        print("🔧 " .. guiName .. ":", enabled and "ENABLED" or "DISABLED")
-    else
-        warn("❌ GUI not found: " .. guiName)
-    end
-end
+-- Create ScreenGui
+local gui = Instance.new("ScreenGui")
+gui.Name = "ScriptHub"
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
 
--- Event Shop Toggle
-Library:CreateToggle(guiTab, "Event Shop", false, function(value)
-    toggleGUI("EventShop_UI", value)
-end)
+-- Main Frame (compact size)
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 200, 0, 160)
+frame.Position = UDim2.new(0, 20, 0, 20)
+frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+frame.BorderSizePixel = 0
+frame.Parent = gui
 
--- Pet Shop Toggle  
-Library:CreateToggle(guiTab, "Pet Shop", false, function(value)
-    toggleGUI("PetShop_UI", value)
-end)
+-- Corner radius
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 8)
+corner.Parent = frame
 
--- Seed Shop Toggle
-Library:CreateToggle(guiTab, "Seed Shop", false, function(value)
-    toggleGUI("Seed_Shop", value)
-end)
+-- Title bar for dragging
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 25)
+titleBar.Position = UDim2.new(0, 0, 0, 0)
+titleBar.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = frame
 
--- Gear Shop Toggle
-Library:CreateToggle(guiTab, "Gear Shop", false, function(value)
-    toggleGUI("Gear_Shop", value)
-end)
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 8)
+titleCorner.Parent = titleBar
 
--- Cosmetic Shop Toggle
-Library:CreateToggle(guiTab, "Cosmetic Shop", false, function(value)
-    toggleGUI("CosmeticShop_UI", value)
-end)
+-- Title text
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -30, 1, 0)
+title.Position = UDim2.new(0, 8, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Script Hub"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextSize = 12
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Font = Enum.Font.Gotham
+title.Parent = titleBar
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+-- Close button
+local closeBtn = Instance.new("TextButton")
+closeBtn.Size = UDim2.new(0, 20, 0, 20)
+closeBtn.Position = UDim2.new(1, -22, 0, 2.5)
+closeBtn.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
+closeBtn.BorderSizePixel = 0
+closeBtn.Text = "×"
+closeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+closeBtn.TextSize = 14
+closeBtn.Font = Enum.Font.GothamBold
+closeBtn.Parent = titleBar
 
--- Teleport locations
-local locations = {
-    ["Event Area"] = Vector3.new(-119.69, 3.00, -14.97),
-    ["Gear Shop"] = Vector3.new(-285.27, 3.00, -13.62),
-    ["Pet Eggs Shop"] = Vector3.new(-287.34, 3.00, -0.91),
-    ["Cosmetics Shop"] = Vector3.new(-286.11, 3.00, -24.29),
-    ["Garden 1"] = Vector3.new(33.44, 3.00, 38.34),
-    ["Garden 2"] = Vector3.new(-100.65, 3.00, 38.08),
-    ["Garden 3"] = Vector3.new(-237.85, 3.00, 38.51),
-    ["Garden 4"] = Vector3.new(34.44, 3.00, -65.85),
-    ["Garden 5"] = Vector3.new(-98.96, 3.00, -65.37),
-    ["Garden 6"] = Vector3.new(-235.72, 3.00, -70.17)
+local closeCorner = Instance.new("UICorner")
+closeCorner.CornerRadius = UDim.new(0, 3)
+closeCorner.Parent = closeBtn
+
+-- Script buttons container
+local container = Instance.new("Frame")
+container.Size = UDim2.new(1, -16, 1, -35)
+container.Position = UDim2.new(0, 8, 0, 30)
+container.BackgroundTransparency = 1
+container.Parent = frame
+
+-- Scripts data
+local scripts = {
+    {name = "Dex Explorer", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/dex.lua"))()'},
+    {name = "Infinite Yield", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/EdgeIY/infiniteyield/master/source"))()'},
+    {name = "RemoteSpy", code = 'loadstring(game:HttpGet("https://raw.githubusercontent.com/infyiff/backup/main/SimpleSpyV3/main.lua"))()'},
+    {name = "Rayfield UI", code = 'local Rayfield = loadstring(game:HttpGet("https://sirius.menu/rayfield"))() Rayfield:CreateWindow({Name = "Rayfield Example", LoadingTitle = "Rayfield Interface Suite", LoadingSubtitle = "by Sirius"})'}
 }
 
-local selectedLocation = "Event Area"
-
--- Dropdown to select teleport location
-Library:CreateDropdown(guiTab, "Select Location", 
-    {"Event Area", "Gear Shop", "Pet Eggs Shop", "Cosmetics Shop", "Garden 1", "Garden 2", "Garden 3", "Garden 4", "Garden 5", "Garden 6"}, 
-    "Event Area", 
-    function(value)
-        selectedLocation = value
-        print("📍 Location selected:", value)
-    end
-)
-
--- Teleport Button
-Library:CreateButton(guiTab, "Teleport", function()
-    local pos = locations[selectedLocation]
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(pos)
-        print("✅ Teleported to " .. selectedLocation)
-    else
-        print("❌ Teleport Failed - Try Again")
-    end
-end)
-
-Library:CreateLabel(selsedTab, "SEEDS")
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local BuySeedStock = ReplicatedStorage:WaitForChild("GameEvents"):WaitForChild("BuySeedStock")
-
-local seeds = {
-    "Apple",
-    "Bamboo",
-    "Beanstalk",
-    "Blueberry",
-    "Burning Bud",
-    "Cacao",
-    "Cactus",
-    "Carrot",
-    "Coconut",
-    "Corn",
-    "Daffodil",
-    "Dragon Fruit",
-    "Elder Strawberry",
-    "Ember Lily",
-    "Giant Pinecone",
-    "Grape",
-    "Mango",
-    "Mushroom",
-    "Orange Tulip",
-    "Pepper",
-    "Pumpkin",
-    "Strawberry",
-    "Sugar Apple",
-    "Tomato",
-    "Watermelon"
-}
-
-local dropdownOptions = {"ALL"}
-for _, seed in ipairs(seeds) do
-    table.insert(dropdownOptions, seed)
-end
-
-local selectedSeed = "ALL"
-local toggleEnabled = false
-local buyingSeeds = false
-
-local function buySelectedSeeds()
-    if buyingSeeds then return end
-    buyingSeeds = true
+-- Create buttons
+for i, script in ipairs(scripts) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 25)
+    btn.Position = UDim2.new(0, 0, 0, (i-1) * 30)
+    btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    btn.BorderSizePixel = 0
+    btn.Text = script.name
+    btn.TextColor3 = Color3.fromRGB(220, 220, 220)
+    btn.TextSize = 11
+    btn.Font = Enum.Font.Gotham
+    btn.Parent = container
     
-    if selectedSeed == "ALL" then
-        for _, seed in ipairs(seeds) do
-            BuySeedStock:FireServer(seed)
-            task.wait(0.1)
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 4)
+    btnCorner.Parent = btn
+    
+    -- Button animations
+    btn.MouseEnter:Connect(function()
+        local tween = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(70, 70, 70)})
+        tween:Play()
+    end)
+    
+    btn.MouseLeave:Connect(function()
+        local tween = TweenService:Create(btn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(50, 50, 50)})
+        tween:Play()
+    end)
+    
+    -- Execute script on click
+    btn.MouseButton1Click:Connect(function()
+        local success, error = pcall(function()
+            loadstring(script.code)()
+        end)
+        if not success then
+            warn("Script execution failed:", error)
         end
-    else
-        BuySeedStock:FireServer(selectedSeed)
-        task.wait(0.1)
-    end
-    
-    buyingSeeds = false
-end
-
--- Seed Selection Dropdown
-Library:CreateDropdown(selsedTab, "Select Seeds to Buy", dropdownOptions, "ALL", function(value)
-    selectedSeed = value
-    print("🌱 Selected seed:", value)
-end)
-
--- Manual Buy Button
-Library:CreateButton(selsedTab, "Buy Selected Seeds", function()
-    print("🛒 Buying seeds...")
-    buySelectedSeeds()
-end)
-
-Library:CreateLabel(selsedTab, "SELL")
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- Function to sell all inventory
-local function sellAllInventory()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    local originalPosition = humanoidRootPart.CFrame
-    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
-
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    wait(0.5)
-    
-    for i = 1, 3 do
-        pcall(function()
-            game:GetService("ReplicatedStorage").GameEvents.Sell_Inventory:FireServer()
-        end)
-        wait(0.2)
-    end
-
-    wait(2)
-    humanoidRootPart.CFrame = originalPosition
-end
-
--- Function to sell item in hand
-local function sellItem()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-    
-    local originalPosition = humanoidRootPart.CFrame
-    local targetPosition = Vector3.new(86.59001922607422, 2.999999761581421, 0.426799476146698)
-
-    humanoidRootPart.CFrame = CFrame.new(targetPosition)
-    wait(0.5)
-    
-    for i = 1, 3 do
-        pcall(function()
-            game:GetService("ReplicatedStorage").GameEvents.Sell_Item:FireServer()
-        end)
-        wait(0.2)
-    end
-
-    wait(2)
-    humanoidRootPart.CFrame = originalPosition
-end
-
--- Sell All Button
-Library:CreateButton(selsedTab, "Sell All", function()
-    sellAllInventory()
-    print("💰 Sell All - Got the money?")
-end)
-
--- Sell Item Button
-Library:CreateButton(selsedTab, "Sell Item", function()
-    sellItem()
-    print("💰 Sell Item - Got the money?")
-end)
-
-Library:CreateLabel(selsedTab, "BUTTONS")
-
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local originalStates = {}
-
--- Function to enable Teleport GUI
-local function enableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
-
-        originalStates = {
-            teleportUI = teleportUI.Enabled,
-            frame = frame.Visible,
-            gear = gearFrame.Visible,
-            pets = petsFrame.Visible,
-        }
-
-        teleportUI.Enabled = true
-        frame.Visible = true
-        gearFrame.Visible = true
-        petsFrame.Visible = true
-        
-        print("✅ Teleport GUI enabled")
     end)
 end
 
--- Function to disable Teleport GUI
-local function disableGUI()
-    pcall(function()
-        local playerGui = player:WaitForChild("PlayerGui")
-        local teleportUI = playerGui:WaitForChild("Teleport_UI")
-        local frame = teleportUI:WaitForChild("Frame")
-        local gearFrame = frame:WaitForChild("Gear")
-        local petsFrame = frame:WaitForChild("Pets")
+-- Dragging functionality
+local dragging = false
+local dragStart = nil
+local startPos = nil
 
-        teleportUI.Enabled = originalStates.teleportUI or false
-        frame.Visible = originalStates.frame or false
-        gearFrame.Visible = originalStates.gear or false
-        petsFrame.Visible = originalStates.pets or false
-        
-        print("❌ Teleport GUI disabled")
-    end)
-end
-
--- Teleport GUI Toggle
-Library:CreateToggle(selsedTab, "Enable Teleport GUI", false, function(state)
-    if state then
-        enableGUI()
-    else
-        disableGUI()
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
     end
 end)
 
--- SCRIPT TAB MORE SCRIPTS
-Library:CreateLabel(scriptTab, "MORE SCRIPTS")
-Library:CreateButton(scriptTab, "Jandel Chat System", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Chat%20system%20GAG"))()
-    print("✅ Jandel Chat System - Script has been executed!")
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+        local delta = input.Position - dragStart
+        frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
 end)
 
-Library:CreateButton(scriptTab, "Pet Dupers (Can't Gift)", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Pet%20dupe%20script%20wind%20ui%20lib"))()
-    print("✅ Pet Dupers - Script has been executed!")
+UserInputService.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
 end)
 
-Library:CreateButton(scriptTab, "Item Stealer", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/items%20stealer%20v2%20gag"))()
-    print("✅ Item Stealer - Script has been executed!")
+-- Close button functionality
+closeBtn.MouseButton1Click:Connect(function()
+    gui:Destroy()
 end)
-
-Library:CreateButton(scriptTab, "Admin Commander (SPAWN ALL THINGS)", function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Key-system-gui/refs/heads/main/Jandle%20admin%20commander%20GUi%20key%20system"))()
-    print("✅ Admin Commander - Script has been executed!")
-end)
-
--- Don't remove this
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Script-Hub/refs/heads/main/circle%20togle.lua"))()
-
-return Library
