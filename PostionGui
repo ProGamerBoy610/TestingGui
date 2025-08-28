@@ -54,7 +54,7 @@ local _, Window = pcall(function()
     return WindUI:CreateWindow({
         Title = "Fryzer Hub",
         Icon = "rbxassetid://129260712070622",
-        Author = "99 Nights in the forest",
+        Author = "99 Nights in the forest v7.11",
         Folder = "CustomHub",
         Size = UDim2.fromOffset(500, 370),
         Transparent = false,
@@ -2468,10 +2468,10 @@ else
 end
 
 -- Initialize variables
-local DistanceForKillAura = 25
-local ActiveKillAura = false
-local DistanceForAutoChopTree = 25
-local ActiveAutoChopTree = false
+DistanceForKillAura = 25
+ActiveKillAura = false
+DistanceForAutoChopTree = 25
+ActiveAutoChopTree = false
 
 -- Kill Aura Distance Slider
 Tabs.OpTab:Slider({ 
@@ -2479,6 +2479,7 @@ Tabs.OpTab:Slider({
     Value = { Min = 25, Max = 10000, Default = 25 }, 
     Callback = function(value) 
         DistanceForKillAura = value
+        print("Kill Aura distance updated to: " .. value)
     end 
 })
 
@@ -2489,6 +2490,7 @@ Tabs.OpTab:Toggle({
     Value = false, 
     Callback = function(state) 
         ActiveKillAura = state
+        print("Kill Aura toggled: " .. tostring(state))
         if state then
             task.spawn(function()
                 while ActiveKillAura do 
@@ -2509,7 +2511,7 @@ Tabs.OpTab:Toggle({
                                 for _, target in pairs(workspace.Characters:GetChildren()) do
                                     if target:IsA("Model") and target.PrimaryPart and target ~= character then
                                         local distance = (target.PrimaryPart.Position - hrp.Position).Magnitude
-                                        if distance <= DistanceForKillAura then
+                                        if distance <= (DistanceForKillAura or 25) then
                                             pcall(function()
                                                 game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(target, weapon, 999, hrp.CFrame)
                                             end)
@@ -2532,6 +2534,7 @@ Tabs.OpTab:Slider({
     Value = { Min = 0, Max = 1000, Default = 25 }, 
     Callback = function(value) 
         DistanceForAutoChopTree = value
+        print("Auto Chop Tree distance updated to: " .. value)
     end 
 })
 
@@ -2542,6 +2545,7 @@ Tabs.OpTab:Toggle({
     Value = false, 
     Callback = function(state) 
         ActiveAutoChopTree = state
+        print("Auto Chop Tree toggled: " .. tostring(state))
         if state then
             task.spawn(function()
                 while ActiveAutoChopTree do 
@@ -2564,7 +2568,7 @@ Tabs.OpTab:Toggle({
                                     for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
                                         if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                                             local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                                            if distance <= DistanceForAutoChopTree then
+                                            if distance <= (DistanceForAutoChopTree or 25) then
                                                 pcall(function()
                                                     game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
                                                 end)
@@ -2578,7 +2582,7 @@ Tabs.OpTab:Toggle({
                                     for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
                                         if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                                             local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                                            if distance <= DistanceForAutoChopTree then
+                                            if distance <= (DistanceForAutoChopTree or 25) then
                                                 pcall(function()
                                                     game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
                                                 end)
