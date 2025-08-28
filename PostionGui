@@ -2473,7 +2473,6 @@ Tabs.OpTab:Slider({
     Value = { Min = 25, Max = 10000, Default = 25 }, 
     Callback = function(value) 
         DistanceForKillAura = value
-        print("Kill Aura distance set to: " .. value)
     end 
 })
 
@@ -2514,7 +2513,6 @@ Tabs.OpTab:Slider({
     Value = { Min = 0, Max = 1000, Default = 25 }, 
     Callback = function(value) 
         DistanceForAutoChopTree = value
-        print("Auto Chop Tree distance set to: " .. value)
     end 
 })
 
