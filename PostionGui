@@ -2467,6 +2467,98 @@ else
     })
 end
 
+-- Kill Aura Distance Slider
+Tabs.OpTab:Slider({ 
+    Title = "Distance For Kill Aura", 
+    Value = { Min = 25, Max = 10000, Default = 25 }, 
+    Callback = function(value) 
+        DistanceForKillAura = value
+        print("Kill Aura distance set to: " .. value)
+    end 
+})
+
+-- Kill Aura Toggle
+Tabs.OpTab:Toggle({ 
+    Title = "Kill Aura", 
+    Icon = "sword", 
+    Value = false, 
+    Callback = function(state) 
+        ActiveKillAura = state
+        if state then
+            task.spawn(function()
+                while ActiveKillAura do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+                    task.spawn(function()
+                        for _, bunny in pairs(workspace.Characters:GetChildren()) do
+                            if bunny:IsA("Model") and bunny.PrimaryPart then
+                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForKillAura then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    wait(0.1)
+                end
+            end)
+        end
+    end 
+})
+
+-- Auto Chop Tree Distance Slider
+Tabs.OpTab:Slider({ 
+    Title = "Distance For Auto Chop Tree", 
+    Value = { Min = 0, Max = 1000, Default = 25 }, 
+    Callback = function(value) 
+        DistanceForAutoChopTree = value
+        print("Auto Chop Tree distance set to: " .. value)
+    end 
+})
+
+-- Auto Chop Tree Toggle
+Tabs.OpTab:Toggle({ 
+    Title = "Auto Chop Tree", 
+    Icon = "tree-pine", 
+    Value = false, 
+    Callback = function(state) 
+        ActiveAutoChopTree = state
+        if state then
+            task.spawn(function()
+                while ActiveAutoChopTree do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
+                    task.spawn(function()
+                        for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
+                            if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
+                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end 
+                    end)
+                    task.spawn(function()
+                        for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
+                            if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
+                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    wait(0.1)
+                end
+            end)
+        end
+    end 
+})
+
 Window:OnDestroy(function()
     print("Window destroyed")
 end)
