@@ -2467,6 +2467,12 @@ else
     })
 end
 
+-- Initialize variables
+local DistanceForKillAura = 25
+local ActiveKillAura = false
+local DistanceForAutoChopTree = 25
+local ActiveAutoChopTree = false
+
 -- Kill Aura Distance Slider
 Tabs.OpTab:Slider({ 
     Title = "Distance For Kill Aura", 
@@ -2487,20 +2493,33 @@ Tabs.OpTab:Toggle({
             task.spawn(function()
                 while ActiveKillAura do 
                     local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
-                    local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-                    task.spawn(function()
-                        for _, bunny in pairs(workspace.Characters:GetChildren()) do
-                            if bunny:IsA("Model") and bunny.PrimaryPart then
-                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForKillAura then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                    if player and player.Character then
+                        local character = player.Character
+                        local hrp = character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local weapon = nil
+                            if player.Inventory then
+                                weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                         player.Inventory:FindFirstChild("Good Axe") or 
+                                         player.Inventory:FindFirstChild("Strong Axe") or 
+                                         player.Inventory:FindFirstChild("Chainsaw"))
+                            end
+                            
+                            if weapon and workspace.Characters then
+                                for _, target in pairs(workspace.Characters:GetChildren()) do
+                                    if target:IsA("Model") and target.PrimaryPart and target ~= character then
+                                        local distance = (target.PrimaryPart.Position - hrp.Position).Magnitude
+                                        if distance <= DistanceForKillAura then
+                                            pcall(function()
+                                                game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(target, weapon, 999, hrp.CFrame)
+                                            end)
+                                        end
+                                    end
                                 end
                             end
                         end
-                    end)
-                    wait(0.1)
+                    end
+                    task.wait(0.1)
                 end
             end)
         end
@@ -2527,30 +2546,50 @@ Tabs.OpTab:Toggle({
             task.spawn(function()
                 while ActiveAutoChopTree do 
                     local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
-                    local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or player.Inventory:FindFirstChild("Good Axe") or player.Inventory:FindFirstChild("Strong Axe") or player.Inventory:FindFirstChild("Chainsaw"))
-                    task.spawn(function()
-                        for _, bunny in pairs(workspace.Map.Foliage:GetChildren()) do
-                            if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
-                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
-                                end
+                    if player and player.Character then
+                        local character = player.Character
+                        local hrp = character:FindFirstChild("HumanoidRootPart")
+                        if hrp then
+                            local weapon = nil
+                            if player.Inventory then
+                                weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                         player.Inventory:FindFirstChild("Good Axe") or 
+                                         player.Inventory:FindFirstChild("Strong Axe") or 
+                                         player.Inventory:FindFirstChild("Chainsaw"))
                             end
-                        end 
-                    end)
-                    task.spawn(function()
-                        for _, bunny in pairs(workspace.Map.Landmarks:GetChildren()) do
-                            if bunny:IsA("Model") and (bunny.Name == "Small Tree" or bunny.Name == "TreeBig1" or bunny.Name == "TreeBig2") and bunny.PrimaryPart then
-                                local distance = (bunny.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(bunny, weapon, 999, hrp.CFrame)
+                            
+                            if weapon then
+                                -- Check Foliage
+                                if workspace.Map and workspace.Map.Foliage then
+                                    for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                            if distance <= DistanceForAutoChopTree then
+                                                pcall(function()
+                                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                                end)
+                                            end
+                                        end
+                                    end
+                                end
+                                
+                                -- Check Landmarks
+                                if workspace.Map and workspace.Map.Landmarks then
+                                    for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                                        if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                            local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                            if distance <= DistanceForAutoChopTree then
+                                                pcall(function()
+                                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                                end)
+                                            end
+                                        end
+                                    end
                                 end
                             end
                         end
-                    end)
-                    wait(0.1)
+                    end
+                    task.wait(0.1)
                 end
             end)
         end
