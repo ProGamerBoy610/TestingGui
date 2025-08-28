@@ -90,7 +90,7 @@ Tabs.InfoTab = Window:Tab({
     Desc = "Player information and Discord community"
 })
 
-Tabs.EspTab = Window:Tab({
+Tabs.JkTab = Window:Tab({
     Title = "Just 4 Fun",
     Icon = "smile",
     Desc = "All UI components showcase"
@@ -1545,6 +1545,304 @@ Tabs.TpTab:Button({
     end
 })
 
+-- Lost Child Teleport System
+local CharactersFolder = workspace:FindFirstChild("Characters")
+
+if CharactersFolder then
+    local lostChildPaths = {
+        "Lost Child",
+        "Lost Child2", 
+        "Lost Child3",
+        "Lost Child4"
+    }
+    
+    local availableChildren = {}
+    local selectedChild = nil
+    local childDropdown = nil
+
+    -- Function to refresh available Lost Children
+    local function refreshLostChildren()
+        local previousChildren = {}
+        for _, child in pairs(availableChildren) do
+            previousChildren[child] = true
+        end
+        
+        availableChildren = {}
+        
+        -- Check each Lost Child path
+        for _, childName in pairs(lostChildPaths) do
+            local childModel = CharactersFolder:FindFirstChild(childName)
+            if childModel and childModel:IsA("Model") then
+                table.insert(availableChildren, childName)
+            end
+        end
+        
+        print("👶 Found", #availableChildren, "Lost Children available for teleport")
+        
+        -- Check if selected child still exists
+        if selectedChild and not CharactersFolder:FindFirstChild(selectedChild) then
+            selectedChild = nil
+            print("⚠️ Previously selected Lost Child no longer exists")
+        end
+        
+        -- Check for changes
+        local hasChanges = (#availableChildren ~= #previousChildren)
+        if not hasChanges then
+            for _, child in pairs(availableChildren) do
+                if not previousChildren[child] then
+                    hasChanges = true
+                    break
+                end
+            end
+        end
+        
+        -- Update dropdown if there are changes
+        if childDropdown and hasChanges then
+            pcall(function()
+                childDropdown:SetValues(availableChildren)
+            end)
+            
+            -- Set default selection if none selected and children available
+            if #availableChildren > 0 and not selectedChild then
+                selectedChild = availableChildren[1]
+                pcall(function()
+                    childDropdown:SetValue(selectedChild)
+                end)
+            end
+        end
+    end
+
+    -- Function to get teleport position for a Lost Child
+    local function getLostChildTeleportPosition(childName)
+        local childModel = CharactersFolder:FindFirstChild(childName)
+        if not childModel then
+            return nil
+        end
+        
+        -- Try to find HumanoidRootPart first
+        local rootPart = childModel:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            return rootPart.Position
+        end
+        
+        -- Fallback to any BasePart
+        local anyPart = childModel:FindFirstChildWhichIsA("BasePart")
+        if anyPart then
+            return anyPart.Position
+        end
+        
+        -- Fallback to model's PrimaryPart
+        if childModel.PrimaryPart then
+            return childModel.PrimaryPart.Position
+        end
+        
+        return nil
+    end
+
+    -- Function to teleport to selected Lost Child
+    local function teleportToLostChild(childName)
+        local player = LocalPlayer
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            print("❌ Player character not found!")
+            return false
+        end
+        
+        local targetPosition = getLostChildTeleportPosition(childName)
+        if not targetPosition then
+            print("❌ Could not find valid teleport position for", childName)
+            return false
+        end
+        
+        -- Add some height offset to avoid collision
+        local teleportPosition = targetPosition + Vector3.new(0, 5, 0)
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
+        
+        print("✅ Teleported to", childName)
+        return true
+    end
+
+    -- Initial refresh
+    refreshLostChildren()
+
+    -- Lost Child Selection Dropdown
+    childDropdown = Tabs.TpTab:Dropdown({
+        Title = "Select Lost Child",
+        Values = availableChildren,
+        Value = availableChildren[1] or "None",
+        Callback = function(selected)
+            selectedChild = selected
+            print("👶 Selected Lost Child:", selected)
+        end
+    })
+
+    -- Teleport to Selected Lost Child Button
+    Tabs.TpTab:Button({
+        Title = "Teleport to Selected Lost Child",
+        Desc = "Teleport to the currently selected Lost Child",
+        Callback = function()
+            if not selectedChild then
+                print("❌ No Lost Child selected!")
+                return
+            end
+            
+            teleportToLostChild(selectedChild)
+        end
+    })
+
+    -- Individual teleport buttons for each Lost Child
+    for _, childName in pairs(lostChildPaths) do
+        Tabs.TpTab:Button({
+            Title = "TP to " .. childName,
+            Desc = "Direct teleport to " .. childName,
+            Callback = function()
+                if not CharactersFolder:FindFirstChild(childName) then
+                    print("❌", childName, "not found!")
+                    return
+                end
+                
+                teleportToLostChild(childName)
+            end
+        })
+    end
+
+    -- Teleport to Random Lost Child Button
+    Tabs.TpTab:Button({
+        Title = "TP to Random Lost Child",
+        Desc = "Teleport to a random available Lost Child",
+        Callback = function()
+            if #availableChildren == 0 then
+                print("❌ No Lost Children available!")
+                return
+            end
+            
+            local randomChild = availableChildren[math.random(1, #availableChildren)]
+            teleportToLostChild(randomChild)
+        end
+    })
+
+    -- Teleport to All Lost Children (Sequential)
+    Tabs.TpTab:Button({
+        Title = "TP to All Lost Children",
+        Desc = "Teleport to each Lost Child with 2 second delays",
+        Callback = function()
+            if #availableChildren == 0 then
+                print("❌ No Lost Children available!")
+                return
+            end
+            
+            print("🔄 Starting sequential teleport to all Lost Children...")
+            
+            task.spawn(function()
+                for i, childName in pairs(availableChildren) do
+                    print("📍 Teleporting to", childName, "(" .. i .. "/" .. #availableChildren .. ")")
+                    teleportToLostChild(childName)
+                    
+                    -- Wait before next teleport (except for the last one)
+                    if i < #availableChildren then
+                        task.wait(2)
+                    end
+                end
+                print("✅ Completed teleporting to all Lost Children!")
+            end)
+        end
+    })
+
+    -- Show Available Lost Children Button
+    Tabs.TpTab:Button({
+        Title = "Show Available Lost Children",
+        Desc = "Display all currently available Lost Children",
+        Callback = function()
+            print("👶 Available Lost Children:")
+            if #availableChildren > 0 then
+                for i, childName in pairs(availableChildren) do
+                    local childModel = CharactersFolder:FindFirstChild(childName)
+                    local position = getLostChildTeleportPosition(childName)
+                    print(i .. ". " .. childName .. " - Position:", position and tostring(position) or "Unknown")
+                end
+                print("🎯 Currently selected:", selectedChild or "None")
+            else
+                print("❌ No Lost Children found!")
+            end
+        end
+    })
+
+    -- Manual Refresh Button
+    Tabs.TpTab:Button({
+        Title = "Refresh Lost Children",
+        Desc = "Manually refresh the Lost Children list",
+        Callback = function()
+            print("🔄 Manually refreshing Lost Children...")
+            refreshLostChildren()
+            print("🔄 Lost Children list refreshed!")
+        end
+    })
+
+    -- Auto-refresh every 1 second
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            refreshLostChildren()
+        end
+    end)
+
+    -- Safe Teleport Toggle (for Lost Children)
+    local safeLostChildTP = false
+    Tabs.TpTab:Toggle({
+        Title = "Safe Lost Child TP",
+        Icon = "baby",
+        Value = false,
+        Callback = function(state)
+            safeLostChildTP = state
+            print("👶 Safe Lost Child Teleport:", state and "ON" or "OFF")
+            if state then
+                print("📝 Safe mode adds extra height to Lost Child teleports")
+            end
+        end
+    })
+
+    -- Enhanced teleport function with safe mode for Lost Children
+    local function safeTeleportToLostChild(childName)
+        local player = LocalPlayer
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            print("❌ Player character not found!")
+            return false
+        end
+        
+        local targetPosition = getLostChildTeleportPosition(childName)
+        if not targetPosition then
+            print("❌ Could not find valid teleport position for", childName)
+            return false
+        end
+        
+        -- Add extra height if safe mode is on
+        local heightOffset = safeLostChildTP and 15 or 5
+        local teleportPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+        
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
+        
+        local safetyText = safeLostChildTP and " (Safe Mode)" or ""
+        print("✅ Teleported to", childName .. safetyText)
+        return true
+    end
+
+    -- Update the teleport functions to use safe teleport
+    local originalTeleportFunction = teleportToLostChild
+    teleportToLostChild = safeTeleportToLostChild
+
+else
+    print("❌ Characters folder not found in workspace!")
+    
+    -- Create error message in UI
+    Tabs.TpTab:Button({
+        Title = "⚠️ Characters Folder Missing",
+        Desc = "workspace.Characters folder not found",
+        Callback = function()
+            print("❌ Cannot find workspace.Characters folder!")
+            print("📁 Please ensure the Characters folder exists in workspace")
+        end
+    })
+end
+
 -- Item Teleport System
 local ItemsFolder = workspace:FindFirstChild("Items")
 
@@ -2051,7 +2349,7 @@ if CharactersFolder then
     local displayNames = refreshCharacterList()
 
     -- Character Selection Dropdown (Multi-select)
-    characterDropdown = Tabs.OpTab:Dropdown({
+    characterDropdown = Tabs.JkTab:Dropdown({
         Title = "Select Characters to Freeze",
         Values = displayNames,
         Value = {},
@@ -2070,7 +2368,7 @@ if CharactersFolder then
     })
 
     -- Freeze Toggle
-    freezeToggle = Tabs.OpTab:Toggle({
+    freezeToggle = Tabs.JkTab:Toggle({
         Title = "Freeze Selected Characters",
         Icon = "snowflake",
         Value = false,
@@ -2101,7 +2399,7 @@ if CharactersFolder then
     end)
 
     -- Manual refresh button
-    Tabs.OpTab:Button({
+    Tabs.JkTab:Button({
         Title = "Refresh Character List",
         Desc = "Manually refresh the character list",
         Callback = function()
@@ -2117,7 +2415,7 @@ if CharactersFolder then
     })
 
     -- Show selected characters button
-    Tabs.OpTab:Button({
+    Tabs.JkTab:Button({
         Title = "Show Selected Characters",
         Desc = "Display currently selected characters in console",
         Callback = function()
@@ -2159,7 +2457,7 @@ else
     print("❌ Characters folder not found in workspace!")
     
     -- Create error message in UI
-    Tabs.OpTab:Button({
+    Tabs.JkTab:Button({
         Title = "⚠️ Characters Folder Missing",
         Desc = "workspace.Characters folder not found",
         Callback = function()
