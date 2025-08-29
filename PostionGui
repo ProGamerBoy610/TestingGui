@@ -103,12 +103,6 @@ Tabs.EspTab = Window:Tab({
     Desc = "All UI components showcase"
 })
 
-Tabs.MapTab = Window:Tab({
-    Title = "World",
-    Icon = "map-pin",
-    Desc = "All UI components showcase"
-})
-
 Tabs.TpTab = Window:Tab({
     Title = "Teleport",
     Icon = "navigation",
@@ -2350,7 +2344,7 @@ if CharactersFolder then
     local displayNames = refreshCharacterList()
 
     -- Character Selection Dropdown (Multi-select)
-    characterDropdown = Tabs.MapTab:Dropdown({
+    characterDropdown = Tabs.JkTab:Dropdown({
         Title = "Select Characters to Freeze",
         Values = displayNames,
         Value = {},
@@ -2369,7 +2363,7 @@ if CharactersFolder then
     })
 
     -- Freeze Toggle
-    freezeToggle = Tabs.MapTab:Toggle({
+    freezeToggle = Tabs.JkTab:Toggle({
         Title = "Freeze Selected Characters",
         Icon = "snowflake",
         Value = false,
@@ -2400,7 +2394,7 @@ if CharactersFolder then
     end)
 
     -- Manual refresh button
-    Tabs.MapTab:Button({
+    Tabs.JkTab:Button({
         Title = "Refresh Character List",
         Desc = "Manually refresh the character list",
         Callback = function()
@@ -2416,7 +2410,7 @@ if CharactersFolder then
     })
 
     -- Show selected characters button
-    Tabs.MapTab:Button({
+    Tabs.JkTab:Button({
         Title = "Show Selected Characters",
         Desc = "Display currently selected characters in console",
         Callback = function()
@@ -2458,7 +2452,7 @@ else
     print("❌ Characters folder not found in workspace!")
     
     -- Create error message in UI
-    Tabs.MapTab:Button({
+    Tabs.JkTab:Button({
         Title = "⚠️ Characters Folder Missing",
         Desc = "workspace.Characters folder not found",
         Callback = function()
@@ -2467,121 +2461,6 @@ else
         end
     })
 end
-
--- Player Visual Tab (NoFog, NoSky, Fullbright, LowGFX, etc.)
-local HttpService = game:GetService("HttpService")
-
--- Replace old ComponentsTab with PlayerTab
-Tabs.MapTab:Paragraph({
-    Title = "Player Visual Settings",
-    Desc = "Control graphics like fog, brightness, and sky.",
-    Image = "sun",
-    Color = "Yellow",
-})
-
--- No Fog Toggle
-Tabs.MapTab:Toggle({
-    Title = "No Fog",
-    Icon = "cloud-off",
-    Value = false,
-    Callback = function(state)
-        if state then
-            game.Lighting.FogEnd = 1e9
-            WindUI:Notify({ Title = "No Fog Enabled ✅", Content = "Fog removed.", Duration = 2 })
-        else
-            game.Lighting.FogEnd = 1000
-            WindUI:Notify({ Title = "No Fog Disabled ❌", Content = "Fog restored.", Duration = 2 })
-        end
-    end
-})
-
--- No Sky Toggle
-Tabs.MapTab:Toggle({
-    Title = "No Sky",
-    Icon = "cloud",
-    Value = false,
-    Callback = function(state)
-        if state then
-            for _, v in pairs(game.Lighting:GetChildren()) do
-                if v:IsA("Sky") then v.Parent = nil end
-            end
-            WindUI:Notify({ Title = "No Sky Enabled ✅", Content = "Sky removed.", Duration = 2 })
-        else
-            local sky = Instance.new("Sky")
-            sky.Parent = game.Lighting
-            WindUI:Notify({ Title = "No Sky Disabled ❌", Content = "Sky restored.", Duration = 2 })
-        end
-    end
-})
-
--- Fullbright Toggle
-Tabs.MapTab:Toggle({
-    Title = "Full Brightness",
-    Icon = "sun-medium",
-    Value = false,
-    Callback = function(state)
-        if state then
-            game.Lighting.Brightness = 2
-            game.Lighting.Ambient = Color3.new(1,1,1)
-            game.Lighting.OutdoorAmbient = Color3.new(1,1,1)
-            WindUI:Notify({ Title = "Fullbright ✅", Content = "Lighting set to full brightness.", Duration = 2 })
-        else
-            game.Lighting.Brightness = 1
-            game.Lighting.Ambient = Color3.new(0.5,0.5,0.5)
-            game.Lighting.OutdoorAmbient = Color3.new(0.5,0.5,0.5)
-            WindUI:Notify({ Title = "Fullbright Disabled ❌", Content = "Lighting restored.", Duration = 2 })
-        end
-    end
-})
-
--- Low GFX Toggle
-Tabs.MapTab:Toggle({
-    Title = "Low GFX",
-    Icon = "gauge",
-    Value = false,
-    Callback = function(state)
-        if state then
-            for _, v in pairs(workspace:GetDescendants()) do
-                if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
-                    v.Material = Enum.Material.Plastic
-                    v.Reflectance = 0
-                elseif v:IsA("Decal") or v:IsA("Texture") then
-                    v:Destroy()
-                end
-            end
-            WindUI:Notify({ Title = "Low GFX Mode ✅", Content = "Performance optimized.", Duration = 2 })
-        else
-            WindUI:Notify({ Title = "Low GFX Disabled ❌", Content = "Reload game to restore graphics.", Duration = 2 })
-        end
-    end
-})
-
-Tabs.MapTab:Button({
-    Title = "Remove Boundaries",
-    Desc = "",
-    Callback = function()
-        local folder = workspace:WaitForChild("Map"):WaitForChild("Boundaries")
-
-        local function processDescendants(obj)
-            for _, v in pairs(obj:GetDescendants()) do
-                if v:IsA("BasePart") then
-                    v.Transparency = 1
-                    v.CanCollide = false
-                end
-            end
-        end
-
-        processDescendants(folder)
-
-        WindUI:Notify({
-            Title = "Boundaries Removed!",
-            Content = "",
-            Duration = 3,
-        })
-    end
-})
-
-
 
 Tabs.OpTab:Paragraph({
     Title = "Warning",
@@ -2712,6 +2591,95 @@ Tabs.OpTab:Toggle({
         end
     end
 })
+
+-- Player Visual Tab (NoFog, NoSky, Fullbright, LowGFX, etc.)
+local HttpService = game:GetService("HttpService")
+
+-- Replace old ComponentsTab with PlayerTab
+Tabs.JkTab:Paragraph({
+    Title = "Player Visual Settings",
+    Desc = "Control graphics like fog, brightness, and sky.",
+    Image = "sun",
+    Color = "Yellow",
+})
+
+-- No Fog Toggle
+Tabs.JkTab:Toggle({
+    Title = "No Fog",
+    Icon = "cloud-off",
+    Value = false,
+    Callback = function(state)
+        if state then
+            game.Lighting.FogEnd = 1e9
+            WindUI:Notify({ Title = "No Fog Enabled ✅", Content = "Fog removed.", Duration = 2 })
+        else
+            game.Lighting.FogEnd = 1000
+            WindUI:Notify({ Title = "No Fog Disabled ❌", Content = "Fog restored.", Duration = 2 })
+        end
+    end
+})
+
+-- No Sky Toggle
+Tabs.JkTab:Toggle({
+    Title = "No Sky",
+    Icon = "cloud",
+    Value = false,
+    Callback = function(state)
+        if state then
+            for _, v in pairs(game.Lighting:GetChildren()) do
+                if v:IsA("Sky") then v.Parent = nil end
+            end
+            WindUI:Notify({ Title = "No Sky Enabled ✅", Content = "Sky removed.", Duration = 2 })
+        else
+            local sky = Instance.new("Sky")
+            sky.Parent = game.Lighting
+            WindUI:Notify({ Title = "No Sky Disabled ❌", Content = "Sky restored.", Duration = 2 })
+        end
+    end
+})
+
+-- Fullbright Toggle
+Tabs.JkTab:Toggle({
+    Title = "Full Brightness",
+    Icon = "sun-medium",
+    Value = false,
+    Callback = function(state)
+        if state then
+            game.Lighting.Brightness = 2
+            game.Lighting.Ambient = Color3.new(1,1,1)
+            game.Lighting.OutdoorAmbient = Color3.new(1,1,1)
+            WindUI:Notify({ Title = "Fullbright ✅", Content = "Lighting set to full brightness.", Duration = 2 })
+        else
+            game.Lighting.Brightness = 1
+            game.Lighting.Ambient = Color3.new(0.5,0.5,0.5)
+            game.Lighting.OutdoorAmbient = Color3.new(0.5,0.5,0.5)
+            WindUI:Notify({ Title = "Fullbright Disabled ❌", Content = "Lighting restored.", Duration = 2 })
+        end
+    end
+})
+
+-- Low GFX Toggle
+Tabs.JkTab:Toggle({
+    Title = "Low GFX",
+    Icon = "gauge",
+    Value = false,
+    Callback = function(state)
+        if state then
+            for _, v in pairs(workspace:GetDescendants()) do
+                if v:IsA("Part") or v:IsA("UnionOperation") or v:IsA("MeshPart") then
+                    v.Material = Enum.Material.Plastic
+                    v.Reflectance = 0
+                elseif v:IsA("Decal") or v:IsA("Texture") then
+                    v:Destroy()
+                end
+            end
+            WindUI:Notify({ Title = "Low GFX Mode ✅", Content = "Performance optimized.", Duration = 2 })
+        else
+            WindUI:Notify({ Title = "Low GFX Disabled ❌", Content = "Reload game to restore graphics.", Duration = 2 })
+        end
+    end
+})
+
 
 
 Window:OnDestroy(function()
