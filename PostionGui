@@ -183,13 +183,20 @@ Tabs.PlayerTab:Paragraph({
 -- Additional Player Features
 Tabs.PlayerTab:Button({
     Title = "Health Booster",
-    Desc = "Respawn your character instantly",
+    Desc = "Restore your health to 100",
     Callback = function()
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.Health = 100
+        local localPlayer = game.Players.LocalPlayer
+        if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+            localPlayer.Character.Humanoid.Health = 100
             WindUI:Notify({
-                Title = "Helth Boosted! ❤️",
-                Content = "Your health has been restored to full",
+                Title = "Health Boosted! ❤️",
+                Content = "Your health has been set to 100",
+                Duration = 2,
+            })
+        else
+            WindUI:Notify({
+                Title = "Error!",
+                Content = "Character or Humanoid not found",
                 Duration = 2,
             })
         end
