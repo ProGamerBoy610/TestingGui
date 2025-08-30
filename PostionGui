@@ -94,31 +94,31 @@ Tabs.InfoTab = Window:Tab({
 Tabs.PlayerTab = Window:Tab({
     Title = "Player",
     Icon = "user-check",
-    Desc = "All UI components showcase"
+    Desc = "Player Controll System"
 })
 
 Tabs.EspTab = Window:Tab({
     Title = "Visual",
     Icon = "eye",
-    Desc = "All UI components showcase"
-})
-
-Tabs.MapTab = Window:Tab({
-    Title = "World",
-    Icon = "map-pin",
-    Desc = "All UI components showcase"
+    Desc = "All Esp System"
 })
 
 Tabs.TpTab = Window:Tab({
     Title = "Teleport",
     Icon = "navigation",
-    Desc = "All UI components showcase"
+    Desc = "Teleport System"
 })
 
 Tabs.OpTab = Window:Tab({
     Title = "Over Powered",
     Icon = "zap",
-    Desc = "All UI components showcase"
+    Desc = "Over Powered System"
+})
+
+Tabs.MapTab = Window:Tab({
+    Title = "World",
+    Icon = "map-pin",
+    Desc = "World affects scripts"
 })
 
 Window:SelectTab(1)
@@ -179,6 +179,39 @@ Tabs.PlayerTab:Paragraph({
 -- SIMPLE WINDUI MOVEMENT SYSTEM
 -- WalkSpeed, JumpHeight, Noclip, Instant Prompts
 -- ========================================
+
+
+
+-- Infinite Jump Toggle
+local infiniteJumpEnabled = false
+local UserInputService = game:GetService("UserInputService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+Tabs.PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Icon = "arrow-up",
+    Value = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+        WindUI:Notify({
+            Title = state and "Infinite Jump Enabled! 🚀" or "Infinite Jump Disabled!",
+            Content = state and "Press Space to jump infinitely" or "Jump mechanics restored to normal",
+            Duration = 3,
+        })
+    end
+})
+
+-- Infinite Jump Script
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
+        local humanoid = player.Character.Humanoid
+        if humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
 
 -- Services
 local Players = game:GetService("Players")
@@ -1745,25 +1778,6 @@ if CharactersFolder then
                 end
                 print("✅ Completed teleporting to all Lost Children!")
             end)
-        end
-    })
-
-    -- Show Available Lost Children Button
-    Tabs.TpTab:Button({
-        Title = "Show Available Lost Children",
-        Desc = "Display all currently available Lost Children",
-        Callback = function()
-            print("👶 Available Lost Children:")
-            if #availableChildren > 0 then
-                for i, childName in pairs(availableChildren) do
-                    local childModel = CharactersFolder:FindFirstChild(childName)
-                    local position = getLostChildTeleportPosition(childName)
-                    print(i .. ". " .. childName .. " - Position:", position and tostring(position) or "Unknown")
-                end
-                print("🎯 Currently selected:", selectedChild or "None")
-            else
-                print("❌ No Lost Children found!")
-            end
         end
     })
 
