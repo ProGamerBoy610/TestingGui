@@ -24,6 +24,8 @@ end
 -- Services
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Player = Players.LocalPlayer
 
 -- Player Info
@@ -89,7 +91,6 @@ Tabs.InfoTab = Window:Tab({
     Icon = "info",
     Desc = "Player information and Discord community"
 })
-
 
 Tabs.PlayerTab = Window:Tab({
     Title = "Player",
@@ -166,7 +167,7 @@ Tabs.InfoTab:Button({
     end
 })
 
---================= PLAYERS CONTROLLS =================
+--================= PLAYER TAB CONTENT =================
 
 Tabs.PlayerTab:Paragraph({
     Title = "Player Controls",
@@ -175,59 +176,26 @@ Tabs.PlayerTab:Paragraph({
     Color = "Blue",
 })
 
--- ========================================
--- SIMPLE WINDUI MOVEMENT SYSTEM
--- WalkSpeed, JumpHeight, Noclip, Instant Prompts
--- ========================================
-
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-
--- Variables
-local LocalPlayer = Players.LocalPlayer
-
--- Movement States
+-- Movement Variables
 local ActiveSpeedBoost = false
 local ActiveJumpBoost = false
 local ActiveNoclip = false
 local ActiveInstantPrompts = false
-
 local ValueSpeed = 16
 local ValueJumpHeight = 7.2
 local OldSpeed = 16
 local OldJumpHeight = 7.2
 
--- ========================================
--- UTILITY FUNCTIONS
--- ========================================
-
-local function getCharacter()
-    return LocalPlayer.Character
-end
-
-local function getHumanoid()
-    local character = getCharacter()
-    return character and character:FindFirstChildOfClass("Humanoid")
-end
-
--- ========================================
--- CHARACTER RESPAWN HANDLER
--- ========================================
-
+-- Character respawn handler
 local function updateOriginalValues()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
-        OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
+    if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        OldSpeed = Player.Character.Humanoid.WalkSpeed
+        OldJumpHeight = Player.Character.Humanoid.JumpHeight or 7.2
     end
 end
 
 updateOriginalValues()
-LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
-
--- ========================================
--- WINDUI INTERFACE - PLAYER TAB
--- ========================================
+Player.CharacterAdded:Connect(updateOriginalValues)
 
 -- Instant Prompts Control
 Tabs.PlayerTab:Toggle({
@@ -239,7 +207,6 @@ Tabs.PlayerTab:Toggle({
         
         task.spawn(function()
             if ActiveInstantPrompts then
-                -- Enable instant prompts
                 for _, prompt in pairs(game.Workspace:GetDescendants()) do  
                     if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then 
                         prompt:SetAttribute("HoldDurationOld", prompt.HoldDuration)
@@ -247,7 +214,6 @@ Tabs.PlayerTab:Toggle({
                     end 
                 end
                 
-                -- Monitor for new prompts
                 local promptConnection
                 promptConnection = game.Workspace.DescendantAdded:Connect(function(descendant)
                     if ActiveInstantPrompts and descendant:IsA("ProximityPrompt") and descendant.HoldDuration ~= 0 then
@@ -256,17 +222,14 @@ Tabs.PlayerTab:Toggle({
                     end
                 end)
                 
-                -- Keep connection active while enabled
                 while ActiveInstantPrompts do
                     task.wait(1)
                 end
                 
-                -- Cleanup when disabled
                 if promptConnection then
                     promptConnection:Disconnect()
                 end
             else 
-                -- Restore original prompt durations
                 for _, prompt in pairs(game.Workspace:GetDescendants()) do  
                     if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then 
                         prompt.HoldDuration = prompt:GetAttribute("HoldDurationOld")
@@ -280,7 +243,7 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
--- Speed Controls Section
+-- Speed Controls
 Tabs.PlayerTab:Slider({
     Title = "Walk Speed Setting",
     Value = { Min = 16, Max = 500, Default = 16 },
@@ -299,13 +262,13 @@ Tabs.PlayerTab:Toggle({
         
         task.spawn(function()
             while ActiveSpeedBoost do
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    Player.Character.Humanoid.WalkSpeed = ValueSpeed
                 end
                 task.wait(0.1)
             end
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                Player.Character.Humanoid.WalkSpeed = OldSpeed
             end
         end)
         
@@ -313,7 +276,7 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
--- Jump Controls Section
+-- Jump Controls
 Tabs.PlayerTab:Slider({
     Title = "Jump Height Setting",
     Value = { Min = 7, Max = 200, Default = 50 },
@@ -332,18 +295,16 @@ Tabs.PlayerTab:Toggle({
         
         task.spawn(function()
             while ActiveJumpBoost do
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    local humanoid = LocalPlayer.Character.Humanoid
-                    -- Force JumpHeight mode for consistency
+                if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                    local humanoid = Player.Character.Humanoid
                     humanoid.UseJumpPower = false
                     humanoid.JumpHeight = ValueJumpHeight
                 end
                 task.wait(0.1)
             end
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                local humanoid = LocalPlayer.Character.Humanoid
-                -- Restore original jump settings
-                humanoid.JumpHeight = 7.2  -- Default Roblox jump height
+            if Player.Character and Player.Character:FindFirstChild("Humanoid") then
+                local humanoid = Player.Character.Humanoid
+                humanoid.JumpHeight = 7.2
             end
         end)
         
@@ -361,8 +322,8 @@ Tabs.PlayerTab:Toggle({
         
         task.spawn(function()
             while ActiveNoclip do 
-                if LocalPlayer.Character then
-                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                if Player.Character then
+                    for _, part in pairs(Player.Character:GetDescendants()) do
                         if part:IsA("BasePart") and part.CanCollide then
                             part.CanCollide = false
                         end
@@ -370,8 +331,8 @@ Tabs.PlayerTab:Toggle({
                 end
                 task.wait(0.1)
             end 
-            if LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+            if Player.Character then
+                for _, part in pairs(Player.Character:GetDescendants()) do
                     if part:IsA("BasePart") and not part.CanCollide then
                         part.CanCollide = true
                     end
@@ -383,13 +344,7 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
-print("🚀 Simple Movement System loaded!")
-print("📝 Features: Walk Speed, Jump Height, Noclip, Instant Prompts")
-
--- Fly System
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
+-- Fly System Variables
 local IYMouse = Players.LocalPlayer:GetMouse()
 local FLYING = false
 local QEfly = true
@@ -397,6 +352,7 @@ local iyflyspeed = 1
 local vehicleflyspeed = 1
 local ActivateFly = false
 
+-- Fly Functions
 local function sFLY(vfly)
     repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     repeat wait() until IYMouse
@@ -579,20 +535,15 @@ local function MobileFly()
     end)
 end
 
--- Fly Speed Slider
+-- Fly Controls
 Tabs.PlayerTab:Slider({
     Title = "Fly Speed",
-    Value = {
-        Min = 0.1,
-        Max = 10,
-        Default = 1
-    },
+    Value = { Min = 0.1, Max = 10, Default = 1 },
     Callback = function(val)
         iyflyspeed = val
     end
 })
 
--- Fly Toggle
 Tabs.PlayerTab:Toggle({
     Title = "Fly", 
     Value = false,
@@ -618,11 +569,150 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
+print("🚀 Simple Movement System loaded!")
 
-local LocalPlayer = Players.LocalPlayer
+--================= VISUAL TAB CONTENT =================
+
+-- ESP System Variables
+local ActiveEspItems = false
+local ActiveEspEnemy = false
+local ActiveEspChildren = false
+local ActiveEspPeltTrader = false
+local ActiveDistanceEsp = false
+
+local function CreateEsp(Char, Color, Text, Parent, number)
+    if not Char or not Parent or not Parent:IsA("BasePart") then return end
+    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = Char
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, number or 2, 0)
+    billboard.Adornee = Parent
+    billboard.Parent = Parent
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        while highlight.Parent and billboard.Parent and Parent.Parent do
+            local camera = workspace.CurrentCamera
+            if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
+                local distance = (camera.CFrame.Position - Parent.Position).Magnitude
+                label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
+            else
+                label.Text = Text
+            end
+            RunService.Heartbeat:Wait()
+        end
+        if highlight.Parent then highlight:Destroy() end
+        if billboard.Parent then billboard:Destroy() end
+    end)
+end
+
+local function RemoveEsp(Char, Parent)
+    if Char and Char:FindFirstChildOfClass("Highlight") then
+        Char:FindFirstChildOfClass("Highlight"):Destroy()
+    end
+    if Parent and Parent:FindFirstChild("ESP") then
+        Parent:FindFirstChild("ESP"):Destroy()
+    end
+end
+
+-- ESP Update Functions
+local function UpdateItemsEsp()
+    if not workspace:FindFirstChild("Items") then return end
+    if ActiveEspItems then
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                CreateEsp(obj, Color3.fromRGB(255, 255, 0), obj.Name, obj.PrimaryPart, 2)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateEnemiesEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspEnemy then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateChildrenEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspChildren then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdatePeltTraderEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspPeltTrader then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 255), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
 
 -- Health Billboard System
 local healthBillboardEnabled = false
@@ -757,7 +847,7 @@ end
 
 local function attachToModel(model)
     if not model or not model:IsA("Model") then return end
-    if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end
+    if Players:GetPlayerFromCharacter(model) == Player then return end
     local humanoid = model:FindFirstChildOfClass("Humanoid")
     if not humanoid then return end
     local head = findHead(model)
@@ -827,7 +917,7 @@ local function disableHealthBillboards()
     end
 end
 
--- Health Billboard Toggle (WindUI Format)
+-- Health Billboard Toggle
 Tabs.EspTab:Toggle({
     Title = "Health Billboard",
     Icon = "heart",
@@ -839,151 +929,11 @@ Tabs.EspTab:Toggle({
         else
             disableHealthBillboards()
         end
-        print("✅ Health Billboard", state and "ON" or "OFF")
+        print("Health Billboard", state and "ON" or "OFF")
     end
 })
 
--- ESP System Variables
-local ActiveEspItems = false
-local ActiveEspEnemy = false
-local ActiveEspChildren = false
-local ActiveEspPeltTrader = false
-local ActiveDistanceEsp = false
-
-local function CreateEsp(Char, Color, Text, Parent, number)
-    if not Char or not Parent or not Parent:IsA("BasePart") then return end
-    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
-
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "ESP_Highlight"
-    highlight.Adornee = Char
-    highlight.FillColor = Color
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = Char
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ESP"
-    billboard.Size = UDim2.new(0, 50, 0, 25)
-    billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, number or 2, 0)
-    billboard.Adornee = Parent
-    billboard.Parent = Parent
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = Text
-    label.TextColor3 = Color
-    label.TextScaled = true
-    label.Parent = billboard
-
-    task.spawn(function()
-        while highlight.Parent and billboard.Parent and Parent.Parent do
-            local camera = workspace.CurrentCamera
-            if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
-                local distance = (camera.CFrame.Position - Parent.Position).Magnitude
-                label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
-            else
-                label.Text = Text
-            end
-            RunService.Heartbeat:Wait()
-        end
-        if highlight.Parent then highlight:Destroy() end
-        if billboard.Parent then billboard:Destroy() end
-    end)
-end
-
-local function RemoveEsp(Char, Parent)
-    if Char and Char:FindFirstChildOfClass("Highlight") then
-        Char:FindFirstChildOfClass("Highlight"):Destroy()
-    end
-    if Parent and Parent:FindFirstChild("ESP") then
-        Parent:FindFirstChild("ESP"):Destroy()
-    end
-end
-
-local function UpdateItemsEsp()
-    if not workspace:FindFirstChild("Items") then return end
-    if ActiveEspItems then
-        for _, obj in pairs(workspace.Items:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart then
-                CreateEsp(obj, Color3.fromRGB(255, 255, 0), obj.Name, obj.PrimaryPart, 2)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Items:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdateEnemiesEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspEnemy then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
-                    obj.Name == "Pelt Trader") then
-                CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
-                    obj.Name == "Pelt Trader") then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdateChildrenEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspChildren then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
-                CreateEsp(obj, Color3.fromRGB(0, 255, 0), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdatePeltTraderEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspPeltTrader then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
-                CreateEsp(obj, Color3.fromRGB(0, 255, 255), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
--- ESP Items Toggle (WindUI Format)
+-- ESP Toggles
 Tabs.EspTab:Toggle({
     Title = "ESP Items",
     Icon = "package",
@@ -991,11 +941,10 @@ Tabs.EspTab:Toggle({
     Callback = function(state)
         ActiveEspItems = state
         UpdateItemsEsp()
-        print("✅ ESP Items", state and "ON" or "OFF")
+        print("ESP Items", state and "ON" or "OFF")
     end
 })
 
--- ESP Enemies Toggle (WindUI Format)
 Tabs.EspTab:Toggle({
     Title = "ESP Enemies",
     Icon = "skull",
@@ -1003,11 +952,10 @@ Tabs.EspTab:Toggle({
     Callback = function(state)
         ActiveEspEnemy = state
         UpdateEnemiesEsp()
-        print("✅ ESP Enemies", state and "ON" or "OFF")
+        print("ESP Enemies", state and "ON" or "OFF")
     end
 })
 
--- ESP Children Toggle (WindUI Format)
 Tabs.EspTab:Toggle({
     Title = "ESP Children",
     Icon = "baby",
@@ -1015,11 +963,10 @@ Tabs.EspTab:Toggle({
     Callback = function(state)
         ActiveEspChildren = state
         UpdateChildrenEsp()
-        print("✅ ESP Children", state and "ON" or "OFF")
+        print("ESP Children", state and "ON" or "OFF")
     end
 })
 
--- ESP Pelt Trader Toggle (WindUI Format)
 Tabs.EspTab:Toggle({
     Title = "ESP Pelt Trader",
     Icon = "user",
@@ -1027,11 +974,10 @@ Tabs.EspTab:Toggle({
     Callback = function(state)
         ActiveEspPeltTrader = state
         UpdatePeltTraderEsp()
-        print("✅ ESP Pelt Trader", state and "ON" or "OFF")
+        print("ESP Pelt Trader", state and "ON" or "OFF")
     end
 })
 
--- Show Distance Toggle (WindUI Format)
 Tabs.EspTab:Toggle({
     Title = "Show Distance in ESP",
     Icon = "ruler",
@@ -1042,11 +988,11 @@ Tabs.EspTab:Toggle({
         if ActiveEspEnemy then UpdateEnemiesEsp() end
         if ActiveEspChildren then UpdateChildrenEsp() end
         if ActiveEspPeltTrader then UpdatePeltTraderEsp() end
-        print("✅ Show Distance in ESP", state and "ON" or "OFF")
+        print("Show Distance in ESP", state and "ON" or "OFF")
     end
 })
 
--- Clear All ESP Button (WindUI Format)
+-- Clear All ESP Button
 Tabs.EspTab:Button({
     Title = "Clear All ESP",
     Desc = "Removes all active ESP elements",
@@ -1061,25 +1007,7 @@ Tabs.EspTab:Button({
         UpdateChildrenEsp()
         UpdatePeltTraderEsp()
         
-        print("✅ All ESP cleared!")
-    end
-})
-
--- ESP Color Theme Dropdown (WindUI Format)
-Tabs.EspTab:Dropdown({
-    Title = "ESP Color Theme",
-    Values = {"Default", "Bright", "Dark", "Neon"},
-    Value = "Default",
-    Callback = function(value)
-        print("🎨 ESP Color Theme selected:", value)
-        -- You can modify the colors based on the selected theme here
-        if value == "Bright" then
-            -- Bright colors
-        elseif value == "Dark" then
-            -- Dark colors  
-        elseif value == "Neon" then
-            -- Neon colors
-        end
+        print("All ESP cleared!")
     end
 })
 
@@ -1127,421 +1055,20 @@ end
 
 setupEspConnections()
 
--- PLAYER ESP Section
-Tabs.EspTab:Paragraph({
-    Title = "Player ESP System",
-    Desc = "Advanced ESP system for tracking other players",
-    Image = "users",
-    Color = "Blue",
-})
+--================= TELEPORT TAB CONTENT =================
 
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
--- Player ESP Variables
-local playerESPEnabled = false
-local trackedPlayers = {}
-local espConnections = {}
-
--- ESP Settings
-local ESP_SETTINGS = {
-    FillColor = Color3.fromRGB(255, 0, 0),
-    FillTransparency = 0.8,
-    OutlineColor = Color3.fromRGB(255, 255, 255),
-    OutlineTransparency = 0,
-    TextColor = Color3.fromRGB(255, 255, 255),
-    TextSize = 14,
-    MaxDistance = 1000,
-    ShowDistance = true,
-    ShowHealth = true,
-    ShowNames = true,
-    HealthBarEnabled = true,
-    HealthBarHeight = 4
-}
-
--- Create ESP for a player
-local function createPlayerESP(player)
-    if player == LocalPlayer then return end -- Don't ESP ourselves
-    if not player.Character then return end
-    if trackedPlayers[player] then return end -- Already has ESP
-    
-    local character = player.Character
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
-    
-    if not humanoid or not rootPart then return end
-    
-    -- Create Highlight
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "PlayerESP_Highlight"
-    highlight.Adornee = character
-    highlight.FillColor = ESP_SETTINGS.FillColor
-    highlight.FillTransparency = ESP_SETTINGS.FillTransparency
-    highlight.OutlineColor = ESP_SETTINGS.OutlineColor
-    highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = character
-    
-    -- Create Billboard GUI
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PlayerESP_Billboard"
-    billboard.Size = UDim2.new(0, 200, 0, 100)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.AlwaysOnTop = true
-    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
-    billboard.Adornee = rootPart
-    billboard.Parent = rootPart
-    
-    -- Create main frame
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundTransparency = 1
-    frame.Parent = billboard
-    
-    -- Create name label
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "NameLabel"
-    nameLabel.Size = UDim2.new(1, 0, 0, 20)
-    nameLabel.Position = UDim2.new(0, 0, 0, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = player.DisplayName
-    nameLabel.TextColor3 = ESP_SETTINGS.TextColor
-    nameLabel.TextSize = ESP_SETTINGS.TextSize
-    nameLabel.TextStrokeTransparency = 0.5
-    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.Parent = frame
-    
-    -- Create distance label
-    local distanceLabel = Instance.new("TextLabel")
-    distanceLabel.Name = "DistanceLabel"
-    distanceLabel.Size = UDim2.new(1, 0, 0, 15)
-    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.Text = "0m"
-    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    distanceLabel.TextSize = ESP_SETTINGS.TextSize - 2
-    distanceLabel.TextStrokeTransparency = 0.5
-    distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    distanceLabel.Font = Enum.Font.Gotham
-    distanceLabel.Parent = frame
-    
-    -- Create health label
-    local healthLabel = Instance.new("TextLabel")
-    healthLabel.Name = "HealthLabel"
-    healthLabel.Size = UDim2.new(1, 0, 0, 15)
-    healthLabel.Position = UDim2.new(0, 0, 0, 35)
-    healthLabel.BackgroundTransparency = 1
-    healthLabel.Text = "100/100"
-    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    healthLabel.TextSize = ESP_SETTINGS.TextSize - 2
-    healthLabel.TextStrokeTransparency = 0.5
-    healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    healthLabel.Font = Enum.Font.Gotham
-    healthLabel.Parent = frame
-    
-    -- Create health bar background
-    local healthBarBG = Instance.new("Frame")
-    healthBarBG.Name = "HealthBarBG"
-    healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
-    healthBarBG.Position = UDim2.new(0, 0, 0, 50)
-    healthBarBG.BackgroundColor3 = Color3.new(0, 0, 0)
-    healthBarBG.BorderSizePixel = 1
-    healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
-    healthBarBG.Parent = frame
-    
-    -- Create health bar fill
-    local healthBarFill = Instance.new("Frame")
-    healthBarFill.Name = "HealthBarFill"
-    healthBarFill.Size = UDim2.new(1, 0, 1, 0)
-    healthBarFill.Position = UDim2.new(0, 0, 0, 0)
-    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    healthBarFill.BorderSizePixel = 0
-    healthBarFill.Parent = healthBarBG
-    
-    -- Update function
-    local function updateESP()
-        if not playerESPEnabled then return end
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-        
-        local playerRoot = player.Character.HumanoidRootPart
-        local localRoot = LocalPlayer.Character.HumanoidRootPart
-        local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        
-        if not playerRoot or not localRoot or not playerHumanoid then return end
-        
-        -- Update distance
-        if ESP_SETTINGS.ShowDistance then
-            local distance = (localRoot.Position - playerRoot.Position).Magnitude
-            distanceLabel.Text = math.floor(distance) .. "m"
-            distanceLabel.Visible = true
-        else
-            distanceLabel.Visible = false
-        end
-        
-        -- Update health
-        if ESP_SETTINGS.ShowHealth then
-            local health = math.floor(playerHumanoid.Health)
-            local maxHealth = math.floor(playerHumanoid.MaxHealth)
-            local healthPercent = health / maxHealth
-            
-            healthLabel.Text = health .. "/" .. maxHealth
-            healthLabel.Visible = true
-            
-            -- Update health bar
-            if ESP_SETTINGS.HealthBarEnabled then
-                healthBarBG.Visible = true
-                healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
-                
-                -- Color based on health percentage
-                if healthPercent > 0.6 then
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
-                    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                elseif healthPercent > 0.3 then
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
-                    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-                else
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
-                    healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
-                end
-            else
-                healthBarBG.Visible = false
-            end
-        else
-            healthLabel.Visible = false
-            healthBarBG.Visible = false
-        end
-        
-        -- Update name
-        if ESP_SETTINGS.ShowNames then
-            nameLabel.Text = player.DisplayName
-            nameLabel.Visible = true
-        else
-            nameLabel.Visible = false
-        end
-    end
-    
-    -- Store ESP components
-    trackedPlayers[player] = {
-        highlight = highlight,
-        billboard = billboard,
-        updateFunction = updateESP
-    }
-    
-    -- Connect update function
-    local connection = RunService.Heartbeat:Connect(updateESP)
-    espConnections[player] = connection
-    
-    -- Handle player leaving
-    local function onPlayerRemoving()
-        removePlayerESP(player)
-    end
-    
-    -- Connect to player removing (will be cleaned up when player leaves)
-    local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
-        if removedPlayer == player then
-            onPlayerRemoving()
-        end
-    end)
-    
-    -- Store the remove connection
-    if not espConnections[player] then
-        espConnections[player] = {}
-    end
-    if type(espConnections[player]) == "table" then
-        espConnections[player].removeConnection = removeConnection
-    end
-    
-    -- Initial update
-    updateESP()
-end
-
--- Remove ESP for a player
-local function removePlayerESP(player)
-    if trackedPlayers[player] then
-        -- Destroy ESP components
-        if trackedPlayers[player].highlight then
-            trackedPlayers[player].highlight:Destroy()
-        end
-        if trackedPlayers[player].billboard then
-            trackedPlayers[player].billboard:Destroy()
-        end
-        trackedPlayers[player] = nil
-    end
-    
-    -- Disconnect connections
-    if espConnections[player] then
-        if type(espConnections[player]) == "userdata" then
-            espConnections[player]:Disconnect()
-        elseif type(espConnections[player]) == "table" then
-            if espConnections[player].removeConnection then
-                espConnections[player].removeConnection:Disconnect()
-            end
-        end
-        espConnections[player] = nil
-    end
-end
-
--- Enable ESP for all players
-local function enablePlayerESP()
-    playerESPEnabled = true
-    
-    -- Add ESP to existing players
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            createPlayerESP(player)
-        end
-    end
-    
-    -- Connect to new players joining
-    espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
-        if playerESPEnabled then
-            -- Wait for character to load
-            player.CharacterAdded:Connect(function(character)
-                if playerESPEnabled then
-                    wait(1) -- Small delay to ensure everything is loaded
-                    createPlayerESP(player)
-                end
-            end)
-        end
-    end)
-    
-    -- Connect to existing players respawning
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            player.CharacterAdded:Connect(function(character)
-                if playerESPEnabled then
-                    wait(1) -- Small delay to ensure everything is loaded
-                    createPlayerESP(player)
-                end
-            end)
-        end
-    end
-    
-    print("✅ Player ESP Enabled")
-end
-
--- Disable ESP for all players
-local function disablePlayerESP()
-    playerESPEnabled = false
-    
-    -- Remove ESP from all tracked players
-    for player, _ in pairs(trackedPlayers) do
-        removePlayerESP(player)
-    end
-    
-    -- Disconnect main connections
-    if espConnections.playerAdded then
-        espConnections.playerAdded:Disconnect()
-        espConnections.playerAdded = nil
-    end
-    
-    -- Clear all connections
-    for player, connection in pairs(espConnections) do
-        if type(connection) == "userdata" then
-            connection:Disconnect()
-        elseif type(connection) == "table" then
-            if connection.removeConnection then
-                connection.removeConnection:Disconnect()
-            end
-        end
-    end
-    espConnections = {}
-    
-    print("❌ Player ESP Disabled")
-end
-
--- Main Player ESP Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Player ESP",
-    Icon = "users",
-    Value = false,
-    Callback = function(state)
-        if state then
-            enablePlayerESP()
-        else
-            disablePlayerESP()
-        end
-        print("✅ Player ESP", state and "ON" or "OFF")
-    end
-})
-
--- ESP Feature Toggles (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Show Player Names",
-    Icon = "user-check",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowNames = state
-        print("✅ Show Player Names", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Player Distance",
-    Icon = "ruler",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowDistance = state
-        print("✅ Show Player Distance", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Player Health",
-    Icon = "heart-pulse",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowHealth = state
-        print("✅ Show Player Health", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Health Bar",
-    Icon = "activity",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.HealthBarEnabled = state
-        print("✅ Show Health Bar", state and "ON" or "OFF")
-    end
-})
-
--- ESP Distance Slider (WindUI Format)
-Tabs.EspTab:Slider({
-    Title = "ESP Max Distance",
-    Value = { Min = 100, Max = 2000, Default = 1000 },
-    Callback = function(value)
-        ESP_SETTINGS.MaxDistance = value
-        print("📏 ESP Max Distance set to:", value)
-    end
-})
-
--- ESP Text Size Slider (WindUI Format)
-Tabs.EspTab:Slider({
-    Title = "ESP Text Size",
-    Value = { Min = 8, Max = 24, Default = 14 },
-    Callback = function(value)
-        ESP_SETTINGS.TextSize = value
-        print("📏 ESP Text Size set to:", value)
-    end
-})
-
--- Teleport to Campfire Button
+-- Teleport to Campfire
 Tabs.TpTab:Button({
     Title = "Teleport to Campfire",
     Desc = "Quick teleport to campfire location",
     Callback = function()
         local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
         
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-            print("✅ Teleported to campfire successfully!")
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+            Player.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            print("Teleported to campfire successfully!")
         else
-            print("❌ Teleport failed - Character not found!")
+            print("Teleport failed - Character not found!")
         end
     end
 })
@@ -1561,7 +1088,6 @@ if CharactersFolder then
     local selectedChild = nil
     local childDropdown = nil
 
-    -- Function to refresh available Lost Children
     local function refreshLostChildren()
         local previousChildren = {}
         for _, child in pairs(availableChildren) do
@@ -1570,7 +1096,6 @@ if CharactersFolder then
         
         availableChildren = {}
         
-        -- Check each Lost Child path
         for _, childName in pairs(lostChildPaths) do
             local childModel = CharactersFolder:FindFirstChild(childName)
             if childModel and childModel:IsA("Model") then
@@ -1578,15 +1103,13 @@ if CharactersFolder then
             end
         end
         
-        print("👶 Found", #availableChildren, "Lost Children available for teleport")
+        print("Found", #availableChildren, "Lost Children available for teleport")
         
-        -- Check if selected child still exists
         if selectedChild and not CharactersFolder:FindFirstChild(selectedChild) then
             selectedChild = nil
-            print("⚠️ Previously selected Lost Child no longer exists")
+            print("Previously selected Lost Child no longer exists")
         end
         
-        -- Check for changes
         local hasChanges = (#availableChildren ~= #previousChildren)
         if not hasChanges then
             for _, child in pairs(availableChildren) do
@@ -1597,13 +1120,11 @@ if CharactersFolder then
             end
         end
         
-        -- Update dropdown if there are changes
         if childDropdown and hasChanges then
             pcall(function()
                 childDropdown:SetValues(availableChildren)
             end)
             
-            -- Set default selection if none selected and children available
             if #availableChildren > 0 and not selectedChild then
                 selectedChild = availableChildren[1]
                 pcall(function()
@@ -1613,513 +1134,119 @@ if CharactersFolder then
         end
     end
 
-    -- Function to get teleport position for a Lost Child
     local function getLostChildTeleportPosition(childName)
         local childModel = CharactersFolder:FindFirstChild(childName)
-        if not childModel then
-            return nil
-        end
+        if not childModel then return nil end
         
-        -- Try to find HumanoidRootPart first
         local rootPart = childModel:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            return rootPart.Position
-        end
+        if rootPart then return rootPart.Position end
         
-        -- Fallback to any BasePart
         local anyPart = childModel:FindFirstChildWhichIsA("BasePart")
-        if anyPart then
-            return anyPart.Position
-        end
+        if anyPart then return anyPart.Position end
         
-        -- Fallback to model's PrimaryPart
-        if childModel.PrimaryPart then
-            return childModel.PrimaryPart.Position
-        end
+        if childModel.PrimaryPart then return childModel.PrimaryPart.Position end
         
         return nil
     end
 
-    -- Function to teleport to selected Lost Child
     local function teleportToLostChild(childName)
-        local player = LocalPlayer
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            print("❌ Player character not found!")
+        if not Player.Character or not Player.Character:FindFirstChild("HumanoidRootPart") then
+            print("Player character not found!")
             return false
         end
         
         local targetPosition = getLostChildTeleportPosition(childName)
         if not targetPosition then
-            print("❌ Could not find valid teleport position for", childName)
+            print("Could not find valid teleport position for", childName)
             return false
         end
         
-        -- Add some height offset to avoid collision
         local teleportPosition = targetPosition + Vector3.new(0, 5, 0)
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
+        Player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
         
-        print("✅ Teleported to", childName)
+        print("Teleported to", childName)
         return true
     end
 
-    -- Initial refresh
     refreshLostChildren()
 
-    -- Lost Child Selection Dropdown
     childDropdown = Tabs.TpTab:Dropdown({
         Title = "Select Lost Child",
         Values = availableChildren,
         Value = availableChildren[1] or "None",
         Callback = function(selected)
             selectedChild = selected
-            print("👶 Selected Lost Child:", selected)
+            print("Selected Lost Child:", selected)
         end
     })
 
-    -- Teleport to Selected Lost Child Button
     Tabs.TpTab:Button({
         Title = "Teleport to Selected Lost Child",
         Desc = "Teleport to the currently selected Lost Child",
         Callback = function()
             if not selectedChild then
-                print("❌ No Lost Child selected!")
+                print("No Lost Child selected!")
                 return
             end
-            
             teleportToLostChild(selectedChild)
         end
     })
 
-    -- Individual teleport buttons for each Lost Child
     for _, childName in pairs(lostChildPaths) do
         Tabs.TpTab:Button({
             Title = "TP to " .. childName,
             Desc = "Direct teleport to " .. childName,
             Callback = function()
                 if not CharactersFolder:FindFirstChild(childName) then
-                    print("❌", childName, "not found!")
+                    print(childName, "not found!")
                     return
                 end
-                
                 teleportToLostChild(childName)
             end
         })
     end
 
-    -- Teleport to Random Lost Child Button
-    Tabs.TpTab:Button({
-        Title = "TP to Random Lost Child",
-        Desc = "Teleport to a random available Lost Child",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            local randomChild = availableChildren[math.random(1, #availableChildren)]
-            teleportToLostChild(randomChild)
-        end
-    })
-
-    -- Teleport to All Lost Children (Sequential)
-    Tabs.TpTab:Button({
-        Title = "TP to All Lost Children",
-        Desc = "Teleport to each Lost Child with 2 second delays",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            print("🔄 Starting sequential teleport to all Lost Children...")
-            
-            task.spawn(function()
-                for i, childName in pairs(availableChildren) do
-                    print("📍 Teleporting to", childName, "(" .. i .. "/" .. #availableChildren .. ")")
-                    teleportToLostChild(childName)
-                    
-                    -- Wait before next teleport (except for the last one)
-                    if i < #availableChildren then
-                        task.wait(2)
-                    end
-                end
-                print("✅ Completed teleporting to all Lost Children!")
-            end)
-        end
-    })
-
-    -- Show Available Lost Children Button
-    Tabs.TpTab:Button({
-        Title = "Show Available Lost Children",
-        Desc = "Display all currently available Lost Children",
-        Callback = function()
-            print("👶 Available Lost Children:")
-            if #availableChildren > 0 then
-                for i, childName in pairs(availableChildren) do
-                    local childModel = CharactersFolder:FindFirstChild(childName)
-                    local position = getLostChildTeleportPosition(childName)
-                    print(i .. ". " .. childName .. " - Position:", position and tostring(position) or "Unknown")
-                end
-                print("🎯 Currently selected:", selectedChild or "None")
-            else
-                print("❌ No Lost Children found!")
-            end
-        end
-    })
-
-    -- Manual Refresh Button
-    Tabs.TpTab:Button({
-        Title = "Refresh Lost Children",
-        Desc = "Manually refresh the Lost Children list",
-        Callback = function()
-            print("🔄 Manually refreshing Lost Children...")
-            refreshLostChildren()
-            print("🔄 Lost Children list refreshed!")
-        end
-    })
-
-    -- Auto-refresh every 1 second
     task.spawn(function()
         while true do
             task.wait(1)
             refreshLostChildren()
         end
     end)
-
-    -- Safe Teleport Toggle (for Lost Children)
-    local safeLostChildTP = false
-    Tabs.TpTab:Toggle({
-        Title = "Safe Lost Child TP",
-        Icon = "baby",
-        Value = false,
-        Callback = function(state)
-            safeLostChildTP = state
-            print("👶 Safe Lost Child Teleport:", state and "ON" or "OFF")
-            if state then
-                print("📝 Safe mode adds extra height to Lost Child teleports")
-            end
-        end
-    })
-
-    -- Enhanced teleport function with safe mode for Lost Children
-    local function safeTeleportToLostChild(childName)
-        local player = LocalPlayer
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            print("❌ Player character not found!")
-            return false
-        end
-        
-        local targetPosition = getLostChildTeleportPosition(childName)
-        if not targetPosition then
-            print("❌ Could not find valid teleport position for", childName)
-            return false
-        end
-        
-        -- Add extra height if safe mode is on
-        local heightOffset = safeLostChildTP and 15 or 5
-        local teleportPosition = targetPosition + Vector3.new(0, heightOffset, 0)
-        
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-        
-        local safetyText = safeLostChildTP and " (Safe Mode)" or ""
-        print("✅ Teleported to", childName .. safetyText)
-        return true
-    end
-
-    -- Update the teleport functions to use safe teleport
-    local originalTeleportFunction = teleportToLostChild
-    teleportToLostChild = safeTeleportToLostChild
-
-else
-    print("❌ Characters folder not found in workspace!")
-    
-    -- Create error message in UI
-    Tabs.TpTab:Button({
-        Title = "⚠️ Characters Folder Missing",
-        Desc = "workspace.Characters folder not found",
-        Callback = function()
-            print("❌ Cannot find workspace.Characters folder!")
-            print("📁 Please ensure the Characters folder exists in workspace")
-        end
-    })
 end
 
--- Item Teleport System
-local ItemsFolder = workspace:FindFirstChild("Items")
-
-if ItemsFolder then
-    local uniqueModelNames = {}
-    local modelMap = {}
-    local selectedModelName = nil
-    local itemDropdown = nil
-
-    local function refreshModelList()
-        local previousCount = #uniqueModelNames
-        local previousNames = {}
-        for _, name in pairs(uniqueModelNames) do
-            previousNames[name] = true
-        end
-        
-        uniqueModelNames = {}
-        modelMap = {}
-
-        for _, item in pairs(ItemsFolder:GetDescendants()) do
-            if item:IsA("Model") then
-                local name = item.Name
-                if not modelMap[name] then
-                    modelMap[name] = {}
-                    table.insert(uniqueModelNames, name)
-                end
-                table.insert(modelMap[name], item)
-            end
-        end
-
-        print("📦 Found", #uniqueModelNames, "unique item types")
-        
-        -- Check if selected item still exists
-        if selectedModelName and not modelMap[selectedModelName] then
-            selectedModelName = nil
-            print("⚠️ Previously selected item no longer exists")
-        end
-        
-        -- Check if there are changes (count or actual items)
-        local hasChanges = (#uniqueModelNames ~= previousCount)
-        if not hasChanges then
-            -- Check if the actual items changed
-            for _, name in pairs(uniqueModelNames) do
-                if not previousNames[name] then
-                    hasChanges = true
-                    break
-                end
-            end
-        end
-        
-        -- Update dropdown if there are changes
-        if itemDropdown and hasChanges then
-            -- Update dropdown values
-            pcall(function()
-                itemDropdown:SetValues(uniqueModelNames)
-            end)
-            
-            -- Set new selection if current one is invalid
-            if #uniqueModelNames > 0 and not selectedModelName then
-                selectedModelName = uniqueModelNames[1]
-                -- Try to set value, but don't error if method doesn't exist
-                pcall(function()
-                    itemDropdown:SetValue(selectedModelName)
-                end)
-            end
-        end
-    end
-
-    -- Initial refresh
-    refreshModelList()
-
-    -- Item Selection Dropdown
-    itemDropdown = Tabs.TpTab:Dropdown({
-        Title = "Select Item to Teleport",
-        Values = uniqueModelNames,
-        Value = uniqueModelNames[1] or "None",
-        Callback = function(selected)
-            selectedModelName = selected
-            print("🎯 Selected item:", selected)
-        end
-    })
-
-    -- Auto-refresh item list every 1 second
-    task.spawn(function()
-        while true do
-            task.wait(1) -- Check every 1 second as requested
-            refreshModelList()
-        end
-    end)
-
-    local function getClosestModel(modelList)
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if not hrp or not modelList then return nil end
-
-        local closest, minDist = nil, math.huge
-        for _, model in pairs(modelList) do
-            local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-            if primary then
-                local dist = (hrp.Position - primary.Position).Magnitude
-                if dist < minDist then
-                    minDist = dist
-                    closest = primary
-                end
-            end
-        end
-        return closest
-    end
-
-    -- Teleport to Selected Item Button
-    Tabs.TpTab:Button({
-        Title = "Teleport to Selected Item",
-        Desc = "Teleport to the closest instance of selected item",
-        Callback = function()
-            if not selectedModelName or not modelMap[selectedModelName] then
-                print("❌ No item selected or item not found!")
-                return
-            end
-
-            local closestPart = getClosestModel(modelMap[selectedModelName])
-            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-            if closestPart and hrp then
-                hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
-                print("✅ Teleported to nearest:", selectedModelName)
-            else
-                print("❌ Could not find valid item to teleport to!")
-            end
-        end
-    })
-
-    -- Refresh Item List Button
-    Tabs.TpTab:Button({
-        Title = "Manual Refresh Items",
-        Desc = "Force refresh the item list immediately",
-        Callback = function()
-            print("🔄 Manually refreshing item list...")
-            refreshModelList()
-            print("🔄 Item list manually refreshed! Found", #uniqueModelNames, "item types")
-            if selectedModelName then
-                print("🎯 Currently selected:", selectedModelName)
-            else
-                print("⚠️ No item selected")
-            end
-        end
-    })
-else
-    print("❌ Items folder not found in workspace!")
-end
-
--- Quick Teleport Buttons for Common Locations
-Tabs.TpTab:Button({
-    Title = "Teleport to Spawn",
-    Desc = "Quick teleport back to spawn area",
-    Callback = function()
-        local spawnPosition = Vector3.new(0, 10, 0) -- Adjust coordinates as needed
-        
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(spawnPosition)
-            print("✅ Teleported to spawn!")
-        else
-            print("❌ Teleport failed - Character not found!")
-        end
-    end
-})
-
--- Teleport to Random Item Button
-Tabs.TpTab:Button({
-    Title = "Teleport to Random Item",
-    Desc = "Teleport to a random item in the workspace",
-    Callback = function()
-        if ItemsFolder then
-            local allItems = {}
-            for _, item in pairs(ItemsFolder:GetChildren()) do
-                if item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) then
-                    table.insert(allItems, item)
-                end
-            end
-            
-            if #allItems > 0 then
-                local randomItem = allItems[math.random(1, #allItems)]
-                local targetPart = randomItem.PrimaryPart or randomItem:FindFirstChildWhichIsA("BasePart")
-                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                if targetPart and hrp then
-                    hrp.CFrame = targetPart.CFrame + Vector3.new(0, 5, 0)
-                    print("✅ Teleported to random item:", randomItem.Name)
-                else
-                    print("❌ Failed to teleport to random item!")
-                end
-            else
-                print("❌ No items found to teleport to!")
-            end
-        else
-            print("❌ Items folder not found!")
-        end
-    end
-})
-
--- Teleport Safe Mode Toggle
-local safeTeleportMode = false
-Tabs.TpTab:Toggle({
-    Title = "Safe Teleport Mode",
-    Icon = "shield",
-    Value = false,
-    Callback = function(state)
-        safeTeleportMode = state
-        print("✅ Safe Teleport Mode", state and "ON" or "OFF")
-        if state then
-            print("📝 Safe mode adds 10 studs height to teleports")
-        end
-    end
-})
-
--- Enhanced teleport function with safe mode
-local function safeTeleport(targetCFrame, locationName)
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        print("❌ Teleport failed - Character not found!")
-        return false
-    end
-    
-    local finalCFrame = targetCFrame
-    if safeTeleportMode then
-        finalCFrame = targetCFrame + Vector3.new(0, 10, 0) -- Add extra height for safety
-    end
-    
-    hrp.CFrame = finalCFrame
-    print("✅ Safely teleported to:", locationName or "Unknown location")
-    return true
-end
-
--- Sky Platform Script variables
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-
+-- Sky Platform System
 local isOnPlatform = false
 local skyPlatform = nil
 local platformConnection = nil
 
--- Create infinite platform function
 local function createSkyPlatform(playerPosition)
     if skyPlatform then
         skyPlatform:Destroy()
     end
     
-    -- Create platform part (invisible)
     skyPlatform = Instance.new("Part")
     skyPlatform.Name = "SkyPlatform"
-    skyPlatform.Size = Vector3.new(50, 1, 50) -- Starting size
+    skyPlatform.Size = Vector3.new(50, 1, 50)
     skyPlatform.Position = Vector3.new(playerPosition.X, 200, playerPosition.Z)
     skyPlatform.Anchored = true
-    skyPlatform.Transparency = 1 -- Make invisible
-    skyPlatform.CanCollide = true -- Still walkable
+    skyPlatform.Transparency = 1
+    skyPlatform.CanCollide = true
     skyPlatform.TopSurface = Enum.SurfaceType.Smooth
     skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
     skyPlatform.Parent = workspace
     
-    -- Make platform expand infinitely as player moves
     platformConnection = RunService.Heartbeat:Connect(function()
         if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform then
             local humanoidRootPart = Player.Character.HumanoidRootPart
             local playerPos = humanoidRootPart.Position
             
-            -- Check if player is still at sky level
             if playerPos.Y > 150 then
-                -- Update platform position and size based on player position
                 local distance = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(skyPlatform.Position.X, skyPlatform.Position.Z)).Magnitude
                 
                 if distance > 20 then
-                    -- Move platform closer to player
                     skyPlatform.Position = Vector3.new(playerPos.X, 200, playerPos.Z)
                 end
                 
-                -- Keep platform large enough
                 local minSize = 100
                 if skyPlatform.Size.X < minSize then
                     skyPlatform.Size = Vector3.new(minSize, 1, minSize)
@@ -2129,71 +1256,58 @@ local function createSkyPlatform(playerPosition)
     end)
 end
 
--- Teleport to sky platform function
 local function teleportToSky()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("☁️ Error: Character not found")
+        print("Error: Character not found")
         return
     end
     
     local humanoidRootPart = character.HumanoidRootPart
-    
-    -- Create platform
     createSkyPlatform(humanoidRootPart.Position)
-    
-    -- Teleport player
     humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 205, humanoidRootPart.Position.Z)
-    
     isOnPlatform = true
-    print("☁️ Teleported to invisible sky platform!")
+    print("Teleported to invisible sky platform!")
 end
 
--- Teleport back to ground function
 local function teleportToGround()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("☁️ Error: Character not found")
+        print("Error: Character not found")
         return
     end
     
     local humanoidRootPart = character.HumanoidRootPart
     local currentPosition = humanoidRootPart.Position
     
-    -- Raycast straight down from current position to find ground
     local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0))
     
     if raycast then
-        -- Teleport to ground + 5 studs above surface
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
     else
-        -- Fallback: teleport to default ground level
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
     end
     
-    -- Destroy platform
     if skyPlatform then
         skyPlatform:Destroy()
         skyPlatform = nil
     end
     
-    -- Disconnect platform update
     if platformConnection then
         platformConnection:Disconnect()
         platformConnection = nil
     end
     
     isOnPlatform = false
-    print("☁️ Teleported back to ground!")
+    print("Teleported back to ground!")
 end
 
--- Sky Platform Toggle
 Tabs.TpTab:Toggle({
     Title = "Sky Platform",
     Icon = "cloud",
     Value = false,
     Callback = function(state)
-        print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
+        print(state and "Sky Platform ON" or "Sky Platform OFF")
         
         if state then
             teleportToSky()
@@ -2203,35 +1317,24 @@ Tabs.TpTab:Toggle({
     end
 })
 
--- Clean up functions for player events
-local function cleanupSkyPlatform()
-    if skyPlatform then
-        skyPlatform:Destroy()
-        skyPlatform = nil
-    end
-    if platformConnection then
-        platformConnection:Disconnect()
-        platformConnection = nil
-    end
-    isOnPlatform = false
-end
+--================= FUN TAB CONTENT =================
 
--- Clean up when player resets
-Player.CharacterRemoving:Connect(cleanupSkyPlatform)
+Tabs.JkTab:Paragraph({
+    Title = "Fun Features",
+    Desc = "Entertainment and visual enhancement features",
+    Image = "smile",
+    Color = "Blue",
+})
 
 -- Character Freeze System
-local CharactersFolder = workspace:FindFirstChild("Characters")
-
 if CharactersFolder then
     local characterCounts = {}
     local characterNames = {}
     local selectedCharacters = {}
     local frozenCharacters = {}
     local characterDropdown = nil
-    local freezeToggle = nil
     local isFreezeModeActive = false
 
-    -- Function to get all unique characters with counts
     local function refreshCharacterList()
         local previousNames = {}
         for _, name in pairs(characterNames) do
@@ -2242,7 +1345,6 @@ if CharactersFolder then
         characterNames = {}
         local displayNames = {}
 
-        -- Count all character types
         for _, character in pairs(CharactersFolder:GetChildren()) do
             if character:IsA("Model") then
                 local name = character.Name
@@ -2254,16 +1356,14 @@ if CharactersFolder then
             end
         end
 
-        -- Create display names with counts (e.g., "bunny X3", "spider X2")
         for _, name in pairs(characterNames) do
             local count = characterCounts[name]
             local displayName = name .. " X" .. count
             table.insert(displayNames, displayName)
         end
 
-        print("🎭 Found", #characterNames, "unique character types")
+        print("Found", #characterNames, "unique character types")
         
-        -- Check if there are changes
         local hasChanges = (#characterNames ~= #previousNames)
         if not hasChanges then
             for _, name in pairs(characterNames) do
@@ -2274,14 +1374,12 @@ if CharactersFolder then
             end
         end
         
-        -- Update dropdown if there are changes
         if characterDropdown and hasChanges then
             pcall(function()
                 characterDropdown:SetValues(displayNames)
             end)
         end
         
-        -- Remove selected characters that no longer exist
         local validSelections = {}
         for _, selected in pairs(selectedCharacters) do
             local characterName = selected:match("(.+) X%d+")
@@ -2294,16 +1392,13 @@ if CharactersFolder then
         return displayNames
     end
 
-    -- Function to freeze selected characters
     local function freezeSelectedCharacters()
         if not isFreezeModeActive then return end
         
         for _, character in pairs(CharactersFolder:GetChildren()) do
             if character:IsA("Model") then
                 local characterName = character.Name
-                local displayName = characterName .. " X" .. (characterCounts[characterName] or 0)
                 
-                -- Check if this character type is selected
                 local shouldFreeze = false
                 for _, selected in pairs(selectedCharacters) do
                     local selectedName = selected:match("(.+) X%d+")
@@ -2314,7 +1409,6 @@ if CharactersFolder then
                 end
                 
                 if shouldFreeze then
-                    -- Freeze the character by anchoring all parts
                     for _, part in pairs(character:GetDescendants()) do
                         if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
                             part.Anchored = true
@@ -2322,7 +1416,6 @@ if CharactersFolder then
                         end
                     end
                     
-                    -- Also disable humanoid if exists
                     local humanoid = character:FindFirstChildOfClass("Humanoid")
                     if humanoid then
                         humanoid.PlatformStand = true
@@ -2333,7 +1426,6 @@ if CharactersFolder then
         end
     end
 
-    -- Function to unfreeze all characters
     local function unfreezeAllCharacters()
         for part, _ in pairs(frozenCharacters) do
             if part:IsA("BasePart") then
@@ -2343,13 +1435,11 @@ if CharactersFolder then
             end
         end
         frozenCharacters = {}
-        print("❄️ All characters unfrozen")
+        print("All characters unfrozen")
     end
 
-    -- Initial refresh
     local displayNames = refreshCharacterList()
 
-    -- Character Selection Dropdown (Multi-select)
     characterDropdown = Tabs.JkTab:Dropdown({
         Title = "Select Characters to Freeze",
         Values = displayNames,
@@ -2358,9 +1448,8 @@ if CharactersFolder then
         AllowNone = true,
         Callback = function(selected)
             selectedCharacters = selected
-            print("🎯 Selected characters:", table.concat(selected, ", "))
+            print("Selected characters:", table.concat(selected, ", "))
             
-            -- If freeze mode is active, apply freezing immediately
             if isFreezeModeActive then
                 unfreezeAllCharacters()
                 freezeSelectedCharacters()
@@ -2368,113 +1457,39 @@ if CharactersFolder then
         end
     })
 
-    -- Freeze Toggle
-    freezeToggle = Tabs.JkTab:Toggle({
+    Tabs.JkTab:Toggle({
         Title = "Freeze Selected Characters",
         Icon = "snowflake",
         Value = false,
         Callback = function(state)
             isFreezeModeActive = state
-            print("❄️ Character Freeze Mode:", state and "ON" or "OFF")
+            print("Character Freeze Mode:", state and "ON" or "OFF")
             
             if state then
                 freezeSelectedCharacters()
-                print("❄️ Selected characters have been frozen")
+                print("Selected characters have been frozen")
             else
                 unfreezeAllCharacters()
             end
         end
     })
 
-    -- Auto-refresh character list every 1 second
     task.spawn(function()
         while true do
             task.wait(1)
             refreshCharacterList()
             
-            -- Re-apply freezing if mode is active
             if isFreezeModeActive and #selectedCharacters > 0 then
                 freezeSelectedCharacters()
             end
         end
     end)
-
-    -- Manual refresh button
-    Tabs.JkTab:Button({
-        Title = "Refresh Character List",
-        Desc = "Manually refresh the character list",
-        Callback = function()
-            print("🔄 Manually refreshing character list...")
-            local displayNames = refreshCharacterList()
-            print("🔄 Character list refreshed! Found", #characterNames, "character types")
-            
-            -- Update dropdown
-            pcall(function()
-                characterDropdown:SetValues(displayNames)
-            end)
-        end
-    })
-
-    -- Show selected characters button
-    Tabs.JkTab:Button({
-        Title = "Show Selected Characters",
-        Desc = "Display currently selected characters in console",
-        Callback = function()
-            if #selectedCharacters > 0 then
-                print("🎭 Currently selected characters:")
-                for i, character in pairs(selectedCharacters) do
-                    print(i .. ". " .. character)
-                end
-                print("❄️ Freeze mode:", isFreezeModeActive and "ACTIVE" or "INACTIVE")
-            else
-                print("❌ No characters selected")
-            end
-        end
-    })
-
-    -- Clean up function for when characters are removed
-    local function cleanupRemovedCharacters()
-        local charactersToRemove = {}
-        for part, _ in pairs(frozenCharacters) do
-            if not part.Parent or not part.Parent.Parent then
-                charactersToRemove[part] = true
-            end
-        end
-        
-        for part, _ in pairs(charactersToRemove) do
-            frozenCharacters[part] = nil
-        end
-    end
-
-    -- Cleanup check every 5 seconds
-    task.spawn(function()
-        while true do
-            task.wait(5)
-            cleanupRemovedCharacters()
-        end
-    end)
-
-else
-    print("❌ Characters folder not found in workspace!")
-    
-    -- Create error message in UI
-    Tabs.JkTab:Button({
-        Title = "⚠️ Characters Folder Missing",
-        Desc = "workspace.Characters folder not found",
-        Callback = function()
-            print("❌ Cannot find workspace.Characters folder!")
-            print("📁 Please ensure the Characters folder exists in workspace")
-        end
-    })
 end
 
--- Player Visual Tab (NoFog, NoSky, Fullbright, LowGFX, etc.)
-local HttpService = game:GetService("HttpService")
-
--- Replace old ComponentsTab with PlayerTab
+-- Visual Settings
 Tabs.JkTab:Paragraph({
-    Title = "Player Visual Settings",
-    Desc = "Control graphics like fog, brightness, and sky.",
+    Title = "Visual Settings",
+    Desc = "Control graphics like fog, brightness, and sky",
     Image = "sun",
     Color = "Yellow",
 })
@@ -2487,10 +1502,10 @@ Tabs.JkTab:Toggle({
     Callback = function(state)
         if state then
             game.Lighting.FogEnd = 1e9
-            WindUI:Notify({ Title = "No Fog Enabled ✅", Content = "Fog removed.", Duration = 2 })
+            WindUI:Notify({ Title = "No Fog Enabled", Content = "Fog removed.", Duration = 2 })
         else
             game.Lighting.FogEnd = 1000
-            WindUI:Notify({ Title = "No Fog Disabled ❌", Content = "Fog restored.", Duration = 2 })
+            WindUI:Notify({ Title = "No Fog Disabled", Content = "Fog restored.", Duration = 2 })
         end
     end
 })
@@ -2505,11 +1520,11 @@ Tabs.JkTab:Toggle({
             for _, v in pairs(game.Lighting:GetChildren()) do
                 if v:IsA("Sky") then v.Parent = nil end
             end
-            WindUI:Notify({ Title = "No Sky Enabled ✅", Content = "Sky removed.", Duration = 2 })
+            WindUI:Notify({ Title = "No Sky Enabled", Content = "Sky removed.", Duration = 2 })
         else
             local sky = Instance.new("Sky")
             sky.Parent = game.Lighting
-            WindUI:Notify({ Title = "No Sky Disabled ❌", Content = "Sky restored.", Duration = 2 })
+            WindUI:Notify({ Title = "No Sky Disabled", Content = "Sky restored.", Duration = 2 })
         end
     end
 })
@@ -2524,12 +1539,12 @@ Tabs.JkTab:Toggle({
             game.Lighting.Brightness = 2
             game.Lighting.Ambient = Color3.new(1,1,1)
             game.Lighting.OutdoorAmbient = Color3.new(1,1,1)
-            WindUI:Notify({ Title = "Fullbright ✅", Content = "Lighting set to full brightness.", Duration = 2 })
+            WindUI:Notify({ Title = "Fullbright Enabled", Content = "Lighting set to full brightness.", Duration = 2 })
         else
             game.Lighting.Brightness = 1
             game.Lighting.Ambient = Color3.new(0.5,0.5,0.5)
             game.Lighting.OutdoorAmbient = Color3.new(0.5,0.5,0.5)
-            WindUI:Notify({ Title = "Fullbright Disabled ❌", Content = "Lighting restored.", Duration = 2 })
+            WindUI:Notify({ Title = "Fullbright Disabled", Content = "Lighting restored.", Duration = 2 })
         end
     end
 })
@@ -2549,35 +1564,36 @@ Tabs.JkTab:Toggle({
                     v:Destroy()
                 end
             end
-            WindUI:Notify({ Title = "Low GFX Mode ✅", Content = "Performance optimized.", Duration = 2 })
+            WindUI:Notify({ Title = "Low GFX Mode Enabled", Content = "Performance optimized.", Duration = 2 })
         else
-            WindUI:Notify({ Title = "Low GFX Disabled ❌", Content = "Reload game to restore graphics.", Duration = 2 })
+            WindUI:Notify({ Title = "Low GFX Disabled", Content = "Reload game to restore graphics.", Duration = 2 })
         end
     end
 })
 
-
--- Auto Farm Tab
+--================= OVERPOWERED TAB CONTENT =================
 
 Tabs.OpTab:Paragraph({
-    Title = "Warning",
-    Desc = "Do not change the distance sliders below, they are set to optimal values.",
-    Image = "check",
-    Color = "Green",
+    Title = "Overpowered Features",
+    Desc = "Warning: Do not change the distance sliders below, they are set to optimal values.",
+    Image = "zap",
+    Color = "Red",
 })
 
--- Auto Chop Tree Script for WindUI
+-- Auto Farm Variables
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 2500
+local ActiveKillAura = false
+local DistanceForKillAura = 2500
 
--- Distance Slider
+-- Auto Chop Tree Distance Slider
 Tabs.OpTab:Slider({
-    Title = "Don't Change this",
+    Title = "Auto Chop Tree Distance (Don't Change)",
     Value = {
         Min = 0,
         Max = 3000,
         Default = 2500
-    }, -- Added missing comma here
+    },
     Callback = function(val)
         DistanceForAutoChopTree = val
         print("Auto Chop Tree distance set to:", val)
@@ -2587,21 +1603,21 @@ Tabs.OpTab:Slider({
 -- Auto Chop Tree Toggle
 Tabs.OpTab:Toggle({
     Title = "Auto Chop Tree", 
+    Icon = "tree-pine",
     Value = false,
     Callback = function(state)
         ActiveAutoChopTree = state
-        print("Auto Chop Tree is now:", state)
+        print("Auto Chop Tree is now:", state and "ON" or "OFF")
         
         if ActiveAutoChopTree then
             task.spawn(function()
                 while ActiveAutoChopTree do 
-                    local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
+                    local character = Player.Character or Player.CharacterAdded:Wait()
                     local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
-                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    local weapon = (Player.Inventory:FindFirstChild("Old Axe") or 
+                                   Player.Inventory:FindFirstChild("Good Axe") or 
+                                   Player.Inventory:FindFirstChild("Strong Axe") or 
+                                   Player.Inventory:FindFirstChild("Chainsaw"))
                     
                     -- Check trees in Foliage
                     task.spawn(function()
@@ -2627,25 +1643,21 @@ Tabs.OpTab:Toggle({
                         end
                     end)
                     
-                    wait(0.1)
+                    task.wait(0.1)
                 end
             end)
         end
     end
 })
 
--- Auto Kill Aura Script for WindUI
-local ActiveKillAura = false
-local DistanceForKillAura = 2500
-
--- Distance Slider
+-- Kill Aura Distance Slider
 Tabs.OpTab:Slider({
-    Title = "Don't Change this",
+    Title = "Kill Aura Distance (Don't Change)",
     Value = {
         Min = 25,
         Max = 10000,
         Default = 2500
-    }, -- Added missing comma here
+    },
     Callback = function(val)
         DistanceForKillAura = val
         print("Kill Aura distance set to:", val)
@@ -2655,21 +1667,21 @@ Tabs.OpTab:Slider({
 -- Kill Aura Toggle
 Tabs.OpTab:Toggle({
     Title = "Kill Aura", 
+    Icon = "sword",
     Value = false,
     Callback = function(state)
         ActiveKillAura = state
-        print("Kill Aura is now:", state)
+        print("Kill Aura is now:", state and "ON" or "OFF")
         
         if ActiveKillAura then
             task.spawn(function()
                 while ActiveKillAura do 
-                    local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
+                    local character = Player.Character or Player.CharacterAdded:Wait()
                     local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
-                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    local weapon = (Player.Inventory:FindFirstChild("Old Axe") or 
+                                   Player.Inventory:FindFirstChild("Good Axe") or 
+                                   Player.Inventory:FindFirstChild("Strong Axe") or 
+                                   Player.Inventory:FindFirstChild("Chainsaw"))
                     
                     task.spawn(function()
                         for _, enemy in pairs(workspace.Characters:GetChildren()) do
@@ -2682,14 +1694,35 @@ Tabs.OpTab:Toggle({
                         end
                     end)
                     
-                    wait(0.1)
+                    task.wait(0.1)
                 end
             end)
         end
     end
 })
 
+-- Cleanup function for player leaving
+local function cleanupSkyPlatform()
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    isOnPlatform = false
+end
 
+-- Clean up when player resets
+Player.CharacterRemoving:Connect(cleanupSkyPlatform)
+
+-- Final initialization message
+print("🚀 Fryzer Hub loaded successfully!")
+print("📝 All tabs initialized: Info, Player, Visual, Fun, Teleport, OverPowered")
+
+-- Destroy cleanup
 Window:OnDestroy(function()
-    print("Window destroyed")
+    print("Window destroyed - cleaning up")
+    cleanupSkyPlatform()
 end)
