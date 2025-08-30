@@ -180,7 +180,21 @@ Tabs.PlayerTab:Paragraph({
 -- WalkSpeed, JumpHeight, Noclip, Instant Prompts
 -- ========================================
 
-
+-- Additional Player Features
+Tabs.PlayerTab:Button({
+    Title = "Health Booster",
+    Desc = "Respawn your character instantly",
+    Callback = function()
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.Health = 100
+            WindUI:Notify({
+                Title = "Helth Boosted! ❤️",
+                Content = "Your health has been restored to full",
+                Duration = 2,
+            })
+        end
+    end
+})
 
 -- Infinite Jump Toggle
 local infiniteJumpEnabled = false
