@@ -1,2391 +1,1381 @@
--- 99 nights in the forest
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-end)
+-- MY HUB
 
-if not success then
-    local success2, WindUI2 = pcall(function()
-        return loadstring(game:HttpGet("https://raw.githubusercontent.com/Footagesus/WindUI/main/source.lua"))()
-    end)
-    
-    if success2 then
-        WindUI = WindUI2
-    else
-        warn("Failed to load WindUI library.")
-        game.StarterGui:SetCore("SendNotification", {
-            Title = "Library Error",
-            Text = "Failed to load WindUI. Please rejoin and try again.",
-            Duration = 10
-        })
-        return
-    end
-end
 
--- Services
+-- Modern Hub GUI for Roblox Executor (Updated with Fixed Dropdown System)
+-- Compatible with Fryzer Circle Toggle
+
 local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local Player = Players.LocalPlayer
-
--- Player Info
-local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
-local AccountAge = Player.AccountAge
-
--- Game info
-local GameName = "Unknown Game"
-pcall(function()
-    GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
-end)
-
--- Theme
-local themeSuccess = pcall(function()
-    WindUI:AddTheme({
-        Name = "CustomBlue",
-        Accent = "#3b82f6",
-        Outline = "#1e40af",
-        Text = "#ffffff",
-        Placeholder = "#93c5fd",
-        Background = "#1e293b",
-        BackgroundSecondary = "#334155",
-    })
-end)
-
--- Window
-local _, Window = pcall(function()
-    return WindUI:CreateWindow({
-        Title = "Fryzer Hub", -- Hub name
-        Icon = "rbxassetid://129260712070622",
-        Author = "99 Nights in the forest", -- Game name
-        Folder = "CustomHub",
-        Size = UDim2.fromOffset(500, 370),
-        Transparent = false,
-        Theme = themeSuccess and "CustomBlue" or "Dark",
-        SideBarWidth = 240,
-        ScrollBarEnabled = true
-    })
-end)
-
-if themeSuccess then
-    pcall(function()
-        WindUI:SetTheme("CustomBlue")
-    end)
-end
-
--- Custom Open Button
-Window:EditOpenButton({
-    Title = " Open Hub",
-    Icon = "user",
-    CornerRadius = UDim.new(0, 12),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(Color3.fromHex("#3b82f6"), Color3.fromHex("#6366f1")),
-    Draggable = true,
-})
-
---================= TABS =================
-
-local Tabs = {}
-
-Tabs.InfoTab = Window:Tab({
-    Title = "Info",
-    Icon = "info",
-    Desc = "Player information and Discord community"
-})
-
-
-Tabs.PlayerTab = Window:Tab({
-    Title = "Player",
-    Icon = "user-check",
-    Desc = "Player Controll System"
-})
-
-Tabs.EspTab = Window:Tab({
-    Title = "Visual",
-    Icon = "eye",
-    Desc = "All Esp System"
-})
-
-Tabs.TpTab = Window:Tab({
-    Title = "Teleport",
-    Icon = "navigation",
-    Desc = "Teleport System"
-})
-
-Tabs.OpTab = Window:Tab({
-    Title = "Over Powered",
-    Icon = "zap",
-    Desc = "Over Powered System"
-})
-
-Tabs.MapTab = Window:Tab({
-    Title = "World",
-    Icon = "map-pin",
-    Desc = "World affects scripts"
-})
-
-Window:SelectTab(1)
-
---================= INFO TAB CONTENT =================
-
-Tabs.InfoTab:Paragraph({
-    Title = "Player Information Dashboard",
-    Desc = "Complete player details, game information, and community access",
-    Image = "user-check",
-    Color = "Blue",
-})
-
-Tabs.InfoTab:Paragraph({
-    Title = "👤 " .. PlayerName,
-    Desc = string.format(
-        "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
-        Player.Name, AccountAge, Player.UserId, GameName,
-        #Players:GetPlayers(), Players.MaxPlayers,
-        game:GetService("LocalizationService").RobloxLocaleId
-    ),
-    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
-    ImageSize = 52,
-})
-
--- Discord Section
-Tabs.InfoTab:Paragraph({
-    Title = "Join Our Discord Community",
-    Desc = "Connect with other users, get support, and stay updated!",
-    Image = "users",
-    Color = "Blue",
-})
-
-Tabs.InfoTab:Button({
-    Title = "Copy Discord Link",
-    Desc = "Copy invite link to clipboard",
-    Callback = function()
-        setclipboard("https://discord.gg/rpE4Eet7")
-        WindUI:Notify({
-            Title = "Link Copied!",
-            Content = "Discord link copied to clipboard",
-            Duration = 3,
-            Icon = "copy",
-        })
-    end
-})
-
---================= PLAYERS CONTROLLS =================
-
-Tabs.PlayerTab:Paragraph({
-    Title = "Player Controls",
-    Desc = "Use the buttons below to control your player character",
-    Image = "user-check",
-    Color = "Blue",
-})
-
--- ========================================
--- SIMPLE WINDUI MOVEMENT SYSTEM
--- WalkSpeed, JumpHeight, Noclip, Instant Prompts
--- ========================================
-
--- Additional Player Features
-Tabs.PlayerTab:Button({
-    Title = "Health Booster",
-    Desc = "Restore your health to 100",
-    Callback = function()
-        local localPlayer = game.Players.LocalPlayer
-        if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
-            localPlayer.Character.Humanoid.Health = 100
-            WindUI:Notify({
-                Title = "Health Boosted! ❤️",
-                Content = "Your health has been set to 100",
-                Duration = 2,
-            })
-        else
-            WindUI:Notify({
-                Title = "Error!",
-                Content = "Character or Humanoid not found",
-                Duration = 2,
-            })
-        end
-    end
-})
-
--- Infinite Jump Toggle
-local infiniteJumpEnabled = false
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
-Tabs.PlayerTab:Toggle({
-    Title = "Infinite Jump",
-    Icon = "arrow-up",
-    Value = false,
-    Callback = function(state)
-        infiniteJumpEnabled = state
-        WindUI:Notify({
-            Title = state and "Infinite Jump Enabled! 🚀" or "Infinite Jump Disabled!",
-            Content = state and "Press Space to jump infinitely" or "Jump mechanics restored to normal",
-            Duration = 3,
-        })
-    end
-})
-
--- Infinite Jump Script
-UserInputService.JumpRequest:Connect(function()
-    if infiniteJumpEnabled and player.Character and player.Character:FindFirstChild("Humanoid") then
-        local humanoid = player.Character.Humanoid
-        if humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
-            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-        end
-    end
-end)
-
-
--- Services
-local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 
--- Variables
 local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
--- Movement States
-local ActiveSpeedBoost = false
-local ActiveJumpBoost = false
-local ActiveNoclip = false
-local ActiveInstantPrompts = false
-
-local ValueSpeed = 16
-local ValueJumpHeight = 7.2
-local OldSpeed = 16
-local OldJumpHeight = 7.2
-
--- ========================================
--- UTILITY FUNCTIONS
--- ========================================
-
-local function getCharacter()
-    return LocalPlayer.Character
+-- Remove existing GUI if it exists
+if PlayerGui:FindFirstChild("ModernHubGUI") then
+    PlayerGui:FindFirstChild("ModernHubGUI"):Destroy()
 end
 
-local function getHumanoid()
-    local character = getCharacter()
-    return character and character:FindFirstChildOfClass("Humanoid")
-end
-
--- ========================================
--- CHARACTER RESPAWN HANDLER
--- ========================================
-
-local function updateOriginalValues()
-    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
-        OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
-    end
-end
-
-updateOriginalValues()
-LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
-
--- ========================================
--- WINDUI INTERFACE - PLAYER TAB
--- ========================================
-
--- Instant Prompts Control
-Tabs.PlayerTab:Toggle({
-    Title = "Instant Open Chests",
-    Icon = "zap-off",
-    Value = false,
-    Callback = function(state)
-        ActiveInstantPrompts = state
-        
-        task.spawn(function()
-            if ActiveInstantPrompts then
-                -- Enable instant prompts
-                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
-                    if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then 
-                        prompt:SetAttribute("HoldDurationOld", prompt.HoldDuration)
-                        prompt.HoldDuration = 0
-                    end 
-                end
-                
-                -- Monitor for new prompts
-                local promptConnection
-                promptConnection = game.Workspace.DescendantAdded:Connect(function(descendant)
-                    if ActiveInstantPrompts and descendant:IsA("ProximityPrompt") and descendant.HoldDuration ~= 0 then
-                        descendant:SetAttribute("HoldDurationOld", descendant.HoldDuration)
-                        descendant.HoldDuration = 0
-                    end
-                end)
-                
-                -- Keep connection active while enabled
-                while ActiveInstantPrompts do
-                    task.wait(1)
-                end
-                
-                -- Cleanup when disabled
-                if promptConnection then
-                    promptConnection:Disconnect()
-                end
-            else 
-                -- Restore original prompt durations
-                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
-                    if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then 
-                        prompt.HoldDuration = prompt:GetAttribute("HoldDurationOld")
-                        prompt:SetAttribute("HoldDurationOld", nil)
-                    end 
-                end  
-            end
-        end)
-        
-        print("⚡ Instant Prompts: " .. (state and "ON" or "OFF"))
-    end
-})
-
--- Speed Controls Section
-Tabs.PlayerTab:Slider({
-    Title = "Walk Speed Setting",
-    Value = { Min = 16, Max = 500, Default = 16 },
-    Callback = function(value)
-        ValueSpeed = value
-        print("🏃 Walk speed set to: " .. value)
-    end
-})
-
-Tabs.PlayerTab:Toggle({
-    Title = "Enable Speed Boost",
-    Icon = "zap",
-    Value = false,
-    Callback = function(state)
-        ActiveSpeedBoost = state
-        
-        task.spawn(function()
-            while ActiveSpeedBoost do
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
-                end
-                task.wait(0.1)
-            end
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
-            end
-        end)
-        
-        print("🏃 Speed Boost: " .. (state and "ON" or "OFF"))
-    end
-})
-
--- Jump Controls Section
-Tabs.PlayerTab:Slider({
-    Title = "Jump Height Setting",
-    Value = { Min = 7, Max = 200, Default = 50 },
-    Callback = function(value)
-        ValueJumpHeight = value
-        print("🦘 Jump height set to: " .. value)
-    end
-})
-
-Tabs.PlayerTab:Toggle({
-    Title = "Enable Jump Boost",
-    Icon = "move-up",
-    Value = false,
-    Callback = function(state)
-        ActiveJumpBoost = state
-        
-        task.spawn(function()
-            while ActiveJumpBoost do
-                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                    local humanoid = LocalPlayer.Character.Humanoid
-                    -- Force JumpHeight mode for consistency
-                    humanoid.UseJumpPower = false
-                    humanoid.JumpHeight = ValueJumpHeight
-                end
-                task.wait(0.1)
-            end
-            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
-                local humanoid = LocalPlayer.Character.Humanoid
-                -- Restore original jump settings
-                humanoid.JumpHeight = 7.2  -- Default Roblox jump height
-            end
-        end)
-        
-        print("🦘 Jump Boost: " .. (state and "ON" or "OFF"))
-    end
-})
-
--- Noclip Control
-Tabs.PlayerTab:Toggle({
-    Title = "Noclip Mode",
-    Icon = "ghost",
-    Value = false,
-    Callback = function(state)
-        ActiveNoclip = state
-        
-        task.spawn(function()
-            while ActiveNoclip do 
-                if LocalPlayer.Character then
-                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                        if part:IsA("BasePart") and part.CanCollide then
-                            part.CanCollide = false
-                        end
-                    end
-                end
-                task.wait(0.1)
-            end 
-            if LocalPlayer.Character then
-                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
-                    if part:IsA("BasePart") and not part.CanCollide then
-                        part.CanCollide = true
-                    end
-                end
-            end
-        end)
-        
-        print("👻 Noclip: " .. (state and "ON" or "OFF"))
-    end
-})
-
-print("🚀 Simple Movement System loaded!")
-print("📝 Features: Walk Speed, Jump Height, Noclip, Instant Prompts")
-
--- Fly System
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-
-local IYMouse = Players.LocalPlayer:GetMouse()
-local FLYING = false
-local QEfly = true
-local iyflyspeed = 1
-local vehicleflyspeed = 1
-local ActivateFly = false
-
-local function sFLY(vfly)
-    repeat wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
-    repeat wait() until IYMouse
-    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-
-    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-    local SPEED = 0
-
-    local function FLY()
-        FLYING = true
-        local BG = Instance.new('BodyGyro')
-        local BV = Instance.new('BodyVelocity')
-        BG.P = 9e4
-        BG.Parent = T
-        BV.Parent = T
-        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-        BG.CFrame = T.CFrame
-        BV.Velocity = Vector3.new(0, 0, 0)
-        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-        task.spawn(function()
-            repeat wait()
-                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
-                end
-                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
-                    SPEED = 50
-                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
-                    SPEED = 0
-                end
-                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
-                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
-                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
-                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
-                else
-                    BV.Velocity = Vector3.new(0, 0, 0)
-                end
-                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
-            until not FLYING
-            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
-            SPEED = 0
-            BG:Destroy()
-            BV:Destroy()
-            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
-            end
-        end)
-    end
-    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
-        if KEY:lower() == 'w' then
-            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 's' then
-            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'a' then
-            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'd' then 
-            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
-        elseif QEfly and KEY:lower() == 'e' then
-            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
-        elseif QEfly and KEY:lower() == 'q' then
-            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
-        end
-        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
-    end)
-    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
-        if KEY:lower() == 'w' then
-            CONTROL.F = 0
-        elseif KEY:lower() == 's' then
-            CONTROL.B = 0
-        elseif KEY:lower() == 'a' then
-            CONTROL.L = 0
-        elseif KEY:lower() == 'd' then
-            CONTROL.R = 0
-        elseif KEY:lower() == 'e' then
-            CONTROL.Q = 0
-        elseif KEY:lower() == 'q' then
-            CONTROL.E = 0
-        end
-    end)
-    FLY()
-end
-
-local function NOFLY()
-    FLYING = false
-    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
-        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
-    end
-    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
-end
-
--- Mobile Fly Functions
-local velocityHandlerName = "BodyVelocity"
-local gyroHandlerName = "BodyGyro"
-local mfly1
-local mfly2
-
-local function UnMobileFly()
-    pcall(function()
-        FLYING = false
-        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-        root:FindFirstChild(velocityHandlerName):Destroy()
-        root:FindFirstChild(gyroHandlerName):Destroy()
-        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
-        mfly1:Disconnect()
-        mfly2:Disconnect()
-    end)
-end
-
-local function MobileFly()
-    UnMobileFly()
-    FLYING = true
-
-    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-    local camera = workspace.CurrentCamera
-    local v3none = Vector3.new()
-    local v3zero = Vector3.new(0, 0, 0)
-    local v3inf = Vector3.new(9e9, 9e9, 9e9)
-
-    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
-    local bv = Instance.new("BodyVelocity")
-    bv.Name = velocityHandlerName
-    bv.Parent = root
-    bv.MaxForce = v3zero
-    bv.Velocity = v3zero
-
-    local bg = Instance.new("BodyGyro")
-    bg.Name = gyroHandlerName
-    bg.Parent = root
-    bg.MaxTorque = v3inf
-    bg.P = 1000
-    bg.D = 50
-
-    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
-        local bv = Instance.new("BodyVelocity")
-        bv.Name = velocityHandlerName
-        bv.Parent = root
-        bv.MaxForce = v3zero
-        bv.Velocity = v3zero
-
-        local bg = Instance.new("BodyGyro")
-        bg.Name = gyroHandlerName
-        bg.Parent = root
-        bg.MaxTorque = v3inf
-        bg.P = 1000
-        bg.D = 50
-    end)
-
-    mfly2 = RunService.RenderStepped:Connect(function()
-        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
-        camera = workspace.CurrentCamera
-        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
-            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
-            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
-            local GyroHandler = root:FindFirstChild(gyroHandlerName)
-
-            VelocityHandler.MaxForce = v3inf
-            GyroHandler.MaxTorque = v3inf
-            humanoid.PlatformStand = true
-            GyroHandler.CFrame = camera.CoordinateFrame
-            VelocityHandler.Velocity = v3none
-
-            local direction = controlModule:GetMoveVector()
-            if direction.X > 0 then
-                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
-            end
-            if direction.X < 0 then
-                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
-            end
-            if direction.Z > 0 then
-                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
-            end
-            if direction.Z < 0 then
-                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
-            end
-        end
-    end)
-end
-
--- Fly Speed Slider
-Tabs.PlayerTab:Slider({
-    Title = "Fly Speed",
-    Value = {
-        Min = 0.1,
-        Max = 10,
-        Default = 1
+-- Configuration
+local Config = {
+    Colors = {
+        Primary = Color3.fromRGB(0, 0, 0), -- 
+        Secondary = Color3.fromRGB(0, 0, 0),
+        Accent = Color3.fromRGB(0, 0, 0),
+        AccentHover = Color3.fromRGB(104, 117, 255),
+        Success = Color3.fromRGB(67, 181, 129),
+        Text = Color3.fromRGB(255, 255, 255),
+        TextSecondary = Color3.fromRGB(180, 180, 190),
+        Border = Color3.fromRGB(45, 45, 55),
+        Shadow = Color3.fromRGB(0, 0, 0),
+        TabActive = Color3.fromRGB(70, 85, 220),
+        Warning = Color3.fromRGB(255, 140, 66),
+        Booster = Color3.fromRGB(255, 140, 66),
+        Error = Color3.fromRGB(237, 66, 69),
+        StrokeGreen = Color3.fromRGB(0, 255, 0)
     },
-    Callback = function(val)
-        iyflyspeed = val
-    end
-})
-
--- Fly Toggle
-Tabs.PlayerTab:Toggle({
-    Title = "Fly", 
-    Value = false,
-    Callback = function(state)
-        ActivateFly = state
-        task.spawn(function()
-            if not FLYING and ActivateFly then
-                if UserInputService.TouchEnabled then
-                    MobileFly()
-                else
-                    NOFLY()
-                    wait()
-                    sFLY()
-                end
-            elseif FLYING and not ActivateFly then
-                if UserInputService.TouchEnabled then
-                    UnMobileFly()
-                else
-                    NOFLY()
-                end
-            end
-        end)
-    end
-})
-
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-
-local LocalPlayer = Players.LocalPlayer
-
--- Health Billboard System
-local healthBillboardEnabled = false
-local connections = {}
-local tracked = {}
-
-local SETTINGS = {
-    Name = "HealthBillboard",
-    MaxDistance = 250,
-    StudsOffset = Vector3.new(0, 3.5, 0),
-    TextFont = Enum.Font.GothamBold,
-    TextSize = 14,
-    AlwaysOnTop = true,
-    UpdateHz = 30,
-    UseBar = true,
-    ShowModelName = false,
-    BarHeight = 6,
-    BorderThickness = 2.5,
+    Animations = {
+        Fast = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
+        Normal = TweenInfo.new(0.3, Enum.EasingStyle.Quad),
+        Slow = TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+        Bounce = TweenInfo.new(0.4, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    }
 }
 
-local function clamp(n, a, b) return math.max(a, math.min(b, n)) end
+-- Create Library
+local Library = {}
+Library.Tabs = {}
+Library.CurrentTab = nil
 
-local function lerpColor(c1, c2, t)
-    return Color3.new(
-        c1.R + (c2.R - c1.R) * t,
-        c1.G + (c2.G - c1.G) * t,
-        c1.B + (c2.B - c1.B) * t
-    )
-end
+-- Create Main ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "ModernHubGUI"
+ScreenGui.Parent = PlayerGui
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.DisplayOrder = 100
+ScreenGui.Enabled = true
 
-local function colorByPercent(p)
-    p = clamp(p, 0, 1)
-    return lerpColor(Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 90), p)
-end
+-- Create Main Frame (Much Smaller)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Parent = ScreenGui
+MainFrame.BackgroundColor3 = Config.Colors.Primary
+MainFrame.BorderSizePixel = 0
+MainFrame.Size = UDim2.new(0, 450, 0, 300) -- Much smaller size
+MainFrame.Position = UDim2.new(0.5, -225, 0.5, -150)
+MainFrame.Active = true
+MainFrame.Draggable = true
 
-local function findHead(model)
-    local head = model:FindFirstChild("Head")
-    if head and head:IsA("BasePart") then return head end
-    local best, bestY = nil, -math.huge
-    for _, obj in ipairs(model:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.CanCollide then
-            if obj.Position.Y > bestY then
-                bestY = obj.Position.Y
-                best = obj
-            end
-        end
-    end
-    return best
-end
+-- Add corner rounding (REMOVED UICorner for cleaner look)
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Config.Colors.StrokeGreen
+MainStroke.Thickness = 2
+MainStroke.Parent = MainFrame
 
-local function makeBillboard(humanoid, head, model)
-    if tracked[humanoid] and tracked[humanoid].Parent then return tracked[humanoid] end
+-- Header Frame
+local HeaderFrame = Instance.new("Frame")
+HeaderFrame.Name = "Header"
+HeaderFrame.Parent = MainFrame
+HeaderFrame.BackgroundColor3 = Config.Colors.Secondary
+HeaderFrame.BorderSizePixel = 0
+HeaderFrame.Size = UDim2.new(1, 0, 0, 40) -- Smaller header
+HeaderFrame.Position = UDim2.new(0, 0, 0, 0)
 
-    local bb = Instance.new("BillboardGui")
-    bb.Name = SETTINGS.Name
-    bb.Adornee = head
-    bb.AlwaysOnTop = SETTINGS.AlwaysOnTop
-    bb.Size = UDim2.fromOffset(160, SETTINGS.UseBar and (26 + SETTINGS.BarHeight) or 26)
-    bb.StudsOffset = SETTINGS.StudsOffset
-    bb.MaxDistance = SETTINGS.MaxDistance
-    bb.ResetOnSpawn = false
-    bb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    bb.Parent = head
+local HeaderCorner = Instance.new("UICorner")
+HeaderCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
+HeaderCorner.Parent = HeaderFrame
 
-    local holder = Instance.new("Frame")
-    holder.Size = UDim2.fromScale(1, 1)
-    holder.BackgroundTransparency = 1
-    holder.Parent = bb
+-- Fix header corners (only top corners rounded)
+local HeaderFix = Instance.new("Frame")
+HeaderFix.Parent = HeaderFrame
+HeaderFix.BackgroundColor3 = Config.Colors.Secondary
+HeaderFix.BorderSizePixel = 0
+HeaderFix.Size = UDim2.new(1, 0, 0, 10)
+HeaderFix.Position = UDim2.new(0, 0, 1, -10)
 
-    local text = Instance.new("TextLabel")
-    text.Name = "HPText"
-    text.Size = UDim2.new(1, -12, 0, 24)
-    text.Position = UDim2.fromOffset(6, 2)
-    text.BackgroundTransparency = 1
-    text.TextColor3 = Color3.new(1,1,1)
-    text.TextStrokeTransparency = 0.5
-    text.Font = SETTINGS.TextFont
-    text.TextSize = SETTINGS.TextSize
-    text.Parent = holder
+-- Title Label
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Name = "Title"
+TitleLabel.Parent = HeaderFrame
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.Size = UDim2.new(1, -80, 0, 20)
+TitleLabel.Position = UDim2.new(0, 10, 0, 2)
+TitleLabel.Font = Enum.Font.GothamBold
+TitleLabel.Text = "FRYZER HUB"
+TitleLabel.TextColor3 = Config.Colors.Text
+TitleLabel.TextSize = 14
+TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-    local barFrame, barFill
-    if SETTINGS.UseBar then
-        barFrame = Instance.new("Frame")
-        barFrame.Name = "Bar"
-        barFrame.Size = UDim2.new(1, -12, 0, SETTINGS.BarHeight)
-        barFrame.Position = UDim2.fromOffset(6, 26)
-        barFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
-        barFrame.BorderSizePixel = SETTINGS.BorderThickness
-        barFrame.Parent = holder
+-- Subtitle Label
+local SubtitleLabel = Instance.new("TextLabel")
+SubtitleLabel.Name = "Subtitle"
+SubtitleLabel.Parent = HeaderFrame
+SubtitleLabel.BackgroundTransparency = 1
+SubtitleLabel.Size = UDim2.new(1, -80, 0, 12)
+SubtitleLabel.Position = UDim2.new(0, 10, 0, 22)
+SubtitleLabel.Font = Enum.Font.Gotham
+SubtitleLabel.Text = "by FRYZER"
+SubtitleLabel.TextColor3 = Config.Colors.TextSecondary
+SubtitleLabel.TextSize = 10
+SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
 
-        barFill = Instance.new("Frame")
-        barFill.Name = "Fill"
-        barFill.Size = UDim2.fromScale(1, 1)
-        barFill.BackgroundColor3 = Color3.fromRGB(60, 255, 90)
-        barFill.BorderSizePixel = 0
-        barFill.Parent = barFrame
-    end
+-- Control Buttons Container
+local ControlsFrame = Instance.new("Frame")
+ControlsFrame.Name = "Controls"
+ControlsFrame.Parent = HeaderFrame
+ControlsFrame.BackgroundTransparency = 1
+ControlsFrame.Size = UDim2.new(0, 60, 1, 0)
+ControlsFrame.Position = UDim2.new(1, -65, 0, 0)
 
-    tracked[humanoid] = bb
+-- Minimize Button
+local MinimizeButton = Instance.new("TextButton")
+MinimizeButton.Name = "MinimizeButton"
+MinimizeButton.Parent = ControlsFrame
+MinimizeButton.BackgroundTransparency = 1
+MinimizeButton.Size = UDim2.new(0, 25, 0, 25)
+MinimizeButton.Position = UDim2.new(0, 0, 0.5, -12.5)
+MinimizeButton.Font = Enum.Font.GothamBold
+MinimizeButton.Text = "−"
+MinimizeButton.TextColor3 = Config.Colors.Text
+MinimizeButton.TextSize = 16
 
-    local lastDisplayPct = 1
-    local function update()
-        if not healthBillboardEnabled then return end
-        local hp = clamp(humanoid.Health, 0, math.max(1, humanoid.MaxHealth))
-        local maxHp = math.max(1, humanoid.MaxHealth)
-        local pct = hp / maxHp
-        text.Text = string.format("%d / %d", math.floor(hp + 0.5), math.floor(maxHp + 0.5))
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Parent = ControlsFrame
+CloseButton.BackgroundTransparency = 1
+CloseButton.Size = UDim2.new(0, 25, 0, 25)
+CloseButton.Position = UDim2.new(0, 30, 0.5, -12.5)
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Config.Colors.Text
+CloseButton.TextSize = 16
 
-        if barFill then
-            lastDisplayPct = lastDisplayPct + (pct - lastDisplayPct) * 0.35
-            barFill.Size = UDim2.fromScale(lastDisplayPct, 1)
-            barFill.BackgroundColor3 = colorByPercent(lastDisplayPct)
-        else
-            text.TextColor3 = colorByPercent(pct)
-        end
-    end
+-- Content Container
+local ContentFrame = Instance.new("Frame")
+ContentFrame.Name = "Content"
+ContentFrame.Parent = MainFrame
+ContentFrame.BackgroundTransparency = 1
+ContentFrame.Size = UDim2.new(1, 0, 1, -40)
+ContentFrame.Position = UDim2.new(0, 0, 0, 40)
 
-    local healthConn = humanoid.HealthChanged:Connect(update)
-    local maxHealthConn = humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(update)
-    local diedConn = humanoid.Died:Connect(function()
-        if tracked[humanoid] then
-            tracked[humanoid]:Destroy()
-            tracked[humanoid] = nil
+-- Left Sidebar for Tabs (Smaller)
+local SidebarFrame = Instance.new("Frame")
+SidebarFrame.Name = "Sidebar"
+SidebarFrame.Parent = ContentFrame
+SidebarFrame.BackgroundColor3 = Config.Colors.Secondary
+SidebarFrame.BorderSizePixel = 0
+SidebarFrame.Size = UDim2.new(0, 120, 1, 0) -- Smaller sidebar
+SidebarFrame.Position = UDim2.new(0, 0, 0, 0)
+
+-- Add green stroke to sidebar
+local SidebarStroke = Instance.new("UIStroke")
+SidebarStroke.Color = Config.Colors.StrokeGreen
+SidebarStroke.Thickness = 1
+SidebarStroke.Parent = SidebarFrame
+
+-- Sidebar ScrollingFrame
+local TabScrollFrame = Instance.new("ScrollingFrame")
+TabScrollFrame.Name = "TabScroll"
+TabScrollFrame.Parent = SidebarFrame
+TabScrollFrame.BackgroundTransparency = 1
+TabScrollFrame.Size = UDim2.new(1, -8, 1, -8)
+TabScrollFrame.Position = UDim2.new(0, 4, 0, 4)
+TabScrollFrame.ScrollBarThickness = 3
+TabScrollFrame.ScrollBarImageColor3 = Config.Colors.StrokeGreen
+TabScrollFrame.BorderSizePixel = 0
+TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+-- Tab Layout
+local TabLayout = Instance.new("UIListLayout")
+TabLayout.Parent = TabScrollFrame
+TabLayout.SortOrder = Enum.SortOrder.LayoutOrder
+TabLayout.Padding = UDim.new(0, 3)
+
+-- Right Content Area
+local ContentContainer = Instance.new("Frame")
+ContentContainer.Name = "ContentContainer"
+ContentContainer.Parent = ContentFrame
+ContentContainer.BackgroundColor3 = Config.Colors.Primary
+ContentContainer.BorderSizePixel = 0
+ContentContainer.Size = UDim2.new(1, -120, 1, 0)
+ContentContainer.Position = UDim2.new(0, 120, 0, 0)
+
+-- Add green stroke to content area
+local ContentStroke = Instance.new("UIStroke")
+ContentStroke.Color = Config.Colors.StrokeGreen
+ContentStroke.Thickness = 1.5
+ContentStroke.Parent = ContentContainer
+
+-- Content ScrollingFrame
+local ContentScrollFrame = Instance.new("ScrollingFrame")
+ContentScrollFrame.Name = "ContentScroll"
+ContentScrollFrame.Parent = ContentContainer
+ContentScrollFrame.BackgroundTransparency = 1
+ContentScrollFrame.Size = UDim2.new(1, -16, 1, -16)
+ContentScrollFrame.Position = UDim2.new(0, 8, 0, 8)
+ContentScrollFrame.ScrollBarThickness = 3
+ContentScrollFrame.ScrollBarImageColor3 = Config.Colors.StrokeGreen
+ContentScrollFrame.BorderSizePixel = 0
+ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+
+-- Content Layout
+local ContentLayout = Instance.new("UIListLayout")
+ContentLayout.Parent = ContentScrollFrame
+ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ContentLayout.Padding = UDim.new(0, 6)
+
+-- Functions
+function Library:CreateTab(name, icon)
+    local Tab = {}
+    Tab.Name = name
+    Tab.Components = {}
+    
+    -- Create Tab Button
+    local TabButton = Instance.new("TextButton")
+    TabButton.Name = name
+    TabButton.Parent = TabScrollFrame
+    TabButton.BackgroundColor3 = Config.Colors.Primary
+    TabButton.BorderSizePixel = 0
+    TabButton.Size = UDim2.new(1, 0, 0, 30) -- Smaller tab buttons
+    TabButton.Font = Enum.Font.Gotham
+    TabButton.Text = (icon and icon .. " " or "") .. name
+    TabButton.TextColor3 = Config.Colors.TextSecondary
+    TabButton.TextSize = 11
+    TabButton.TextXAlignment = Enum.TextXAlignment.Center
+    
+    local TabCorner = Instance.new("UICorner")
+    TabCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    TabCorner.Parent = TabButton
+    
+    -- Create Tab Content Frame
+    local TabContent = Instance.new("Frame")
+    TabContent.Name = name .. "Content"
+    TabContent.Parent = ContentScrollFrame
+    TabContent.BackgroundTransparency = 1
+    TabContent.Size = UDim2.new(1, 0, 0, 0)
+    TabContent.Visible = false
+    TabContent.LayoutOrder = #Library.Tabs + 1
+    
+    local TabContentLayout = Instance.new("UIListLayout")
+    TabContentLayout.Parent = TabContent
+    TabContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    TabContentLayout.Padding = UDim.new(0, 5)
+    
+    -- Update tab content size when items are added
+    TabContentLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabContent.Size = UDim2.new(1, 0, 0, TabContentLayout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    -- Tab Selection Logic
+    TabButton.MouseButton1Click:Connect(function()
+        Library:SelectTab(Tab)
+    end)
+    
+    -- Hover Effects
+    TabButton.MouseEnter:Connect(function()
+        if Library.CurrentTab ~= Tab then
+            TweenService:Create(TabButton, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Border,
+                TextColor3 = Config.Colors.Text
+            }):Play()
         end
     end)
-    local heartbeatConn = RunService.Heartbeat:Connect(update)
-
-    connections[humanoid] = {healthConn, maxHealthConn, diedConn, heartbeatConn}
-
-    update()
-end
-
-local function attachToModel(model)
-    if not model or not model:IsA("Model") then return end
-    if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end
-    local humanoid = model:FindFirstChildOfClass("Humanoid")
-    if not humanoid then return end
-    local head = findHead(model)
-    if not head then return end
-    makeBillboard(humanoid, head, model)
-end
-
-local function enableHealthBillboards()
-    for _, hum in ipairs(workspace:GetDescendants()) do
-        if hum:IsA("Humanoid") and hum.Parent and hum.Parent:IsA("Model") then
-            attachToModel(hum.Parent)
-        end
-    end
-
-    connections.descendantAdded = workspace.DescendantAdded:Connect(function(obj)
-        if obj:IsA("Humanoid") then
-            local model = obj.Parent
-            if model and model:IsA("Model") then
-                task.defer(function()
-                    attachToModel(model)
-                end)
-            end
+    
+    TabButton.MouseLeave:Connect(function()
+        if Library.CurrentTab ~= Tab then
+            TweenService:Create(TabButton, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Primary,
+                TextColor3 = Config.Colors.TextSecondary
+            }):Play()
         end
     end)
+    
+    Tab.Button = TabButton
+    Tab.Content = TabContent
+    Tab.Layout = TabContentLayout
+    
+    table.insert(Library.Tabs, Tab)
+    
+    -- Auto-select first tab
+    if #Library.Tabs == 1 then
+        Library:SelectTab(Tab)
+    end
+    
+    -- Update canvas size
+    TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
+    TabLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        TabScrollFrame.CanvasSize = UDim2.new(0, 0, 0, TabLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return Tab
+end
 
-    connections.playerAdded = Players.PlayerAdded:Connect(function(plr)
-        plr.CharacterAdded:Connect(function(char)
-            task.defer(function()
-                attachToModel(char)
-            end)
+function Library:SelectTab(tab)
+    -- Deselect current tab
+    if Library.CurrentTab then
+        TweenService:Create(Library.CurrentTab.Button, Config.Animations.Normal, {
+            BackgroundColor3 = Config.Colors.Primary,
+            TextColor3 = Config.Colors.TextSecondary
+        }):Play()
+        Library.CurrentTab.Content.Visible = false
+    end
+    
+    -- Select new tab
+    Library.CurrentTab = tab
+    TweenService:Create(tab.Button, Config.Animations.Normal, {
+        BackgroundColor3 = Config.Colors.TabActive,
+        TextColor3 = Config.Colors.Text
+    }):Play()
+    tab.Content.Visible = true
+    
+    -- Update content canvas size
+    ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+end
+
+-- Component Creation Functions
+function Library:CreateButton(tab, text, callback)
+    local Button = Instance.new("TextButton")
+    Button.Name = text
+    Button.Parent = tab.Content
+    Button.BackgroundColor3 = Config.Colors.Secondary
+    Button.BorderSizePixel = 0
+    Button.Size = UDim2.new(1, 0, 0, 28) -- Smaller buttons
+    Button.Font = Enum.Font.Gotham
+    Button.Text = text
+    Button.TextColor3 = Config.Colors.Text
+    Button.TextSize = 11
+    Button.LayoutOrder = #tab.Components + 1
+    
+    local ButtonCorner = Instance.new("UICorner")
+    ButtonCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    ButtonCorner.Parent = Button
+    
+    -- Add green stroke
+    local ButtonStroke = Instance.new("UIStroke")
+    ButtonStroke.Color = Config.Colors.StrokeGreen
+    ButtonStroke.Thickness = 1
+    ButtonStroke.Parent = Button
+    
+    -- Status indicator
+    local StatusBox = Instance.new("Frame")
+    StatusBox.Name = "StatusBox"
+    StatusBox.Parent = Button
+    StatusBox.BackgroundColor3 = Config.Colors.Border
+    StatusBox.BorderSizePixel = 0
+    StatusBox.Size = UDim2.new(0, 16, 0, 16)
+    StatusBox.Position = UDim2.new(1, -20, 0.5, -8)
+    
+    local StatusCorner = Instance.new("UICorner")
+    StatusCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    StatusCorner.Parent = StatusBox
+    
+    -- Button functionality
+    Button.MouseButton1Click:Connect(function()
+        -- Green flash effect
+        TweenService:Create(StatusBox, Config.Animations.Fast, {
+            BackgroundColor3 = Config.Colors.Success
+        }):Play()
+        
+        -- Call callback if provided
+        if callback then
+            callback()
+        end
+        
+        -- Return to normal after 1 second
+        spawn(function()
+            wait(1)
+            TweenService:Create(StatusBox, Config.Animations.Normal, {
+                BackgroundColor3 = Config.Colors.Border
+            }):Play()
         end)
     end)
-
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if plr.Character then attachToModel(plr.Character) end
-        plr.CharacterAdded:Connect(function(char)
-            task.defer(function()
-                attachToModel(char)
-            end)
-        end)
-    end
-end
-
-local function disableHealthBillboards()
-    for humanoid, connList in pairs(connections) do
-        if type(connList) == "table" then
-            for _, conn in ipairs(connList) do
-                conn:Disconnect()
-            end
-        elseif connList.Disconnect then
-            connList:Disconnect()
-        end
-    end
-    connections = {}
-
-    for humanoid, billboard in pairs(tracked) do
-        if billboard and billboard.Parent then
-            billboard:Destroy()
-        end
-    end
-    tracked = {}
-
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("BillboardGui") and obj.Name == SETTINGS.Name then
-            obj:Destroy()
-        end
-    end
-end
-
--- Health Billboard Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Health Billboard",
-    Icon = "heart",
-    Value = false,
-    Callback = function(state)
-        healthBillboardEnabled = state
-        if state then
-            enableHealthBillboards()
-        else
-            disableHealthBillboards()
-        end
-        print("✅ Health Billboard", state and "ON" or "OFF")
-    end
-})
-
--- ESP System Variables
-local ActiveEspItems = false
-local ActiveEspEnemy = false
-local ActiveEspChildren = false
-local ActiveEspPeltTrader = false
-local ActiveDistanceEsp = false
-
-local function CreateEsp(Char, Color, Text, Parent, number)
-    if not Char or not Parent or not Parent:IsA("BasePart") then return end
-    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
-
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "ESP_Highlight"
-    highlight.Adornee = Char
-    highlight.FillColor = Color
-    highlight.FillTransparency = 1
-    highlight.OutlineColor = Color
-    highlight.OutlineTransparency = 0
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = Char
-
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "ESP"
-    billboard.Size = UDim2.new(0, 50, 0, 25)
-    billboard.AlwaysOnTop = true
-    billboard.StudsOffset = Vector3.new(0, number or 2, 0)
-    billboard.Adornee = Parent
-    billboard.Parent = Parent
-
-    local label = Instance.new("TextLabel")
-    label.Size = UDim2.new(1, 0, 1, 0)
-    label.BackgroundTransparency = 1
-    label.Text = Text
-    label.TextColor3 = Color
-    label.TextScaled = true
-    label.Parent = billboard
-
-    task.spawn(function()
-        while highlight.Parent and billboard.Parent and Parent.Parent do
-            local camera = workspace.CurrentCamera
-            if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
-                local distance = (camera.CFrame.Position - Parent.Position).Magnitude
-                label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
-            else
-                label.Text = Text
-            end
-            RunService.Heartbeat:Wait()
-        end
-        if highlight.Parent then highlight:Destroy() end
-        if billboard.Parent then billboard:Destroy() end
+    
+    -- Hover effects
+    Button.MouseEnter:Connect(function()
+        TweenService:Create(Button, Config.Animations.Fast, {
+            BackgroundColor3 = Config.Colors.Border
+        }):Play()
     end)
+    
+    Button.MouseLeave:Connect(function()
+        TweenService:Create(Button, Config.Animations.Fast, {
+            BackgroundColor3 = Config.Colors.Secondary
+        }):Play()
+    end)
+    
+    table.insert(tab.Components, Button)
+    
+    -- Update tab content size
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return Button
 end
 
-local function RemoveEsp(Char, Parent)
-    if Char and Char:FindFirstChildOfClass("Highlight") then
-        Char:FindFirstChildOfClass("Highlight"):Destroy()
-    end
-    if Parent and Parent:FindFirstChild("ESP") then
-        Parent:FindFirstChild("ESP"):Destroy()
-    end
-end
-
-local function UpdateItemsEsp()
-    if not workspace:FindFirstChild("Items") then return end
-    if ActiveEspItems then
-        for _, obj in pairs(workspace.Items:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart then
-                CreateEsp(obj, Color3.fromRGB(255, 255, 0), obj.Name, obj.PrimaryPart, 2)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Items:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdateEnemiesEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspEnemy then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
-                    obj.Name == "Pelt Trader") then
-                CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
-                    obj.Name == "Pelt Trader") then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdateChildrenEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspChildren then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
-                CreateEsp(obj, Color3.fromRGB(0, 255, 0), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and
-               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
-                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
-local function UpdatePeltTraderEsp()
-    if not workspace:FindFirstChild("Characters") then return end
-    if ActiveEspPeltTrader then
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
-                CreateEsp(obj, Color3.fromRGB(0, 255, 255), obj.Name, obj.PrimaryPart, 3)
-            end
-        end
-    else
-        for _, obj in pairs(workspace.Characters:GetChildren()) do
-            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
-                RemoveEsp(obj, obj.PrimaryPart)
-            end
-        end
-    end
-end
-
--- ESP Items Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "ESP Items",
-    Icon = "package",
-    Value = false,
-    Callback = function(state)
-        ActiveEspItems = state
-        UpdateItemsEsp()
-        print("✅ ESP Items", state and "ON" or "OFF")
-    end
-})
-
--- ESP Enemies Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "ESP Enemies",
-    Icon = "skull",
-    Value = false,
-    Callback = function(state)
-        ActiveEspEnemy = state
-        UpdateEnemiesEsp()
-        print("✅ ESP Enemies", state and "ON" or "OFF")
-    end
-})
-
--- ESP Children Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "ESP Children",
-    Icon = "baby",
-    Value = false,
-    Callback = function(state)
-        ActiveEspChildren = state
-        UpdateChildrenEsp()
-        print("✅ ESP Children", state and "ON" or "OFF")
-    end
-})
-
--- ESP Pelt Trader Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "ESP Pelt Trader",
-    Icon = "user",
-    Value = false,
-    Callback = function(state)
-        ActiveEspPeltTrader = state
-        UpdatePeltTraderEsp()
-        print("✅ ESP Pelt Trader", state and "ON" or "OFF")
-    end
-})
-
--- Show Distance Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Show Distance in ESP",
-    Icon = "ruler",
-    Value = false,
-    Callback = function(state)
-        ActiveDistanceEsp = state
-        if ActiveEspItems then UpdateItemsEsp() end
-        if ActiveEspEnemy then UpdateEnemiesEsp() end
-        if ActiveEspChildren then UpdateChildrenEsp() end
-        if ActiveEspPeltTrader then UpdatePeltTraderEsp() end
-        print("✅ Show Distance in ESP", state and "ON" or "OFF")
-    end
-})
-
--- Clear All ESP Button (WindUI Format)
-Tabs.EspTab:Button({
-    Title = "Clear All ESP",
-    Desc = "Removes all active ESP elements",
-    Callback = function()
-        ActiveEspItems = false
-        ActiveEspEnemy = false
-        ActiveEspChildren = false
-        ActiveEspPeltTrader = false
+function Library:CreateToggle(tab, text, default, callback)
+    local Toggle = Instance.new("Frame")
+    Toggle.Name = text
+    Toggle.Parent = tab.Content
+    Toggle.BackgroundColor3 = Config.Colors.Secondary
+    Toggle.BorderSizePixel = 0
+    Toggle.Size = UDim2.new(1, 0, 0, 28) -- Smaller toggles
+    Toggle.LayoutOrder = #tab.Components + 1
+    
+    local ToggleCorner = Instance.new("UICorner")
+    ToggleCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    ToggleCorner.Parent = Toggle
+    
+    -- Add green stroke
+    local ToggleStroke = Instance.new("UIStroke")
+    ToggleStroke.Color = Config.Colors.StrokeGreen
+    ToggleStroke.Thickness = 1
+    ToggleStroke.Parent = Toggle
+    
+    local ToggleLabel = Instance.new("TextLabel")
+    ToggleLabel.Parent = Toggle
+    ToggleLabel.BackgroundTransparency = 1
+    ToggleLabel.Size = UDim2.new(1, -45, 1, 0)
+    ToggleLabel.Position = UDim2.new(0, 8, 0, 0)
+    ToggleLabel.Font = Enum.Font.Gotham
+    ToggleLabel.Text = text
+    ToggleLabel.TextColor3 = Config.Colors.Text
+    ToggleLabel.TextSize = 11
+    ToggleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local ToggleButton = Instance.new("TextButton")
+    ToggleButton.Parent = Toggle
+    ToggleButton.BackgroundTransparency = 1
+    ToggleButton.Size = UDim2.new(1, 0, 1, 0)
+    ToggleButton.Text = ""
+    
+    local StatusBox = Instance.new("Frame")
+    StatusBox.Name = "StatusBox"
+    StatusBox.Parent = Toggle
+    StatusBox.BackgroundColor3 = default and Config.Colors.Success or Config.Colors.Border
+    StatusBox.BorderSizePixel = 0
+    StatusBox.Size = UDim2.new(0, 16, 0, 16)
+    StatusBox.Position = UDim2.new(1, -20, 0.5, -8)
+    
+    local StatusCorner = Instance.new("UICorner")
+    StatusCorner.CornerRadius = UDim.new(0, 0) -- No corners  
+    StatusCorner.Parent = StatusBox
+    
+    local isToggled = default or false
+    
+    ToggleButton.MouseButton1Click:Connect(function()
+        isToggled = not isToggled
         
-        UpdateItemsEsp()
-        UpdateEnemiesEsp()
-        UpdateChildrenEsp()
-        UpdatePeltTraderEsp()
+        TweenService:Create(StatusBox, Config.Animations.Normal, {
+            BackgroundColor3 = isToggled and Config.Colors.Success or Config.Colors.Border
+        }):Play()
         
-        print("✅ All ESP cleared!")
-    end
-})
-
--- ESP Color Theme Dropdown (WindUI Format)
-Tabs.EspTab:Dropdown({
-    Title = "ESP Color Theme",
-    Values = {"Default", "Bright", "Dark", "Neon"},
-    Value = "Default",
-    Callback = function(value)
-        print("🎨 ESP Color Theme selected:", value)
-        -- You can modify the colors based on the selected theme here
-        if value == "Bright" then
-            -- Bright colors
-        elseif value == "Dark" then
-            -- Dark colors  
-        elseif value == "Neon" then
-            -- Neon colors
+        if callback then
+            callback(isToggled)
         end
-    end
-})
-
--- Setup ESP connections for dynamic updates
-local function setupEspConnections()
-    if workspace:FindFirstChild("Items") then
-        workspace.Items.ChildAdded:Connect(function(child)
-            if ActiveEspItems and child:IsA("Model") and child.PrimaryPart then
-                CreateEsp(child, Color3.fromRGB(255, 255, 0), child.Name, child.PrimaryPart, 2)
-            end
-        end)
-
-        workspace.Items.ChildRemoved:Connect(function(child)
-            if child:IsA("Model") and child.PrimaryPart then
-                RemoveEsp(child, child.PrimaryPart)
-            end
-        end)
-    end
-
-    if workspace:FindFirstChild("Characters") then
-        workspace.Characters.ChildAdded:Connect(function(child)
-            if child:IsA("Model") and child.PrimaryPart then
-                if ActiveEspEnemy and
-                   not (child.Name == "Lost Child" or child.Name == "Lost Child2" or
-                        child.Name == "Lost Child3" or child.Name == "Lost Child4" or
-                        child.Name == "Pelt Trader") then
-                    CreateEsp(child, Color3.fromRGB(255, 0, 0), child.Name, child.PrimaryPart, 3)
-                elseif ActiveEspChildren and
-                   (child.Name == "Lost Child" or child.Name == "Lost Child2" or
-                    child.Name == "Lost Child3" or child.Name == "Lost Child4") then
-                    CreateEsp(child, Color3.fromRGB(0, 255, 0), child.Name, child.PrimaryPart, 3)
-                elseif ActiveEspPeltTrader and child.Name == "Pelt Trader" then
-                    CreateEsp(child, Color3.fromRGB(0, 255, 255), child.Name, child.PrimaryPart, 3)
-                end
-            end
-        end)
-
-        workspace.Characters.ChildRemoved:Connect(function(child)
-            if child:IsA("Model") and child.PrimaryPart then
-                RemoveEsp(child, child.PrimaryPart)
-            end
-        end)
-    end
+    end)
+    
+    -- Hover effects
+    ToggleButton.MouseEnter:Connect(function()
+        TweenService:Create(Toggle, Config.Animations.Fast, {
+            BackgroundColor3 = Config.Colors.Border
+        }):Play()
+    end)
+    
+    ToggleButton.MouseLeave:Connect(function()
+        TweenService:Create(Toggle, Config.Animations.Fast, {
+            BackgroundColor3 = Config.Colors.Secondary
+        }):Play()
+    end)
+    
+    table.insert(tab.Components, Toggle)
+    
+    -- Update tab content size
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {Toggle = Toggle, SetValue = function(value) isToggled = value StatusBox.BackgroundColor3 = value and Config.Colors.Success or Config.Colors.Border end}
 end
 
-setupEspConnections()
+function Library:CreateLabel(tab, text, color)
+    local LabelFrame = Instance.new("Frame")
+    LabelFrame.Name = text
+    LabelFrame.Parent = tab.Content
+    LabelFrame.BackgroundColor3 = Config.Colors.Warning
+    LabelFrame.BorderSizePixel = 0
+    LabelFrame.Size = UDim2.new(1, 0, 0, 25) -- Smaller labels
+    LabelFrame.LayoutOrder = #tab.Components + 1
+    
+    local LabelCorner = Instance.new("UICorner")
+    LabelCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    LabelCorner.Parent = LabelFrame
+    
+    -- Add green stroke
+    local LabelStroke = Instance.new("UIStroke")
+    LabelStroke.Color = Config.Colors.StrokeGreen
+    LabelStroke.Thickness = 1
+    LabelStroke.Parent = LabelFrame
+    
+    local Label = Instance.new("TextLabel")
+    Label.Parent = LabelFrame
+    Label.BackgroundTransparency = 1
+    Label.Size = UDim2.new(1, -16, 1, 0)
+    Label.Position = UDim2.new(0, 8, 0, 0)
+    Label.Font = Enum.Font.GothamBold
+    Label.Text = text
+    Label.TextColor3 = color or Config.Colors.Primary
+    Label.TextSize = 11
+    Label.TextXAlignment = Enum.TextXAlignment.Center
+    
+    table.insert(tab.Components, LabelFrame)
+    
+    -- Update tab content size
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {Label = LabelFrame, SetText = function(newText) Label.Text = newText end}
+end
 
--- PLAYER ESP Section
-Tabs.EspTab:Paragraph({
-    Title = "Player ESP System",
-    Desc = "Advanced ESP system for tracking other players",
-    Image = "users",
-    Color = "Blue",
-})
+-- NEW FUNCTION: Create Text Label (Like button but only shows text)
+function Library:CreateTextLabel(tab, text, color)
+    local TextLabelFrame = Instance.new("Frame")
+    TextLabelFrame.Name = text
+    TextLabelFrame.Parent = tab.Content
+    TextLabelFrame.BackgroundColor3 = Config.Colors.Secondary
+    TextLabelFrame.BorderSizePixel = 0
+    TextLabelFrame.Size = UDim2.new(1, 0, 0, 28) -- Same size as buttons
+    TextLabelFrame.LayoutOrder = #tab.Components + 1
+    
+    local TextLabelCorner = Instance.new("UICorner")
+    TextLabelCorner.CornerRadius = UDim.new(0, 0) -- No corners
+    TextLabelCorner.Parent = TextLabelFrame
+    
+    -- Add green stroke
+    local TextLabelStroke = Instance.new("UIStroke")
+    TextLabelStroke.Color = Config.Colors.StrokeGreen
+    TextLabelStroke.Thickness = 1
+    TextLabelStroke.Parent = TextLabelFrame
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Parent = TextLabelFrame
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Size = UDim2.new(1, -16, 1, 0)
+    TextLabel.Position = UDim2.new(0, 8, 0, 0)
+    TextLabel.Font = Enum.Font.Gotham
+    TextLabel.Text = text
+    TextLabel.TextColor3 = color or Config.Colors.Text
+    TextLabel.TextSize = 11
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    table.insert(tab.Components, TextLabelFrame)
+    
+    -- Update tab content size
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {Frame = TextLabelFrame, SetText = function(newText) TextLabel.Text = newText end}
+end
 
--- Services
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
-
--- Player ESP Variables
-local playerESPEnabled = false
-local trackedPlayers = {}
-local espConnections = {}
-
--- ESP Settings
-local ESP_SETTINGS = {
-    FillColor = Color3.fromRGB(255, 0, 0),
-    FillTransparency = 0.8,
-    OutlineColor = Color3.fromRGB(255, 255, 255),
-    OutlineTransparency = 0,
-    TextColor = Color3.fromRGB(255, 255, 255),
-    TextSize = 14,
-    MaxDistance = 1000,
-    ShowDistance = true,
-    ShowHealth = true,
-    ShowNames = true,
-    HealthBarEnabled = true,
-    HealthBarHeight = 4
-}
-
--- Create ESP for a player
-local function createPlayerESP(player)
-    if player == LocalPlayer then return end -- Don't ESP ourselves
-    if not player.Character then return end
-    if trackedPlayers[player] then return end -- Already has ESP
+-- NEW FUNCTION: Create Slider
+function Library:CreateSlider(tab, text, min, max, default, callback)
+    local SliderFrame = Instance.new("Frame")
+    SliderFrame.Name = text
+    SliderFrame.Parent = tab.Content
+    SliderFrame.BackgroundColor3 = Config.Colors.Secondary
+    SliderFrame.BorderSizePixel = 0
+    SliderFrame.Size = UDim2.new(1, 0, 0, 45)
+    SliderFrame.LayoutOrder = #tab.Components + 1
     
-    local character = player.Character
-    local humanoid = character:FindFirstChildOfClass("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    local SliderCorner = Instance.new("UICorner")
+    SliderCorner.CornerRadius = UDim.new(0, 0)
+    SliderCorner.Parent = SliderFrame
     
-    if not humanoid or not rootPart then return end
+    local SliderStroke = Instance.new("UIStroke")
+    SliderStroke.Color = Config.Colors.StrokeGreen
+    SliderStroke.Thickness = 1
+    SliderStroke.Parent = SliderFrame
     
-    -- Create Highlight
-    local highlight = Instance.new("Highlight")
-    highlight.Name = "PlayerESP_Highlight"
-    highlight.Adornee = character
-    highlight.FillColor = ESP_SETTINGS.FillColor
-    highlight.FillTransparency = ESP_SETTINGS.FillTransparency
-    highlight.OutlineColor = ESP_SETTINGS.OutlineColor
-    highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
-    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-    highlight.Parent = character
+    -- Label
+    local SliderLabel = Instance.new("TextLabel")
+    SliderLabel.Parent = SliderFrame
+    SliderLabel.BackgroundTransparency = 1
+    SliderLabel.Size = UDim2.new(1, -50, 0, 20)
+    SliderLabel.Position = UDim2.new(0, 8, 0, 2)
+    SliderLabel.Font = Enum.Font.Gotham
+    SliderLabel.Text = text
+    SliderLabel.TextColor3 = Config.Colors.Text
+    SliderLabel.TextSize = 11
+    SliderLabel.TextXAlignment = Enum.TextXAlignment.Left
     
-    -- Create Billboard GUI
-    local billboard = Instance.new("BillboardGui")
-    billboard.Name = "PlayerESP_Billboard"
-    billboard.Size = UDim2.new(0, 200, 0, 100)
-    billboard.StudsOffset = Vector3.new(0, 3, 0)
-    billboard.AlwaysOnTop = true
-    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
-    billboard.Adornee = rootPart
-    billboard.Parent = rootPart
+    -- Value Label
+    local ValueLabel = Instance.new("TextLabel")
+    ValueLabel.Parent = SliderFrame
+    ValueLabel.BackgroundTransparency = 1
+    ValueLabel.Size = UDim2.new(0, 40, 0, 20)
+    ValueLabel.Position = UDim2.new(1, -48, 0, 2)
+    ValueLabel.Font = Enum.Font.Gotham
+    ValueLabel.Text = tostring(default or min)
+    ValueLabel.TextColor3 = Config.Colors.Accent
+    ValueLabel.TextSize = 10
+    ValueLabel.TextXAlignment = Enum.TextXAlignment.Right
     
-    -- Create main frame
-    local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(1, 0, 1, 0)
-    frame.BackgroundTransparency = 1
-    frame.Parent = billboard
+    -- Slider Track
+    local SliderTrack = Instance.new("Frame")
+    SliderTrack.Parent = SliderFrame
+    SliderTrack.BackgroundColor3 = Config.Colors.Border
+    SliderTrack.BorderSizePixel = 0
+    SliderTrack.Size = UDim2.new(1, -16, 0, 4)
+    SliderTrack.Position = UDim2.new(0, 8, 1, -12)
     
-    -- Create name label
-    local nameLabel = Instance.new("TextLabel")
-    nameLabel.Name = "NameLabel"
-    nameLabel.Size = UDim2.new(1, 0, 0, 20)
-    nameLabel.Position = UDim2.new(0, 0, 0, 0)
-    nameLabel.BackgroundTransparency = 1
-    nameLabel.Text = player.DisplayName
-    nameLabel.TextColor3 = ESP_SETTINGS.TextColor
-    nameLabel.TextSize = ESP_SETTINGS.TextSize
-    nameLabel.TextStrokeTransparency = 0.5
-    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    nameLabel.Font = Enum.Font.GothamBold
-    nameLabel.Parent = frame
+    -- Slider Fill
+    local SliderFill = Instance.new("Frame")
+    SliderFill.Parent = SliderTrack
+    SliderFill.BackgroundColor3 = Config.Colors.StrokeGreen
+    SliderFill.BorderSizePixel = 0
+    SliderFill.Size = UDim2.new((default or min) / max, 0, 1, 0)
+    SliderFill.Position = UDim2.new(0, 0, 0, 0)
     
-    -- Create distance label
-    local distanceLabel = Instance.new("TextLabel")
-    distanceLabel.Name = "DistanceLabel"
-    distanceLabel.Size = UDim2.new(1, 0, 0, 15)
-    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
-    distanceLabel.BackgroundTransparency = 1
-    distanceLabel.Text = "0m"
-    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
-    distanceLabel.TextSize = ESP_SETTINGS.TextSize - 2
-    distanceLabel.TextStrokeTransparency = 0.5
-    distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    distanceLabel.Font = Enum.Font.Gotham
-    distanceLabel.Parent = frame
+    -- Slider Button
+    local SliderButton = Instance.new("TextButton")
+    SliderButton.Parent = SliderFrame
+    SliderButton.BackgroundTransparency = 1
+    SliderButton.Size = UDim2.new(1, 0, 1, 0)
+    SliderButton.Text = ""
     
-    -- Create health label
-    local healthLabel = Instance.new("TextLabel")
-    healthLabel.Name = "HealthLabel"
-    healthLabel.Size = UDim2.new(1, 0, 0, 15)
-    healthLabel.Position = UDim2.new(0, 0, 0, 35)
-    healthLabel.BackgroundTransparency = 1
-    healthLabel.Text = "100/100"
-    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-    healthLabel.TextSize = ESP_SETTINGS.TextSize - 2
-    healthLabel.TextStrokeTransparency = 0.5
-    healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-    healthLabel.Font = Enum.Font.Gotham
-    healthLabel.Parent = frame
+    local currentValue = default or min
+    local dragging = false
     
-    -- Create health bar background
-    local healthBarBG = Instance.new("Frame")
-    healthBarBG.Name = "HealthBarBG"
-    healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
-    healthBarBG.Position = UDim2.new(0, 0, 0, 50)
-    healthBarBG.BackgroundColor3 = Color3.new(0, 0, 0)
-    healthBarBG.BorderSizePixel = 1
-    healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
-    healthBarBG.Parent = frame
-    
-    -- Create health bar fill
-    local healthBarFill = Instance.new("Frame")
-    healthBarFill.Name = "HealthBarFill"
-    healthBarFill.Size = UDim2.new(1, 0, 1, 0)
-    healthBarFill.Position = UDim2.new(0, 0, 0, 0)
-    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-    healthBarFill.BorderSizePixel = 0
-    healthBarFill.Parent = healthBarBG
-    
-    -- Update function
-    local function updateESP()
-        if not playerESPEnabled then return end
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
-        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+    local function UpdateSlider(input)
+        local relativeX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
+        currentValue = math.floor(min + (max - min) * relativeX)
         
-        local playerRoot = player.Character.HumanoidRootPart
-        local localRoot = LocalPlayer.Character.HumanoidRootPart
-        local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        ValueLabel.Text = tostring(currentValue)
+        TweenService:Create(SliderFill, Config.Animations.Fast, {
+            Size = UDim2.new(relativeX, 0, 1, 0)
+        }):Play()
         
-        if not playerRoot or not localRoot or not playerHumanoid then return end
+        if callback then
+            callback(currentValue)
+        end
+    end
+    
+    SliderButton.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            UpdateSlider(input)
+        end
+    end)
+    
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            UpdateSlider(input)
+        end
+    end)
+    
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
+        end
+    end)
+    
+    table.insert(tab.Components, SliderFrame)
+    
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {Slider = SliderFrame, SetValue = function(value) currentValue = value ValueLabel.Text = tostring(value) SliderFill.Size = UDim2.new((value - min) / (max - min), 0, 1, 0) end}
+end
+
+-- FIXED DROPDOWN FUNCTION - Complete rewrite with proper z-index handling
+function Library:CreateDropdown(tab, text, options, default, callback)
+    local DropdownFrame = Instance.new("Frame")
+    DropdownFrame.Name = text
+    DropdownFrame.Parent = tab.Content
+    DropdownFrame.BackgroundColor3 = Config.Colors.Secondary
+    DropdownFrame.BorderSizePixel = 0
+    DropdownFrame.Size = UDim2.new(1, 0, 0, 28)
+    DropdownFrame.LayoutOrder = #tab.Components + 1
+    DropdownFrame.ZIndex = 1  -- Base z-index
+    
+    local DropdownCorner = Instance.new("UICorner")
+    DropdownCorner.CornerRadius = UDim.new(0, 0)
+    DropdownCorner.Parent = DropdownFrame
+    
+    local DropdownStroke = Instance.new("UIStroke")
+    DropdownStroke.Color = Config.Colors.StrokeGreen
+    DropdownStroke.Thickness = 1
+    DropdownStroke.Parent = DropdownFrame
+    
+    -- Main Button
+    local DropdownButton = Instance.new("TextButton")
+    DropdownButton.Parent = DropdownFrame
+    DropdownButton.BackgroundTransparency = 1
+    DropdownButton.Size = UDim2.new(1, -25, 1, 0)
+    DropdownButton.Position = UDim2.new(0, 8, 0, 0)
+    DropdownButton.Font = Enum.Font.Gotham
+    DropdownButton.Text = text .. ": " .. (default or options[1] or "None")
+    DropdownButton.TextColor3 = Config.Colors.Text
+    DropdownButton.TextSize = 11
+    DropdownButton.TextXAlignment = Enum.TextXAlignment.Left
+    DropdownButton.TextTruncate = Enum.TextTruncate.AtEnd
+    DropdownButton.ZIndex = 2
+    
+    -- Arrow
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Parent = DropdownFrame
+    Arrow.BackgroundTransparency = 1
+    Arrow.Size = UDim2.new(0, 20, 1, 0)
+    Arrow.Position = UDim2.new(1, -20, 0, 0)
+    Arrow.Font = Enum.Font.Gotham
+    Arrow.Text = "▼"
+    Arrow.TextColor3 = Config.Colors.TextSecondary
+    Arrow.TextSize = 8
+    Arrow.TextXAlignment = Enum.TextXAlignment.Center
+    Arrow.ZIndex = 2
+    
+    -- Create Options Frame OUTSIDE of the dropdown frame hierarchy
+    -- This prevents clipping and z-index issues
+    local OptionsFrame = Instance.new("Frame")
+    OptionsFrame.Name = text .. "_Options"
+    OptionsFrame.Parent = ScreenGui  -- Parent to ScreenGui instead of DropdownFrame
+    OptionsFrame.BackgroundColor3 = Config.Colors.Primary
+    OptionsFrame.BorderSizePixel = 0
+    OptionsFrame.Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, math.min(#options * 25, 150)) -- Max height of 150
+    OptionsFrame.Visible = false
+    OptionsFrame.ZIndex = 100  -- Very high z-index to appear above everything
+    
+    local OptionsCorner = Instance.new("UICorner")
+    OptionsCorner.CornerRadius = UDim.new(0, 0)
+    OptionsCorner.Parent = OptionsFrame
+    
+    local OptionsStroke = Instance.new("UIStroke")
+    OptionsStroke.Color = Config.Colors.StrokeGreen
+    OptionsStroke.Thickness = 1
+    OptionsStroke.Parent = OptionsFrame
+    
+    -- Add scrolling if too many options
+    local OptionsScrollFrame = Instance.new("ScrollingFrame")
+    OptionsScrollFrame.Parent = OptionsFrame
+    OptionsScrollFrame.BackgroundTransparency = 1
+    OptionsScrollFrame.Size = UDim2.new(1, -4, 1, -4)
+    OptionsScrollFrame.Position = UDim2.new(0, 2, 0, 2)
+    OptionsScrollFrame.ScrollBarThickness = 3
+    OptionsScrollFrame.ScrollBarImageColor3 = Config.Colors.StrokeGreen
+    OptionsScrollFrame.BorderSizePixel = 0
+    OptionsScrollFrame.CanvasSize = UDim2.new(0, 0, 0, #options * 25)
+    OptionsScrollFrame.ZIndex = 101
+    
+    local OptionsLayout = Instance.new("UIListLayout")
+    OptionsLayout.Parent = OptionsScrollFrame
+    OptionsLayout.SortOrder = Enum.SortOrder.LayoutOrder
+    OptionsLayout.Padding = UDim.new(0, 0)
+    
+    local currentValue = default or options[1] or "None"
+    local isOpen = false
+    
+    -- Function to update options frame position
+    local function UpdateOptionsPosition()
+        local dropdownPos = DropdownFrame.AbsolutePosition
+        local dropdownSize = DropdownFrame.AbsoluteSize
         
-        -- Update distance
-        if ESP_SETTINGS.ShowDistance then
-            local distance = (localRoot.Position - playerRoot.Position).Magnitude
-            distanceLabel.Text = math.floor(distance) .. "m"
-            distanceLabel.Visible = true
-        else
-            distanceLabel.Visible = false
+        -- Position below the dropdown
+        local newX = dropdownPos.X
+        local newY = dropdownPos.Y + dropdownSize.Y + 2
+        
+        -- Check if it would go off screen bottom
+        local screenHeight = ScreenGui.AbsoluteSize.Y
+        local optionsHeight = OptionsFrame.AbsoluteSize.Y
+        
+        if newY + optionsHeight > screenHeight then
+            -- Position above the dropdown instead
+            newY = dropdownPos.Y - optionsHeight - 2
         end
         
-        -- Update health
-        if ESP_SETTINGS.ShowHealth then
-            local health = math.floor(playerHumanoid.Health)
-            local maxHealth = math.floor(playerHumanoid.MaxHealth)
-            local healthPercent = health / maxHealth
+        -- Check if it would go off screen right
+        local screenWidth = ScreenGui.AbsoluteSize.X
+        local optionsWidth = OptionsFrame.AbsoluteSize.X
+        
+        if newX + optionsWidth > screenWidth then
+            newX = screenWidth - optionsWidth - 10
+        end
+        
+        OptionsFrame.Position = UDim2.new(0, newX, 0, newY)
+        OptionsFrame.Size = UDim2.new(0, dropdownSize.X, 0, math.min(#options * 25, 150))
+    end
+    
+    -- Create option buttons
+    for i, option in pairs(options) do
+        local OptionButton = Instance.new("TextButton")
+        OptionButton.Parent = OptionsScrollFrame
+        OptionButton.BackgroundColor3 = Config.Colors.Secondary
+        OptionButton.BorderSizePixel = 0
+        OptionButton.Size = UDim2.new(1, 0, 0, 25)
+        OptionButton.Font = Enum.Font.Gotham
+        OptionButton.Text = option
+        OptionButton.TextColor3 = Config.Colors.Text
+        OptionButton.TextSize = 10
+        OptionButton.TextXAlignment = Enum.TextXAlignment.Left
+        OptionButton.LayoutOrder = i
+        OptionButton.ZIndex = 102
+        
+        -- Add padding to text
+        local OptionPadding = Instance.new("UIPadding")
+        OptionPadding.Parent = OptionButton
+        OptionPadding.PaddingLeft = UDim.new(0, 8)
+        OptionPadding.PaddingRight = UDim.new(0, 8)
+        
+        OptionButton.MouseButton1Click:Connect(function()
+            currentValue = option
+            DropdownButton.Text = text .. ": " .. option
+            OptionsFrame.Visible = false
+            isOpen = false
+            Arrow.Text = "▼"
             
-            healthLabel.Text = health .. "/" .. maxHealth
-            healthLabel.Visible = true
+            -- Animate arrow rotation
+            TweenService:Create(Arrow, Config.Animations.Fast, {
+                Rotation = 0
+            }):Play()
             
-            -- Update health bar
-            if ESP_SETTINGS.HealthBarEnabled then
-                healthBarBG.Visible = true
-                healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+            if callback then
+                callback(option)
+            end
+        end)
+        
+        -- Hover effect
+        OptionButton.MouseEnter:Connect(function()
+            TweenService:Create(OptionButton, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Border
+            }):Play()
+        end)
+        
+        OptionButton.MouseLeave:Connect(function()
+            TweenService:Create(OptionButton, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Secondary
+            }):Play()
+        end)
+    end
+    
+    -- Main dropdown click handler
+    DropdownButton.MouseButton1Click:Connect(function()
+        isOpen = not isOpen
+        OptionsFrame.Visible = isOpen
+        
+        if isOpen then
+            UpdateOptionsPosition()
+            Arrow.Text = "▲"
+            -- Animate arrow rotation
+            TweenService:Create(Arrow, Config.Animations.Fast, {
+                Rotation = 180
+            }):Play()
+            
+            -- Animate options frame appearance
+            OptionsFrame.Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, 0)
+            TweenService:Create(OptionsFrame, Config.Animations.Normal, {
+                Size = UDim2.new(0, DropdownFrame.AbsoluteSize.X, 0, math.min(#options * 25, 150))
+            }):Play()
+        else
+            Arrow.Text = "▼"
+            -- Animate arrow rotation
+            TweenService:Create(Arrow, Config.Animations.Fast, {
+                Rotation = 0
+            }):Play()
+        end
+    end)
+    
+    -- Close dropdown when clicking elsewhere
+    local function CloseDropdown()
+        if isOpen then
+            isOpen = false
+            OptionsFrame.Visible = false
+            Arrow.Text = "▼"
+            TweenService:Create(Arrow, Config.Animations.Fast, {
+                Rotation = 0
+            }):Play()
+        end
+    end
+    
+    -- Connect to UserInputService to detect clicks outside
+    UserInputService.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            if isOpen then
+                local mousePos = input.Position
+                local dropdownPos = DropdownFrame.AbsolutePosition
+                local dropdownSize = DropdownFrame.AbsoluteSize
+                local optionsPos = OptionsFrame.AbsolutePosition
+                local optionsSize = OptionsFrame.AbsoluteSize
                 
-                -- Color based on health percentage
-                if healthPercent > 0.6 then
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0) -- Green
-                    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
-                elseif healthPercent > 0.3 then
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0) -- Yellow
-                    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-                else
-                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0) -- Red
-                    healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+                -- Check if click is outside both dropdown and options
+                local clickInDropdown = mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
+                                       mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y
+                
+                local clickInOptions = mousePos.X >= optionsPos.X and mousePos.X <= optionsPos.X + optionsSize.X and
+                                      mousePos.Y >= optionsPos.Y and mousePos.Y <= optionsPos.Y + optionsSize.Y
+                
+                if not clickInDropdown and not clickInOptions then
+                    CloseDropdown()
                 end
-            else
-                healthBarBG.Visible = false
             end
-        else
-            healthLabel.Visible = false
-            healthBarBG.Visible = false
         end
-        
-        -- Update name
-        if ESP_SETTINGS.ShowNames then
-            nameLabel.Text = player.DisplayName
-            nameLabel.Visible = true
-        else
-            nameLabel.Visible = false
-        end
-    end
+    end)
     
-    -- Store ESP components
-    trackedPlayers[player] = {
-        highlight = highlight,
-        billboard = billboard,
-        updateFunction = updateESP
+    -- Update position when parent moves (for draggable GUI)
+    spawn(function()
+        while DropdownFrame.Parent do
+            if isOpen then
+                UpdateOptionsPosition()
+            end
+            wait(0.1)
+        end
+    end)
+    
+    -- Clean up options frame when dropdown is destroyed
+    DropdownFrame.AncestryChanged:Connect(function()
+        if not DropdownFrame.Parent then
+            OptionsFrame:Destroy()
+        end
+    end)
+    
+    -- Hover effects for main dropdown
+    DropdownButton.MouseEnter:Connect(function()
+        if not isOpen then
+            TweenService:Create(DropdownFrame, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Border
+            }):Play()
+        end
+    end)
+    
+    DropdownButton.MouseLeave:Connect(function()
+        if not isOpen then
+            TweenService:Create(DropdownFrame, Config.Animations.Fast, {
+                BackgroundColor3 = Config.Colors.Secondary
+            }):Play()
+        end
+    end)
+    
+    table.insert(tab.Components, DropdownFrame)
+    
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
+    end)
+    
+    return {
+        Dropdown = DropdownFrame, 
+        SetValue = function(value) 
+            currentValue = value 
+            DropdownButton.Text = text .. ": " .. value 
+        end,
+        GetValue = function()
+            return currentValue
+        end
     }
+end
+
+-- NEW FUNCTION: Create TextBox
+function Library:CreateTextBox(tab, text, placeholder, callback)
+    local TextBoxFrame = Instance.new("Frame")
+    TextBoxFrame.Name = text
+    TextBoxFrame.Parent = tab.Content
+    TextBoxFrame.BackgroundColor3 = Config.Colors.Secondary
+    TextBoxFrame.BorderSizePixel = 0
+    TextBoxFrame.Size = UDim2.new(1, 0, 0, 45)
+    TextBoxFrame.LayoutOrder = #tab.Components + 1
     
-    -- Connect update function
-    local connection = RunService.Heartbeat:Connect(updateESP)
-    espConnections[player] = connection
+    local TextBoxCorner = Instance.new("UICorner")
+    TextBoxCorner.CornerRadius = UDim.new(0, 0)
+    TextBoxCorner.Parent = TextBoxFrame
     
-    -- Handle player leaving
-    local function onPlayerRemoving()
-        removePlayerESP(player)
-    end
+    local TextBoxStroke = Instance.new("UIStroke")
+    TextBoxStroke.Color = Config.Colors.StrokeGreen
+    TextBoxStroke.Thickness = 1
+    TextBoxStroke.Parent = TextBoxFrame
     
-    -- Connect to player removing (will be cleaned up when player leaves)
-    local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
-        if removedPlayer == player then
-            onPlayerRemoving()
+    -- Label
+    local TextBoxLabel = Instance.new("TextLabel")
+    TextBoxLabel.Parent = TextBoxFrame
+    TextBoxLabel.BackgroundTransparency = 1
+    TextBoxLabel.Size = UDim2.new(1, -16, 0, 20)
+    TextBoxLabel.Position = UDim2.new(0, 8, 0, 2)
+    TextBoxLabel.Font = Enum.Font.Gotham
+    TextBoxLabel.Text = text
+    TextBoxLabel.TextColor3 = Config.Colors.Text
+    TextBoxLabel.TextSize = 11
+    TextBoxLabel.TextXAlignment = Enum.TextXAlignment.Left
+    
+    -- TextBox
+    local TextBox = Instance.new("TextBox")
+    TextBox.Parent = TextBoxFrame
+    TextBox.BackgroundColor3 = Config.Colors.Primary
+    TextBox.BorderSizePixel = 0
+    TextBox.Size = UDim2.new(1, -16, 0, 18)
+    TextBox.Position = UDim2.new(0, 8, 1, -22)
+    TextBox.Font = Enum.Font.Gotham
+    TextBox.PlaceholderText = placeholder or "Enter text..."
+    TextBox.Text = ""
+    TextBox.TextColor3 = Config.Colors.Text
+    TextBox.PlaceholderColor3 = Config.Colors.TextSecondary
+    TextBox.TextSize = 10
+    TextBox.TextXAlignment = Enum.TextXAlignment.Left
+    
+    local TextBoxInputStroke = Instance.new("UIStroke")
+    TextBoxInputStroke.Color = Config.Colors.Border
+    TextBoxInputStroke.Thickness = 1
+    TextBoxInputStroke.Parent = TextBox
+    
+    -- Focus effects
+    TextBox.Focused:Connect(function()
+        TweenService:Create(TextBoxInputStroke, Config.Animations.Fast, {
+            Color = Config.Colors.StrokeGreen
+        }):Play()
+    end)
+    
+    TextBox.FocusLost:Connect(function(enterPressed)
+        TweenService:Create(TextBoxInputStroke, Config.Animations.Fast, {
+            Color = Config.Colors.Border
+        }):Play()
+        
+        if callback and enterPressed then
+            callback(TextBox.Text)
         end
     end)
     
-    -- Store the remove connection
-    if not espConnections[player] then
-        espConnections[player] = {}
-    end
-    if type(espConnections[player]) == "table" then
-        espConnections[player].removeConnection = removeConnection
-    end
+    table.insert(tab.Components, TextBoxFrame)
     
-    -- Initial update
-    updateESP()
-end
-
--- Remove ESP for a player
-local function removePlayerESP(player)
-    if trackedPlayers[player] then
-        -- Destroy ESP components
-        if trackedPlayers[player].highlight then
-            trackedPlayers[player].highlight:Destroy()
-        end
-        if trackedPlayers[player].billboard then
-            trackedPlayers[player].billboard:Destroy()
-        end
-        trackedPlayers[player] = nil
-    end
-    
-    -- Disconnect connections
-    if espConnections[player] then
-        if type(espConnections[player]) == "userdata" then
-            espConnections[player]:Disconnect()
-        elseif type(espConnections[player]) == "table" then
-            if espConnections[player].removeConnection then
-                espConnections[player].removeConnection:Disconnect()
-            end
-        end
-        espConnections[player] = nil
-    end
-end
-
--- Enable ESP for all players
-local function enablePlayerESP()
-    playerESPEnabled = true
-    
-    -- Add ESP to existing players
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and player.Character then
-            createPlayerESP(player)
-        end
-    end
-    
-    -- Connect to new players joining
-    espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
-        if playerESPEnabled then
-            -- Wait for character to load
-            player.CharacterAdded:Connect(function(character)
-                if playerESPEnabled then
-                    wait(1) -- Small delay to ensure everything is loaded
-                    createPlayerESP(player)
-                end
-            end)
-        end
+    tab.Layout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+        tab.Content.Size = UDim2.new(1, 0, 0, tab.Layout.AbsoluteContentSize.Y)
+        ContentScrollFrame.CanvasSize = UDim2.new(0, 0, 0, ContentLayout.AbsoluteContentSize.Y)
     end)
     
-    -- Connect to existing players respawning
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            player.CharacterAdded:Connect(function(character)
-                if playerESPEnabled then
-                    wait(1) -- Small delay to ensure everything is loaded
-                    createPlayerESP(player)
-                end
-            end)
-        end
-    end
-    
-    print("✅ Player ESP Enabled")
+    return {TextBox = TextBoxFrame, GetText = function() return TextBox.Text end, SetText = function(newText) TextBox.Text = newText end}
 end
 
--- Disable ESP for all players
-local function disablePlayerESP()
-    playerESPEnabled = false
+-- Control Button Functions
+MinimizeButton.MouseButton1Click:Connect(function()
+    ScreenGui.Enabled = false
     
-    -- Remove ESP from all tracked players
-    for player, _ in pairs(trackedPlayers) do
-        removePlayerESP(player)
-    end
-    
-    -- Disconnect main connections
-    if espConnections.playerAdded then
-        espConnections.playerAdded:Disconnect()
-        espConnections.playerAdded = nil
-    end
-    
-    -- Clear all connections
-    for player, connection in pairs(espConnections) do
-        if type(connection) == "userdata" then
-            connection:Disconnect()
-        elseif type(connection) == "table" then
-            if connection.removeConnection then
-                connection.removeConnection:Disconnect()
-            end
-        end
-    end
-    espConnections = {}
-    
-    print("❌ Player ESP Disabled")
-end
-
--- Main Player ESP Toggle (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Player ESP",
-    Icon = "users",
-    Value = false,
-    Callback = function(state)
-        if state then
-            enablePlayerESP()
-        else
-            disablePlayerESP()
-        end
-        print("✅ Player ESP", state and "ON" or "OFF")
-    end
-})
-
--- ESP Feature Toggles (WindUI Format)
-Tabs.EspTab:Toggle({
-    Title = "Show Player Names",
-    Icon = "user-check",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowNames = state
-        print("✅ Show Player Names", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Player Distance",
-    Icon = "ruler",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowDistance = state
-        print("✅ Show Player Distance", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Player Health",
-    Icon = "heart-pulse",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.ShowHealth = state
-        print("✅ Show Player Health", state and "ON" or "OFF")
-    end
-})
-
-Tabs.EspTab:Toggle({
-    Title = "Show Health Bar",
-    Icon = "activity",
-    Value = true,
-    Callback = function(state)
-        ESP_SETTINGS.HealthBarEnabled = state
-        print("✅ Show Health Bar", state and "ON" or "OFF")
-    end
-})
-
--- ESP Distance Slider (WindUI Format)
-Tabs.EspTab:Slider({
-    Title = "ESP Max Distance",
-    Value = { Min = 100, Max = 2000, Default = 1000 },
-    Callback = function(value)
-        ESP_SETTINGS.MaxDistance = value
-        print("📏 ESP Max Distance set to:", value)
-    end
-})
-
--- ESP Text Size Slider (WindUI Format)
-Tabs.EspTab:Slider({
-    Title = "ESP Text Size",
-    Value = { Min = 8, Max = 24, Default = 14 },
-    Callback = function(value)
-        ESP_SETTINGS.TextSize = value
-        print("📏 ESP Text Size set to:", value)
-    end
-})
-
--- Teleport to Campfire Button
-Tabs.TpTab:Button({
-    Title = "Teleport to Campfire",
-    Desc = "Quick teleport to campfire location",
-    Callback = function()
-        local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+    -- Update circle toggle color when minimized
+    local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
+    if fryzerGUI and fryzerGUI:FindFirstChild("CircleFrame") then
+        local circleFrame = fryzerGUI.CircleFrame
+        local textLabel = circleFrame:FindFirstChild("TextLabel")
+        local gradient = circleFrame:FindFirstChild("UIGradient")
         
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
-            print("✅ Teleported to campfire successfully!")
-        else
-            print("❌ Teleport failed - Character not found!")
-        end
-    end
-})
-
--- Lost Child Teleport System
-local CharactersFolder = workspace:FindFirstChild("Characters")
-
-if CharactersFolder then
-    local lostChildPaths = {
-        "Lost Child",
-        "Lost Child2", 
-        "Lost Child3",
-        "Lost Child4"
-    }
-    
-    local availableChildren = {}
-    local selectedChild = nil
-    local childDropdown = nil
-
-    -- Function to refresh available Lost Children
-    local function refreshLostChildren()
-        local previousChildren = {}
-        for _, child in pairs(availableChildren) do
-            previousChildren[child] = true
+        -- Set to inactive appearance
+        TweenService:Create(circleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+            BackgroundColor3 = Color3.fromRGB(20, 20, 20),
+            BorderColor3 = Color3.fromRGB(40, 40, 40)
+        }):Play()
+        
+        if textLabel then
+            TweenService:Create(textLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            }):Play()
         end
         
-        availableChildren = {}
-        
-        -- Check each Lost Child path
-        for _, childName in pairs(lostChildPaths) do
-            local childModel = CharactersFolder:FindFirstChild(childName)
-            if childModel and childModel:IsA("Model") then
-                table.insert(availableChildren, childName)
-            end
-        end
-        
-        print("👶 Found", #availableChildren, "Lost Children available for teleport")
-        
-        -- Check if selected child still exists
-        if selectedChild and not CharactersFolder:FindFirstChild(selectedChild) then
-            selectedChild = nil
-            print("⚠️ Previously selected Lost Child no longer exists")
-        end
-        
-        -- Check for changes
-        local hasChanges = (#availableChildren ~= #previousChildren)
-        if not hasChanges then
-            for _, child in pairs(availableChildren) do
-                if not previousChildren[child] then
-                    hasChanges = true
-                    break
-                end
-            end
-        end
-        
-        -- Update dropdown if there are changes
-        if childDropdown and hasChanges then
-            pcall(function()
-                childDropdown:SetValues(availableChildren)
-            end)
-            
-            -- Set default selection if none selected and children available
-            if #availableChildren > 0 and not selectedChild then
-                selectedChild = availableChildren[1]
-                pcall(function()
-                    childDropdown:SetValue(selectedChild)
-                end)
-            end
+        if gradient then
+            gradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
+            }
         end
     end
-
-    -- Function to get teleport position for a Lost Child
-    local function getLostChildTeleportPosition(childName)
-        local childModel = CharactersFolder:FindFirstChild(childName)
-        if not childModel then
-            return nil
-        end
-        
-        -- Try to find HumanoidRootPart first
-        local rootPart = childModel:FindFirstChild("HumanoidRootPart")
-        if rootPart then
-            return rootPart.Position
-        end
-        
-        -- Fallback to any BasePart
-        local anyPart = childModel:FindFirstChildWhichIsA("BasePart")
-        if anyPart then
-            return anyPart.Position
-        end
-        
-        -- Fallback to model's PrimaryPart
-        if childModel.PrimaryPart then
-            return childModel.PrimaryPart.Position
-        end
-        
-        return nil
-    end
-
-    -- Function to teleport to selected Lost Child
-    local function teleportToLostChild(childName)
-        local player = LocalPlayer
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            print("❌ Player character not found!")
-            return false
-        end
-        
-        local targetPosition = getLostChildTeleportPosition(childName)
-        if not targetPosition then
-            print("❌ Could not find valid teleport position for", childName)
-            return false
-        end
-        
-        -- Add some height offset to avoid collision
-        local teleportPosition = targetPosition + Vector3.new(0, 5, 0)
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-        
-        print("✅ Teleported to", childName)
-        return true
-    end
-
-    -- Initial refresh
-    refreshLostChildren()
-
-    -- Lost Child Selection Dropdown
-    childDropdown = Tabs.TpTab:Dropdown({
-        Title = "Select Lost Child",
-        Values = availableChildren,
-        Value = availableChildren[1] or "None",
-        Callback = function(selected)
-            selectedChild = selected
-            print("👶 Selected Lost Child:", selected)
-        end
-    })
-
-    -- Teleport to Selected Lost Child Button
-    Tabs.TpTab:Button({
-        Title = "Teleport to Selected Lost Child",
-        Desc = "Teleport to the currently selected Lost Child",
-        Callback = function()
-            if not selectedChild then
-                print("❌ No Lost Child selected!")
-                return
-            end
-            
-            teleportToLostChild(selectedChild)
-        end
-    })
-
-    -- Individual teleport buttons for each Lost Child
-    for _, childName in pairs(lostChildPaths) do
-        Tabs.TpTab:Button({
-            Title = "TP to " .. childName,
-            Desc = "Direct teleport to " .. childName,
-            Callback = function()
-                if not CharactersFolder:FindFirstChild(childName) then
-                    print("❌", childName, "not found!")
-                    return
-                end
-                
-                teleportToLostChild(childName)
-            end
-        })
-    end
-
-    -- Teleport to Random Lost Child Button
-    Tabs.TpTab:Button({
-        Title = "TP to Random Lost Child",
-        Desc = "Teleport to a random available Lost Child",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            local randomChild = availableChildren[math.random(1, #availableChildren)]
-            teleportToLostChild(randomChild)
-        end
-    })
-
-    -- Teleport to All Lost Children (Sequential)
-    Tabs.TpTab:Button({
-        Title = "TP to All Lost Children",
-        Desc = "Teleport to each Lost Child with 2 second delays",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            print("🔄 Starting sequential teleport to all Lost Children...")
-            
-            task.spawn(function()
-                for i, childName in pairs(availableChildren) do
-                    print("📍 Teleporting to", childName, "(" .. i .. "/" .. #availableChildren .. ")")
-                    teleportToLostChild(childName)
-                    
-                    -- Wait before next teleport (except for the last one)
-                    if i < #availableChildren then
-                        task.wait(2)
-                    end
-                end
-                print("✅ Completed teleporting to all Lost Children!")
-            end)
-        end
-    })
-
-    -- Manual Refresh Button
-    Tabs.TpTab:Button({
-        Title = "Refresh Lost Children",
-        Desc = "Manually refresh the Lost Children list",
-        Callback = function()
-            print("🔄 Manually refreshing Lost Children...")
-            refreshLostChildren()
-            print("🔄 Lost Children list refreshed!")
-        end
-    })
-
-    -- Auto-refresh every 1 second
-    task.spawn(function()
-        while true do
-            task.wait(1)
-            refreshLostChildren()
-        end
-    end)
-
-    -- Safe Teleport Toggle (for Lost Children)
-    local safeLostChildTP = false
-    Tabs.TpTab:Toggle({
-        Title = "Safe Lost Child TP",
-        Icon = "baby",
-        Value = false,
-        Callback = function(state)
-            safeLostChildTP = state
-            print("👶 Safe Lost Child Teleport:", state and "ON" or "OFF")
-            if state then
-                print("📝 Safe mode adds extra height to Lost Child teleports")
-            end
-        end
-    })
-
-    -- Enhanced teleport function with safe mode for Lost Children
-    local function safeTeleportToLostChild(childName)
-        local player = LocalPlayer
-        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
-            print("❌ Player character not found!")
-            return false
-        end
-        
-        local targetPosition = getLostChildTeleportPosition(childName)
-        if not targetPosition then
-            print("❌ Could not find valid teleport position for", childName)
-            return false
-        end
-        
-        -- Add extra height if safe mode is on
-        local heightOffset = safeLostChildTP and 15 or 5
-        local teleportPosition = targetPosition + Vector3.new(0, heightOffset, 0)
-        
-        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-        
-        local safetyText = safeLostChildTP and " (Safe Mode)" or ""
-        print("✅ Teleported to", childName .. safetyText)
-        return true
-    end
-
-    -- Update the teleport functions to use safe teleport
-    local originalTeleportFunction = teleportToLostChild
-    teleportToLostChild = safeTeleportToLostChild
-
-else
-    print("❌ Characters folder not found in workspace!")
-    
-    -- Create error message in UI
-    Tabs.TpTab:Button({
-        Title = "⚠️ Characters Folder Missing",
-        Desc = "workspace.Characters folder not found",
-        Callback = function()
-            print("❌ Cannot find workspace.Characters folder!")
-            print("📁 Please ensure the Characters folder exists in workspace")
-        end
-    })
-end
-
--- Item Teleport System
-local ItemsFolder = workspace:FindFirstChild("Items")
-
-if ItemsFolder then
-    local uniqueModelNames = {}
-    local modelMap = {}
-    local selectedModelName = nil
-    local itemDropdown = nil
-
-    local function refreshModelList()
-        local previousCount = #uniqueModelNames
-        local previousNames = {}
-        for _, name in pairs(uniqueModelNames) do
-            previousNames[name] = true
-        end
-        
-        uniqueModelNames = {}
-        modelMap = {}
-
-        for _, item in pairs(ItemsFolder:GetDescendants()) do
-            if item:IsA("Model") then
-                local name = item.Name
-                if not modelMap[name] then
-                    modelMap[name] = {}
-                    table.insert(uniqueModelNames, name)
-                end
-                table.insert(modelMap[name], item)
-            end
-        end
-
-        print("📦 Found", #uniqueModelNames, "unique item types")
-        
-        -- Check if selected item still exists
-        if selectedModelName and not modelMap[selectedModelName] then
-            selectedModelName = nil
-            print("⚠️ Previously selected item no longer exists")
-        end
-        
-        -- Check if there are changes (count or actual items)
-        local hasChanges = (#uniqueModelNames ~= previousCount)
-        if not hasChanges then
-            -- Check if the actual items changed
-            for _, name in pairs(uniqueModelNames) do
-                if not previousNames[name] then
-                    hasChanges = true
-                    break
-                end
-            end
-        end
-        
-        -- Update dropdown if there are changes
-        if itemDropdown and hasChanges then
-            -- Update dropdown values
-            pcall(function()
-                itemDropdown:SetValues(uniqueModelNames)
-            end)
-            
-            -- Set new selection if current one is invalid
-            if #uniqueModelNames > 0 and not selectedModelName then
-                selectedModelName = uniqueModelNames[1]
-                -- Try to set value, but don't error if method doesn't exist
-                pcall(function()
-                    itemDropdown:SetValue(selectedModelName)
-                end)
-            end
-        end
-    end
-
-    -- Initial refresh
-    refreshModelList()
-
-    -- Item Selection Dropdown
-    itemDropdown = Tabs.TpTab:Dropdown({
-        Title = "Select Item to Teleport",
-        Values = uniqueModelNames,
-        Value = uniqueModelNames[1] or "None",
-        Callback = function(selected)
-            selectedModelName = selected
-            print("🎯 Selected item:", selected)
-        end
-    })
-
-    -- Auto-refresh item list every 1 second
-    task.spawn(function()
-        while true do
-            task.wait(1) -- Check every 1 second as requested
-            refreshModelList()
-        end
-    end)
-
-    local function getClosestModel(modelList)
-        local char = LocalPlayer.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        if not hrp or not modelList then return nil end
-
-        local closest, minDist = nil, math.huge
-        for _, model in pairs(modelList) do
-            local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-            if primary then
-                local dist = (hrp.Position - primary.Position).Magnitude
-                if dist < minDist then
-                    minDist = dist
-                    closest = primary
-                end
-            end
-        end
-        return closest
-    end
-
-    -- Teleport to Selected Item Button
-    Tabs.TpTab:Button({
-        Title = "Teleport to Selected Item",
-        Desc = "Teleport to the closest instance of selected item",
-        Callback = function()
-            if not selectedModelName or not modelMap[selectedModelName] then
-                print("❌ No item selected or item not found!")
-                return
-            end
-
-            local closestPart = getClosestModel(modelMap[selectedModelName])
-            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-            if closestPart and hrp then
-                hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
-                print("✅ Teleported to nearest:", selectedModelName)
-            else
-                print("❌ Could not find valid item to teleport to!")
-            end
-        end
-    })
-
-    -- Refresh Item List Button
-    Tabs.TpTab:Button({
-        Title = "Manual Refresh Items",
-        Desc = "Force refresh the item list immediately",
-        Callback = function()
-            print("🔄 Manually refreshing item list...")
-            refreshModelList()
-            print("🔄 Item list manually refreshed! Found", #uniqueModelNames, "item types")
-            if selectedModelName then
-                print("🎯 Currently selected:", selectedModelName)
-            else
-                print("⚠️ No item selected")
-            end
-        end
-    })
-else
-    print("❌ Items folder not found in workspace!")
-end
-
--- Quick Teleport Buttons for Common Locations
-Tabs.TpTab:Button({
-    Title = "Teleport to Spawn",
-    Desc = "Quick teleport back to spawn area",
-    Callback = function()
-        local spawnPosition = Vector3.new(0, 10, 0) -- Adjust coordinates as needed
-        
-        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(spawnPosition)
-            print("✅ Teleported to spawn!")
-        else
-            print("❌ Teleport failed - Character not found!")
-        end
-    end
-})
-
--- Teleport to Random Item Button
-Tabs.TpTab:Button({
-    Title = "Teleport to Random Item",
-    Desc = "Teleport to a random item in the workspace",
-    Callback = function()
-        if ItemsFolder then
-            local allItems = {}
-            for _, item in pairs(ItemsFolder:GetChildren()) do
-                if item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) then
-                    table.insert(allItems, item)
-                end
-            end
-            
-            if #allItems > 0 then
-                local randomItem = allItems[math.random(1, #allItems)]
-                local targetPart = randomItem.PrimaryPart or randomItem:FindFirstChildWhichIsA("BasePart")
-                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
-                if targetPart and hrp then
-                    hrp.CFrame = targetPart.CFrame + Vector3.new(0, 5, 0)
-                    print("✅ Teleported to random item:", randomItem.Name)
-                else
-                    print("❌ Failed to teleport to random item!")
-                end
-            else
-                print("❌ No items found to teleport to!")
-            end
-        else
-            print("❌ Items folder not found!")
-        end
-    end
-})
-
--- Teleport Safe Mode Toggle
-local safeTeleportMode = false
-Tabs.TpTab:Toggle({
-    Title = "Safe Teleport Mode",
-    Icon = "shield",
-    Value = false,
-    Callback = function(state)
-        safeTeleportMode = state
-        print("✅ Safe Teleport Mode", state and "ON" or "OFF")
-        if state then
-            print("📝 Safe mode adds 10 studs height to teleports")
-        end
-    end
-})
-
--- Enhanced teleport function with safe mode
-local function safeTeleport(targetCFrame, locationName)
-    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-    if not hrp then
-        print("❌ Teleport failed - Character not found!")
-        return false
-    end
-    
-    local finalCFrame = targetCFrame
-    if safeTeleportMode then
-        finalCFrame = targetCFrame + Vector3.new(0, 10, 0) -- Add extra height for safety
-    end
-    
-    hrp.CFrame = finalCFrame
-    print("✅ Safely teleported to:", locationName or "Unknown location")
-    return true
-end
-
--- Sky Platform Script variables
-local Players = game:GetService("Players")
-local Player = Players.LocalPlayer
-local RunService = game:GetService("RunService")
-
-local isOnPlatform = false
-local skyPlatform = nil
-local platformConnection = nil
-
--- Create infinite platform function
-local function createSkyPlatform(playerPosition)
-    if skyPlatform then
-        skyPlatform:Destroy()
-    end
-    
-    -- Create platform part (invisible)
-    skyPlatform = Instance.new("Part")
-    skyPlatform.Name = "SkyPlatform"
-    skyPlatform.Size = Vector3.new(50, 1, 50) -- Starting size
-    skyPlatform.Position = Vector3.new(playerPosition.X, 200, playerPosition.Z)
-    skyPlatform.Anchored = true
-    skyPlatform.Transparency = 1 -- Make invisible
-    skyPlatform.CanCollide = true -- Still walkable
-    skyPlatform.TopSurface = Enum.SurfaceType.Smooth
-    skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
-    skyPlatform.Parent = workspace
-    
-    -- Make platform expand infinitely as player moves
-    platformConnection = RunService.Heartbeat:Connect(function()
-        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform then
-            local humanoidRootPart = Player.Character.HumanoidRootPart
-            local playerPos = humanoidRootPart.Position
-            
-            -- Check if player is still at sky level
-            if playerPos.Y > 150 then
-                -- Update platform position and size based on player position
-                local distance = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(skyPlatform.Position.X, skyPlatform.Position.Z)).Magnitude
-                
-                if distance > 20 then
-                    -- Move platform closer to player
-                    skyPlatform.Position = Vector3.new(playerPos.X, 200, playerPos.Z)
-                end
-                
-                -- Keep platform large enough
-                local minSize = 100
-                if skyPlatform.Size.X < minSize then
-                    skyPlatform.Size = Vector3.new(minSize, 1, minSize)
-                end
-            end
-        end
-    end)
-end
-
--- Teleport to sky platform function
-local function teleportToSky()
-    local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("☁️ Error: Character not found")
-        return
-    end
-    
-    local humanoidRootPart = character.HumanoidRootPart
-    
-    -- Create platform
-    createSkyPlatform(humanoidRootPart.Position)
-    
-    -- Teleport player
-    humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 205, humanoidRootPart.Position.Z)
-    
-    isOnPlatform = true
-    print("☁️ Teleported to invisible sky platform!")
-end
-
--- Teleport back to ground function
-local function teleportToGround()
-    local character = Player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        print("☁️ Error: Character not found")
-        return
-    end
-    
-    local humanoidRootPart = character.HumanoidRootPart
-    local currentPosition = humanoidRootPart.Position
-    
-    -- Raycast straight down from current position to find ground
-    local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0))
-    
-    if raycast then
-        -- Teleport to ground + 5 studs above surface
-        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
-    else
-        -- Fallback: teleport to default ground level
-        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
-    end
-    
-    -- Destroy platform
-    if skyPlatform then
-        skyPlatform:Destroy()
-        skyPlatform = nil
-    end
-    
-    -- Disconnect platform update
-    if platformConnection then
-        platformConnection:Disconnect()
-        platformConnection = nil
-    end
-    
-    isOnPlatform = false
-    print("☁️ Teleported back to ground!")
-end
-
--- Sky Platform Toggle
-Tabs.TpTab:Toggle({
-    Title = "Sky Platform",
-    Icon = "cloud",
-    Value = false,
-    Callback = function(state)
-        print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
-        
-        if state then
-            teleportToSky()
-        else
-            teleportToGround()
-        end
-    end
-})
-
--- Clean up functions for player events
-local function cleanupSkyPlatform()
-    if skyPlatform then
-        skyPlatform:Destroy()
-        skyPlatform = nil
-    end
-    if platformConnection then
-        platformConnection:Disconnect()
-        platformConnection = nil
-    end
-    isOnPlatform = false
-end
-
--- Clean up when player resets
-Player.CharacterRemoving:Connect(cleanupSkyPlatform)
-
-
-Tabs.OpTab:Paragraph({
-    Title = "Warning",
-    Desc = "Do not change the distance sliders below, they are set to optimal values.",
-    Image = "check",
-    Color = "Green",
-})
-
--- Auto Chop Tree Script for WindUI
-local ActiveAutoChopTree = false
-local DistanceForAutoChopTree = 2500
-
--- Distance Slider
-Tabs.OpTab:Slider({
-    Title = "Don't Change this",
-    Value = {
-        Min = 0,
-        Max = 3000,
-        Default = 2500
-    }, -- Added missing comma here
-    Callback = function(val)
-        DistanceForAutoChopTree = val
-        print("Auto Chop Tree distance set to:", val)
-    end
-})
-
--- Auto Chop Tree Toggle
-Tabs.OpTab:Toggle({
-    Title = "Auto Chop Tree", 
-    Value = false,
-    Callback = function(state)
-        ActiveAutoChopTree = state
-        print("Auto Chop Tree is now:", state)
-        
-        if ActiveAutoChopTree then
-            task.spawn(function()
-                while ActiveAutoChopTree do 
-                    local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
-                    local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
-                                   player.Inventory:FindFirstChild("Chainsaw"))
-                    
-                    -- Check trees in Foliage
-                    task.spawn(function()
-                        for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
-                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                                end
-                            end
-                        end 
-                    end)
-                    
-                    -- Check trees in Landmarks
-                    task.spawn(function()
-                        for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
-                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
-                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
-                                end
-                            end
-                        end
-                    end)
-                    
-                    wait(0.1)
-                end
-            end)
-        end
-    end
-})
-
--- Auto Kill Aura Script for WindUI
-local ActiveKillAura = false
-local DistanceForKillAura = 2500
-
--- Distance Slider
-Tabs.OpTab:Slider({
-    Title = "Don't Change this",
-    Value = {
-        Min = 25,
-        Max = 10000,
-        Default = 2500
-    }, -- Added missing comma here
-    Callback = function(val)
-        DistanceForKillAura = val
-        print("Kill Aura distance set to:", val)
-    end
-})
-
--- Kill Aura Toggle
-Tabs.OpTab:Toggle({
-    Title = "Kill Aura", 
-    Value = false,
-    Callback = function(state)
-        ActiveKillAura = state
-        print("Kill Aura is now:", state)
-        
-        if ActiveKillAura then
-            task.spawn(function()
-                while ActiveKillAura do 
-                    local player = game.Players.LocalPlayer
-                    local character = player.Character or player.CharacterAdded:Wait()
-                    local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
-                                   player.Inventory:FindFirstChild("Chainsaw"))
-                    
-                    task.spawn(function()
-                        for _, enemy in pairs(workspace.Characters:GetChildren()) do
-                            if enemy:IsA("Model") and enemy.PrimaryPart then
-                                local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
-                                if distance <= DistanceForKillAura then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
-                                end
-                            end
-                        end
-                    end)
-                    
-                    wait(0.1)
-                end
-            end)
-        end
-    end
-})
-
-
-Window:OnDestroy(function()
-    print("Window destroyed")
 end)
+
+-- Close Confirmation Dialog (FIXED - No background overlay)
+local function CreateConfirmDialog()
+    local ConfirmGui = Instance.new("ScreenGui")
+    ConfirmGui.Name = "ConfirmDialog"
+    ConfirmGui.Parent = PlayerGui
+    ConfirmGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ConfirmGui.DisplayOrder = 200
+    
+    -- REMOVED: No overlay/background frame that covers full screen
+    
+    local ConfirmFrame = Instance.new("Frame")
+    ConfirmFrame.Parent = ConfirmGui
+    ConfirmFrame.BackgroundColor3 = Config.Colors.Primary
+    ConfirmFrame.BorderSizePixel = 0
+    ConfirmFrame.Size = UDim2.new(0, 300, 0, 120)
+    ConfirmFrame.Position = UDim2.new(0.5, -150, 0.5, -60)
+    
+    local ConfirmCorner = Instance.new("UICorner")
+    ConfirmCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
+    ConfirmCorner.Parent = ConfirmFrame
+    
+    local ConfirmStroke = Instance.new("UIStroke")
+    ConfirmStroke.Color = Config.Colors.StrokeGreen
+    ConfirmStroke.Thickness = 2
+    ConfirmStroke.Parent = ConfirmFrame
+    
+    local ConfirmTitle = Instance.new("TextLabel")
+    ConfirmTitle.Parent = ConfirmFrame
+    ConfirmTitle.BackgroundTransparency = 1
+    ConfirmTitle.Size = UDim2.new(1, 0, 0, 30)
+    ConfirmTitle.Position = UDim2.new(0, 0, 0, 8)
+    ConfirmTitle.Font = Enum.Font.GothamBold
+    ConfirmTitle.Text = "Confirm Close"
+    ConfirmTitle.TextColor3 = Config.Colors.Text
+    ConfirmTitle.TextSize = 14
+    
+    local ConfirmText = Instance.new("TextLabel")
+    ConfirmText.Parent = ConfirmFrame
+    ConfirmText.BackgroundTransparency = 1
+    ConfirmText.Size = UDim2.new(1, -16, 0, 25)
+    ConfirmText.Position = UDim2.new(0, 8, 0, 35)
+    ConfirmText.Font = Enum.Font.Gotham
+    ConfirmText.Text = "Are you sure you want to close the hub?"
+    ConfirmText.TextColor3 = Config.Colors.TextSecondary
+    ConfirmText.TextSize = 11
+    ConfirmText.TextWrapped = true
+    
+    local ButtonsFrame = Instance.new("Frame")
+    ButtonsFrame.Parent = ConfirmFrame
+    ButtonsFrame.BackgroundTransparency = 1
+    ButtonsFrame.Size = UDim2.new(1, -16, 0, 30)
+    ButtonsFrame.Position = UDim2.new(0, 8, 1, -38)
+    
+    local CancelButton = Instance.new("TextButton")
+    CancelButton.Parent = ButtonsFrame
+    CancelButton.BackgroundColor3 = Config.Colors.Secondary
+    CancelButton.BorderSizePixel = 0
+    CancelButton.Size = UDim2.new(0.45, 0, 1, 0)
+    CancelButton.Position = UDim2.new(0, 0, 0, 0)
+    CancelButton.Font = Enum.Font.Gotham
+    CancelButton.Text = "Cancel"
+    CancelButton.TextColor3 = Config.Colors.Text
+    CancelButton.TextSize = 11
+    
+    local CancelCorner = Instance.new("UICorner")
+    CancelCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
+    CancelCorner.Parent = CancelButton
+    
+    local ConfirmButton = Instance.new("TextButton")
+    ConfirmButton.Parent = ButtonsFrame
+    ConfirmButton.BackgroundColor3 = Config.Colors.Error
+    ConfirmButton.BorderSizePixel = 0
+    ConfirmButton.Size = UDim2.new(0.45, 0, 1, 0)
+    ConfirmButton.Position = UDim2.new(0.55, 0, 0, 0)
+    ConfirmButton.Font = Enum.Font.Gotham
+    ConfirmButton.Text = "Close"
+    ConfirmButton.TextColor3 = Config.Colors.Text
+    ConfirmButton.TextSize = 11
+    
+    local ConfirmButtonCorner = Instance.new("UICorner")
+    ConfirmButtonCorner.CornerRadius = UDim.new(0, 0) -- Removed corner rounding
+    ConfirmButtonCorner.Parent = ConfirmButton
+    
+    -- Animate in
+    ConfirmFrame.Size = UDim2.new(0, 0, 0, 0)
+    TweenService:Create(ConfirmFrame, Config.Animations.Bounce, {
+        Size = UDim2.new(0, 300, 0, 120)
+    }):Play()
+    
+    CancelButton.MouseButton1Click:Connect(function()
+        ConfirmGui:Destroy()
+    end)
+    
+    ConfirmButton.MouseButton1Click:Connect(function()
+        -- Close both GUIs when confirmed
+        ScreenGui:Destroy()
+        ConfirmGui:Destroy()
+        
+        -- Also close the circle toggle GUI
+        local fryzerGUI = PlayerGui:FindFirstChild("FryzerToggleGUI")
+        if fryzerGUI then
+            fryzerGUI:Destroy()
+        end
+    end)
+    
+    -- Hover effects
+    CancelButton.MouseEnter:Connect(function()
+        TweenService:Create(CancelButton, Config.Animations.Fast, {BackgroundColor3 = Config.Colors.Border}):Play()
+    end)
+    CancelButton.MouseLeave:Connect(function()
+        TweenService:Create(CancelButton, Config.Animations.Fast, {BackgroundColor3 = Config.Colors.Secondary}):Play()
+    end)
+    
+    ConfirmButton.MouseEnter:Connect(function()
+        TweenService:Create(ConfirmButton, Config.Animations.Fast, {BackgroundColor3 = Color3.fromRGB(220, 50, 50)}):Play()
+    end)
+    ConfirmButton.MouseLeave:Connect(function()
+        TweenService:Create(ConfirmButton, Config.Animations.Fast, {BackgroundColor3 = Config.Colors.Error}):Play()
+    end)
+end
+
+CloseButton.MouseButton1Click:Connect(function()
+    CreateConfirmDialog()
+end)
+
+-- Control button hover effects (FIXED - Reset on mouse leave)
+local minimizeHovered = false
+
+MinimizeButton.MouseEnter:Connect(function()
+    minimizeHovered = true
+    TweenService:Create(MinimizeButton, Config.Animations.Fast, {
+        TextColor3 = Config.Colors.Accent
+    }):Play()
+end)
+
+MinimizeButton.MouseLeave:Connect(function()
+    minimizeHovered = false
+    TweenService:Create(MinimizeButton, Config.Animations.Fast, {
+        TextColor3 = Config.Colors.Text
+    }):Play()
+end)
+
+CloseButton.MouseEnter:Connect(function()
+    TweenService:Create(CloseButton, Config.Animations.Fast, {
+        TextColor3 = Config.Colors.Error
+    }):Play()
+end)
+
+CloseButton.MouseLeave:Connect(function()
+    TweenService:Create(CloseButton, Config.Animations.Fast, {
+        TextColor3 = Config.Colors.Text
+    }):Play()
+end)
+
+-- Animate GUI entrance
+MainFrame.Size = UDim2.new(0, 0, 0, 0)
+MainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
+
+TweenService:Create(MainFrame, Config.Animations.Bounce, {
+    Size = UDim2.new(0, 450, 0, 300),
+    Position = UDim2.new(0.5, -225, 0.5, -150)
+}):Play()
+
+-- Example Usage - Create tabs and components immediately
+local infoTab = Library:CreateTab("INFO") -- New INFO tab without emoji
+local homeTab = Library:CreateTab("HOME")
+local specialTab = Library:CreateTab("SPECIAL")
+local mainTab = Library:CreateTab("MAIN")
+local spawnerTab = Library:CreateTab("SPAWNER")
+local destroyTab = Library:CreateTab("DESTROY")
+local settingsTab = Library:CreateTab("SETTINGS")
+
+-- Timer variables
+local scriptStartTime = tick()
+local timerLabel = nil
+
+-- Function to format time
+local function FormatTime(seconds)
+    local hours = math.floor(seconds / 3600)
+    local minutes = math.floor((seconds % 3600) / 60)
+    local secs = math.floor(seconds % 60)
+    return string.format("%02d:%02d:%02d", hours, minutes, secs)
+end
+
+-- INFO Tab Components (First tab)
+Library:CreateTextLabel(infoTab, "Welcome to Fryzer Hub", Config.Colors.Accent)
+Library:CreateTextLabel(infoTab, "Player: " .. LocalPlayer.Name, Config.Colors.Text)
+timerLabel = Library:CreateTextLabel(infoTab, "Time Used: 00:00:00", Config.Colors.Success)
+
+-- Update timer every second
+spawn(function()
+    while ScreenGui.Parent do
+        wait(1)
+        local timeUsed = tick() - scriptStartTime
+        if timerLabel and timerLabel.SetText then
+            timerLabel.SetText("Time Used: " .. FormatTime(timeUsed))
+        end
+    end
+end)
+
+-- HOME Tab Components
+Library:CreateLabel(homeTab, "Welcome to Modern Hub!", Config.Colors.Text)
+Library:CreateButton(homeTab, "Test Button", function()
+    print("Button clicked!")
+end)
+Library:CreateToggle(homeTab, "Enable Feature", false, function(value)
+    print("Toggle:", value)
+end)
+Library:CreateTextLabel(homeTab, "This is a text label - no click action", Config.Colors.TextSecondary)
+Library:CreateSlider(homeTab, "Speed", 1, 100, 50, function(value)
+    print("Speed set to:", value)
+end)
+Library:CreateDropdown(homeTab, "Mode", {"Walk", "Run", "Fly", "Teleport"}, "Walk", function(value)
+    print("Mode selected:", value)
+end)
+Library:CreateTextBox(homeTab, "Player Name", "Enter player name...", function(text)
+    print("Player name entered:", text)
+end)
+
+-- SPECIAL Tab Components
+Library:CreateButton(specialTab, "Special Function", function()
+    print("Special function executed!")
+end)
+Library:CreateToggle(specialTab, "Special Toggle", true, function(value)
+    print("Special toggle:", value)
+end)
+Library:CreateTextLabel(specialTab, "Special Info: Read-only text display", Config.Colors.Accent)
+
+-- MAIN Tab Components
+Library:CreateButton(mainTab, "Main Feature 1", function()
+    print("Main feature 1 activated!")
+end)
+Library:CreateButton(mainTab, "Main Feature 2", function()
+    print("Main feature 2 activated!")
+end)
+Library:CreateToggle(mainTab, "Main Toggle", false, function(value)
+    print("Main toggle:", value)
+end)
+Library:CreateTextLabel(mainTab, "Status: All systems operational", Config.Colors.Success)
+
+-- SPAWNER Tab Components
+Library:CreateLabel(spawnerTab, "SPAWNER SCRIPT", Config.Colors.Text)
+Library:CreateButton(spawnerTab, "Dark Spawner [ Mobile Only ]", function()
+    print("Dark Spawner executed!")
+end)
+Library:CreateToggle(spawnerTab, "ReModified v3.8 || Dark Spawner", true, function(value)
+    print("ReModified:", value)
+end)
+Library:CreateToggle(spawnerTab, "Pet Placer v1.0 [ Not Animated ]", false, function(value)
+    print("Pet Placer:", value)
+end)
+Library:CreateLabel(spawnerTab, "ALLOW GIFT PET [NEW]", Config.Colors.Primary)
+Library:CreateToggle(spawnerTab, "Allow Gift Spawned Pets ^.^", false, function(value)
+    print("Allow Gift Pets:", value)
+end)
+Library:CreateTextLabel(spawnerTab, "Note: Mobile optimized spawner tools", Config.Colors.TextSecondary)
+
+-- DESTROY Tab Components
+Library:CreateButton(destroyTab, "Destroy Function 1", function()
+    print("Destroy function 1!")
+end)
+Library:CreateButton(destroyTab, "Destroy Function 2", function()
+    print("Destroy function 2!")
+end)
+Library:CreateToggle(destroyTab, "Auto Destroy", false, function(value)
+    print("Auto Destroy:", value)
+end)
+Library:CreateTextLabel(destroyTab, "Warning: Use destroy functions carefully", Config.Colors.Warning)
+
+-- SETTINGS Tab Components
+Library:CreateToggle(settingsTab, "Sound Effects", true, function(value)
+    print("Sound Effects:", value)
+end)
+Library:CreateToggle(settingsTab, "Auto Save", false, function(value)
+    print("Auto Save:", value)
+end)
+Library:CreateButton(settingsTab, "Reset Settings", function()
+    print("Settings reset!")
+end)
+Library:CreateTextLabel(settingsTab, "Version: 1.0.0 | Build: 2024.1", Config.Colors.TextSecondary)
+
+print("🎉 Modern Hub GUI loaded successfully!")
+print("📱 Use the circle toggle to show/hide the GUI")
+
+return Library
