@@ -20,9 +20,9 @@ end
 -- Configuration
 local Config = {
     Colors = {
-        Primary = Color3.fromRGB(0, 0, 0), -- 
-        Secondary = Color3.fromRGB(0, 0, 0),
-        Accent = Color3.fromRGB(0, 0, 0),
+        Primary = Color3.fromRGB(15, 15, 20),
+        Secondary = Color3.fromRGB(25, 25, 35),
+        Accent = Color3.fromRGB(88, 101, 242),
         AccentHover = Color3.fromRGB(104, 117, 255),
         Success = Color3.fromRGB(67, 181, 129),
         Text = Color3.fromRGB(255, 255, 255),
@@ -31,7 +31,6 @@ local Config = {
         Shadow = Color3.fromRGB(0, 0, 0),
         TabActive = Color3.fromRGB(70, 85, 220),
         Warning = Color3.fromRGB(255, 140, 66),
-        Booster = Color3.fromRGB(255, 140, 66),
         Error = Color3.fromRGB(237, 66, 69),
         StrokeGreen = Color3.fromRGB(0, 255, 0)
     },
@@ -116,7 +115,7 @@ SubtitleLabel.BackgroundTransparency = 1
 SubtitleLabel.Size = UDim2.new(1, -80, 0, 12)
 SubtitleLabel.Position = UDim2.new(0, 10, 0, 22)
 SubtitleLabel.Font = Enum.Font.Gotham
-SubtitleLabel.Text = "by FRYZER"
+SubtitleLabel.Text = "by FRYZER "
 SubtitleLabel.TextColor3 = Config.Colors.TextSecondary
 SubtitleLabel.TextSize = 10
 SubtitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -206,7 +205,7 @@ ContentContainer.Position = UDim2.new(0, 120, 0, 0)
 -- Add green stroke to content area
 local ContentStroke = Instance.new("UIStroke")
 ContentStroke.Color = Config.Colors.StrokeGreen
-ContentStroke.Thickness = 0.50
+ContentStroke.Thickness = 1
 ContentStroke.Parent = ContentContainer
 
 -- Content ScrollingFrame
@@ -357,7 +356,7 @@ function Library:CreateButton(tab, text, callback)
     -- Add green stroke
     local ButtonStroke = Instance.new("UIStroke")
     ButtonStroke.Color = Config.Colors.StrokeGreen
-    ButtonStroke.Thickness = 0
+    ButtonStroke.Thickness = 1
     ButtonStroke.Parent = Button
     
     -- Status indicator
@@ -434,7 +433,7 @@ function Library:CreateToggle(tab, text, default, callback)
     -- Add green stroke
     local ToggleStroke = Instance.new("UIStroke")
     ToggleStroke.Color = Config.Colors.StrokeGreen
-    ToggleStroke.Thickness = 0
+    ToggleStroke.Thickness = 1
     ToggleStroke.Parent = Toggle
     
     local ToggleLabel = Instance.new("TextLabel")
@@ -520,7 +519,7 @@ function Library:CreateLabel(tab, text, color)
     -- Add green stroke
     local LabelStroke = Instance.new("UIStroke")
     LabelStroke.Color = Config.Colors.StrokeGreen
-    LabelStroke.Thickness = 0
+    LabelStroke.Thickness = 1
     LabelStroke.Parent = LabelFrame
     
     local Label = Instance.new("TextLabel")
@@ -562,7 +561,7 @@ function Library:CreateTextLabel(tab, text, color)
     -- Add green stroke
     local TextLabelStroke = Instance.new("UIStroke")
     TextLabelStroke.Color = Config.Colors.StrokeGreen
-    TextLabelStroke.Thickness = 0
+    TextLabelStroke.Thickness = 1
     TextLabelStroke.Parent = TextLabelFrame
     
     local TextLabel = Instance.new("TextLabel")
@@ -603,7 +602,7 @@ function Library:CreateSlider(tab, text, min, max, default, callback)
     
     local SliderStroke = Instance.new("UIStroke")
     SliderStroke.Color = Config.Colors.StrokeGreen
-    SliderStroke.Thickness = 0
+    SliderStroke.Thickness = 1
     SliderStroke.Parent = SliderFrame
     
     -- Label
@@ -716,7 +715,7 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     
     local DropdownStroke = Instance.new("UIStroke")
     DropdownStroke.Color = Config.Colors.StrokeGreen
-    DropdownStroke.Thickness = 0
+    DropdownStroke.Thickness = 1
     DropdownStroke.Parent = DropdownFrame
     
     -- Main Button
@@ -763,7 +762,7 @@ function Library:CreateDropdown(tab, text, options, default, callback)
     
     local OptionsStroke = Instance.new("UIStroke")
     OptionsStroke.Color = Config.Colors.StrokeGreen
-    OptionsStroke.Thickness = 0.50
+    OptionsStroke.Thickness = 1
     OptionsStroke.Parent = OptionsFrame
     
     -- Add scrolling if too many options
@@ -1000,7 +999,7 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
     
     local TextBoxStroke = Instance.new("UIStroke")
     TextBoxStroke.Color = Config.Colors.StrokeGreen
-    TextBoxStroke.Thickness = 0
+    TextBoxStroke.Thickness = 1
     TextBoxStroke.Parent = TextBoxFrame
     
     -- Label
@@ -1032,7 +1031,7 @@ function Library:CreateTextBox(tab, text, placeholder, callback)
     
     local TextBoxInputStroke = Instance.new("UIStroke")
     TextBoxInputStroke.Color = Config.Colors.Border
-    TextBoxInputStroke.Thickness = 0.50
+    TextBoxInputStroke.Thickness = 1
     TextBoxInputStroke.Parent = TextBox
     
     -- Focus effects
