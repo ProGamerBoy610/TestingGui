@@ -2620,7 +2620,222 @@ Tabs.ItemEspTab:Button({
 
 setupItemEspConnections()
 
+-- POV Control Tab
+Tabs.PovTab = Window:Tab({
+    Title = "POV Control",
+    Icon = "eye",
+    Desc = "Control player point of view, fog, brightness, and more"
+})
 
+-- Services
+local Lighting = game:GetService("Lighting")
+local RunService = game:GetService("RunService")
+
+-- Variables for POV controls
+local noFogEnabled = false
+local fullBrightEnabled = false
+local nightVisionEnabled = false
+local grayscaleEnabled = false
+local povLockEnabled = false
+
+local originalFogEnd = Lighting.FogEnd
+local originalBrightness = Lighting.Brightness
+local originalAmbient = Lighting.Ambient
+local originalGlobalShadows = Lighting.GlobalShadows
+
+local nightVisionEffect
+local grayscaleEffect
+
+-- Function to toggle no fog
+local function toggleNoFog(state)
+    noFogEnabled = state
+    if state then
+        Lighting.FogEnd = 100000
+        WindUI:Notify({
+            Title = "✅ No Fog Enabled",
+            Content = "Fog has been disabled",
+            Duration = 3
+        })
+    else
+        Lighting.FogEnd = originalFogEnd
+        WindUI:Notify({
+            Title = "❌ No Fog Disabled",
+            Content = "Fog has been restored",
+            Duration = 3
+        })
+    end
+end
+
+-- Function to toggle full bright
+local function toggleFullBright(state)
+    fullBrightEnabled = state
+    if state then
+        Lighting.Brightness = 2
+        Lighting.Ambient = Color3.new(1, 1, 1)
+        Lighting.GlobalShadows = false
+        WindUI:Notify({
+            Title = "✅ Full Bright Enabled",
+            Content = "Full brightness activated",
+            Duration = 3
+        })
+    else
+        Lighting.Brightness = originalBrightness
+        Lighting.Ambient = originalAmbient
+        Lighting.GlobalShadows = originalGlobalShadows
+        WindUI:Notify({
+            Title = "❌ Full Bright Disabled",
+            Content = "Original lighting restored",
+            Duration = 3
+        })
+    end
+end
+
+-- Function to toggle night vision
+local function toggleNightVision(state)
+    nightVisionEnabled = state
+    if not nightVisionEffect then
+        nightVisionEffect = Instance.new("ColorCorrectionEffect")
+        nightVisionEffect.Name = "NightVisionEffect"
+        nightVisionEffect.Parent = workspace.CurrentCamera
+    end
+    if state then
+        nightVisionEffect.Brightness = 0.1
+        nightVisionEffect.Contrast = 0.5
+        nightVisionEffect.Saturation = -0.2
+        nightVisionEffect.TintColor = Color3.fromRGB(0, 255, 0)
+        nightVisionEffect.Enabled = true
+        WindUI:Notify({
+            Title = "✅ Night Vision Enabled",
+            Content = "Player POV now in night vision mode",
+            Duration = 3
+        })
+    else
+        nightVisionEffect.Enabled = false
+        WindUI:Notify({
+            Title = "❌ Night Vision Disabled",
+            Content = "Normal POV restored",
+            Duration = 3
+        })
+    end
+end
+
+-- Function to toggle grayscale POV
+local function toggleGrayscale(state)
+    grayscaleEnabled = state
+    if not grayscaleEffect then
+        grayscaleEffect = Instance.new("ColorCorrectionEffect")
+        grayscaleEffect.Name = "GrayscaleEffect"
+        grayscaleEffect.Parent = workspace.CurrentCamera
+    end
+    if state then
+        grayscaleEffect.Saturation = -1
+        grayscaleEffect.Enabled = true
+        WindUI:Notify({
+            Title = "✅ Grayscale Enabled",
+            Content = "Player POV now in grayscale",
+            Duration = 3
+        })
+    else
+        grayscaleEffect.Enabled = false
+        WindUI:Notify({
+            Title = "❌ Grayscale Disabled",
+            Content = "Color POV restored",
+            Duration = 3
+        })
+    end
+end
+
+-- Function to toggle POV lock (freezes camera rotation)
+local function togglePovLock(state)
+    povLockEnabled = state
+    if state then
+        local connection
+        connection = RunService.RenderStepped:Connect(function()
+            if povLockEnabled then
+                workspace.CurrentCamera.CFrame = workspace.CurrentCamera.CFrame * CFrame.Angles(0, 0, 0) -- Lock rotation
+            else
+                connection:Disconnect()
+            end
+        end)
+        WindUI:Notify({
+            Title = "✅ POV Lock Enabled",
+            Content = "Player POV rotation locked",
+            Duration = 3
+        })
+    else
+        WindUI:Notify({
+            Title = "❌ POV Lock Disabled",
+            Content = "Player POV rotation unlocked",
+            Duration = 3
+        })
+    end
+end
+
+-- Camera FOV Slider
+Tabs.PovTab:Slider({
+    Title = "Camera FOV",
+    Value = { Min = 70, Max = 120, Default = 70 },
+    Callback = function(value)
+        workspace.CurrentCamera.FieldOfView = value
+        WindUI:Notify({
+            Title = "📸 Camera FOV",
+            Content = "Set to " .. value,
+            Duration = 3
+        })
+    end
+})
+
+-- No Fog Toggle
+Tabs.PovTab:Toggle({
+    Title = "No Fog",
+    Icon = "cloud-off",
+    Value = false,
+    Callback = function(state)
+        toggleNoFog(state)
+    end
+})
+
+-- Full Bright Toggle
+Tabs.PovTab:Toggle({
+    Title = "Full Bright",
+    Icon = "sun",
+    Value = false,
+    Callback = function(state)
+        toggleFullBright(state)
+    end
+})
+
+-- Night Vision Toggle
+Tabs.PovTab:Toggle({
+    Title = "Night Vision",
+    Icon = "moon",
+    Value = false,
+    Callback = function(state)
+        toggleNightVision(state)
+    end
+})
+
+-- Grayscale Toggle
+Tabs.PovTab:Toggle({
+    Title = "Grayscale POV",
+    Icon = "contrast",
+    Value = false,
+    Callback = function(state)
+        toggleGrayscale(state)
+    end
+})
+
+-- POV Lock Toggle
+Tabs.PovTab:Toggle({
+    Title = "Lock POV",
+    Icon = "lock",
+    Value = false,
+    Callback = function(state)
+        togglePovLock(state)
+    end
+})
+
+print("🔭 POV Control Tab loaded with features!")
 
 print("✅ ESP Tabs loaded!")
 print("☁️ Teleport System loaded!")
