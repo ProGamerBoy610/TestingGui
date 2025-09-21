@@ -1,4 +1,16 @@
--- Upcoming Script Update v1.0
+-- Platozy Generator Version: 1.0
+-- Platozy Generated Script: LocalScript
+-- Platozy Generated Name: g39199975
+-- Platozy Generated Time: 9/21/2025, 8:06:12 AM
+
+local Platozy = loadstring(game:HttpGet("https://raw.githubusercontent.com/Platozy/System/refs/heads/main/Loader"))()
+
+Platozy.SetConfig({
+    Hub = "Fryzer HUb",
+    service = 7038,
+    secret = "82af1685-8984-408e-9dc1-194acc7ba683",
+    discordLink = "https://discord.gg/SYHphHCq9a",
+    mainScriptUrl = "-- Upcoming Script Update v1.0
 local Tabs = {}
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
@@ -2428,4 +2440,7 @@ Tabs.PovTab:Toggle({
 print("🔭 POV Control Tab loaded with features!")
 print("✅ ESP Tabs loaded!")
 print("☁️ Teleport System loaded!")
-print("All components loaded!")
+print("All components loaded!")",
+    keyLinkName = "dashboard"
+})
+Platozy.ShowGUI()
