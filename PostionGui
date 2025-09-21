@@ -1,8 +1,3 @@
--- Platozy Generator Version: 1.0
--- Platozy Generated Script: LocalScript
--- Platozy Generated Name: g39199975
--- Platozy Generated Time: 9/21/2025, 8:06:12 AM
-
 local Platozy = loadstring(game:HttpGet("https://raw.githubusercontent.com/Platozy/System/refs/heads/main/Loader"))()
 
 Platozy.SetConfig({
