@@ -1,12 +1,11 @@
--- Upcoming Script Update v1.0
+-- Fryzer Hub Script v1.0
 local Tabs = {}
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local Player = LocalPlayer
-local PlayerName = Player.DisplayName  -- Define PlayerName explicitly
+local PlayerName = LocalPlayer.DisplayName
 local AccountAge = Player.AccountAge
 local GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
 local HttpService = game:GetService("HttpService")
@@ -28,7 +27,6 @@ local Window = WindUI:CreateWindow({
     Theme = "Dark",
     SideBarWidth = 180,
     ScrollBarEnabled = true,
-    
     User = {
         Enabled = true,
         Anonymous = false,
@@ -51,29 +49,30 @@ Window:EditOpenButton({
 })
 
 -- SELECTIVE ITEM BRING SYSTEM VARIABLES
-local isSystemRunning = false
+local isSystemRunning = {} -- Table to track running state per section
 local originalCameraSubject
 local originalPlayerPosition = nil
-local searchConnection
+local searchConnections = {} -- Track connections per section
 local speedMode = "Slow"  -- Default speed: Slow, Fast, Ultra
 local bringLocation = "Player"  -- Default location: Player, Campfire, Workspace
 local inputConnections = {}
 local cameraPart = nil
 
--- ORGANIZED ITEM SECTIONS - EASILY ADD MORE SECTIONS AND ITEMS
+-- ORGANIZED ITEM SECTIONS
 local itemSections = {
-    ["Fuel"] = { -- Fuel Section
+    ["Fuel"] = {
         sectionIcon = "🌳",
+        enabled = false,
         items = {
-            ["Log"] = {enabled = false, path = "workspace.Items.Log", displayName = "Log"},  -- Separate toggle for Log (wood)
+            ["Log"] = {enabled = false, path = "workspace.Items.Log", displayName = "Log"},
             ["Fuel canister"] = {enabled = false, path = "workspace.Items.Fuel Canister", displayName = "Fuel canister"},
             ["Oil barrel"] = {enabled = false, path = "workspace.Items.Oil Barrel", displayName = "Oil barrel"},
             ["Coal"] = {enabled = false, path = "workspace.Items.Coal", displayName = "Coal"},
         }
     },
-    
-    ["Food&Heal"] = { -- Food Section
+    ["Food&Heal"] = {
         sectionIcon = "🍎",
+        enabled = false,
         items = {
             ["Apple"] = {enabled = false, path = "workspace.Items.Apple", displayName = "Apple"},
             ["Berry"] = {enabled = false, path = "workspace.Items.Berry", displayName = "Berry"},
@@ -84,36 +83,36 @@ local itemSections = {
             ["Medkit"] = {enabled = false, path = "workspace.Items.MedKit", displayName = "Medkit"},
         }
     },
-    
-    ["Scrap"] = {  -- Scrap Section
+    ["Scrap"] = {
         sectionIcon = "🗑️",
+        enabled = false,
         items = {
             ["Raido"] = {enabled = false, path = "workspace.Items.Old Radio", displayName = "Old Radio"},
             ["Old flashlight"] = {enabled = false, path = "workspace.Items.Old Flashlight", displayName = "Old flashlight"},
             ["Old Car Engine"] = {enabled = false, path = "workspace.Items.Old Car Engine", displayName = "Old car engine"},
         }
     },
-    
-    ["Weapons"] = {  -- Weapons Section
+    ["Weapons"] = {
         sectionIcon = "⚔️",
+        enabled = false,
         items = {
             ["Axe"] = {enabled = false, path = "workspace.Items.Axe", displayName = "🪓 Axe"},
             ["Spear"] = {enabled = false, path = "workspace.Items.Spear", displayName = "🔱 Spear"},
             ["Dagger"] = {enabled = false, path = "workspace.Items.Dagger", displayName = "🗡️ Dagger"},
         }
     },
-    
     ["Basic Resources"] = {
         sectionIcon = "🪨",
+        enabled = false,
         items = {
             ["Stone"] = {enabled = false, path = "workspace.Items.Stone", displayName = "🪨 Stone"},
             ["Iron"] = {enabled = false, path = "workspace.Items.Iron", displayName = "⚒️ Iron"},
             ["Rock"] = {enabled = false, path = "workspace.Items.Rock", displayName = "🗿 Rock"},
         }
-    }, 
+    },
 }
 
--- Convert sections to flat itemToggles for backward compatibility
+-- Convert sections to flat itemToggles for compatibility
 local itemToggles = {}
 for sectionName, sectionData in pairs(itemSections) do
     for itemName, itemData in pairs(sectionData.items) do
@@ -135,8 +134,7 @@ local function getTargetCFrame()
     if bringLocation == "Player" then
         return originalPlayerPosition or LocalPlayer.Character.HumanoidRootPart.CFrame
     elseif bringLocation == "Campfire" then
-        -- Assume campfire is found in workspace; adjust path as needed
-        local campfire = workspace:FindFirstChild("Campfire")  -- Replace with actual path if different
+        local campfire = workspace:FindFirstChild("Campfire")
         if campfire then
             return campfire.CFrame
         else
@@ -144,8 +142,7 @@ local function getTargetCFrame()
             return originalPlayerPosition
         end
     elseif bringLocation == "Workspace" then
-        -- Bring to workspace origin or a fixed point
-        return CFrame.new(0, 0, 0)  -- Adjust as needed
+        return CFrame.new(0, 0, 0)
     end
     return originalPlayerPosition
 end
@@ -163,7 +160,7 @@ local function returnToOriginalPosition()
     end
 end
 
--- Disable user inputs completely
+-- Disable user inputs
 local function disableInputs()
     for _, connection in pairs(inputConnections) do
         connection:Disconnect()
@@ -176,7 +173,6 @@ local function disableInputs()
         local inputType = input.UserInputType
         local keyCode = input.KeyCode
         
-        -- Block all movement keys
         if inputType == Enum.UserInputType.Keyboard then
             local blockedKeys = {
                 Enum.KeyCode.W, Enum.KeyCode.A, Enum.KeyCode.S, Enum.KeyCode.D,
@@ -196,7 +192,6 @@ local function disableInputs()
             end
         end
         
-        -- Block mouse inputs
         if inputType == Enum.UserInputType.MouseButton1 or 
            inputType == Enum.UserInputType.MouseButton2 or
            inputType == Enum.UserInputType.MouseButton3 then
@@ -204,7 +199,6 @@ local function disableInputs()
         end
     end)
     
-    -- Freeze character movement
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         local humanoid = LocalPlayer.Character.Humanoid
         humanoid.WalkSpeed = 0
@@ -232,13 +226,13 @@ local function enableInputs()
     print("🔓 User inputs restored")
 end
 
--- Enhanced find selected items with deeper workspace search (no fallback, recursive search)
-local function findSelectedItems()
+-- Enhanced find selected items
+local function findSelectedItems(sectionName)
     local foundItems = {}
     
     local function searchFolder(folder)
         for _, child in pairs(folder:GetChildren()) do
-            for itemName, itemData in pairs(itemToggles) do
+            for itemName, itemData in pairs(itemSections[sectionName].items) do
                 if itemData.enabled and child.Name == itemName then
                     table.insert(foundItems, {item = child, name = itemName})
                 end
@@ -254,10 +248,10 @@ local function findSelectedItems()
     return foundItems
 end
 
--- Get enabled items count
-local function getEnabledItemsCount()
+-- Get enabled items count for a section
+local function getEnabledItemsCount(sectionName)
     local count = 0
-    for itemName, itemData in pairs(itemToggles) do
+    for _, itemData in pairs(itemSections[sectionName].items) do
         if itemData.enabled then
             count = count + 1
         end
@@ -265,10 +259,10 @@ local function getEnabledItemsCount()
     return count
 end
 
--- Get enabled items list
-local function getEnabledItemsList()
+-- Get enabled items list for a section
+local function getEnabledItemsList(sectionName)
     local items = {}
-    for itemName, itemData in pairs(itemToggles) do
+    for itemName, itemData in pairs(itemSections[sectionName].items) do
         if itemData.enabled then
             table.insert(items, itemName)
         end
@@ -303,7 +297,7 @@ local function getItemPosition(item)
     return nil
 end
 
--- OP fast drag item with adjustable speed modes
+-- Fast drag item with adjustable speed modes
 local function fastDragItem(item, targetCFrame, itemName)
     local char = LocalPlayer.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
@@ -353,7 +347,7 @@ local function fastDragItem(item, targetCFrame, itemName)
         local targetPos = targetCFrame.Position + Vector3.new(0, settings.moveHeight, 0)
         
         for i = 1, settings.steps do
-            if not isSystemRunning then break end
+            if not isSystemRunning[sectionName] then break end
             
             if originalPlayerPosition then
                 hrp.CFrame = originalPlayerPosition
@@ -402,14 +396,14 @@ local function returnCameraToPlayer()
     end
 end
 
--- Enhanced stop function with cleanup and return to start
-function stopBringing()
-    print("🛑 Stopping selective bring system...")
-    isSystemRunning = false
+-- Stop bringing for a specific section
+local function stopBringing(sectionName)
+    print("🛑 Stopping selective bring system for", sectionName)
+    isSystemRunning[sectionName] = false
     
-    if searchConnection then
-        searchConnection:Disconnect()
-        searchConnection = nil
+    if searchConnections[sectionName] then
+        searchConnections[sectionName]:Disconnect()
+        searchConnections[sectionName] = nil
     end
     
     spawn(function()
@@ -426,30 +420,30 @@ function stopBringing()
         returnToOriginalPosition()
         
         WindUI:Notify({
-            Title = "🛑 System Stopped",
+            Title = "🛑 " .. sectionName .. " Stopped",
             Content = "Returned to start position, inputs restored!",
             Duration = 4
         })
         
-        print("✅ System fully stopped and reset")
+        print("✅", sectionName, "system fully stopped and reset")
     end)
 end
 
--- Main selective continuous search and bring function (OP version)
-local function startSelectiveBring()
-    local enabledCount = getEnabledItemsCount()
+-- Start selective bring for a specific section
+local function startSelectiveBring(sectionName)
+    local enabledCount = getEnabledItemsCount(sectionName)
     if enabledCount == 0 then
         WindUI:Notify({
-            Title = "❌ No Items Selected",
+            Title = "❌ No Items Selected in " .. sectionName,
             Content = "Please enable at least one item type to bring!",
             Duration = 4
         })
         return
     end
     
-    local enabledItems = getEnabledItemsList()
-    print("🚀 Starting selective bring system for:", table.concat(enabledItems, ", "))
-    isSystemRunning = true
+    local enabledItems = getEnabledItemsList(sectionName)
+    print("🚀 Starting selective bring system for", sectionName, ":", table.concat(enabledItems, ", "))
+    isSystemRunning[sectionName] = true
     
     saveOriginalState()
     
@@ -472,18 +466,18 @@ local function startSelectiveBring()
     end
     
     WindUI:Notify({
-        Title = "🎮 Selective System Active",
-        Content = "Bringing " .. enabledCount .. " item types to " .. bringLocation .. ". Use the UI to stop.",
+        Title = "🎮 " .. sectionName .. " System Active",
+        Content = "Bringing " .. enabledCount .. " item types to " .. bringLocation .. ".",
         Duration = 1.2
     })
     
-    searchConnection = spawn(function()
+    searchConnections[sectionName] = spawn(function()
         local searchInterval = 2
         local lastSearchTime = 0
         local noItemsCounter = 0
-        local maxNoItemsBeforeStop = 3  -- Stop if no items found 3 times in a row
+        local maxNoItemsBeforeStop = 3
         
-        while isSystemRunning do
+        while isSystemRunning[sectionName] do
             local currentTime = tick()
             
             if currentTime - lastSearchTime >= searchInterval then
@@ -493,13 +487,13 @@ local function startSelectiveBring()
                     LocalPlayer.Character.HumanoidRootPart.CFrame = originalPlayerPosition
                 end
                 
-                local foundItems = findSelectedItems()
-                print("🔍 Selective Search... Found:", #foundItems, "selected items")
+                local foundItems = findSelectedItems(sectionName)
+                print("🔍 Selective Search for", sectionName, "... Found:", #foundItems, "selected items")
                 
                 if #foundItems > 0 then
                     noItemsCounter = 0
                     for _, itemData in pairs(foundItems) do
-                        if not isSystemRunning then break end
+                        if not isSystemRunning[sectionName] then break end
                         
                         local item = itemData.item
                         local itemName = itemData.name
@@ -526,10 +520,10 @@ local function startSelectiveBring()
                     end
                 else
                     noItemsCounter = noItemsCounter + 1
-                    print("❌ No selected items found in search (Count: " .. noItemsCounter .. ")")
+                    print("❌ No selected items found in search for", sectionName, "(Count: " .. noItemsCounter .. ")")
                     if noItemsCounter >= maxNoItemsBeforeStop then
-                        print("❌ No items found multiple times - stopping system")
-                        stopBringing()
+                        print("❌ No items found multiple times - stopping", sectionName)
+                        stopBringing(sectionName)
                         returnCameraToPlayer()
                         break
                     end
@@ -550,7 +544,7 @@ Tabs.BringTab = Window:Tab({
 
 Tabs.BringTab:Paragraph({
     Title = "🎯 Selective Item Bring System",
-    Content = "Choose exactly which items to bring! Toggle individual item types on/off. System searches every 2 seconds for ONLY selected items."
+    Content = "Choose which items to bring by section. Toggle sections on/off and select items via dropdowns or toggles."
 })
 
 -- Dropdown for location
@@ -560,8 +554,8 @@ Tabs.BringTab:Dropdown({
     Options = {"Player", "Campfire", "Workspace"},
     Multi = false,
     Default = "Player",
-    Callback = function(selected)
-        bringLocation = selected
+    Callback = function(value)
+        bringLocation = value
         print("Update location: Locations = " .. bringLocation)
         WindUI:Notify({
             Title = "📍 Location Updated",
@@ -578,8 +572,8 @@ Tabs.BringTab:Dropdown({
     Options = {"Slow", "Fast", "Ultra"},
     Multi = false,
     Default = "Slow",
-    Callback = function(selected)
-        speedMode = selected
+    Callback = function(value)
+        speedMode = value
         print("Speed Mode:", speedMode)
         WindUI:Notify({
             Title = "⚡ Speed Updated",
@@ -589,121 +583,97 @@ Tabs.BringTab:Dropdown({
     end
 })
 
-Tabs.BringTab:Toggle({
-    Title = "🔄 Start Selective Bring System", 
-    Desc = "Enable continuous bringing of selected items only",
-    Value = false,
-    Callback = function(state)
-        if state then
-            if not isSystemRunning then
-                startSelectiveBring()
-            else
-                WindUI:Notify({
-                    Title = "⚠️ Already Running",
-                    Content = "System is already active!",
-                    Duration = 3
-                })
-            end
-        else
-            if isSystemRunning then
-                stopBringing()
-            end
-        end
-        print("Selective Bring System:", state and "ENABLED" or "DISABLED")
-    end
-})
-
--- Manual sections with dropdowns and toggles
--- Fuel Section: Dropdown for multi-selection (excluding Log), separate toggle for Log
-local fuelOptions = {}
-for itemName, itemData in pairs(itemSections["Fuel"].items) do
-    if itemName ~= "Log" then
-        table.insert(fuelOptions, itemData.displayName)
-    end
-end
-
-Tabs.BringTab:Paragraph({
-    Title = itemSections["Fuel"].sectionIcon .. " Fuel Section",
-    Content = "Select fuel items (multi-select) and toggle Log separately"
-})
-
-Tabs.BringTab:Dropdown({
-    Title = "Fuel Items (Multi-Select)",
-    Desc = "Select multiple fuel items to enable",
-    Options = fuelOptions,
-    Multi = true,
-    Callback = function(selected)
-        -- Disable all fuel except Log first
-        for itemName, itemData in pairs(itemSections["Fuel"].items) do
-            if itemName ~= "Log" then
-                itemToggles[itemName].enabled = false
-            end
-        end
-        -- Enable selected
-        for _, sel in pairs(selected) do
-            for itemName, itemData in pairs(itemSections["Fuel"].items) do
-                if itemData.displayName == sel then
-                    itemToggles[itemName].enabled = true
-                    break
-                end
-            end
-        end
-        local enabledCount = getEnabledItemsCount()
-        WindUI:Notify({
-            Title = "Fuel Updated",
-            Content = "Selected: " .. table.concat(selected, ", ") .. " | Total enabled: " .. enabledCount,
-            Duration = 3
-        })
-    end
-})
-
-Tabs.BringTab:Toggle({
-    Title = itemSections["Fuel"].items["Log"].displayName,
-    Desc = "Toggle Log (Wood) separately",
-    Value = false,
-    Callback = function(state)
-        itemToggles["Log"].enabled = state
-        local enabledCount = getEnabledItemsCount()
-        WindUI:Notify({
-            Title = state and "✅ Log Enabled" or "❌ Log Disabled",
-            Content = "Total enabled: " .. enabledCount,
-            Duration = 2
-        })
-    end
-})
-
--- Other sections with manual toggles (no auto)
+-- Section-specific toggles and dropdowns
 for sectionName, sectionData in pairs(itemSections) do
-    if sectionName ~= "Fuel" then
-        Tabs.BringTab:Paragraph({
-            Title = sectionData.sectionIcon .. " " .. sectionName,
-            Content = "Toggle " .. sectionName:lower() .. " items on/off individually"
-        })
-        
-        for itemName, itemData in pairs(sectionData.items) do
-            Tabs.BringTab:Toggle({
-                Title = itemData.displayName, 
-                Desc = "Bring " .. itemName .. " items",
-                Value = false,
-                Callback = function(state)
-                    itemToggles[itemName].enabled = state
-                    print(itemName, "bringing:", state and "ENABLED" or "DISABLED")
-                    
-                    local enabledCount = getEnabledItemsCount()
+    Tabs.BringTab:Paragraph({
+        Title = sectionData.sectionIcon .. " " .. sectionName,
+        Content = "Control " .. sectionName:lower() .. " items"
+    })
+    
+    -- Section toggle
+    Tabs.BringTab:Toggle({
+        Title = "🔄 Enable " .. sectionName .. " System",
+        Desc = "Start/stop bringing for " .. sectionName,
+        Value = false,
+        Callback = function(state)
+            if state then
+                if not isSystemRunning[sectionName] then
+                    startSelectiveBring(sectionName)
+                else
                     WindUI:Notify({
-                        Title = state and ("✅ " .. itemName .. " Enabled") or ("❌ " .. itemName .. " Disabled"),
-                        Content = "Total enabled: " .. enabledCount .. " item types",
-                        Duration = 2
+                        Title = "⚠️ " .. sectionName .. " Already Running",
+                        Content = "System is already active for this section!",
+                        Duration = 3
                     })
                 end
+            else
+                if isSystemRunning[sectionName] then
+                    stopBringing(sectionName)
+                end
+            end
+            sectionData.enabled = state
+            print(sectionName .. " System:", state and "ENABLED" or "DISABLED")
+        end
+    })
+    
+    -- Dropdown for multi-selection (except Log in Fuel)
+    local options = {}
+    for itemName, itemData in pairs(sectionData.items) do
+        if sectionName ~= "Fuel" or itemName ~= "Log" then
+            table.insert(options, itemData.displayName)
+        end
+    end
+    
+    Tabs.BringTab:Dropdown({
+        Title = sectionName .. " Items (Multi-Select)",
+        Desc = "Select multiple " .. sectionName:lower() .. " items to enable",
+        Options = options,
+        Multi = true,
+        Callback = function(selected)
+            for itemName, itemData in pairs(sectionData.items) do
+                if sectionName ~= "Fuel" or itemName ~= "Log" then
+                    itemData.enabled = false
+                end
+            end
+            for _, sel in pairs(selected) do
+                for itemName, itemData in pairs(sectionData.items) do
+                    if itemData.displayName == sel then
+                        itemData.enabled = true
+                        break
+                    end
+                end
+            end
+            local enabledCount = getEnabledItemsCount(sectionName)
+            WindUI:Notify({
+                Title = sectionName .. " Updated",
+                Content = "Selected: " .. (#selected > 0 and table.concat(selected, ", ") or "None") .. " | Total enabled: " .. enabledCount,
+                Duration = 3
             })
         end
+    })
+    
+    -- Separate toggle for Log in Fuel
+    if sectionName == "Fuel" then
+        Tabs.BringTab:Toggle({
+            Title = sectionData.items["Log"].displayName,
+            Desc = "Toggle Log (Wood) separately",
+            Value = false,
+            Callback = function(state)
+                sectionData.items["Log"].enabled = state
+                local enabledCount = getEnabledItemsCount(sectionName)
+                WindUI:Notify({
+                    Title = state and "✅ Log Enabled" or "❌ Log Disabled",
+                    Content = "Total enabled: " .. enabledCount,
+                    Duration = 2
+                })
+            end
+        })
     end
 end
 
 Tabs.BringTab:Paragraph({
     Title = "⚡ Quick Section Selection",
-    Content = "Quick buttons to enable/disable entire sections at once."
+    Content = "Quick buttons to enable/disable entire sections."
 })
 
 for sectionName, sectionData in pairs(itemSections) do
@@ -713,7 +683,7 @@ for sectionName, sectionData in pairs(itemSections) do
         Callback = function()
             local itemNames = {}
             for itemName, itemData in pairs(sectionData.items) do
-                itemToggles[itemName].enabled = true
+                itemData.enabled = true
                 table.insert(itemNames, itemName)
             end
             WindUI:Notify({
@@ -729,8 +699,10 @@ Tabs.BringTab:Button({
     Title = "❌ Disable All Items",
     Desc = "Turn off all item types",
     Callback = function()
-        for itemName, itemData in pairs(itemToggles) do
-            itemToggles[itemName].enabled = false
+        for _, sectionData in pairs(itemSections) do
+            for _, itemData in pairs(sectionData.items) do
+                itemData.enabled = false
+            end
         end
         WindUI:Notify({
             Title = "❌ All Disabled",
