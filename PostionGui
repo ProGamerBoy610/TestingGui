@@ -5,7 +5,7 @@ Platozy.SetConfig({
     service = 7038,
     secret = "82af1685-8984-408e-9dc1-194acc7ba683",
     discordLink = "https://discord.gg/SYHphHCq9a",
-    mainScriptUrl = "-- Upcoming Script Update v1.0
+    mainScriptUrl = "-- Upcoming Script Update v1.0"
 local Tabs = {}
 
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
