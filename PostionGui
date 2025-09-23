@@ -2263,12 +2263,12 @@ local DistanceForAutoChopTree = 2500
 
 -- Distance Slider
 Tabs.OpTab:Slider({
-    Title = "Don't Change this",
+    Title = "Auto Chop Distance",
     Value = {
         Min = 0,
         Max = 3000,
         Default = 2500
-    }, -- Added missing comma here
+    },
     Callback = function(val)
         DistanceForAutoChopTree = val
         print("Auto Chop Tree distance set to:", val)
@@ -2301,6 +2301,7 @@ Tabs.OpTab:Toggle({
                                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForAutoChopTree then
                                     local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    task.wait(0.01)  -- Add small delay to prevent overload
                                 end
                             end
                         end 
@@ -2313,12 +2314,13 @@ Tabs.OpTab:Toggle({
                                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForAutoChopTree then
                                     local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    task.wait(0.01)  -- Add small delay to prevent overload
                                 end
                             end
                         end
                     end)
                     
-                    wait(0.1)
+                    task.wait(0.5)  -- Increase main loop delay to reduce frequency
                 end
             end)
         end
@@ -2331,12 +2333,12 @@ local DistanceForKillAura = 2500
 
 -- Distance Slider
 Tabs.OpTab:Slider({
-    Title = "Don't Change this",
+    Title = "Kill Aura Distance",
     Value = {
         Min = 25,
         Max = 10000,
         Default = 2500
-    }, -- Added missing comma here
+    },
     Callback = function(val)
         DistanceForKillAura = val
         print("Kill Aura distance set to:", val)
@@ -2368,12 +2370,13 @@ Tabs.OpTab:Toggle({
                                 local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForKillAura then
                                     local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                    task.wait(0.01)  -- Add small delay to prevent overload
                                 end
                             end
                         end
                     end)
                     
-                    wait(0.1)
+                    task.wait(0.5)  -- Increase main loop delay to reduce frequency
                 end
             end)
         end
@@ -2388,8 +2391,21 @@ Tabs.OpTab:Paragraph({
 })
 
 Tabs.OpTab:Button({
+    Title = "Fling All Script",
+    Desc = "Fling all players script Even KILLS the player",
+    Callback = function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
+        WindUI:Notify({
+            Title = "Loading Script",
+            Content = "Use it wisely",
+            Duration = 1
+        })
+    end
+})
+
+Tabs.OpTab:Button({
     Title = "Bring Items Script",
-    Desc = "Load the '99 nights bring items' script",
+    Desc = "Load the '99 nights bring items' script (May cuase lag)",
     Callback = function() 
         WindUI:Notify({
             Title = "Script Loading",
