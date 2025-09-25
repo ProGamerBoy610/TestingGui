@@ -4,7 +4,7 @@
 --! Configuration
 local KEY_CHECK_URL = "https://raw.githubusercontent.com/FryzerHub/keyes/refs/heads/main/System%20key"
 local DISCORD_WEBHOOK = "https://discord.com/api/webhooks/1420595470564069456/vyveVpLr-CdqDvAmHq49DOM1TJ7l9LiuUWzHLtUwzBkdtPkL7DUH4d3_E5BWJBxEj6xU"
-local GET_KEY_URL = "https://lootdest.org/s?qE4dIEw2" -- Replace with your actual get key link
+local GET_KEY_URL = "https://link-target.net/1345739/rJvtIyNkcrnY" -- Replace with your actual get key link
 local DISCORD_INVITE = "https://discord.gg/SYHphHCq9a" -- Replace with your actual Discord invite
 
 --! Your Main Script Function - REPLACE THIS WITH YOUR ACTUAL CODE
