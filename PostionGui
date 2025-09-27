@@ -521,34 +521,29 @@ local function createAllUI(Tab, Rayfield)
 end
 
 local function createInfoUI(Tab, Rayfield)
-    Tab:CreateLabel("Fryzer Hub")
-    Tab:CreateLabel("Bring items script")
+    Tab:CreateLabel("Fryzer Hub Item Bringer")
     Tab:CreateLabel("Join our Discord for updates and support!")
 
     local DiscordButton = Tab:CreateButton({
         Name = "Join Discord",
         Callback = function()
-            request({
-                Url = 'http://127.0.0.1:6463/rpc?v=1',
-                Method = 'POST',
-                Headers = {
-                    ['Content-Type'] = 'application/json',
-                    Origin = 'https://discord.com'
-                },
-                Body = HttpService:JSONEncode({
-                    cmd = 'INVITE_BROWSER',
-                    args = {
-                        code = 'SYHphHCq9a'
-                    },
-                    nonce = HttpService:GenerateGUID(false)
+            local link = "https://discord.gg/SYHphHCq9a"
+            if setclipboard then
+                setclipboard(link)
+                Rayfield:Notify({
+                    Title = "Discord Link Copied",
+                    Content = "The invite link has been copied to your clipboard!",
+                    Duration = 5,
+                    Image = 4483362458
                 })
-            })
-            Rayfield:Notify({
-                Title = "Joining Discord",
-                Content = "Opening Discord invite...",
-                Duration = 5,
-                Image = 4483362458
-            })
+            else
+                Rayfield:Notify({
+                    Title = "Clipboard Not Supported",
+                    Content = "Your executor does not support setclipboard. Link: " .. link,
+                    Duration = 5,
+                    Image = 4483362458
+                })
+            end
         end,
     })
 end
