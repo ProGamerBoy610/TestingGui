@@ -15,10 +15,10 @@ local moreSpeedEnabled = {}
 local broughtItems = {}
 local selectedItems = {Fuel = {}, FoodAndOthers = {}, Scrap = {}, Others = {}}
 local itemCategories = {
-    Fuel = {"Fuel Canister"},
-    FoodAndOthers = {"Bandage", "MedKit"},
-    Scrap = {"Old Radio", "Old Car Engine"},
-    Others = {"Defense Blueprint", "Old Flashlight", "Chainsaw"}
+    Fuel = {"Fuel Canister", "Log", "Oil Barrel"},
+    FoodAndOthers = {"Bandage", "MedKit", "Water Bottle", "Apple", "Berry"},
+    Scrap = {"Old Radio", "Old Car Engine", "Sheet Metal", "Tyre"},
+    Others = {"Defense Blueprint", "Old Flashlight", "Chainsaw", "Rifle Ammo", "Rifle", "Binoculars", "Wolf Corpse", "Compass"}
 }
 local currentRunning = nil
 local cameraPart = nil
@@ -520,6 +520,39 @@ local function createAllUI(Tab, Rayfield)
     })
 end
 
+local function createInfoUI(Tab, Rayfield)
+    Tab:CreateLabel("Fryzer Hub")
+    Tab:CreateLabel("Bring items script")
+    Tab:CreateLabel("Join our Discord for updates and support!")
+
+    local DiscordButton = Tab:CreateButton({
+        Name = "Join Discord",
+        Callback = function()
+            request({
+                Url = 'http://127.0.0.1:6463/rpc?v=1',
+                Method = 'POST',
+                Headers = {
+                    ['Content-Type'] = 'application/json',
+                    Origin = 'https://discord.com'
+                },
+                Body = HttpService:JSONEncode({
+                    cmd = 'INVITE_BROWSER',
+                    args = {
+                        code = 'SYHphHCq9a'
+                    },
+                    nonce = HttpService:GenerateGUID(false)
+                })
+            })
+            Rayfield:Notify({
+                Title = "Joining Discord",
+                Content = "Opening Discord invite...",
+                Duration = 5,
+                Image = 4483362458
+            })
+        end,
+    })
+end
+
 -- Load Rayfield and set up UI
 local success, Rayfield = pcall(function()
     return loadstring(game:HttpGet('https://sirius.menu/rayfield'))()
@@ -540,12 +573,15 @@ local tabs = {
     FoodAndOthers = Window:CreateTab("Food & Others", 4483362458),
     Scrap = Window:CreateTab("Scrap", 4483362458),
     Others = Window:CreateTab("Others", 4483362458),
-    All = Window:CreateTab("All Items", 4483362458)
+    All = Window:CreateTab("All Items", 4483362458),
+    Info = Window:CreateTab("Info", 4483362458)
 }
 
 for category, tab in pairs(tabs) do
     if category == "All" then
         createAllUI(tab, Rayfield)
+    elseif category == "Info" then
+        createInfoUI(tab, Rayfield)
     else
         createCategoryUI(tab, Rayfield, category)
     end
