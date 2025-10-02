@@ -778,18 +778,93 @@ local entityStates = {
     Cultist = false,
     Wolf = false
 }
-local hitboxSize = 50 -- Default size
+local hitboxSize = 50
+local modifiedEntities = {} -- Track modified entities
+local connectionActive = false
+local renderConnection = nil
 
--- Core Function
-local function modifyEntity(character, size)
+-- Core Functions
+local function resetEntity(character)
     pcall(function()
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if hrp and hrp:IsA("BasePart") then
-            hrp.Size = Vector3.new(size, size, size)
-            hrp.Transparency = 0.7
-            hrp.BrickColor = BrickColor.new("Really blue")
-            hrp.Material = "Neon"
-            hrp.CanCollide = false
+            -- Store original properties if not already stored
+            if not hrp:GetAttribute("OriginalSize") then
+                hrp:SetAttribute("OriginalSize", tostring(hrp.Size))
+                hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
+                hrp:SetAttribute("OriginalColor", tostring(hrp.BrickColor))
+                hrp:SetAttribute("OriginalMaterial", hrp.Material.Name)
+            end
+        end
+    end)
+end
+
+local function modifyEntity(character, size)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp or not hrp:IsA("BasePart") then return end
+        
+        -- Store original properties first time
+        if not hrp:GetAttribute("OriginalSize") then
+            hrp:SetAttribute("OriginalSize", tostring(hrp.Size))
+            hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
+            hrp:SetAttribute("OriginalColor", tostring(hrp.BrickColor))
+            hrp:SetAttribute("OriginalMaterial", hrp.Material.Name)
+        end
+        
+        hrp.Size = Vector3.new(size, size, size)
+        hrp.Transparency = 0.7
+        hrp.BrickColor = BrickColor.new("Really blue")
+        hrp.Material = Enum.Material.Neon
+        hrp.CanCollide = false
+        
+        -- Track this entity
+        if not modifiedEntities[character] then
+            modifiedEntities[character] = true
+            
+            -- Monitor for death/removal
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Died:Connect(function()
+                    restoreEntity(character)
+                    modifiedEntities[character] = nil
+                end)
+            end
+            
+            -- Monitor if character gets removed
+            character.AncestryChanged:Connect(function(_, parent)
+                if not parent then
+                    modifiedEntities[character] = nil
+                end
+            end)
+        end
+    end)
+end
+
+local function restoreEntity(character)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp:IsA("BasePart") then
+            -- Restore original properties
+            local origSize = hrp:GetAttribute("OriginalSize")
+            local origTrans = hrp:GetAttribute("OriginalTransparency")
+            local origColor = hrp:GetAttribute("OriginalColor")
+            local origMaterial = hrp:GetAttribute("OriginalMaterial")
+            
+            if origSize then
+                local x, y, z = origSize:match("([^,]+), ([^,]+), ([^,]+)")
+                hrp.Size = Vector3.new(tonumber(x), tonumber(y), tonumber(z))
+            end
+            if origTrans then hrp.Transparency = origTrans end
+            if origColor then hrp.BrickColor = BrickColor.new(origColor) end
+            if origMaterial then hrp.Material = Enum.Material[origMaterial] end
+            hrp.CanCollide = true
+            
+            -- Clear attributes
+            hrp:SetAttribute("OriginalSize", nil)
+            hrp:SetAttribute("OriginalTransparency", nil)
+            hrp:SetAttribute("OriginalColor", nil)
+            hrp:SetAttribute("OriginalMaterial", nil)
         end
     end)
 end
@@ -804,28 +879,90 @@ local function getActiveEntities()
     return active
 end
 
--- Main loop
-RunService.RenderStepped:Connect(function()
-    local activeEntities = getActiveEntities()
-    if #activeEntities == 0 then return end
+local function shouldModifyEntity(entityName, activeList)
+    -- Normalize the name (remove spaces)
+    local normalizedName = entityName:gsub("%s+", "")
     
-    local charactersFolder = workspace:FindFirstChild("Characters")
-    if not charactersFolder then return end
+    for _, activeName in pairs(activeList) do
+        if normalizedName == activeName or entityName == activeName then
+            return true
+        end
+        
+        -- Handle "Crossbow Cultist" vs "CrossbowCultist"
+        local normalizedActive = activeName:gsub("%s+", "")
+        if normalizedName == normalizedActive then
+            return true
+        end
+    end
+    return false
+end
+
+local function startModification()
+    if connectionActive then return end
+    connectionActive = true
     
-    for _, child in pairs(charactersFolder:GetChildren()) do
-        if child:IsA("Model") then
-            -- Check if this entity type is enabled
-            local normalizedName = child.Name:gsub("%s+", "")
-            
-            for _, entityName in pairs(activeEntities) do
-                if normalizedName == entityName or child.Name == entityName:gsub("(%u)", " %1"):match("^%s*(.-)%s*$") then
-                    modifyEntity(child, hitboxSize)
-                    break
+    renderConnection = RunService.RenderStepped:Connect(function()
+        local activeEntities = getActiveEntities()
+        if #activeEntities == 0 then return end
+        
+        local charactersFolder = workspace:FindFirstChild("Characters")
+        if not charactersFolder then return end
+        
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child:IsA("Model") then
+                if shouldModifyEntity(child.Name, activeEntities) then
+                    -- Check if entity is still alive
+                    local humanoid = child:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        modifyEntity(child, hitboxSize)
+                    elseif modifiedEntities[child] then
+                        -- Entity died, clean up
+                        restoreEntity(child)
+                        modifiedEntities[child] = nil
+                    end
+                elseif modifiedEntities[child] then
+                    -- Entity type was disabled, restore it
+                    restoreEntity(child)
+                    modifiedEntities[child] = nil
                 end
             end
         end
+    end)
+end
+
+local function stopModification()
+    if not connectionActive then return end
+    connectionActive = false
+    
+    if renderConnection then
+        renderConnection:Disconnect()
+        renderConnection = nil
     end
-end)
+    
+    -- Restore all modified entities
+    for character, _ in pairs(modifiedEntities) do
+        if character and character.Parent then
+            restoreEntity(character)
+        end
+    end
+    modifiedEntities = {}
+end
+
+local function updateModificationState()
+    local anyActive = false
+    for _, enabled in pairs(entityStates) do
+        if enabled then
+            anyActive = true
+            break
+        end
+    end
+    
+    if anyActive then
+        startModification()
+    else
+        stopModification()
+    end
+end
 
 -- WindUI Components
 
@@ -836,6 +973,7 @@ Tabs.HitboxTab:Toggle({
     Value = false,
     Callback = function(state) 
         entityStates.Bunny = state
+        updateModificationState()
         print("Bunny modification: " .. tostring(state))
         WindUI:Notify({
             Title = state and "Bunny Enabled! ✅" or "Bunny Disabled! ⚠️",
@@ -852,6 +990,7 @@ Tabs.HitboxTab:Toggle({
     Value = false,
     Callback = function(state) 
         entityStates.CrossbowCultist = state
+        updateModificationState()
         print("Crossbow Cultist modification: " .. tostring(state))
         WindUI:Notify({
             Title = state and "Crossbow Cultist Enabled! ✅" or "Crossbow Cultist Disabled! ⚠️",
@@ -868,6 +1007,7 @@ Tabs.HitboxTab:Toggle({
     Value = false,
     Callback = function(state) 
         entityStates.Cultist = state
+        updateModificationState()
         print("Cultist modification: " .. tostring(state))
         WindUI:Notify({
             Title = state and "Cultist Enabled! ✅" or "Cultist Disabled! ⚠️",
@@ -884,6 +1024,7 @@ Tabs.HitboxTab:Toggle({
     Value = false,
     Callback = function(state) 
         entityStates.Wolf = state
+        updateModificationState()
         print("Wolf modification: " .. tostring(state))
         WindUI:Notify({
             Title = state and "Wolf Enabled! ✅" or "Wolf Disabled! ⚠️",
@@ -893,7 +1034,7 @@ Tabs.HitboxTab:Toggle({
     end
 })
 
--- Hitbox Size Slider (Shared for all entities)
+-- Hitbox Size Slider
 Tabs.HitboxTab:Slider({
     Title = "Hitbox Size",
     Value = {
