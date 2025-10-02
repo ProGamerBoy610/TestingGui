@@ -18,7 +18,7 @@ WindUI:AddTheme({
 
 -- Create Main Window (Made bigger)
 local Window = WindUI:CreateWindow({
-    Title = "My Super Hub",
+    Title = "My Super Hub v5",
     Icon = "door-open",
     Author = "by .ftgs and .ftgs",
     Folder = "MySuperHub",
