@@ -145,27 +145,7 @@ local Toggle2 = Tab1:Toggle({
     end
 })
 
-local Toggle3 = Tab1:Toggle({
-    Title = "Toggle Switch 1",
-    Desc = "First Switch Toggle",
-    Icon = "power",
-    Type = "Switch",
-    Default = false,
-    Callback = function(state)
-        -- Removed print
-    end
-})
 
-local Toggle4 = Tab1:Toggle({
-    Title = "Toggle Switch 2",
-    Desc = "Second Switch Toggle",
-    Icon = "zap",
-    Type = "Switch",
-    Default = true,
-    Callback = function(state)
-        -- Removed print
-    end
-})
 
 Tab1:Space(2) -- Added extra space for better separation
 
