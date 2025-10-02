@@ -58,7 +58,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v8",
+    Title = "v9",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
@@ -144,11 +144,6 @@ local Toggle2 = Tab1:Toggle({
         -- Removed print
     end
 })
-
-
-
-Tab1:Space(2) -- Added extra space for better separation
-
 -- ==================== TAB 2: DROPDOWNS ====================
 local Tab2 = Window:Tab({
     Title = "Dropdowns",
