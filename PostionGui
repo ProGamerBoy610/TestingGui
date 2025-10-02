@@ -16,19 +16,19 @@ WindUI:AddTheme({
     Icon = Color3.fromHex("#a1a1aa")
 })
 
--- Create Main Window (Made bigger)
+-- Create Main Window (Even bigger for more visibility)
 local Window = WindUI:CreateWindow({
-    Title = "My Super Hub v5",
+    Title = "My Super Hub",
     Icon = "door-open",
     Author = "by .ftgs and .ftgs",
     Folder = "MySuperHub",
-    Size = UDim2.fromOffset(900, 700), -- Increased size
-    MinSize = Vector2.new(800, 500), -- Adjusted min size
-    MaxSize = Vector2.new(1200, 900), -- Adjusted max size
+    Size = UDim2.fromOffset(1000, 800), -- Further increased size
+    MinSize = Vector2.new(900, 600), -- Adjusted min size
+    MaxSize = Vector2.new(1400, 1000), -- Adjusted max size
     Transparent = true,
     Theme = "My Theme",
     Resizable = true,
-    SideBarWidth = 220, -- Slightly wider sidebar
+    SideBarWidth = 250, -- Wider sidebar for better navigation
     BackgroundImageTransparency = 0.42,
     HideSearchBar = false,
     ScrollBarEnabled = true,
@@ -84,7 +84,7 @@ local Section1 = Tab1:Section({
     Title = "Button Examples",
     Icon = "circle",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Button1 = Tab1:Button({
@@ -120,7 +120,7 @@ local Section2 = Tab1:Section({
     Title = "Toggle Examples",
     Icon = "toggle-left",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Toggle1 = Tab1:Toggle({
@@ -167,7 +167,7 @@ local Toggle4 = Tab1:Toggle({
     end
 })
 
-Tab1:Space()
+Tab1:Space(2) -- Added extra space for better separation
 
 -- ==================== TAB 2: DROPDOWNS ====================
 local Tab2 = Window:Tab({
@@ -180,7 +180,7 @@ local Section3 = Tab2:Section({
     Title = "Dropdown Examples",
     Icon = "list",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Dropdown1 = Tab2:Dropdown({
@@ -207,7 +207,7 @@ local Section4 = Tab2:Section({
     Title = "Multi-Select Dropdowns",
     Icon = "check-square",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Dropdown3 = Tab2:Dropdown({
@@ -232,7 +232,7 @@ local Dropdown4 = Tab2:Dropdown({
     end
 })
 
-Tab2:Space()
+Tab2:Space(2) -- Added extra space
 
 -- ==================== TAB 3: SLIDERS ====================
 local Tab3 = Window:Tab({
@@ -245,7 +245,7 @@ local Section5 = Tab3:Section({
     Title = "Integer Sliders",
     Icon = "gauge",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Slider1 = Tab3:Slider({
@@ -293,7 +293,7 @@ local Section6 = Tab3:Section({
     Title = "Float Sliders",
     Icon = "activity",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Slider4 = Tab3:Slider({
@@ -322,7 +322,7 @@ local Slider5 = Tab3:Slider({
     end
 })
 
-Tab3:Space()
+Tab3:Space(2) -- Added extra space
 
 -- ==================== TAB 4: INPUTS ====================
 local Tab4 = Window:Tab({
@@ -335,7 +335,7 @@ local Section7 = Tab4:Section({
     Title = "Single Line Inputs",
     Icon = "pencil",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Input1 = Tab4:Input({
@@ -380,7 +380,7 @@ local Section8 = Tab4:Section({
     Title = "Text Area Inputs",
     Icon = "file-text",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Input4 = Tab4:Input({
@@ -407,7 +407,7 @@ local Input5 = Tab4:Input({
     end
 })
 
-Tab4:Space()
+Tab4:Space(2) -- Added extra space
 
 -- ==================== TAB 5: PARAGRAPHS ====================
 local Tab5 = Window:Tab({
@@ -420,7 +420,7 @@ local Section9 = Tab5:Section({
     Title = "Paragraph Examples",
     Icon = "file-text",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 local Paragraph1 = Tab5:Paragraph({
@@ -518,7 +518,7 @@ local Paragraph4 = Tab5:Paragraph({
     Buttons = {}
 })
 
-Tab5:Space()
+Tab5:Space(2) -- Added extra space
 
 -- ==================== TAB 6: SECTIONS ====================
 local Tab6 = Window:Tab({
@@ -534,7 +534,7 @@ local Section10 = Tab6:Section({
     FontWeight = "Bold",
     TextTransparency = 0,
     TextXAlignment = "Left",
-    TextSize = 22, -- Increased text size
+    TextSize = 24, -- Increased further
     Opened = true,
 })
 
@@ -556,7 +556,7 @@ local Section11 = Tab6:Section({
     FontWeight = "SemiBold",
     TextTransparency = 0.05,
     TextXAlignment = "Center",
-    TextSize = 21, -- Increased text size
+    TextSize = 23, -- Increased further
     Opened = true,
 })
 
@@ -580,7 +580,7 @@ local Section12 = Tab6:Section({
     FontWeight = "Medium",
     TextTransparency = 0.1,
     TextXAlignment = "Right",
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
     Opened = true,
 })
 
@@ -597,7 +597,7 @@ Tab6:Slider({
     end
 })
 
-Tab6:Space()
+Tab6:Space(2) -- Added extra space
 
 -- ==================== TAB 7: MIXED COMPONENTS ====================
 local Tab7 = Window:Tab({
@@ -610,7 +610,7 @@ local Section13 = Tab7:Section({
     Title = "All Components Together",
     Icon = "layers",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
 Tab7:Button({
@@ -685,7 +685,7 @@ Tab7:Paragraph({
     }
 })
 
-Tab7:Space()
+Tab7:Space(2) -- Added extra space
 
 -- ==================== WINDOW LEVEL COMPONENTS ====================
 Window:Divider()
@@ -694,15 +694,15 @@ local WindowSection = Window:Section({
     Title = "Window Level Section",
     Icon = "window",
     Opened = true,
-    TextSize = 20, -- Increased text size
+    TextSize = 22, -- Increased further
 })
 
-Window:Space()
+Window:Space(2) -- Added extra space
 
 -- Final Notification
 WindUI:Notify({
     Title = "All Components Loaded",
-    Content = "Every component is now visible!",
+    Content = "Every component is now visible with larger text and bigger window!",
     Duration = 5,
     Icon = "check-circle",
 })
