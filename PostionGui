@@ -650,6 +650,127 @@ Tabs.PlayerTab:Toggle({
     end
 })
 
+-- Tree Size Modifier using WindUI Components
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+-- State variables
+local modificationEnabled = false
+local hitboxSizeMultiplier = 1000000 -- Default massive size
+
+-- Core Functions
+local function modifyTreeTrunk(trunk, sizeMultiplier)
+    if not trunk:IsA("BasePart") then return end
+    if trunk.Transparency == 1 then return end  -- Skip if already modified
+    
+    -- Store original properties
+    local originalSize = trunk.Size
+    local originalCFrame = trunk.CFrame
+    local originalTransparency = trunk.Transparency
+    local originalMaterial = trunk.Material
+    local originalColor = trunk.Color
+    local originalCanCollide = trunk.CanCollide
+    local originalAnchored = trunk.Anchored
+    
+    -- Make hitbox massive but invisible and non-collidable
+    trunk.Size = Vector3.new(sizeMultiplier, sizeMultiplier, sizeMultiplier)
+    trunk.CFrame = originalCFrame
+    trunk.Transparency = 1 -- Invisible
+    trunk.CanCollide = false -- Can't touch it
+    trunk.CanQuery = true  -- Ensure raycasts can hit it
+    trunk.Anchored = true  -- Anchor to prevent movement
+    
+    -- Create visual part with original size
+    local visualPart = trunk:Clone()
+    visualPart.Size = originalSize
+    visualPart.CFrame = originalCFrame
+    visualPart.Transparency = originalTransparency
+    visualPart.Material = originalMaterial
+    visualPart.Color = originalColor
+    visualPart.CanCollide = originalCanCollide
+    visualPart.CanQuery = false  -- Ignore for raycasts
+    visualPart.Anchored = originalAnchored
+    visualPart.Name = "Visual"
+    visualPart.Parent = trunk.Parent
+    
+    -- Clear children from visual
+    for _, child in pairs(visualPart:GetChildren()) do
+        child:Destroy()
+    end
+    
+    print("Modified trunk: " .. trunk:GetFullName())
+end
+
+local function modifyAllTrees()
+    if not modificationEnabled then return end
+    
+    local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
+    local count = 0
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and table.find(types, obj.Name) then
+            local trunk = obj:FindFirstChild("Trunk", true)
+            if trunk and trunk:IsA("BasePart") then
+                modifyTreeTrunk(trunk, hitboxSizeMultiplier)
+                count = count + 1
+            end
+        end
+    end
+    
+    return count
+end
+
+-- WindUI Components
+Tabs.HitboxTab:Toggle({
+    Title = "🌲 Tree Hitbox Modifier",
+    Icon = "settings",
+    Value = false,
+    Callback = function(state) 
+        modificationEnabled = state
+        print("Tree modification: " .. tostring(state))
+        
+        if state then
+            local count = modifyAllTrees()
+            WindUI:Notify({
+                Title = "Tree Modifier Enabled! ✅",
+                Content = "Modified " .. count .. " trees with " .. hitboxSizeMultiplier .. "x hitbox size",
+                Duration = 3,
+            })
+        else
+            WindUI:Notify({
+                Title = "Tree Modifier Disabled! ⚠️",
+                Content = "Reload the game to restore original trees",
+                Duration = 3,
+            })
+        end
+    end
+})
+
+Tabs.HitboxTab:Slider({
+    Title = "Hitbox Size Multiplier",
+    Value = {
+        Min = 10,
+        Max = 10000000,
+        Default = 1000000,
+    },
+    Callback = function(value) 
+        hitboxSizeMultiplier = value
+        print("Hitbox size adjusted to: " .. value)
+        
+        -- If modification is active, notify user to re-toggle
+        if modificationEnabled then
+            WindUI:Notify({
+                Title = "Size Changed",
+                Content = "Toggle OFF then ON to apply new size: " .. value,
+                Duration = 2,
+            })
+        end
+    end
+})
+
+-- Initialize
+print("🌲 Tree Modifier WindUI loaded!")
+print("Use toggle to enable/disable and slider to adjust hitbox size")
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -2421,165 +2542,6 @@ Tabs.OpTab:Button({
     end
 })
 
--- Tree Size Modifier using WindUI Components
--- Integrates toggles for tree types and slider for hitbox size
-
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
--- Global variable for hitbox size, controlled by slider
-local HitboxSize = 1000000  -- Default massive size
-
--- Function to modify a single tree trunk with current size
-local function modifyTreeTrunk(trunk, size)
-    if not trunk:IsA("BasePart") then return end
-    if trunk.Transparency == 1 then return end  -- Skip if already modified
-    
-    -- Store original properties
-    local originalSize = trunk.Size
-    local originalCFrame = trunk.CFrame
-    local originalTransparency = trunk.Transparency
-    local originalMaterial = trunk.Material
-    local originalColor = trunk.Color
-    local originalCanCollide = trunk.CanCollide
-    local originalAnchored = trunk.Anchored
-    
-    -- Apply massive hitbox
-    trunk.Size = Vector3.new(size, size, size)
-    trunk.CFrame = originalCFrame
-    trunk.Transparency = 1  -- Invisible
-    trunk.CanCollide = false  -- Non-collidable
-    trunk.CanQuery = true  -- Raycast hittable
-    trunk.Anchored = true  -- Anchored
-    
-    -- Create visual clone
-    local visualPart = trunk:Clone()
-    visualPart.Size = originalSize
-    visualPart.CFrame = originalCFrame
-    visualPart.Transparency = originalTransparency
-    visualPart.Material = originalMaterial
-    visualPart.Color = originalColor
-    visualPart.CanCollide = originalCanCollide
-    visualPart.CanQuery = false  -- Ignore raycasts
-    visualPart.Anchored = originalAnchored
-    visualPart.Name = "Visual"
-    visualPart.Parent = trunk.Parent
-    
-    -- Clear duplicate children from visual
-    for _, child in pairs(visualPart:GetChildren()) do
-        child:Destroy()
-    end
-    
-    print("Modified trunk: " .. trunk:GetFullName() .. " with size " .. size)
-end
-
--- Function to modify trees of specific types with current size
-local function modifyTrees(types, size)
-    local count = 0
-    for _, obj in pairs(workspace:GetDescendants()) do
-        if obj:IsA("Model") and table.find(types, obj.Name) then
-            local trunk = obj:FindFirstChild("Trunk", true)
-            if trunk and trunk:IsA("BasePart") then
-                modifyTreeTrunk(trunk, size)
-                count = count + 1
-            end
-        end
-    end
-    return count
-end
-
--- Tree Modifier Section in Hitbox Tab
-Tabs.HitboxTab:Paragraph({
-    Title = "Tree Hitbox Expander",
-    Desc = "Expand tree hitboxes while keeping visual size the same",
-    Image = "tree",
-    Color = "Green",
-})
-
--- Slider for Hitbox Size
-Tabs.HitboxTab:Slider({
-    Title = "Hitbox Size Range",
-    Value = {
-        Min = 10,
-        Max = 1000000,
-        Default = 1000000
-    },
-    Callback = function(value)
-        HitboxSize = value
-        print("🌲 Tree hitbox size adjusted to: " .. value)
-    end
-})
-
--- Small Trees Toggle
-local smallTreesModified = false
-Tabs.HitboxTab:Toggle({
-    Title = "Modify Small Trees",
-    Icon = "tree",
-    Value = false,
-    Callback = function(state)
-        if state and not smallTreesModified then
-            local types = {"Small Tree", "small tree", "SmallTree"}
-            local count = modifyTrees(types, HitboxSize)
-            smallTreesModified = true
-            WindUI:Notify({
-                Title = "Small Trees Modified! ✅",
-                Content = count .. " small trees expanded",
-                Duration = 3,
-            })
-            print("🌲 Modified " .. count .. " small trees")
-        elseif not state then
-            smallTreesModified = false
-        end
-    end
-})
-
--- Big Trees Toggle
-local bigTreesModified = false
-Tabs.HitboxTab:Toggle({
-    Title = "Modify Big Trees",
-    Icon = "tree",
-    Value = false,
-    Callback = function(state)
-        if state and not bigTreesModified then
-            local types = {"TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
-            local count = modifyTrees(types, HitboxSize)
-            bigTreesModified = true
-            WindUI:Notify({
-                Title = "Big Trees Modified! ✅",
-                Content = count .. " big trees expanded",
-                Duration = 3,
-            })
-            print("🌲 Modified " .. count .. " big trees")
-        elseif not state then
-            bigTreesModified = false
-        end
-    end
-})
-
--- All Trees Toggle
-local allTreesModified = false
-Tabs.HitboxTab:Toggle({
-    Title = "Modify All Trees",
-    Icon = "forest",
-    Value = false,
-    Callback = function(state)
-        if state and not allTreesModified then
-            local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
-            local count = modifyTrees(types, HitboxSize)
-            allTreesModified = true
-            WindUI:Notify({
-                Title = "All Trees Modified! ✅",
-                Content = count .. " trees expanded",
-                Duration = 3,
-            })
-            print("🌲 Modified " .. count .. " all trees")
-        elseif not state then
-            allTreesModified = false
-        end
-    end
-})
-
-print("🌲 Tree Hitbox Modifier loaded in Hitbox Tab!")
 
 Window:OnDestroy(function()
     print("Window destroyed")
