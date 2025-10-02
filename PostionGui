@@ -768,9 +768,7 @@ Tabs.HitboxTab:Slider({
     end
 })
 
-HitboxTab:Section({ 
-    Title = "Section",
-})
+
 
 -- Entity Hitbox Modifier using WindUI Components
 local RunService = game:GetService("RunService")
@@ -2797,4 +2795,3 @@ Tabs.OpTab:Button({
 Window:OnDestroy(function()
     print("Window destroyed")
 end)
-
