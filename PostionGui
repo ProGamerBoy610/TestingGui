@@ -1,4 +1,3 @@
--- Load WindUI Library
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 WindUI:SetNotificationLower(true)
@@ -24,12 +23,12 @@ local Window = WindUI:CreateWindow({
     Folder = "CustomHub",
     Size = UDim2.fromOffset(500, 370),
     MinSize = Vector2.new(480, 350),
-    MaxSize = Vector2.new(600, 450),
+    MaxSize = Vector2.new(6000, 4500),
     Transparent = false,
     Theme = "CustomBlue",
     Resizable = true,
     SideBarWidth = 240,
-    BackgroundImageTransparency = 0.42,
+    BackgroundImageTransparency = 0,
     HideSearchBar = false,
     ScrollBarEnabled = true,
     User = {
@@ -56,36 +55,29 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- Add Version Tag
+--[[-- Add Version Tag
 Window:Tag({
     Title = "v1.6.4",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
-})
+})]]
 
--- Send Notification
-WindUI:Notify({
-    Title = "Fryzer Hub Loaded",
-    Content = "Welcome to Fryzer Hub for 99 Nights in the Forest!",
-    Duration = 3,
-    Icon = "check-circle",
-})
 
 -- ==================== TAB 1: INFO ====================
-local Tab1 = Window:Tab({
+local InfoTab = Window:Tab({
     Title = "Info",
     Icon = "info",
     Locked = false,
 })
 
-Tab1:Select()
+InfoTab:Select()
 
-local Section1 = Tab1:Section({
+local Section1 = InfoTab:Section({
     Title = "Player Information Dashboard",
     Icon = "user-check",
 })
 
-Tab1:Paragraph({
+InfoTab:Paragraph({
     Title = "Player Information Dashboard",
     Desc = "Complete player details, game information, and community access",
     Color = "Blue",
@@ -108,7 +100,7 @@ pcall(function()
     GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
 end)
 
-Tab1:Paragraph({
+InfoTab:Paragraph({
     Title = "👤 " .. PlayerName,
     Desc = string.format(
         "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
@@ -125,14 +117,14 @@ Tab1:Paragraph({
     Buttons = {}
 })
 
-Tab1:Divider()
+InfoTab:Divider()
 
-local Section2 = Tab1:Section({
+local Section2 = InfoTab:Section({
     Title = "Join Our Discord Community",
     Icon = "users",
 })
 
-Tab1:Paragraph({
+InfoTab:Paragraph({
     Title = "Join Our Discord Community",
     Desc = "Connect with other users, get support, and stay updated!",
     Color = "Blue",
@@ -144,7 +136,7 @@ Tab1:Paragraph({
     Buttons = {}
 })
 
-Tab1:Button({
+InfoTab:Button({
     Title = "Copy Discord Link",
     Desc = "Copy invite link to clipboard",
     Locked = false,
@@ -159,21 +151,21 @@ Tab1:Button({
     end
 })
 
-Tab1:Space()
+InfoTab:Space()
 
 -- ==================== TAB 2: PLAYER ====================
-local Tab2 = Window:Tab({
+local PlayerTab = Window:Tab({
     Title = "Player",
     Icon = "user-check",
     Locked = false,
 })
 
-local Section3 = Tab2:Section({
+local Section3 = PlayerTab:Section({
     Title = "Player Controls",
     Icon = "user-check",
 })
 
-Tab2:Paragraph({
+PlayerTab:Paragraph({
     Title = "Player Controls",
     Desc = "Use the buttons below to control your player character",
     Color = "Blue",
@@ -185,9 +177,9 @@ Tab2:Paragraph({
     Buttons = {}
 })
 
-Tab2:Divider()
+PlayerTab:Divider()
 
-local Section4 = Tab2:Section({
+local Section4 = PlayerTab:Section({
     Title = "Movement System",
     Icon = "zap",
     Opened = true,
@@ -197,7 +189,7 @@ local Section4 = Tab2:Section({
 local infiniteJumpEnabled = false
 local UserInputService = game:GetService("UserInputService")
 
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Infinite Jump",
     Desc = "Press Space to jump infinitely",
     Icon = "arrow-up",
@@ -253,7 +245,7 @@ updateOriginalValues()
 LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
 
 -- Instant Prompts Toggle
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Instant Open Chests",
     Desc = "Automatically open proximity prompts instantly",
     Icon = "zap-off",
@@ -300,10 +292,10 @@ Tab2:Toggle({
     end
 })
 
-Tab2:Divider()
+PlayerTab:Divider()
 
 -- Speed Controls
-Tab2:Slider({
+PlayerTab:Slider({
     Title = "Walk Speed Setting",
     Step = 1,
     Value = {
@@ -317,7 +309,7 @@ Tab2:Slider({
     end
 })
 
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Enable Speed Boost",
     Desc = "Boost your walking speed",
     Icon = "zap",
@@ -342,10 +334,10 @@ Tab2:Toggle({
     end
 })
 
-Tab2:Divider()
+PlayerTab:Divider()
 
 -- Jump Controls
-Tab2:Slider({
+PlayerTab:Slider({
     Title = "Jump Height Setting",
     Step = 1,
     Value = {
@@ -359,7 +351,7 @@ Tab2:Slider({
     end
 })
 
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Enable Jump Boost",
     Desc = "Increase your jump height",
     Icon = "move-up",
@@ -387,10 +379,10 @@ Tab2:Toggle({
     end
 })
 
-Tab2:Divider()
+PlayerTab:Divider()
 
 -- Noclip Toggle
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Noclip Mode",
     Desc = "Pass through walls and objects",
     Icon = "ghost",
@@ -423,7 +415,7 @@ Tab2:Toggle({
     end
 })
 
-Tab2:Space()
+PlayerTab:Space()
 
 -- Fly System
 local IYMouse = Players.LocalPlayer:GetMouse()
@@ -615,7 +607,7 @@ local function MobileFly()
     end)
 end
 
-Tab2:Slider({
+PlayerTab:Slider({
     Title = "Fly Speed",
     Step = 0.1,
     Value = {
@@ -628,7 +620,7 @@ Tab2:Slider({
     end
 })
 
-Tab2:Toggle({
+PlayerTab:Toggle({
     Title = "Fly",
     Desc = "Enable flying with WASD and QE",
     Icon = "plane",
@@ -656,16 +648,16 @@ Tab2:Toggle({
     end
 })
 
-Tab2:Space()
+PlayerTab:Space()
 
 -- ==================== TAB 3: HITBOX ====================
-local Tab3 = Window:Tab({
+local HitboxTab = Window:Tab({
     Title = "Hitbox",
     Icon = "crosshairs",
     Locked = false,
 })
 
-local Section5 = Tab3:Section({
+local Section5 = HitboxTab:Section({
     Title = "Tree Hitbox Modifier",
     Icon = "tree",
     Opened = true,
@@ -731,7 +723,7 @@ local function modifyAllTrees()
     return count
 end
 
-Tab3:Toggle({
+HitboxTab:Toggle({
     Title = "🌲 Tree Hitbox Modifier",
     Desc = "Make tree hitboxes massive for easier chopping",
     Icon = "settings",
@@ -758,7 +750,7 @@ Tab3:Toggle({
     end
 })
 
-Tab3:Slider({
+HitboxTab:Slider({
     Title = "Hitbox Size Multiplier",
     Step = 1000,
     Value = {
@@ -780,9 +772,9 @@ Tab3:Slider({
     end
 })
 
-Tab3:Divider()
+HitboxTab:Divider()
 
-local Section6 = Tab3:Section({
+local Section6 = HitboxTab:Section({
     Title = "Entity Hitbox Modifier",
     Icon = "target",
     Opened = true,
@@ -966,7 +958,7 @@ local function updateModificationState()
     end
 end
 
-Tab3:Toggle({
+HitboxTab:Toggle({
     Title = "Bunny Hitbox",
     Desc = "Expand Bunny hitbox",
     Icon = "target",
@@ -984,7 +976,7 @@ Tab3:Toggle({
     end
 })
 
-Tab3:Toggle({
+HitboxTab:Toggle({
     Title = "Crossbow Cultist Hitbox",
     Desc = "Expand Crossbow Cultist hitbox",
     Icon = "target",
@@ -1002,7 +994,7 @@ Tab3:Toggle({
     end
 })
 
-Tab3:Toggle({
+HitboxTab:Toggle({
     Title = "Cultist Hitbox",
     Desc = "Expand Cultist hitbox",
     Icon = "target",
@@ -1020,7 +1012,7 @@ Tab3:Toggle({
     end
 })
 
-Tab3:Toggle({
+HitboxTab:Toggle({
     Title = "Wolf Hitbox",
     Desc = "Expand Wolf hitbox",
     Icon = "target",
@@ -1038,7 +1030,7 @@ Tab3:Toggle({
     end
 })
 
-Tab3:Slider({
+HitboxTab:Slider({
     Title = "Hitbox Size",
     Step = 1,
     Value = {
@@ -1057,16 +1049,16 @@ Tab3:Slider({
     end
 })
 
-Tab3:Space()
+HitboxTab:Space()
 
 -- ==================== TAB 4: VISUAL ====================
-local Tab4 = Window:Tab({
+local VisualTab = Window:Tab({
     Title = "Visual",
     Icon = "eye",
     Locked = false,
 })
 
-local Section7 = Tab4:Section({
+local Section7 = VisualTab:Section({
     Title = "Health Billboard",
     Icon = "heart",
 })
@@ -1273,7 +1265,7 @@ local function disableHealthBillboards()
     end
 end
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Health Billboard",
     Desc = "Show health bars on entities",
     Icon = "heart",
@@ -1290,9 +1282,9 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Divider()
+VisualTab:Divider()
 
-local Section8 = Tab4:Section({
+local Section8 = VisualTab:Section({
     Title = "ESP System",
     Icon = "eye",
     Opened = true,
@@ -1437,7 +1429,7 @@ local function UpdatePeltTraderEsp()
     end
 end
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "ESP Items",
     Desc = "Highlight items in the world",
     Icon = "package",
@@ -1450,7 +1442,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "ESP Enemies",
     Desc = "Highlight enemy entities",
     Icon = "skull",
@@ -1463,7 +1455,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "ESP Children",
     Desc = "Highlight lost children",
     Icon = "baby",
@@ -1476,7 +1468,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "ESP Pelt Trader",
     Desc = "Highlight pelt trader",
     Icon = "user",
@@ -1489,7 +1481,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Show Distance in ESP",
     Desc = "Display distance to ESP targets",
     Icon = "ruler",
@@ -1505,7 +1497,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Button({
+VisualTab:Button({
     Title = "Clear All ESP",
     Desc = "Removes all active ESP elements",
     Locked = false,
@@ -1524,7 +1516,7 @@ Tab4:Button({
     end
 })
 
-Tab4:Dropdown({
+VisualTab:Dropdown({
     Title = "ESP Color Theme",
     Values = { "Default", "Bright", "Dark", "Neon" },
     Value = "Default",
@@ -1576,7 +1568,7 @@ end
 
 setupEspConnections()
 
-Tab4:Paragraph({
+VisualTab:Paragraph({
     Title = "Player ESP System",
     Desc = "Advanced ESP system for tracking other players",
     Color = "Blue",
@@ -1875,7 +1867,7 @@ local function disablePlayerESP()
     print("❌ Player ESP Disabled")
 end
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Player ESP",
     Desc = "Enable ESP for other players",
     Icon = "users",
@@ -1891,7 +1883,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Show Player Names",
     Desc = "Display player names in ESP",
     Icon = "user-check",
@@ -1903,7 +1895,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Show Player Distance",
     Desc = "Show distance to players",
     Icon = "ruler",
@@ -1915,7 +1907,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Show Player Health",
     Desc = "Display player health",
     Icon = "heart-pulse",
@@ -1927,7 +1919,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Toggle({
+VisualTab:Toggle({
     Title = "Show Health Bar",
     Desc = "Enable health bar in player ESP",
     Icon = "activity",
@@ -1939,7 +1931,7 @@ Tab4:Toggle({
     end
 })
 
-Tab4:Slider({
+VisualTab:Slider({
     Title = "ESP Max Distance",
     Step = 50,
     Value = { Min = 100, Max = 2000, Default = 1000 },
@@ -1949,7 +1941,7 @@ Tab4:Slider({
     end
 })
 
-Tab4:Slider({
+VisualTab:Slider({
     Title = "ESP Text Size",
     Step = 1,
     Value = { Min = 8, Max = 24, Default = 14 },
@@ -1959,21 +1951,21 @@ Tab4:Slider({
     end
 })
 
-Tab4:Space()
+VisualTab:Space()
 
 -- ==================== TAB 5: TELEPORT ====================
-local Tab5 = Window:Tab({
+local TpTab = Window:Tab({
     Title = "Teleport",
     Icon = "navigation",
     Locked = false,
 })
 
-local Section9 = Tab5:Section({
+local Section9 = TpTab:Section({
     Title = "Quick Teleports",
     Icon = "zap",
 })
 
-Tab5:Button({
+TpTab:Button({
     Title = "Teleport to Campfire",
     Desc = "Quick teleport to campfire location",
     Locked = false,
@@ -1989,7 +1981,7 @@ Tab5:Button({
     end
 })
 
-Tab5:Button({
+TpTab:Button({
     Title = "Teleport to Spawn",
     Desc = "Quick teleport back to spawn area",
     Locked = false,
@@ -2005,7 +1997,7 @@ Tab5:Button({
     end
 })
 
-Tab5:Button({
+TpTab:Button({
     Title = "Teleport to Random Item",
     Desc = "Teleport to a random item in the workspace",
     Locked = false,
@@ -2039,9 +2031,9 @@ Tab5:Button({
     end
 })
 
-Tab5:Divider()
+TpTab:Divider()
 
-local Section10 = Tab5:Section({
+local Section10 = TpTab:Section({
     Title = "Lost Child Teleports",
     Icon = "baby",
     Opened = true,
@@ -2132,7 +2124,7 @@ if CharactersFolder then
 
     refreshLostChildren()
 
-    local childDropdown = Tab5:Dropdown({
+    local childDropdown = TpTab:Dropdown({
         Title = "Select Lost Child",
         Values = availableChildren,
         Value = availableChildren[1] or "None",
@@ -2142,7 +2134,7 @@ if CharactersFolder then
         end
     })
 
-    Tab5:Button({
+    TpTab:Button({
         Title = "Teleport to Selected Lost Child",
         Desc = "Teleport to the currently selected Lost Child",
         Locked = false,
@@ -2157,7 +2149,7 @@ if CharactersFolder then
     })
 
     for _, childName in pairs(lostChildPaths) do
-        Tab5:Button({
+        TpTab:Button({
             Title = "TP to " .. childName,
             Desc = "Direct teleport to " .. childName,
             Locked = false,
@@ -2172,7 +2164,7 @@ if CharactersFolder then
         })
     end
 
-    Tab5:Button({
+    TpTab:Button({
         Title = "Refresh Lost Children",
         Desc = "Manually refresh the Lost Children list",
         Locked = false,
@@ -2190,7 +2182,7 @@ if CharactersFolder then
         end
     end)
 
-    Tab5:Toggle({
+    TpTab:Toggle({
         Title = "Safe Lost Child TP",
         Desc = "Add extra height to avoid collision",
         Icon = "shield",
@@ -2202,7 +2194,7 @@ if CharactersFolder then
         end
     })
 else
-    Tab5:Paragraph({
+    TpTab:Paragraph({
         Title = "⚠️ Characters Folder Missing",
         Desc = "workspace.Characters folder not found",
         Color = "Red",
@@ -2215,9 +2207,9 @@ else
     })
 end
 
-Tab5:Divider()
+TpTab:Divider()
 
-local Section11 = Tab5:Section({
+local Section11 = TpTab:Section({
     Title = "Item Teleports",
     Icon = "package",
     Opened = true,
@@ -2261,7 +2253,7 @@ if ItemsFolder then
 
     refreshModelList()
 
-    local itemDropdown = Tab5:Dropdown({
+    local itemDropdown = TpTab:Dropdown({
         Title = "Select Item to Teleport",
         Values = uniqueModelNames,
         Value = uniqueModelNames[1] or "None",
@@ -2297,7 +2289,7 @@ if ItemsFolder then
         return closest
     end
 
-    Tab5:Button({
+    TpTab:Button({
         Title = "Teleport to Selected Item",
         Desc = "Teleport to the closest instance of selected item",
         Locked = false,
@@ -2319,7 +2311,7 @@ if ItemsFolder then
         end
     })
 
-    Tab5:Button({
+    TpTab:Button({
         Title = "Manual Refresh Items",
         Desc = "Force refresh the item list immediately",
         Locked = false,
@@ -2335,7 +2327,7 @@ if ItemsFolder then
         end
     })
 else
-    Tab5:Paragraph({
+    TpTab:Paragraph({
         Title = "❌ Items Folder Missing",
         Desc = "workspace.Items folder not found",
         Color = "Red",
@@ -2348,16 +2340,16 @@ else
     })
 end
 
-Tab5:Divider()
+TpTab:Divider()
 
-local Section12 = Tab5:Section({
+local Section12 = TpTab:Section({
     Title = "Advanced Teleports",
     Icon = "cloud",
 })
 
 local safeTeleportMode = false
 
-Tab5:Toggle({
+TpTab:Toggle({
     Title = "Safe Teleport Mode",
     Desc = "Adds extra height to teleports to avoid clipping",
     Icon = "shield",
@@ -2477,7 +2469,7 @@ local function teleportToGround()
     print("☁️ Teleported back to ground!")
 end
 
-Tab5:Toggle({
+TpTab:Toggle({
     Title = "Sky Platform",
     Desc = "Create an invisible platform in the sky",
     Icon = "cloud",
@@ -2508,44 +2500,37 @@ end
 
 Player.CharacterRemoving:Connect(cleanupSkyPlatform)
 
-Tab5:Space()
+TpTab:Space()
 
 -- ==================== TAB 6: OVER POWERED ====================
-local Tab6 = Window:Tab({
+local OpTab = Window:Tab({
     Title = "Over Powered",
     Icon = "zap",
     Locked = false,
 })
 
-local Section13 = Tab6:Section({
+local Section13 = OpTab:Section({
     Title = "Warning",
     Icon = "alert-triangle",
 })
 
-Tab6:Paragraph({
+OpTab:Paragraph({
     Title = "Warning",
     Desc = "Do not change the distance sliders below, they are set to optimal values.",
     Color = "Red",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
 })
 
-Tab6:Divider()
+OpTab:Divider()
 
-local Section14 = Tab6:Section({
+local Section14 = OpTab:Section({
     Title = "Auto Farm",
     Icon = "zap",
-    Opened = true,
 })
 
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 2500
 
-Tab6:Slider({
+OpTab:Slider({
     Title = "Don't Change this",
     Step = 100,
     Value = {
@@ -2559,7 +2544,7 @@ Tab6:Slider({
     end
 })
 
-Tab6:Toggle({
+OpTab:Toggle({
     Title = "Auto Chop Tree", 
     Desc = "Automatically chop trees within range",
     Icon = "tree-axe",
@@ -2612,7 +2597,7 @@ Tab6:Toggle({
 local ActiveKillAura = false
 local DistanceForKillAura = 2500
 
-Tab6:Slider({
+OpTab:Slider({
     Title = "Don't Change this",
     Step = 100,
     Value = {
@@ -2626,7 +2611,7 @@ Tab6:Slider({
     end
 })
 
-Tab6:Toggle({
+OpTab:Toggle({
     Title = "Kill Aura", 
     Desc = "Automatically attack enemies within range",
     Icon = "sword",
@@ -2665,14 +2650,14 @@ Tab6:Toggle({
     end
 })
 
-Tab6:Space()
+OpTab:Space()
 
-local Section15 = Tab6:Section({
+local Section15 = OpTab:Section({
     Title = "External Scripts",
     Icon = "download",
 })
 
-Tab6:Paragraph({
+OpTab:Paragraph({
     Title = "I will try to keep this updated",
     Desc = "I will add more features when I can. So please check back often for updates.",
     Color = "Blue",
@@ -2684,7 +2669,7 @@ Tab6:Paragraph({
     Buttons = {}
 })
 
-Tab6:Button({
+OpTab:Button({
     Title = "Fling All Script",
     Desc = "Fling all players script Even KILLS the player",
     Locked = false,
@@ -2698,19 +2683,13 @@ Tab6:Button({
     end
 })
 
-Tab6:Paragraph({
+OpTab:Paragraph({
     Title = "Updated",
     Desc = "Item Bring script has been updated to v3.0",
     Color = "Green",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
 })
 
-Tab6:Button({
+OpTab:Button({
     Title = "Bring Items Script",
     Desc = "Load the '99 nights bring items' script (May cause lag)",
     Locked = false,
@@ -2738,16 +2717,6 @@ Tab6:Button({
             })
         end
     end
-})
-
-Tab6:Space()
-
--- Final Notification
-WindUI:Notify({
-    Title = "All Components Loaded",
-    Content = "Every component is now visible!",
-    Duration = 5,
-    Icon = "check-circle",
 })
 
 Window:OnDestroy(function()
