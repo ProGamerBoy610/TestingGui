@@ -768,6 +768,154 @@ Tabs.HitboxTab:Slider({
     end
 })
 
+-- Entity Hitbox Modifier using WindUI Components
+local RunService = game:GetService("RunService")
+
+-- State variables
+local entityStates = {
+    Bunny = false,
+    CrossbowCultist = false,
+    Cultist = false,
+    Wolf = false
+}
+local hitboxSize = 50 -- Default size
+
+-- Core Function
+local function modifyEntity(character, size)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp:IsA("BasePart") then
+            hrp.Size = Vector3.new(size, size, size)
+            hrp.Transparency = 0.7
+            hrp.BrickColor = BrickColor.new("Really blue")
+            hrp.Material = "Neon"
+            hrp.CanCollide = false
+        end
+    end)
+end
+
+local function getActiveEntities()
+    local active = {}
+    for entity, enabled in pairs(entityStates) do
+        if enabled then
+            table.insert(active, entity)
+        end
+    end
+    return active
+end
+
+-- Main loop
+RunService.RenderStepped:Connect(function()
+    local activeEntities = getActiveEntities()
+    if #activeEntities == 0 then return end
+    
+    local charactersFolder = workspace:FindFirstChild("Characters")
+    if not charactersFolder then return end
+    
+    for _, child in pairs(charactersFolder:GetChildren()) do
+        if child:IsA("Model") then
+            -- Check if this entity type is enabled
+            local normalizedName = child.Name:gsub("%s+", "")
+            
+            for _, entityName in pairs(activeEntities) do
+                if normalizedName == entityName or child.Name == entityName:gsub("(%u)", " %1"):match("^%s*(.-)%s*$") then
+                    modifyEntity(child, hitboxSize)
+                    break
+                end
+            end
+        end
+    end
+end)
+
+-- WindUI Components
+
+-- Bunny Toggle
+Tabs.HitboxTab:Toggle({
+    Title = "🐰 Bunny Hitbox",
+    Icon = "target",
+    Value = false,
+    Callback = function(state) 
+        entityStates.Bunny = state
+        print("Bunny modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Bunny Enabled! ✅" or "Bunny Disabled! ⚠️",
+            Content = "Bunny hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+-- Crossbow Cultist Toggle
+Tabs.HitboxTab:Toggle({
+    Title = "🏹 Crossbow Cultist Hitbox",
+    Icon = "target",
+    Value = false,
+    Callback = function(state) 
+        entityStates.CrossbowCultist = state
+        print("Crossbow Cultist modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Crossbow Cultist Enabled! ✅" or "Crossbow Cultist Disabled! ⚠️",
+            Content = "Crossbow Cultist hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+-- Cultist Toggle
+Tabs.HitboxTab:Toggle({
+    Title = "👤 Cultist Hitbox",
+    Icon = "target",
+    Value = false,
+    Callback = function(state) 
+        entityStates.Cultist = state
+        print("Cultist modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Cultist Enabled! ✅" or "Cultist Disabled! ⚠️",
+            Content = "Cultist hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+-- Wolf Toggle
+Tabs.HitboxTab:Toggle({
+    Title = "🐺 Wolf Hitbox",
+    Icon = "target",
+    Value = false,
+    Callback = function(state) 
+        entityStates.Wolf = state
+        print("Wolf modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Wolf Enabled! ✅" or "Wolf Disabled! ⚠️",
+            Content = "Wolf hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+-- Hitbox Size Slider (Shared for all entities)
+Tabs.HitboxTab:Slider({
+    Title = "Hitbox Size",
+    Value = {
+        Min = 1,
+        Max = 200,
+        Default = 50,
+    },
+    Callback = function(value) 
+        hitboxSize = value
+        print("Hitbox size adjusted to: " .. value)
+        WindUI:Notify({
+            Title = "Size Updated",
+            Content = "Hitbox size set to: " .. value,
+            Duration = 1.5,
+        })
+    end
+})
+
+-- Initialize
+print("🎯 Entity Hitbox Modifier loaded!")
+print("Toggle entities ON/OFF and adjust size with slider")
+
 -- Initialize
 print("🌲 Tree Modifier WindUI loaded!")
 print("Use toggle to enable/disable and slider to adjust hitbox size")
@@ -1859,48 +2007,6 @@ if CharactersFolder then
             end
         })
     end
-
-    -- Teleport to Random Lost Child Button
-    Tabs.TpTab:Button({
-        Title = "TP to Random Lost Child",
-        Desc = "Teleport to a random available Lost Child",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            local randomChild = availableChildren[math.random(1, #availableChildren)]
-            teleportToLostChild(randomChild)
-        end
-    })
-
-    -- Teleport to All Lost Children (Sequential)
-    Tabs.TpTab:Button({
-        Title = "TP to All Lost Children",
-        Desc = "Teleport to each Lost Child with 2 second delays",
-        Callback = function()
-            if #availableChildren == 0 then
-                print("❌ No Lost Children available!")
-                return
-            end
-            
-            print("🔄 Starting sequential teleport to all Lost Children...")
-            
-            task.spawn(function()
-                for i, childName in pairs(availableChildren) do
-                    print("📍 Teleporting to", childName, "(" .. i .. "/" .. #availableChildren .. ")")
-                    teleportToLostChild(childName)
-                    
-                    -- Wait before next teleport (except for the last one)
-                    if i < #availableChildren then
-                        task.wait(2)
-                    end
-                end
-                print("✅ Completed teleporting to all Lost Children!")
-            end)
-        end
-    })
 
     -- Manual Refresh Button
     Tabs.TpTab:Button({
