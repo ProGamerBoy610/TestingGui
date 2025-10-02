@@ -1,12 +1,11 @@
 -- Load WindUI Library
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
--- Configure Notifications
 WindUI:SetNotificationLower(true)
 
 -- Add Custom Theme
 WindUI:AddTheme({
-    Name = "Custom Dark Theme",
+    Name = "My Theme",
     Accent = Color3.fromHex("#18181b"),
     Dialog = Color3.fromHex("#161616"),
     Outline = Color3.fromHex("#FFFFFF"),
@@ -19,15 +18,15 @@ WindUI:AddTheme({
 
 -- Create Main Window
 local Window = WindUI:CreateWindow({
-    Title = "Complete Hub Example",
-    Icon = "zap",
-    Author = "by Developer",
-    Folder = "CompleteHub",
+    Title = "My Super Hub",
+    Icon = "door-open",
+    Author = "by .ftgs and .ftgs",
+    Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
-    Theme = "Dark",
+    Theme = "My Theme",
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
@@ -35,28 +34,18 @@ local Window = WindUI:CreateWindow({
     ScrollBarEnabled = true,
     User = {
         Enabled = true,
-        Anonymous = false,
+        Anonymous = true,
         Callback = function()
-            print("User profile clicked")
+            print("clicked")
         end,
-    },
-    KeySystem = {
-        Key = { "1234", "5678", "admin" },
-        Note = "Join our Discord for keys or use default: 1234",
-        Thumbnail = {
-            Image = "rbxassetid://",
-            Title = "Key System",
-        },
-        URL = "https://discord.gg/yourserver",
-        SaveKey = true,
     },
 })
 
 -- Edit Open Button
 Window:EditOpenButton({
-    Title = "Open Hub",
-    Icon = "layout-dashboard",
-    CornerRadius = UDim.new(0, 16),
+    Title = "Open Example UI",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
     Color = ColorSequence.new(
         Color3.fromHex("FF0F7B"), 
@@ -69,258 +58,385 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v2.0.0",
+    Title = "v1.6.4",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
 
--- Send Welcome Notification
+-- Send Notification
 WindUI:Notify({
-    Title = "Welcome!",
-    Content = "Hub loaded successfully. Enjoy!",
-    Duration = 5,
-    Icon = "check-circle",
+    Title = "Notification Title",
+    Content = "Notification Content example!",
+    Duration = 3,
+    Icon = "bird",
 })
 
--- ==================== MAIN TAB ====================
-local MainTab = Window:Tab({
-    Title = "Main",
-    Icon = "home",
+-- ==================== TAB 1: BUTTONS & TOGGLES ====================
+local Tab1 = Window:Tab({
+    Title = "Buttons & Toggles",
+    Icon = "square-check-big",
     Locked = false,
 })
 
-MainTab:Select()
+Tab1:Select()
 
-local MainSection = MainTab:Section({
-    Title = "Main Features",
-    Icon = "star",
+local Section1 = Tab1:Section({
+    Title = "Button Examples",
+    Icon = "circle",
     Opened = true,
 })
 
-local MainButton = MainTab:Button({
-    Title = "Execute Script",
-    Desc = "Run the main script functionality",
+local Button1 = Tab1:Button({
+    Title = "Button 1",
+    Desc = "First Test Button",
     Locked = false,
     Callback = function()
-        WindUI:Notify({
-            Title = "Success",
-            Content = "Script executed!",
-            Duration = 3,
-            Icon = "check",
-        })
+        print("Button 1 clicked")
     end
 })
 
-local MainToggle = MainTab:Toggle({
-    Title = "Auto Farm",
-    Desc = "Enable automatic farming",
-    Icon = "tractor",
+local Button2 = Tab1:Button({
+    Title = "Button 2",
+    Desc = "Second Test Button",
+    Locked = false,
+    Callback = function()
+        print("Button 2 clicked")
+    end
+})
+
+local Button3 = Tab1:Button({
+    Title = "Button 3",
+    Desc = "Third Test Button",
+    Locked = false,
+    Callback = function()
+        print("Button 3 clicked")
+    end
+})
+
+Tab1:Divider()
+
+local Section2 = Tab1:Section({
+    Title = "Toggle Examples",
+    Icon = "toggle-left",
+    Opened = true,
+})
+
+local Toggle1 = Tab1:Toggle({
+    Title = "Toggle Checkbox 1",
+    Desc = "First Checkbox Toggle",
+    Icon = "check",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
-        print("Auto Farm: " .. tostring(state))
+        print("Toggle 1: " .. tostring(state))
     end
 })
 
-local SpeedSlider = MainTab:Slider({
-    Title = "Walk Speed",
-    Step = 1,
-    Value = {
-        Min = 16,
-        Max = 200,
-        Default = 16,
-    },
-    Callback = function(value)
-        game.Players.LocalPlayer.Character.Humanoid.WalkSpeed = value
-    end
-})
-
-local JumpSlider = MainTab:Slider({
-    Title = "Jump Power",
-    Step = 1,
-    Value = {
-        Min = 50,
-        Max = 300,
-        Default = 50,
-    },
-    Callback = function(value)
-        game.Players.LocalPlayer.Character.Humanoid.JumpPower = value
-    end
-})
-
-MainTab:Divider()
-
--- ==================== COMBAT TAB ====================
-local CombatTab = Window:Tab({
-    Title = "Combat",
-    Icon = "sword",
-    Locked = false,
-})
-
-local CombatSection = CombatTab:Section({
-    Title = "Combat Options",
-    Icon = "shield",
-    Opened = true,
-})
-
-local AimbotToggle = CombatTab:Toggle({
-    Title = "Aimbot",
-    Desc = "Enable aimbot assistance",
-    Icon = "crosshair",
-    Type = "Switch",
-    Default = false,
-    Callback = function(state)
-        print("Aimbot: " .. tostring(state))
-    end
-})
-
-local ESPToggle = CombatTab:Toggle({
-    Title = "Player ESP",
-    Desc = "Show player locations",
-    Icon = "eye",
+local Toggle2 = Tab1:Toggle({
+    Title = "Toggle Checkbox 2",
+    Desc = "Second Checkbox Toggle",
+    Icon = "check-check",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
-        print("ESP: " .. tostring(state))
+        print("Toggle 2: " .. tostring(state))
     end
 })
 
-local WeaponDropdown = CombatTab:Dropdown({
-    Title = "Select Weapon",
-    Values = { "Sword", "Gun", "Bow", "Staff" },
-    Value = "Sword",
-    Callback = function(option)
-        print("Weapon selected: " .. option)
-    end
-})
-
-local TargetDropdown = CombatTab:Dropdown({
-    Title = "Target Priority (Multi)",
-    Values = { "Closest", "Lowest HP", "Highest Level", "Players", "NPCs" },
-    Value = { "Closest" },
-    Multi = true,
-    AllowNone = false,
-    Callback = function(options)
-        print("Targets: " .. game:GetService("HttpService"):JSONEncode(options))
-    end
-})
-
-CombatTab:Divider()
-
-local DamageSlider = CombatTab:Slider({
-    Title = "Damage Multiplier",
-    Step = 0.5,
-    Value = {
-        Min = 1,
-        Max = 10,
-        Default = 1,
-    },
-    Callback = function(value)
-        print("Damage Multiplier: " .. value)
-    end
-})
-
--- ==================== TELEPORT TAB ====================
-local TeleportTab = Window:Tab({
-    Title = "Teleport",
-    Icon = "map-pin",
-    Locked = false,
-})
-
-local TeleportSection = TeleportTab:Section({
-    Title = "Teleport Locations",
-    Icon = "navigation",
-    Opened = true,
-})
-
-local LocationDropdown = TeleportTab:Dropdown({
-    Title = "Teleport to Location",
-    Values = { "Spawn", "Shop", "Arena", "Boss Room", "Secret Area" },
-    Value = "Spawn",
-    Callback = function(option)
-        print("Teleporting to: " .. option)
-    end
-})
-
-TeleportTab:Button({
-    Title = "Teleport to Waypoint",
-    Desc = "Teleport to selected location",
-    Locked = false,
-    Callback = function()
-        WindUI:Notify({
-            Title = "Teleported",
-            Content = "You have been teleported!",
-            Duration = 3,
-            Icon = "map-pin",
-        })
-    end
-})
-
-TeleportTab:Divider()
-
-local CoordinatesInput = TeleportTab:Input({
-    Title = "Custom Coordinates",
-    Desc = "Format: X, Y, Z",
-    Value = "0, 0, 0",
-    InputIcon = "map",
-    Type = "Input",
-    Placeholder = "Enter coordinates...",
-    Callback = function(input)
-        print("Coordinates entered: " .. input)
-    end
-})
-
--- ==================== VISUAL TAB ====================
-local VisualTab = Window:Tab({
-    Title = "Visual",
-    Icon = "eye",
-    Locked = false,
-})
-
-local VisualSection = VisualTab:Section({
-    Title = "Visual Settings",
-    Icon = "palette",
-    Opened = true,
-})
-
-local FullbrightToggle = VisualTab:Toggle({
-    Title = "Fullbright",
-    Desc = "Remove darkness from the game",
-    Icon = "sun",
+local Toggle3 = Tab1:Toggle({
+    Title = "Toggle Switch 1",
+    Desc = "First Switch Toggle",
+    Icon = "power",
     Type = "Switch",
     Default = false,
     Callback = function(state)
-        print("Fullbright: " .. tostring(state))
+        print("Toggle 3: " .. tostring(state))
     end
 })
 
-local FOVSlider = VisualTab:Slider({
-    Title = "Field of View",
-    Step = 1,
-    Value = {
-        Min = 70,
-        Max = 120,
-        Default = 70,
-    },
-    Callback = function(value)
-        workspace.CurrentCamera.FieldOfView = value
+local Toggle4 = Tab1:Toggle({
+    Title = "Toggle Switch 2",
+    Desc = "Second Switch Toggle",
+    Icon = "zap",
+    Type = "Switch",
+    Default = true,
+    Callback = function(state)
+        print("Toggle 4: " .. tostring(state))
     end
 })
 
-local ESPColorDropdown = VisualTab:Dropdown({
-    Title = "ESP Color",
+Tab1:Space()
+
+-- ==================== TAB 2: DROPDOWNS ====================
+local Tab2 = Window:Tab({
+    Title = "Dropdowns",
+    Icon = "chevron-down",
+    Locked = false,
+})
+
+local Section3 = Tab2:Section({
+    Title = "Dropdown Examples",
+    Icon = "list",
+    Opened = true,
+})
+
+local Dropdown1 = Tab2:Dropdown({
+    Title = "Dropdown Single 1",
+    Values = { "Option A", "Option B", "Option C", "Option D" },
+    Value = "Option A",
+    Callback = function(option)
+        print("Dropdown 1: " .. option)
+    end
+})
+
+local Dropdown2 = Tab2:Dropdown({
+    Title = "Dropdown Single 2",
     Values = { "Red", "Blue", "Green", "Yellow", "Purple" },
     Value = "Red",
     Callback = function(option)
-        print("ESP Color: " .. option)
+        print("Dropdown 2: " .. option)
     end
 })
 
-VisualTab:Divider()
+Tab2:Divider()
 
-VisualTab:Paragraph({
-    Title = "Visual Effects Info",
-    Desc = "These settings enhance your visual experience in-game. Use responsibly!",
+local Section4 = Tab2:Section({
+    Title = "Multi-Select Dropdowns",
+    Icon = "check-square",
+    Opened = true,
+})
+
+local Dropdown3 = Tab2:Dropdown({
+    Title = "Dropdown Multi 1",
+    Values = { "Category A", "Category B", "Category C", "Category D" },
+    Value = { "Category A" },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        print("Dropdown 3: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local Dropdown4 = Tab2:Dropdown({
+    Title = "Dropdown Multi 2",
+    Values = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
+    Value = { "Item 1", "Item 2" },
+    Multi = true,
+    AllowNone = false,
+    Callback = function(options)
+        print("Dropdown 4: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+Tab2:Space()
+
+-- ==================== TAB 3: SLIDERS ====================
+local Tab3 = Window:Tab({
+    Title = "Sliders",
+    Icon = "sliders",
+    Locked = false,
+})
+
+local Section5 = Tab3:Section({
+    Title = "Integer Sliders",
+    Icon = "gauge",
+    Opened = true,
+})
+
+local Slider1 = Tab3:Slider({
+    Title = "Slider 1 (Int)",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        print("Slider 1: " .. value)
+    end
+})
+
+local Slider2 = Tab3:Slider({
+    Title = "Slider 2 (Int)",
+    Step = 5,
+    Value = {
+        Min = 10,
+        Max = 200,
+        Default = 100,
+    },
+    Callback = function(value)
+        print("Slider 2: " .. value)
+    end
+})
+
+local Slider3 = Tab3:Slider({
+    Title = "Slider 3 (Int)",
+    Step = 10,
+    Value = {
+        Min = 0,
+        Max = 500,
+        Default = 250,
+    },
+    Callback = function(value)
+        print("Slider 3: " .. value)
+    end
+})
+
+Tab3:Divider()
+
+local Section6 = Tab3:Section({
+    Title = "Float Sliders",
+    Icon = "activity",
+    Opened = true,
+})
+
+local Slider4 = Tab3:Slider({
+    Title = "Slider 4 (Float)",
+    Step = 0.1,
+    Value = {
+        Min = 0,
+        Max = 10,
+        Default = 5,
+    },
+    Callback = function(value)
+        print("Slider 4: " .. value)
+    end
+})
+
+local Slider5 = Tab3:Slider({
+    Title = "Slider 5 (Float)",
+    Step = 0.5,
+    Value = {
+        Min = 1,
+        Max = 20,
+        Default = 10,
+    },
+    Callback = function(value)
+        print("Slider 5: " .. value)
+    end
+})
+
+Tab3:Space()
+
+-- ==================== TAB 4: INPUTS ====================
+local Tab4 = Window:Tab({
+    Title = "Inputs",
+    Icon = "text",
+    Locked = false,
+})
+
+local Section7 = Tab4:Section({
+    Title = "Single Line Inputs",
+    Icon = "pencil",
+    Opened = true,
+})
+
+local Input1 = Tab4:Input({
+    Title = "Input 1",
+    Desc = "First Input Field",
+    Value = "Default value 1",
+    InputIcon = "user",
+    Type = "Input",
+    Placeholder = "Enter text...",
+    Callback = function(input)
+        print("Input 1: " .. input)
+    end
+})
+
+local Input2 = Tab4:Input({
+    Title = "Input 2",
+    Desc = "Second Input Field",
+    Value = "Default value 2",
+    InputIcon = "mail",
+    Type = "Input",
+    Placeholder = "Enter email...",
+    Callback = function(input)
+        print("Input 2: " .. input)
+    end
+})
+
+local Input3 = Tab4:Input({
+    Title = "Input 3",
+    Desc = "Third Input Field",
+    Value = "",
+    InputIcon = "key",
+    Type = "Input",
+    Placeholder = "Enter password...",
+    Callback = function(input)
+        print("Input 3: " .. input)
+    end
+})
+
+Tab4:Divider()
+
+local Section8 = Tab4:Section({
+    Title = "Text Area Inputs",
+    Icon = "file-text",
+    Opened = true,
+})
+
+local Input4 = Tab4:Input({
+    Title = "Textarea 1",
+    Desc = "First Textarea Field",
+    Value = "Default text area value",
+    InputIcon = "align-left",
+    Type = "Textarea",
+    Placeholder = "Enter long text...",
+    Callback = function(input)
+        print("Textarea 1: " .. input)
+    end
+})
+
+local Input5 = Tab4:Input({
+    Title = "Textarea 2",
+    Desc = "Second Textarea Field",
+    Value = "",
+    InputIcon = "message-square",
+    Type = "Textarea",
+    Placeholder = "Enter notes...",
+    Callback = function(input)
+        print("Textarea 2: " .. input)
+    end
+})
+
+Tab4:Space()
+
+-- ==================== TAB 5: PARAGRAPHS ====================
+local Tab5 = Window:Tab({
+    Title = "Paragraphs",
+    Icon = "align-justify",
+    Locked = false,
+})
+
+local Section9 = Tab5:Section({
+    Title = "Paragraph Examples",
+    Icon = "file-text",
+    Opened = true,
+})
+
+local Paragraph1 = Tab5:Paragraph({
+    Title = "Paragraph 1",
+    Desc = "This is the first paragraph description",
+    Color = "Red",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "bird",
+            Title = "Button 1",
+            Callback = function()
+                print("Paragraph 1 Button 1")
+            end,
+        }
+    }
+})
+
+local Paragraph2 = Tab5:Paragraph({
+    Title = "Paragraph 2",
+    Desc = "This is the second paragraph description",
     Color = "Blue",
     Image = "",
     ImageSize = 30,
@@ -329,185 +445,253 @@ VisualTab:Paragraph({
     Locked = false,
     Buttons = {
         {
-            Icon = "info",
-            Title = "Learn More",
+            Icon = "star",
+            Title = "Button 1",
             Callback = function()
-                print("Info button clicked")
+                print("Paragraph 2 Button 1")
+            end,
+        },
+        {
+            Icon = "heart",
+            Title = "Button 2",
+            Callback = function()
+                print("Paragraph 2 Button 2")
             end,
         }
     }
 })
 
--- ==================== MISC TAB ====================
-local MiscTab = Window:Tab({
-    Title = "Misc",
-    Icon = "settings",
-    Locked = false,
-})
+Tab5:Divider()
 
-local MiscSection = MiscTab:Section({
-    Title = "Miscellaneous Options",
-    Icon = "wrench",
-    Opened = true,
-})
-
-local AntiAFKToggle = MiscTab:Toggle({
-    Title = "Anti-AFK",
-    Desc = "Prevent being kicked for inactivity",
-    Icon = "shield-check",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        print("Anti-AFK: " .. tostring(state))
-    end
-})
-
-local InfiniteJumpToggle = MiscTab:Toggle({
-    Title = "Infinite Jump",
-    Desc = "Jump unlimited times",
-    Icon = "arrow-up",
-    Type = "Switch",
-    Default = false,
-    Callback = function(state)
-        print("Infinite Jump: " .. tostring(state))
-    end
-})
-
-local NoClipToggle = MiscTab:Toggle({
-    Title = "No Clip",
-    Desc = "Walk through walls",
-    Icon = "ghost",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        print("No Clip: " .. tostring(state))
-    end
-})
-
-MiscTab:Divider()
-
-local UsernameInput = MiscTab:Input({
-    Title = "Custom Username",
-    Desc = "Display a custom username",
-    Value = game.Players.LocalPlayer.Name,
-    InputIcon = "user",
-    Type = "Input",
-    Placeholder = "Enter username...",
-    Callback = function(input)
-        print("Username set to: " .. input)
-    end
-})
-
-local NotesInput = MiscTab:Input({
-    Title = "Notes",
-    Desc = "Write your notes here",
-    Value = "",
-    InputIcon = "file-text",
-    Type = "Textarea",
-    Placeholder = "Enter your notes...",
-    Callback = function(input)
-        print("Notes saved: " .. input)
-    end
-})
-
-MiscTab:Space()
-
-MiscTab:Button({
-    Title = "Rejoin Server",
-    Desc = "Rejoin the current server",
-    Locked = false,
-    Callback = function()
-        game:GetService("TeleportService"):TeleportToPlaceInstance(game.PlaceId, game.JobId, game.Players.LocalPlayer)
-    end
-})
-
--- ==================== SETTINGS TAB ====================
-local SettingsTab = Window:Tab({
-    Title = "Settings",
-    Icon = "cog",
-    Locked = false,
-})
-
-local SettingsSection = SettingsTab:Section({
-    Title = "Hub Settings",
-    Icon = "sliders",
-    Opened = true,
-})
-
-local ThemeDropdown = SettingsTab:Dropdown({
-    Title = "Theme",
-    Values = { "Dark", "Light", "Custom Dark Theme" },
-    Value = "Dark",
-    Callback = function(option)
-        print("Theme changed to: " .. option)
-    end
-})
-
-local UIScaleSlider = SettingsTab:Slider({
-    Title = "UI Scale",
-    Step = 0.1,
-    Value = {
-        Min = 0.5,
-        Max = 1.5,
-        Default = 1,
-    },
-    Callback = function(value)
-        print("UI Scale: " .. value)
-    end
-})
-
-SettingsTab:Divider()
-
-SettingsTab:Button({
-    Title = "Reset Settings",
-    Desc = "Reset all settings to default",
-    Locked = false,
-    Callback = function()
-        WindUI:Notify({
-            Title = "Reset",
-            Content = "Settings have been reset!",
-            Duration = 3,
-            Icon = "refresh-cw",
-        })
-    end
-})
-
-SettingsTab:Space()
-
-SettingsTab:Paragraph({
-    Title = "About This Hub",
-    Desc = "This is a complete example hub showcasing all WindUI components. Use this as a template for your own projects!",
+local Paragraph3 = Tab5:Paragraph({
+    Title = "Paragraph 3",
+    Desc = "This is the third paragraph with multiple buttons",
     Color = "Green",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
     Locked = false,
     Buttons = {
         {
             Icon = "github",
             Title = "GitHub",
             Callback = function()
-                print("GitHub link clicked")
+                print("GitHub")
             end,
         },
         {
-            Icon = "message-circle",
-            Title = "Discord",
+            Icon = "twitter",
+            Title = "Twitter",
             Callback = function()
-                print("Discord link clicked")
+                print("Twitter")
+            end,
+        },
+        {
+            Icon = "globe",
+            Title = "Website",
+            Callback = function()
+                print("Website")
             end,
         }
     }
 })
 
--- ==================== CREDITS SECTION ====================
-local CreditsSection = Window:Section({
-    Title = "Credits",
-    Icon = "award",
+local Paragraph4 = Tab5:Paragraph({
+    Title = "Paragraph 4",
+    Desc = "Fourth paragraph example",
+    Color = "Yellow",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+Tab5:Space()
+
+-- ==================== TAB 6: SECTIONS ====================
+local Tab6 = Window:Tab({
+    Title = "Sections",
+    Icon = "layout",
+    Locked = false,
+})
+
+local Section10 = Tab6:Section({
+    Title = "Section Style 1",
+    Icon = "box",
+    Box = true,
+    FontWeight = "Bold",
+    TextTransparency = 0,
+    TextXAlignment = "Left",
+    TextSize = 18,
     Opened = true,
 })
 
--- Final notification
+Tab6:Button({
+    Title = "Button in Section 1",
+    Desc = "This button is inside section 1",
+    Locked = false,
+    Callback = function()
+        print("Section 1 button")
+    end
+})
+
+Tab6:Divider()
+
+local Section11 = Tab6:Section({
+    Title = "Section Style 2",
+    Icon = "square",
+    Box = false,
+    FontWeight = "SemiBold",
+    TextTransparency = 0.05,
+    TextXAlignment = "Center",
+    TextSize = 17,
+    Opened = true,
+})
+
+Tab6:Toggle({
+    Title = "Toggle in Section 2",
+    Desc = "This toggle is inside section 2",
+    Icon = "check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        print("Section 2 toggle: " .. tostring(state))
+    end
+})
+
+Tab6:Divider()
+
+local Section12 = Tab6:Section({
+    Title = "Section Style 3",
+    Icon = "package",
+    Box = true,
+    FontWeight = "Medium",
+    TextTransparency = 0.1,
+    TextXAlignment = "Right",
+    TextSize = 16,
+    Opened = true,
+})
+
+Tab6:Slider({
+    Title = "Slider in Section 3",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        print("Section 3 slider: " .. value)
+    end
+})
+
+Tab6:Space()
+
+-- ==================== TAB 7: MIXED COMPONENTS ====================
+local Tab7 = Window:Tab({
+    Title = "Mixed",
+    Icon = "grid-3x3",
+    Locked = false,
+})
+
+local Section13 = Tab7:Section({
+    Title = "All Components Together",
+    Icon = "layers",
+    Opened = true,
+})
+
+Tab7:Button({
+    Title = "Mixed Button",
+    Desc = "Button in mixed tab",
+    Locked = false,
+    Callback = function()
+        print("Mixed button")
+    end
+})
+
+Tab7:Toggle({
+    Title = "Mixed Toggle",
+    Desc = "Toggle in mixed tab",
+    Icon = "zap",
+    Type = "Switch",
+    Default = false,
+    Callback = function(state)
+        print("Mixed toggle: " .. tostring(state))
+    end
+})
+
+Tab7:Slider({
+    Title = "Mixed Slider",
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        print("Mixed slider: " .. value)
+    end
+})
+
+Tab7:Dropdown({
+    Title = "Mixed Dropdown",
+    Values = { "A", "B", "C" },
+    Value = "A",
+    Callback = function(option)
+        print("Mixed dropdown: " .. option)
+    end
+})
+
+Tab7:Input({
+    Title = "Mixed Input",
+    Desc = "Input in mixed tab",
+    Value = "",
+    InputIcon = "edit",
+    Type = "Input",
+    Placeholder = "Type here...",
+    Callback = function(input)
+        print("Mixed input: " .. input)
+    end
+})
+
+Tab7:Divider()
+
+Tab7:Paragraph({
+    Title = "Mixed Paragraph",
+    Desc = "Paragraph in mixed tab",
+    Color = "Purple",
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "info",
+            Title = "Info",
+            Callback = function()
+                print("Info")
+            end,
+        }
+    }
+})
+
+Tab7:Space()
+
+-- ==================== WINDOW LEVEL COMPONENTS ====================
+Window:Divider()
+
+local WindowSection = Window:Section({
+    Title = "Window Level Section",
+    Icon = "window",
+    Opened = true,
+})
+
+Window:Space()
+
+-- Final Notification
 WindUI:Notify({
-    Title = "Fully Loaded",
-    Content = "All features are now available!",
-    Duration = 4,
+    Title = "All Components Loaded",
+    Content = "Every component is now visible!",
+    Duration = 5,
     Icon = "check-circle",
 })
