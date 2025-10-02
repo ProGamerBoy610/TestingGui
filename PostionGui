@@ -58,7 +58,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v1.6.4",
+    Title = "v1",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
@@ -76,8 +76,6 @@ local Tab1 = Window:Tab({
     Title = "Buttons",
     Icon = "mouse-pointer-click",
 })
-
-Tab1:Select()
 
 Tab1:Section({
     Title = "BUTTON EXAMPLES",  -- Using caps for better visibility
