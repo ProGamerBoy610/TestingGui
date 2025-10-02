@@ -2503,28 +2503,36 @@ Player.CharacterRemoving:Connect(cleanupSkyPlatform)
 TpTab:Space()
 
 -- ==================== TAB 6: OVER POWERED ====================
-local OpTab = Window:Tab({
+-- ==================== TAB 6: OVER POWERED ====================
+local Tab6 = Window:Tab({
     Title = "Over Powered",
     Icon = "zap",
     Locked = false,
 })
 
-local Section13 = OpTab:Section({
+local Section13 = Tab6:Section({
     Title = "Warning",
     Icon = "alert-triangle",
 })
 
-OpTab:Paragraph({
+Tab6:Paragraph({
     Title = "Warning",
-    Desc = "Do not change the distance sliders below, they are set to optimal values.",
+    Desc = "Do not change the distance sliders below, they are set to optimal values. Changing them may cause issues or bans.",
     Color = "Red",
+})
+
+Tab6:Divider()
+
+local Section14 = Tab6:Section({
+    Title = "Auto Farm Features",
+    Icon = "zap",
 })
 
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 2500
 
-OpTab:Slider({
-    Title = "Don't Change this",
+Tab6:Slider({
+    Title = "Auto Chop Distance (Don't Change)",
     Step = 100,
     Value = {
         Min = 0,
@@ -2534,13 +2542,19 @@ OpTab:Slider({
     Callback = function(val)
         DistanceForAutoChopTree = val
         print("Auto Chop Tree distance set to:", val)
+        WindUI:Notify({
+            Title = "Distance Updated",
+            Content = "Auto Chop distance set to " .. val .. ". Use at your own risk!",
+            Duration = 3,
+            Icon = "alert-triangle",
+        })
     end
 })
 
-OpTab:Toggle({
+Tab6:Toggle({
     Title = "Auto Chop Tree", 
-    Desc = "Automatically chop trees within range",
-    Icon = "tree-axe",
+    Desc = "Automatically chop all trees within the set distance. May cause lag in dense areas.",
+    Icon = "axe",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
@@ -2548,6 +2562,12 @@ OpTab:Toggle({
         print("Auto Chop Tree is now:", state)
         
         if ActiveAutoChopTree then
+            WindUI:Notify({
+                Title = "Auto Chop Enabled",
+                Content = "Starting to chop trees within " .. DistanceForAutoChopTree .. " studs.",
+                Duration = 3,
+                Icon = "check",
+            })
             task.spawn(function()
                 while ActiveAutoChopTree do 
                     local player = game.Players.LocalPlayer
@@ -2558,12 +2578,23 @@ OpTab:Toggle({
                                    player.Inventory:FindFirstChild("Strong Axe") or 
                                    player.Inventory:FindFirstChild("Chainsaw"))
                     
+                    if not weapon then
+                        WindUI:Notify({
+                            Title = "Error",
+                            Content = "No axe found in inventory! Auto Chop disabled.",
+                            Duration = 5,
+                            Icon = "x",
+                        })
+                        ActiveAutoChopTree = false
+                        break
+                    end
+                    
                     task.spawn(function()
                         for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
                             if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
                                 end
                             end
                         end 
@@ -2574,7 +2605,7 @@ OpTab:Toggle({
                             if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
                                 local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForAutoChopTree then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
                                 end
                             end
                         end
@@ -2583,6 +2614,13 @@ OpTab:Toggle({
                     task.wait(0.1)
                 end
             end)
+        else
+            WindUI:Notify({
+                Title = "Auto Chop Disabled",
+                Content = "Stopped chopping trees.",
+                Duration = 3,
+                Icon = "x",
+            })
         end
     end
 })
@@ -2590,8 +2628,8 @@ OpTab:Toggle({
 local ActiveKillAura = false
 local DistanceForKillAura = 2500
 
-OpTab:Slider({
-    Title = "Don't Change this",
+Tab6:Slider({
+    Title = "Kill Aura Distance (Don't Change)",
     Step = 100,
     Value = {
         Min = 25,
@@ -2601,12 +2639,18 @@ OpTab:Slider({
     Callback = function(val)
         DistanceForKillAura = val
         print("Kill Aura distance set to:", val)
+        WindUI:Notify({
+            Title = "Distance Updated",
+            Content = "Kill Aura distance set to " .. val .. ". Use at your own risk!",
+            Duration = 3,
+            Icon = "alert-triangle",
+        })
     end
 })
 
-OpTab:Toggle({
+Tab6:Toggle({
     Title = "Kill Aura", 
-    Desc = "Automatically attack enemies within range",
+    Desc = "Automatically damage all enemies within the set distance. Use with caution.",
     Icon = "sword",
     Type = "Checkbox",
     Default = false,
@@ -2615,6 +2659,12 @@ OpTab:Toggle({
         print("Kill Aura is now:", state)
         
         if ActiveKillAura then
+            WindUI:Notify({
+                Title = "Kill Aura Enabled",
+                Content = "Starting to attack enemies within " .. DistanceForKillAura .. " studs.",
+                Duration = 3,
+                Icon = "check",
+            })
             task.spawn(function()
                 while ActiveKillAura do 
                     local player = game.Players.LocalPlayer
@@ -2625,12 +2675,23 @@ OpTab:Toggle({
                                    player.Inventory:FindFirstChild("Strong Axe") or 
                                    player.Inventory:FindFirstChild("Chainsaw"))
                     
+                    if not weapon then
+                        WindUI:Notify({
+                            Title = "Error",
+                            Content = "No weapon found in inventory! Kill Aura disabled.",
+                            Duration = 5,
+                            Icon = "x",
+                        })
+                        ActiveKillAura = false
+                        break
+                    end
+                    
                     task.spawn(function()
                         for _, enemy in pairs(workspace.Characters:GetChildren()) do
                             if enemy:IsA("Model") and enemy.PrimaryPart then
                                 local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
                                 if distance <= DistanceForKillAura then
-                                    local result = game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
                                 end
                             end
                         end
@@ -2639,78 +2700,100 @@ OpTab:Toggle({
                     task.wait(0.1)
                 end
             end)
+        else
+            WindUI:Notify({
+                Title = "Kill Aura Disabled",
+                Content = "Stopped attacking enemies.",
+                Duration = 3,
+                Icon = "x",
+            })
         end
     end
 })
 
-OpTab:Space()
+Tab6:Divider()
 
-local Section15 = OpTab:Section({
+local Section15 = Tab6:Section({
     Title = "External Scripts",
-    Icon = "download",
+    Icon = "code",
 })
 
-OpTab:Paragraph({
-    Title = "I will try to keep this updated",
-    Desc = "I will add more features when I can. So please check back often for updates.",
+Tab6:Paragraph({
+    Title = "External Scripts Info",
+    Desc = "These scripts are loaded from external sources. Use at your own risk. I will try to keep them updated.",
     Color = "Blue",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
 })
 
-OpTab:Button({
-    Title = "Fling All Script",
-    Desc = "Fling all players script Even KILLS the player",
+Tab6:Button({
+    Title = "Load Fling All Script",
+    Desc = "Loads a script to fling all players. Can kill players. Use wisely.",
     Locked = false,
     Callback = function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
         WindUI:Notify({
-            Title = "Loading Script",
-            Content = "Use it wisely",
-            Duration = 1,
+            Title = "Loading Fling Script",
+            Content = "Loading external fling script...",
+            Duration = 3,
+            Icon = "download",
         })
-    end
-})
-
-OpTab:Paragraph({
-    Title = "Updated",
-    Desc = "Item Bring script has been updated to v3.0",
-    Color = "Green",
-})
-
-OpTab:Button({
-    Title = "Bring Items Script",
-    Desc = "Load the '99 nights bring items' script (May cause lag)",
-    Locked = false,
-    Callback = function() 
-        WindUI:Notify({
-            Title = "Script Loading",
-            Content = "Loading script",
-            Duration = 2,
-        })
-        local success, result = pcall(function()
-            local script = game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/99%20nights%20bring%20items%20v2")
-            loadstring(script)()
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
         end)
         if success then
             WindUI:Notify({
                 Title = "Script Loaded",
-                Content = "Script executed successfully!",
-                Duration = 2,
+                Content = "Fling All script loaded successfully!",
+                Duration = 3,
+                Icon = "check",
             })
         else
             WindUI:Notify({
-                Title = "Script Error",
-                Content = "Failed to load or execute script.",
-                Duration = 2,
+                Title = "Load Error",
+                Content = "Failed to load Fling All script: " .. (err or "Unknown error"),
+                Duration = 5,
+                Icon = "x",
             })
         end
     end
 })
+
+Tab6:Paragraph({
+    Title = "Item Bring Update",
+    Desc = "Item Bring script updated to v3.0. May cause lag when bringing many items.",
+    Color = "Green",
+})
+
+Tab6:Button({
+    Title = "Load Bring Items Script",
+    Desc = "Loads script to bring items to you. May cause lag.",
+    Locked = false,
+    Callback = function() 
+        WindUI:Notify({
+            Title = "Loading Bring Script",
+            Content = "Loading external bring items script...",
+            Duration = 3,
+            Icon = "download",
+        })
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/99%20nights%20bring%20items%20v2"))()
+        end)
+        if success then
+            WindUI:Notify({
+                Title = "Script Loaded",
+                Content = "Bring Items script loaded successfully!",
+                Duration = 3,
+                Icon = "check",
+            })
+        else
+            WindUI:Notify({
+                Title = "Load Error",
+                Content = "Failed to load Bring Items script: " .. (err or "Unknown error"),
+                Duration = 5,
+                Icon = "x",
+            })
+        end
+    end
+})
+
 
 Window:OnDestroy(function()
     print("Window destroyed")
