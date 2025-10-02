@@ -72,7 +72,7 @@ end
 
 -- Custom Open Button
 Window:EditOpenButton({
-    Title = " Open Hub",
+    Title = " Open",
     Icon = "user",
     CornerRadius = UDim.new(0, 12),
     StrokeThickness = 2,
@@ -652,6 +652,7 @@ Tabs.PlayerTab:Toggle({
 
 -- Tree Size Modifier GUI using Components
 -- Makes tree hitboxes massive while keeping visual size same
+-- Fixed to search only in Map.Landmarks to prevent lag/crash
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
@@ -659,13 +660,22 @@ local LocalPlayer = Players.LocalPlayer
 local TreeSize = 1000000
 
 -- Assume WindUI and Tabs are already initialized earlier in the script
+-- If not, this will error - ensure WindUI library is loaded
 
 -- Functions
-local function modifyTreeTrunk(trunk)
-    if not trunk:IsA("BasePart") then return end
+local function getLandmarks()
+    local map = workspace:FindFirstChild("Map")
+    if map then
+        return map:FindFirstChild("Landmarks")
+    end
+    return nil
+end
+
+local function modifyTreeTrunk(trunk, size)
+    if not trunk or not trunk:IsA("BasePart") then return end
     if trunk.Transparency == 1 then return end  -- Skip if already modified
     
-    -- Store original size and position
+    -- Store original properties
     local originalSize = trunk.Size
     local originalCFrame = trunk.CFrame
     local originalTransparency = trunk.Transparency
@@ -673,43 +683,52 @@ local function modifyTreeTrunk(trunk)
     local originalColor = trunk.Color
     local originalCanCollide = trunk.CanCollide
     local originalAnchored = trunk.Anchored
+    local originalCanQuery = trunk.CanQuery
     
-    -- Make hitbox massive but invisible and non-collidable
-    trunk.Size = Vector3.new(TreeSize, TreeSize, TreeSize)
+    -- Modify trunk to massive invisible hitbox
+    trunk.Size = Vector3.new(size, size, size)
     trunk.CFrame = originalCFrame
-    trunk.Transparency = 1 -- Invisible
-    trunk.CanCollide = false -- Can't touch it
-    trunk.CanQuery = true  -- Ensure raycasts can hit it
-    trunk.Anchored = true  -- Anchor to prevent movement
+    trunk.Transparency = 1
+    trunk.CanCollide = false
+    trunk.CanQuery = true
+    trunk.Anchored = true
     
-    -- Create visual part with original size (this is the real touchable one)
+    -- Create visual clone
     local visualPart = trunk:Clone()
     visualPart.Size = originalSize
     visualPart.CFrame = originalCFrame
     visualPart.Transparency = originalTransparency
     visualPart.Material = originalMaterial
     visualPart.Color = originalColor
-    visualPart.CanCollide = originalCanCollide -- Restore original collision
-    visualPart.CanQuery = false  -- Ignore for raycasts
+    visualPart.CanCollide = originalCanCollide
+    visualPart.CanQuery = false
     visualPart.Anchored = originalAnchored
-    visualPart.Name = "Visual"
+    visualPart.Name = "VisualTrunk"
     visualPart.Parent = trunk.Parent
     
-    -- Clear children from visual (we don't need duplicates)
+    -- Clear children from visual
     for _, child in pairs(visualPart:GetChildren()) do
-        child:Destroy()
+        if child ~= visualPart.PrimaryPart then
+            child:Destroy()
+        end
     end
     
-    print("Modified trunk: " .. trunk:GetFullName())
+    print("Modified: " .. trunk:GetFullName())
 end
 
-local function modifyTrees(types)
+local function modifyTrees(types, size)
+    local landmarks = getLandmarks()
+    if not landmarks then
+        warn("Map.Landmarks not found!")
+        return 0
+    end
+    
     local count = 0
-    for _, obj in pairs(workspace:GetDescendants()) do
+    for _, obj in pairs(landmarks:GetDescendants()) do
         if obj:IsA("Model") and table.find(types, obj.Name) then
-            local trunk = obj:FindFirstChild("Trunk", true)  -- Recursive search for Trunk
-            if trunk and trunk:IsA("BasePart") then
-                modifyTreeTrunk(trunk)
+            local trunk = obj:FindFirstChild("Trunk", true)
+            if trunk then
+                modifyTreeTrunk(trunk, size)
                 count = count + 1
             end
         end
@@ -717,116 +736,135 @@ local function modifyTrees(types)
     return count
 end
 
-local function modifySmallTrees()
-    local types = {"Small Tree", "small tree", "SmallTree"}  -- Add variations
-    return modifyTrees(types)
+local function modifySmallTrees(size)
+    local types = {"Small Tree", "small tree", "SmallTree"}
+    return modifyTrees(types, size)
 end
 
-local function modifyBigTrees()
-    local types = {"TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}  -- Add variations
-    return modifyTrees(types)
+local function modifyBigTrees(size)
+    local types = {"TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
+    return modifyTrees(types, size)
 end
 
-local function modifyAllTrees()
-    local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}  -- All variations
-    return modifyTrees(types)
+local function modifyAllTrees(size)
+    local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
+    return modifyTrees(types, size)
 end
 
--- Components
--- Slider for size range
+-- Components - Add to your TreeModTab
+-- Slider for size
 Tabs.HitboxTab:Slider({
     Title = "Tree Hitbox Size",
     Value = {
         Min = 1000,
-        Max = 10000000,
+        Max = 5000000,
         Default = 1000000,
+        Async = true  -- If supported, to avoid lag
     },
     Callback = function(value) 
         TreeSize = value
-        print("Tree size adjusted to: " .. value)
+        print("Tree size: " .. value)
         WindUI:Notify({
-            Title = "Size Updated! 📏",
-            Content = "Tree hitbox size set to: " .. value,
+            Title = "Size Set! 📏",
+            Content = "Hitbox size: " .. value,
             Duration = 2,
         })
     end
 })
 
+local smallToggleState = false
 -- Toggle for Small Trees
 Tabs.HitboxTab:Toggle({
     Title = "Small Trees",
     Icon = "🌳",
     Value = false,
     Callback = function(state) 
+        smallToggleState = state
         if state then
-            local count = modifySmallTrees()
-            WindUI:Notify({
-                Title = "Small Trees Modified! ✅",
-                Content = count .. " small trees updated",
-                Duration = 2,
-            })
-        else
-            WindUI:Notify({
-                Title = "Small Trees Disabled ❌",
-                Content = "Feature toggled off",
-                Duration = 2,
-            })
+            spawn(function()
+                local count = modifySmallTrees(TreeSize)
+                WindUI:Notify({
+                    Title = "Small Trees Done! ✅",
+                    Content = count .. " modified",
+                    Duration = 3,
+                })
+            end)
         end
-        print("Small Trees toggle: " .. tostring(state))
+        print("Small Trees: " .. tostring(state))
     end
 })
 
+local bigToggleState = false
 -- Toggle for Big Trees
 Tabs.HitboxTab:Toggle({
     Title = "Big Trees",
     Icon = "🌲",
     Value = false,
     Callback = function(state) 
+        bigToggleState = state
         if state then
-            local count = modifyBigTrees()
-            WindUI:Notify({
-                Title = "Big Trees Modified! ✅",
-                Content = count .. " big trees updated",
-                Duration = 2,
-            })
-        else
-            WindUI:Notify({
-                Title = "Big Trees Disabled ❌",
-                Content = "Feature toggled off",
-                Duration = 2,
-            })
+            spawn(function()
+                local count = modifyBigTrees(TreeSize)
+                WindUI:Notify({
+                    Title = "Big Trees Done! ✅",
+                    Content = count .. " modified",
+                    Duration = 3,
+                })
+            end)
         end
-        print("Big Trees toggle: " .. tostring(state))
+        print("Big Trees: " .. tostring(state))
     end
 })
 
+local allToggleState = false
 -- Toggle for All Trees
 Tabs.HitboxTab:Toggle({
     Title = "All Trees",
     Icon = "🌴",
     Value = false,
     Callback = function(state) 
+        allToggleState = state
         if state then
-            local count = modifyAllTrees()
-            WindUI:Notify({
-                Title = "All Trees Modified! ✅",
-                Content = count .. " trees updated",
-                Duration = 2,
-            })
-        else
-            WindUI:Notify({
-                Title = "All Trees Disabled ❌",
-                Content = "Feature toggled off",
-                Duration = 2,
-            })
+            spawn(function()
+                local count = modifyAllTrees(TreeSize)
+                WindUI:Notify({
+                    Title = "All Trees Done! ✅",
+                    Content = count .. " modified",
+                    Duration = 3,
+                })
+            end)
         end
-        print("All Trees toggle: " .. tostring(state))
+        print("All Trees: " .. tostring(state))
+    end
+})
+
+-- Optional: Button to reset all
+Tabs.HitboxTab:Button({
+    Title = "Reset Trees",
+    Callback = function()
+        -- Simple reset: destroy visuals and restore trunks (basic, may need full revert)
+        local landmarks = getLandmarks()
+        if landmarks then
+            for _, obj in pairs(landmarks:GetDescendants()) do
+                if obj.Name == "VisualTrunk" then
+                    obj:Destroy()
+                elseif obj:IsA("BasePart") and obj.Transparency == 1 and obj.Size.Magnitude > 100 then
+                    -- Restore trunk (incomplete, but attempts)
+                    obj:Destroy()  -- Or restore properties if stored
+                end
+            end
+        end
+        WindUI:Notify({
+            Title = "Reset Attempted! 🔄",
+            Content = "Reload map for full reset",
+            Duration = 3,
+        })
     end
 })
 
 -- Initialize
-print("🌲 Tree Modifier Components loaded!")
-print("Use toggles to modify trees and slider for size")
+print("🌲 Tree Modifier Fixed & Loaded!")
+print("Search limited to Landmarks to avoid lag. Use toggles carefully.")
 
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -2602,4 +2640,3 @@ Tabs.OpTab:Button({
 Window:OnDestroy(function()
     print("Window destroyed")
 end)
-
