@@ -77,15 +77,6 @@ local Tab1 = Window:Tab({
     Icon = "mouse-pointer-click",
 })
 
-Tab1:Section({
-    Title = "BUTTON EXAMPLES",  -- Using caps for better visibility
-    Icon = "circle",
-    Box = true,
-    FontWeight = "Bold",
-    TextXAlignment = "Center",
-    TextSize = 20,  -- Larger section text
-    Opened = true,
-})
 
 Tab1:Button({
     Title = "BUTTON 1",
