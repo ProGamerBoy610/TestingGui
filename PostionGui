@@ -16,19 +16,19 @@ WindUI:AddTheme({
     Icon = Color3.fromHex("#a1a1aa")
 })
 
--- Create Main Window (BIGGER SIZE + SCROLLING ENABLED)
+-- Create Main Window (Made bigger)
 local Window = WindUI:CreateWindow({
     Title = "My Super Hub",
     Icon = "door-open",
     Author = "by .ftgs and .ftgs",
     Folder = "MySuperHub",
-    Size = UDim2.fromOffset(700, 550),
-    MinSize = Vector2.new(650, 500),
-    MaxSize = Vector2.new(1000, 700),
+    Size = UDim2.fromOffset(900, 700), -- Increased size
+    MinSize = Vector2.new(800, 500), -- Adjusted min size
+    MaxSize = Vector2.new(1200, 900), -- Adjusted max size
     Transparent = true,
     Theme = "My Theme",
     Resizable = true,
-    SideBarWidth = 220,
+    SideBarWidth = 220, -- Slightly wider sidebar
     BackgroundImageTransparency = 0.42,
     HideSearchBar = false,
     ScrollBarEnabled = true,
@@ -36,7 +36,7 @@ local Window = WindUI:CreateWindow({
         Enabled = true,
         Anonymous = true,
         Callback = function()
-            print("clicked")
+            -- Removed print
         end,
     },
 })
@@ -65,136 +65,191 @@ Window:Tag({
 
 -- Send Notification
 WindUI:Notify({
-    Title = "Hub Loaded",
-    Content = "All components are ready to use!",
-    Duration = 4,
-    Icon = "check-circle",
+    Title = "Notification Title",
+    Content = "Notification Content example!",
+    Duration = 3,
+    Icon = "bird",
 })
 
--- ==================== TAB 1: BUTTONS ====================
+-- ==================== TAB 1: BUTTONS & TOGGLES ====================
 local Tab1 = Window:Tab({
-    Title = "Buttons",
-    Icon = "mouse-pointer-click",
+    Title = "Buttons & Toggles",
+    Icon = "square-check-big",
+    Locked = false,
 })
 
 Tab1:Select()
 
-Tab1:Section({
+local Section1 = Tab1:Section({
     Title = "Button Examples",
     Icon = "circle",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab1:Button({
+local Button1 = Tab1:Button({
     Title = "Button 1",
     Desc = "First Test Button",
+    Locked = false,
     Callback = function()
-        print("Button 1 clicked")
+        -- Removed print
     end
 })
 
-Tab1:Button({
+local Button2 = Tab1:Button({
     Title = "Button 2",
     Desc = "Second Test Button",
+    Locked = false,
     Callback = function()
-        print("Button 2 clicked")
+        -- Removed print
     end
 })
 
-Tab1:Button({
+local Button3 = Tab1:Button({
     Title = "Button 3",
     Desc = "Third Test Button",
+    Locked = false,
     Callback = function()
-        print("Button 3 clicked")
+        -- Removed print
     end
 })
 
-Tab1:Button({
-    Title = "Button 4",
-    Desc = "Fourth Test Button",
-    Callback = function()
-        print("Button 4 clicked")
-    end
-})
+Tab1:Divider()
 
--- ==================== TAB 2: TOGGLES ====================
-local Tab2 = Window:Tab({
-    Title = "Toggles",
+local Section2 = Tab1:Section({
+    Title = "Toggle Examples",
     Icon = "toggle-left",
-})
-
-Tab2:Section({
-    Title = "Checkbox Toggles",
-    Icon = "check-square",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab2:Toggle({
-    Title = "Checkbox Toggle 1",
+local Toggle1 = Tab1:Toggle({
+    Title = "Toggle Checkbox 1",
     Desc = "First Checkbox Toggle",
     Icon = "check",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
-        print("Checkbox 1: " .. tostring(state))
+        -- Removed print
     end
 })
 
-Tab2:Toggle({
-    Title = "Checkbox Toggle 2",
+local Toggle2 = Tab1:Toggle({
+    Title = "Toggle Checkbox 2",
     Desc = "Second Checkbox Toggle",
     Icon = "check-check",
     Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        -- Removed print
+    end
+})
+
+local Toggle3 = Tab1:Toggle({
+    Title = "Toggle Switch 1",
+    Desc = "First Switch Toggle",
+    Icon = "power",
+    Type = "Switch",
+    Default = false,
+    Callback = function(state)
+        -- Removed print
+    end
+})
+
+local Toggle4 = Tab1:Toggle({
+    Title = "Toggle Switch 2",
+    Desc = "Second Switch Toggle",
+    Icon = "zap",
+    Type = "Switch",
     Default = true,
     Callback = function(state)
-        print("Checkbox 2: " .. tostring(state))
+        -- Removed print
+    end
+})
+
+Tab1:Space()
+
+-- ==================== TAB 2: DROPDOWNS ====================
+local Tab2 = Window:Tab({
+    Title = "Dropdowns",
+    Icon = "chevron-down",
+    Locked = false,
+})
+
+local Section3 = Tab2:Section({
+    Title = "Dropdown Examples",
+    Icon = "list",
+    Opened = true,
+    TextSize = 20, -- Increased text size
+})
+
+local Dropdown1 = Tab2:Dropdown({
+    Title = "Dropdown Single 1",
+    Values = { "Option A", "Option B", "Option C", "Option D" },
+    Value = "Option A",
+    Callback = function(option)
+        -- Removed print
+    end
+})
+
+local Dropdown2 = Tab2:Dropdown({
+    Title = "Dropdown Single 2",
+    Values = { "Red", "Blue", "Green", "Yellow", "Purple" },
+    Value = "Red",
+    Callback = function(option)
+        -- Removed print
     end
 })
 
 Tab2:Divider()
 
-Tab2:Section({
-    Title = "Switch Toggles",
-    Icon = "power",
+local Section4 = Tab2:Section({
+    Title = "Multi-Select Dropdowns",
+    Icon = "check-square",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab2:Toggle({
-    Title = "Switch Toggle 1",
-    Desc = "First Switch Toggle",
-    Icon = "zap",
-    Type = "Switch",
-    Default = false,
-    Callback = function(state)
-        print("Switch 1: " .. tostring(state))
+local Dropdown3 = Tab2:Dropdown({
+    Title = "Dropdown Multi 1",
+    Values = { "Category A", "Category B", "Category C", "Category D" },
+    Value = { "Category A" },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        -- Removed print
     end
 })
 
-Tab2:Toggle({
-    Title = "Switch Toggle 2",
-    Desc = "Second Switch Toggle",
-    Icon = "bolt",
-    Type = "Switch",
-    Default = true,
-    Callback = function(state)
-        print("Switch 2: " .. tostring(state))
+local Dropdown4 = Tab2:Dropdown({
+    Title = "Dropdown Multi 2",
+    Values = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
+    Value = { "Item 1", "Item 2" },
+    Multi = true,
+    AllowNone = false,
+    Callback = function(options)
+        -- Removed print
     end
 })
+
+Tab2:Space()
 
 -- ==================== TAB 3: SLIDERS ====================
 local Tab3 = Window:Tab({
     Title = "Sliders",
     Icon = "sliders",
+    Locked = false,
 })
 
-Tab3:Section({
+local Section5 = Tab3:Section({
     Title = "Integer Sliders",
     Icon = "gauge",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab3:Slider({
-    Title = "Speed Slider",
+local Slider1 = Tab3:Slider({
+    Title = "Slider 1 (Int)",
     Step = 1,
     Value = {
         Min = 0,
@@ -202,12 +257,12 @@ Tab3:Slider({
         Default = 50,
     },
     Callback = function(value)
-        print("Speed: " .. value)
+        -- Removed print
     end
 })
 
-Tab3:Slider({
-    Title = "Power Slider",
+local Slider2 = Tab3:Slider({
+    Title = "Slider 2 (Int)",
     Step = 5,
     Value = {
         Min = 10,
@@ -215,20 +270,34 @@ Tab3:Slider({
         Default = 100,
     },
     Callback = function(value)
-        print("Power: " .. value)
+        -- Removed print
+    end
+})
+
+local Slider3 = Tab3:Slider({
+    Title = "Slider 3 (Int)",
+    Step = 10,
+    Value = {
+        Min = 0,
+        Max = 500,
+        Default = 250,
+    },
+    Callback = function(value)
+        -- Removed print
     end
 })
 
 Tab3:Divider()
 
-Tab3:Section({
+local Section6 = Tab3:Section({
     Title = "Float Sliders",
     Icon = "activity",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab3:Slider({
-    Title = "Precision Slider",
+local Slider4 = Tab3:Slider({
+    Title = "Slider 4 (Float)",
     Step = 0.1,
     Value = {
         Min = 0,
@@ -236,12 +305,12 @@ Tab3:Slider({
         Default = 5,
     },
     Callback = function(value)
-        print("Precision: " .. value)
+        -- Removed print
     end
 })
 
-Tab3:Slider({
-    Title = "Multiplier Slider",
+local Slider5 = Tab3:Slider({
+    Title = "Slider 5 (Float)",
     Step = 0.5,
     Value = {
         Min = 1,
@@ -249,284 +318,274 @@ Tab3:Slider({
         Default = 10,
     },
     Callback = function(value)
-        print("Multiplier: " .. value)
+        -- Removed print
     end
 })
 
--- ==================== TAB 4: DROPDOWNS ====================
+Tab3:Space()
+
+-- ==================== TAB 4: INPUTS ====================
 local Tab4 = Window:Tab({
-    Title = "Dropdowns",
-    Icon = "chevron-down",
+    Title = "Inputs",
+    Icon = "text",
+    Locked = false,
 })
 
-Tab4:Section({
-    Title = "Single Select Dropdowns",
-    Icon = "list",
+local Section7 = Tab4:Section({
+    Title = "Single Line Inputs",
+    Icon = "pencil",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab4:Dropdown({
-    Title = "Option Dropdown",
-    Values = { "Option A", "Option B", "Option C", "Option D" },
-    Value = "Option A",
-    Callback = function(option)
-        print("Selected: " .. option)
+local Input1 = Tab4:Input({
+    Title = "Input 1",
+    Desc = "First Input Field",
+    Value = "Default value 1",
+    InputIcon = "user",
+    Type = "Input",
+    Placeholder = "Enter text...",
+    Callback = function(input)
+        -- Removed print
     end
 })
 
-Tab4:Dropdown({
-    Title = "Color Dropdown",
-    Values = { "Red", "Blue", "Green", "Yellow", "Purple" },
-    Value = "Red",
-    Callback = function(option)
-        print("Color: " .. option)
+local Input2 = Tab4:Input({
+    Title = "Input 2",
+    Desc = "Second Input Field",
+    Value = "Default value 2",
+    InputIcon = "mail",
+    Type = "Input",
+    Placeholder = "Enter email...",
+    Callback = function(input)
+        -- Removed print
+    end
+})
+
+local Input3 = Tab4:Input({
+    Title = "Input 3",
+    Desc = "Third Input Field",
+    Value = "",
+    InputIcon = "key",
+    Type = "Input",
+    Placeholder = "Enter password...",
+    Callback = function(input)
+        -- Removed print
     end
 })
 
 Tab4:Divider()
 
-Tab4:Section({
-    Title = "Multi-Select Dropdowns",
-    Icon = "check-square",
-    Opened = true,
-})
-
-Tab4:Dropdown({
-    Title = "Categories (Multi)",
-    Values = { "Category A", "Category B", "Category C", "Category D" },
-    Value = { "Category A" },
-    Multi = true,
-    AllowNone = true,
-    Callback = function(options)
-        print("Categories: " .. game:GetService("HttpService"):JSONEncode(options))
-    end
-})
-
-Tab4:Dropdown({
-    Title = "Items (Multi)",
-    Values = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
-    Value = { "Item 1", "Item 2" },
-    Multi = true,
-    AllowNone = false,
-    Callback = function(options)
-        print("Items: " .. game:GetService("HttpService"):JSONEncode(options))
-    end
-})
-
--- ==================== TAB 5: INPUTS ====================
-local Tab5 = Window:Tab({
-    Title = "Inputs",
-    Icon = "text",
-})
-
-Tab5:Section({
-    Title = "Single Line Inputs",
-    Icon = "pencil",
-    Opened = true,
-})
-
-Tab5:Input({
-    Title = "Username Input",
-    Desc = "Enter your username",
-    Value = "Player123",
-    InputIcon = "user",
-    Type = "Input",
-    Placeholder = "Enter username...",
-    Callback = function(input)
-        print("Username: " .. input)
-    end
-})
-
-Tab5:Input({
-    Title = "Email Input",
-    Desc = "Enter your email",
-    Value = "",
-    InputIcon = "mail",
-    Type = "Input",
-    Placeholder = "Enter email...",
-    Callback = function(input)
-        print("Email: " .. input)
-    end
-})
-
-Tab5:Divider()
-
-Tab5:Section({
+local Section8 = Tab4:Section({
     Title = "Text Area Inputs",
     Icon = "file-text",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab5:Input({
-    Title = "Notes Textarea",
-    Desc = "Write your notes here",
-    Value = "Type your notes...",
+local Input4 = Tab4:Input({
+    Title = "Textarea 1",
+    Desc = "First Textarea Field",
+    Value = "Default text area value",
     InputIcon = "align-left",
     Type = "Textarea",
     Placeholder = "Enter long text...",
     Callback = function(input)
-        print("Notes: " .. input)
+        -- Removed print
     end
 })
 
-Tab5:Input({
-    Title = "Description Textarea",
-    Desc = "Write a description",
+local Input5 = Tab4:Input({
+    Title = "Textarea 2",
+    Desc = "Second Textarea Field",
     Value = "",
     InputIcon = "message-square",
     Type = "Textarea",
-    Placeholder = "Enter description...",
+    Placeholder = "Enter notes...",
     Callback = function(input)
-        print("Description: " .. input)
+        -- Removed print
     end
 })
 
--- ==================== TAB 6: PARAGRAPHS ====================
-local Tab6 = Window:Tab({
+Tab4:Space()
+
+-- ==================== TAB 5: PARAGRAPHS ====================
+local Tab5 = Window:Tab({
     Title = "Paragraphs",
     Icon = "align-justify",
+    Locked = false,
 })
 
-Tab6:Section({
+local Section9 = Tab5:Section({
     Title = "Paragraph Examples",
     Icon = "file-text",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab6:Paragraph({
-    Title = "Red Paragraph",
-    Desc = "This is a red colored paragraph with one button",
+local Paragraph1 = Tab5:Paragraph({
+    Title = "Paragraph 1",
+    Desc = "This is the first paragraph description",
     Color = "Red",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "bird",
+            Title = "Button 1",
+            Callback = function()
+                -- Removed print
+            end,
+        }
+    }
+})
+
+local Paragraph2 = Tab5:Paragraph({
+    Title = "Paragraph 2",
+    Desc = "This is the second paragraph description",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
     Buttons = {
         {
             Icon = "star",
-            Title = "Click Me",
+            Title = "Button 1",
             Callback = function()
-                print("Red paragraph button clicked")
-            end,
-        }
-    }
-})
-
-Tab6:Paragraph({
-    Title = "Blue Paragraph",
-    Desc = "This is a blue colored paragraph with two buttons",
-    Color = "Blue",
-    Buttons = {
-        {
-            Icon = "heart",
-            Title = "Like",
-            Callback = function()
-                print("Like clicked")
+                -- Removed print
             end,
         },
         {
-            Icon = "share",
-            Title = "Share",
+            Icon = "heart",
+            Title = "Button 2",
             Callback = function()
-                print("Share clicked")
+                -- Removed print
             end,
         }
     }
 })
 
-Tab6:Paragraph({
-    Title = "Green Paragraph",
-    Desc = "This is a green colored paragraph with three buttons",
+Tab5:Divider()
+
+local Paragraph3 = Tab5:Paragraph({
+    Title = "Paragraph 3",
+    Desc = "This is the third paragraph with multiple buttons",
     Color = "Green",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
     Buttons = {
         {
             Icon = "github",
             Title = "GitHub",
             Callback = function()
-                print("GitHub")
+                -- Removed print
             end,
         },
         {
             Icon = "twitter",
             Title = "Twitter",
             Callback = function()
-                print("Twitter")
+                -- Removed print
             end,
         },
         {
             Icon = "globe",
             Title = "Website",
             Callback = function()
-                print("Website")
+                -- Removed print
             end,
         }
     }
 })
 
-Tab6:Paragraph({
-    Title = "Yellow Paragraph",
-    Desc = "This is a yellow paragraph without buttons",
+local Paragraph4 = Tab5:Paragraph({
+    Title = "Paragraph 4",
+    Desc = "Fourth paragraph example",
     Color = "Yellow",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
     Buttons = {}
 })
 
--- ==================== TAB 7: SECTIONS ====================
-local Tab7 = Window:Tab({
+Tab5:Space()
+
+-- ==================== TAB 6: SECTIONS ====================
+local Tab6 = Window:Tab({
     Title = "Sections",
     Icon = "layout",
+    Locked = false,
 })
 
-Tab7:Section({
-    Title = "Bold Section Style",
+local Section10 = Tab6:Section({
+    Title = "Section Style 1",
     Icon = "box",
     Box = true,
     FontWeight = "Bold",
+    TextTransparency = 0,
     TextXAlignment = "Left",
-    TextSize = 18,
+    TextSize = 22, -- Increased text size
     Opened = true,
 })
 
-Tab7:Button({
-    Title = "Button in Bold Section",
-    Desc = "This is inside a bold section",
+Tab6:Button({
+    Title = "Button in Section 1",
+    Desc = "This button is inside section 1",
+    Locked = false,
     Callback = function()
-        print("Bold section button")
+        -- Removed print
     end
 })
 
-Tab7:Divider()
+Tab6:Divider()
 
-Tab7:Section({
-    Title = "Medium Section Style",
+local Section11 = Tab6:Section({
+    Title = "Section Style 2",
     Icon = "square",
     Box = false,
-    FontWeight = "Medium",
+    FontWeight = "SemiBold",
+    TextTransparency = 0.05,
     TextXAlignment = "Center",
-    TextSize = 17,
+    TextSize = 21, -- Increased text size
     Opened = true,
 })
 
-Tab7:Toggle({
-    Title = "Toggle in Medium Section",
-    Desc = "This is inside a medium section",
+Tab6:Toggle({
+    Title = "Toggle in Section 2",
+    Desc = "This toggle is inside section 2",
     Icon = "check",
     Type = "Checkbox",
     Default = false,
     Callback = function(state)
-        print("Medium section toggle: " .. tostring(state))
+        -- Removed print
     end
 })
 
-Tab7:Divider()
+Tab6:Divider()
 
-Tab7:Section({
-    Title = "Light Section Style",
+local Section12 = Tab6:Section({
+    Title = "Section Style 3",
     Icon = "package",
     Box = true,
-    FontWeight = "Light",
+    FontWeight = "Medium",
+    TextTransparency = 0.1,
     TextXAlignment = "Right",
-    TextSize = 16,
+    TextSize = 20, -- Increased text size
     Opened = true,
 })
 
-Tab7:Slider({
-    Title = "Slider in Light Section",
+Tab6:Slider({
+    Title = "Slider in Section 3",
     Step = 1,
     Value = {
         Min = 0,
@@ -534,42 +593,47 @@ Tab7:Slider({
         Default = 50,
     },
     Callback = function(value)
-        print("Light section slider: " .. value)
+        -- Removed print
     end
 })
 
--- ==================== TAB 8: ALL MIXED ====================
-local Tab8 = Window:Tab({
-    Title = "All Mixed",
+Tab6:Space()
+
+-- ==================== TAB 7: MIXED COMPONENTS ====================
+local Tab7 = Window:Tab({
+    Title = "Mixed",
     Icon = "grid-3x3",
+    Locked = false,
 })
 
-Tab8:Section({
-    Title = "Every Component Type",
+local Section13 = Tab7:Section({
+    Title = "All Components Together",
     Icon = "layers",
     Opened = true,
+    TextSize = 20, -- Increased text size
 })
 
-Tab8:Button({
+Tab7:Button({
     Title = "Mixed Button",
-    Desc = "Button example",
+    Desc = "Button in mixed tab",
+    Locked = false,
     Callback = function()
-        print("Mixed button")
+        -- Removed print
     end
 })
 
-Tab8:Toggle({
+Tab7:Toggle({
     Title = "Mixed Toggle",
-    Desc = "Toggle example",
+    Desc = "Toggle in mixed tab",
     Icon = "zap",
     Type = "Switch",
     Default = false,
     Callback = function(state)
-        print("Mixed toggle: " .. tostring(state))
+        -- Removed print
     end
 })
 
-Tab8:Slider({
+Tab7:Slider({
     Title = "Mixed Slider",
     Step = 1,
     Value = {
@@ -578,50 +642,67 @@ Tab8:Slider({
         Default = 50,
     },
     Callback = function(value)
-        print("Mixed slider: " .. value)
+        -- Removed print
     end
 })
 
-Tab8:Dropdown({
+Tab7:Dropdown({
     Title = "Mixed Dropdown",
-    Values = { "Alpha", "Beta", "Gamma" },
-    Value = "Alpha",
+    Values = { "A", "B", "C" },
+    Value = "A",
     Callback = function(option)
-        print("Mixed dropdown: " .. option)
+        -- Removed print
     end
 })
 
-Tab8:Input({
+Tab7:Input({
     Title = "Mixed Input",
-    Desc = "Input example",
+    Desc = "Input in mixed tab",
     Value = "",
     InputIcon = "edit",
     Type = "Input",
-    Placeholder = "Type something...",
+    Placeholder = "Type here...",
     Callback = function(input)
-        print("Mixed input: " .. input)
+        -- Removed print
     end
 })
 
-Tab8:Paragraph({
+Tab7:Divider()
+
+Tab7:Paragraph({
     Title = "Mixed Paragraph",
-    Desc = "Paragraph example with button",
+    Desc = "Paragraph in mixed tab",
     Color = "Purple",
+    Locked = false,
     Buttons = {
         {
             Icon = "info",
             Title = "Info",
             Callback = function()
-                print("Info button")
+                -- Removed print
             end,
         }
     }
 })
 
--- Final Success Notification
+Tab7:Space()
+
+-- ==================== WINDOW LEVEL COMPONENTS ====================
+Window:Divider()
+
+local WindowSection = Window:Section({
+    Title = "Window Level Section",
+    Icon = "window",
+    Opened = true,
+    TextSize = 20, -- Increased text size
+})
+
+Window:Space()
+
+-- Final Notification
 WindUI:Notify({
-    Title = "All Components Loaded!",
-    Content = "Scroll through all 8 tabs to see everything",
-    Duration = 6,
+    Title = "All Components Loaded",
+    Content = "Every component is now visible!",
+    Duration = 5,
     Icon = "check-circle",
 })
