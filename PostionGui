@@ -3,32 +3,32 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 WindUI:SetNotificationLower(true)
 
--- Add Custom Theme
+-- Add Custom Theme with better contrast
 WindUI:AddTheme({
     Name = "My Theme",
     Accent = Color3.fromHex("#18181b"),
     Dialog = Color3.fromHex("#161616"),
     Outline = Color3.fromHex("#FFFFFF"),
     Text = Color3.fromHex("#FFFFFF"),
-    Placeholder = Color3.fromHex("#7a7a7a"),
-    Background = Color3.fromHex("#101010"),
+    Placeholder = Color3.fromHex("#9a9a9a"),
+    Background = Color3.fromHex("#0a0a0a"),
     Button = Color3.fromHex("#52525b"),
     Icon = Color3.fromHex("#a1a1aa")
 })
 
--- Create Main Window (BIGGER SIZE + SCROLLING ENABLED)
+-- Create Main Window with adjusted size
 local Window = WindUI:CreateWindow({
     Title = "My Super Hub",
     Icon = "door-open",
     Author = "by .ftgs and .ftgs",
     Folder = "MySuperHub",
-    Size = UDim2.fromOffset(700, 550),
-    MinSize = Vector2.new(650, 500),
-    MaxSize = Vector2.new(1000, 700),
+    Size = UDim2.fromOffset(580, 400),  -- Smaller window for better text ratio
+    MinSize = Vector2.new(550, 380),
+    MaxSize = Vector2.new(800, 600),
     Transparent = true,
     Theme = "My Theme",
     Resizable = true,
-    SideBarWidth = 220,
+    SideBarWidth = 180,  -- Slightly smaller sidebar
     BackgroundImageTransparency = 0.42,
     HideSearchBar = false,
     ScrollBarEnabled = true,
@@ -43,7 +43,7 @@ local Window = WindUI:CreateWindow({
 
 -- Edit Open Button
 Window:EditOpenButton({
-    Title = "Open Example UI",
+    Title = "Open UI",
     Icon = "monitor",
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
@@ -66,7 +66,7 @@ Window:Tag({
 -- Send Notification
 WindUI:Notify({
     Title = "Hub Loaded",
-    Content = "All components are ready to use!",
+    Content = "All components are ready!",
     Duration = 4,
     Icon = "check-circle",
 })
@@ -80,40 +80,36 @@ local Tab1 = Window:Tab({
 Tab1:Select()
 
 Tab1:Section({
-    Title = "Button Examples",
+    Title = "BUTTON EXAMPLES",  -- Using caps for better visibility
     Icon = "circle",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,  -- Larger section text
     Opened = true,
 })
 
 Tab1:Button({
-    Title = "Button 1",
-    Desc = "First Test Button",
+    Title = "BUTTON 1",
+    Desc = "First Test Button - Click Me",
     Callback = function()
         print("Button 1 clicked")
     end
 })
 
 Tab1:Button({
-    Title = "Button 2",
-    Desc = "Second Test Button",
+    Title = "BUTTON 2",
+    Desc = "Second Test Button - Press Here",
     Callback = function()
         print("Button 2 clicked")
     end
 })
 
 Tab1:Button({
-    Title = "Button 3",
-    Desc = "Third Test Button",
+    Title = "BUTTON 3",
+    Desc = "Third Test Button - Activate This",
     Callback = function()
         print("Button 3 clicked")
-    end
-})
-
-Tab1:Button({
-    Title = "Button 4",
-    Desc = "Fourth Test Button",
-    Callback = function()
-        print("Button 4 clicked")
     end
 })
 
@@ -124,14 +120,18 @@ local Tab2 = Window:Tab({
 })
 
 Tab2:Section({
-    Title = "Checkbox Toggles",
+    Title = "CHECKBOX TOGGLES",
     Icon = "check-square",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab2:Toggle({
-    Title = "Checkbox Toggle 1",
-    Desc = "First Checkbox Toggle",
+    Title = "CHECKBOX 1",
+    Desc = "Enable/Disable Feature One",
     Icon = "check",
     Type = "Checkbox",
     Default = false,
@@ -141,8 +141,8 @@ Tab2:Toggle({
 })
 
 Tab2:Toggle({
-    Title = "Checkbox Toggle 2",
-    Desc = "Second Checkbox Toggle",
+    Title = "CHECKBOX 2",
+    Desc = "Enable/Disable Feature Two",
     Icon = "check-check",
     Type = "Checkbox",
     Default = true,
@@ -154,14 +154,18 @@ Tab2:Toggle({
 Tab2:Divider()
 
 Tab2:Section({
-    Title = "Switch Toggles",
+    Title = "SWITCH TOGGLES",
     Icon = "power",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab2:Toggle({
-    Title = "Switch Toggle 1",
-    Desc = "First Switch Toggle",
+    Title = "SWITCH 1",
+    Desc = "Main Power Switch",
     Icon = "zap",
     Type = "Switch",
     Default = false,
@@ -171,8 +175,8 @@ Tab2:Toggle({
 })
 
 Tab2:Toggle({
-    Title = "Switch Toggle 2",
-    Desc = "Second Switch Toggle",
+    Title = "SWITCH 2",
+    Desc = "Secondary Power Switch",
     Icon = "bolt",
     Type = "Switch",
     Default = true,
@@ -188,13 +192,17 @@ local Tab3 = Window:Tab({
 })
 
 Tab3:Section({
-    Title = "Integer Sliders",
+    Title = "VALUE SLIDERS",
     Icon = "gauge",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab3:Slider({
-    Title = "Speed Slider",
+    Title = "SPEED CONTROL",
     Step = 1,
     Value = {
         Min = 0,
@@ -207,7 +215,7 @@ Tab3:Slider({
 })
 
 Tab3:Slider({
-    Title = "Power Slider",
+    Title = "POWER LEVEL",
     Step = 5,
     Value = {
         Min = 10,
@@ -219,16 +227,8 @@ Tab3:Slider({
     end
 })
 
-Tab3:Divider()
-
-Tab3:Section({
-    Title = "Float Sliders",
-    Icon = "activity",
-    Opened = true,
-})
-
 Tab3:Slider({
-    Title = "Precision Slider",
+    Title = "PRECISION",
     Step = 0.1,
     Value = {
         Min = 0,
@@ -240,19 +240,6 @@ Tab3:Slider({
     end
 })
 
-Tab3:Slider({
-    Title = "Multiplier Slider",
-    Step = 0.5,
-    Value = {
-        Min = 1,
-        Max = 20,
-        Default = 10,
-    },
-    Callback = function(value)
-        print("Multiplier: " .. value)
-    end
-})
-
 -- ==================== TAB 4: DROPDOWNS ====================
 local Tab4 = Window:Tab({
     Title = "Dropdowns",
@@ -260,22 +247,26 @@ local Tab4 = Window:Tab({
 })
 
 Tab4:Section({
-    Title = "Single Select Dropdowns",
+    Title = "SELECTION MENUS",
     Icon = "list",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab4:Dropdown({
-    Title = "Option Dropdown",
-    Values = { "Option A", "Option B", "Option C", "Option D" },
-    Value = "Option A",
+    Title = "GAME MODE",
+    Values = { "Normal", "Hard", "Extreme", "Custom" },
+    Value = "Normal",
     Callback = function(option)
-        print("Selected: " .. option)
+        print("Mode: " .. option)
     end
 })
 
 Tab4:Dropdown({
-    Title = "Color Dropdown",
+    Title = "TEAM COLOR",
     Values = { "Red", "Blue", "Green", "Yellow", "Purple" },
     Value = "Red",
     Callback = function(option)
@@ -285,31 +276,14 @@ Tab4:Dropdown({
 
 Tab4:Divider()
 
-Tab4:Section({
-    Title = "Multi-Select Dropdowns",
-    Icon = "check-square",
-    Opened = true,
-})
-
 Tab4:Dropdown({
-    Title = "Categories (Multi)",
-    Values = { "Category A", "Category B", "Category C", "Category D" },
-    Value = { "Category A" },
+    Title = "MULTI-SELECT",
+    Values = { "Option A", "Option B", "Option C", "Option D" },
+    Value = { "Option A" },
     Multi = true,
     AllowNone = true,
     Callback = function(options)
-        print("Categories: " .. game:GetService("HttpService"):JSONEncode(options))
-    end
-})
-
-Tab4:Dropdown({
-    Title = "Items (Multi)",
-    Values = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" },
-    Value = { "Item 1", "Item 2" },
-    Multi = true,
-    AllowNone = false,
-    Callback = function(options)
-        print("Items: " .. game:GetService("HttpService"):JSONEncode(options))
+        print("Selected: " .. game:GetService("HttpService"):JSONEncode(options))
     end
 })
 
@@ -320,299 +294,101 @@ local Tab5 = Window:Tab({
 })
 
 Tab5:Section({
-    Title = "Single Line Inputs",
+    Title = "TEXT INPUTS",
     Icon = "pencil",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab5:Input({
-    Title = "Username Input",
-    Desc = "Enter your username",
+    Title = "USERNAME",
+    Desc = "Enter your game username",
     Value = "Player123",
     InputIcon = "user",
     Type = "Input",
-    Placeholder = "Enter username...",
+    Placeholder = "Type username...",
     Callback = function(input)
         print("Username: " .. input)
     end
 })
 
 Tab5:Input({
-    Title = "Email Input",
-    Desc = "Enter your email",
+    Title = "CUSTOM VALUE",
+    Desc = "Enter any custom value",
     Value = "",
-    InputIcon = "mail",
+    InputIcon = "edit",
     Type = "Input",
-    Placeholder = "Enter email...",
+    Placeholder = "Type here...",
     Callback = function(input)
-        print("Email: " .. input)
+        print("Value: " .. input)
     end
 })
 
 Tab5:Divider()
 
-Tab5:Section({
-    Title = "Text Area Inputs",
-    Icon = "file-text",
-    Opened = true,
-})
-
 Tab5:Input({
-    Title = "Notes Textarea",
-    Desc = "Write your notes here",
-    Value = "Type your notes...",
+    Title = "NOTES",
+    Desc = "Write your notes below",
+    Value = "",
     InputIcon = "align-left",
     Type = "Textarea",
-    Placeholder = "Enter long text...",
+    Placeholder = "Enter notes...",
     Callback = function(input)
         print("Notes: " .. input)
     end
 })
 
-Tab5:Input({
-    Title = "Description Textarea",
-    Desc = "Write a description",
-    Value = "",
-    InputIcon = "message-square",
-    Type = "Textarea",
-    Placeholder = "Enter description...",
-    Callback = function(input)
-        print("Description: " .. input)
-    end
-})
-
--- ==================== TAB 6: PARAGRAPHS ====================
+-- ==================== TAB 6: INFO ====================
 local Tab6 = Window:Tab({
-    Title = "Paragraphs",
-    Icon = "align-justify",
+    Title = "Info",
+    Icon = "info",
 })
 
 Tab6:Section({
-    Title = "Paragraph Examples",
+    Title = "INFORMATION",
     Icon = "file-text",
+    Box = true,
+    FontWeight = "Bold",
+    TextXAlignment = "Center",
+    TextSize = 20,
     Opened = true,
 })
 
 Tab6:Paragraph({
-    Title = "Red Paragraph",
-    Desc = "This is a red colored paragraph with one button",
-    Color = "Red",
-    Buttons = {
-        {
-            Icon = "star",
-            Title = "Click Me",
-            Callback = function()
-                print("Red paragraph button clicked")
-            end,
-        }
-    }
-})
-
-Tab6:Paragraph({
-    Title = "Blue Paragraph",
-    Desc = "This is a blue colored paragraph with two buttons",
-    Color = "Blue",
-    Buttons = {
-        {
-            Icon = "heart",
-            Title = "Like",
-            Callback = function()
-                print("Like clicked")
-            end,
-        },
-        {
-            Icon = "share",
-            Title = "Share",
-            Callback = function()
-                print("Share clicked")
-            end,
-        }
-    }
-})
-
-Tab6:Paragraph({
-    Title = "Green Paragraph",
-    Desc = "This is a green colored paragraph with three buttons",
+    Title = "WELCOME MESSAGE",
+    Desc = "This hub includes all essential features for gameplay enhancement. Use the tabs to navigate through different options.",
     Color = "Green",
     Buttons = {
         {
             Icon = "github",
             Title = "GitHub",
             Callback = function()
-                print("GitHub")
-            end,
-        },
-        {
-            Icon = "twitter",
-            Title = "Twitter",
-            Callback = function()
-                print("Twitter")
-            end,
-        },
-        {
-            Icon = "globe",
-            Title = "Website",
-            Callback = function()
-                print("Website")
+                print("GitHub clicked")
             end,
         }
     }
 })
 
 Tab6:Paragraph({
-    Title = "Yellow Paragraph",
-    Desc = "This is a yellow paragraph without buttons",
-    Color = "Yellow",
+    Title = "VERSION INFO",
+    Desc = "Current Version: 1.6.4 | Last Updated: Today | Status: Active",
+    Color = "Blue",
     Buttons = {}
 })
 
--- ==================== TAB 7: SECTIONS ====================
-local Tab7 = Window:Tab({
-    Title = "Sections",
-    Icon = "layout",
-})
-
-Tab7:Section({
-    Title = "Bold Section Style",
-    Icon = "box",
-    Box = true,
-    FontWeight = "Bold",
-    TextXAlignment = "Left",
-    TextSize = 18,
-    Opened = true,
-})
-
-Tab7:Button({
-    Title = "Button in Bold Section",
-    Desc = "This is inside a bold section",
-    Callback = function()
-        print("Bold section button")
-    end
-})
-
-Tab7:Divider()
-
-Tab7:Section({
-    Title = "Medium Section Style",
-    Icon = "square",
-    Box = false,
-    FontWeight = "Medium",
-    TextXAlignment = "Center",
-    TextSize = 17,
-    Opened = true,
-})
-
-Tab7:Toggle({
-    Title = "Toggle in Medium Section",
-    Desc = "This is inside a medium section",
-    Icon = "check",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        print("Medium section toggle: " .. tostring(state))
-    end
-})
-
-Tab7:Divider()
-
-Tab7:Section({
-    Title = "Light Section Style",
-    Icon = "package",
-    Box = true,
-    FontWeight = "Light",
-    TextXAlignment = "Right",
-    TextSize = 16,
-    Opened = true,
-})
-
-Tab7:Slider({
-    Title = "Slider in Light Section",
-    Step = 1,
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 50,
-    },
-    Callback = function(value)
-        print("Light section slider: " .. value)
-    end
-})
-
--- ==================== TAB 8: ALL MIXED ====================
-local Tab8 = Window:Tab({
-    Title = "All Mixed",
-    Icon = "grid-3x3",
-})
-
-Tab8:Section({
-    Title = "Every Component Type",
-    Icon = "layers",
-    Opened = true,
-})
-
-Tab8:Button({
-    Title = "Mixed Button",
-    Desc = "Button example",
-    Callback = function()
-        print("Mixed button")
-    end
-})
-
-Tab8:Toggle({
-    Title = "Mixed Toggle",
-    Desc = "Toggle example",
-    Icon = "zap",
-    Type = "Switch",
-    Default = false,
-    Callback = function(state)
-        print("Mixed toggle: " .. tostring(state))
-    end
-})
-
-Tab8:Slider({
-    Title = "Mixed Slider",
-    Step = 1,
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 50,
-    },
-    Callback = function(value)
-        print("Mixed slider: " .. value)
-    end
-})
-
-Tab8:Dropdown({
-    Title = "Mixed Dropdown",
-    Values = { "Alpha", "Beta", "Gamma" },
-    Value = "Alpha",
-    Callback = function(option)
-        print("Mixed dropdown: " .. option)
-    end
-})
-
-Tab8:Input({
-    Title = "Mixed Input",
-    Desc = "Input example",
-    Value = "",
-    InputIcon = "edit",
-    Type = "Input",
-    Placeholder = "Type something...",
-    Callback = function(input)
-        print("Mixed input: " .. input)
-    end
-})
-
-Tab8:Paragraph({
-    Title = "Mixed Paragraph",
-    Desc = "Paragraph example with button",
-    Color = "Purple",
+Tab6:Paragraph({
+    Title = "CREDITS",
+    Desc = "Created by .ftgs | Special thanks to WindUI developers",
+    Color = "Yellow",
     Buttons = {
         {
-            Icon = "info",
-            Title = "Info",
+            Icon = "heart",
+            Title = "Support",
             Callback = function()
-                print("Info button")
+                print("Support clicked")
             end,
         }
     }
@@ -620,8 +396,8 @@ Tab8:Paragraph({
 
 -- Final Success Notification
 WindUI:Notify({
-    Title = "All Components Loaded!",
-    Content = "Scroll through all 8 tabs to see everything",
-    Duration = 6,
+    Title = "Setup Complete!",
+    Content = "All tabs and components loaded successfully",
+    Duration = 5,
     Icon = "check-circle",
 })
