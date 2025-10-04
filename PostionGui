@@ -3380,13 +3380,6 @@ local ThemeTab = Window:Tab({
     Locked = false,
 })
 
--- Create Theme / UI Tab
-local ThemeTab = Window:Tab({
-    Title = "Theme / UI",
-    Icon = "palette",
-    Locked = false,
-})
-
 -- Track transparency state
 local TransparencyEnabled = false
 
