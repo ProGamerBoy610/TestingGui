@@ -987,6 +987,7 @@ local RunService = game:GetService("RunService")
 
 -- AUTO EAT VARIABLES
 local autoEatEnabled = false
+local selectedFoods = {} -- Foods to auto eat
 local eatLoop = nil
 
 -- Get character parts
@@ -1007,15 +1008,25 @@ local function getItemPosition(item)
     return nil
 end
 
--- Find nearest Carrot or Berry
+-- Check if food is in selected list
+local function isFoodSelected(foodName)
+    for _, selectedFood in pairs(selectedFoods) do
+        if selectedFood == foodName then
+            return true
+        end
+    end
+    return false
+end
+
+-- Find nearest selected food
 local function findNearestFood()
     local char, hrp = getCharacterParts()
     local nearestFood = nil
     local nearestDistance = math.huge
     
-    -- Search in workspace.Items for Carrot or Berry
+    -- Search in workspace.Items
     for _, item in pairs(workspace.Items:GetChildren()) do
-        if item.Name == "Carrot" or item.Name == "Berry" then
+        if isFoodSelected(item.Name) then
             local itemPos = getItemPosition(item)
             if itemPos then
                 local distance = (itemPos - hrp.Position).Magnitude
@@ -1085,12 +1096,22 @@ end
 
 -- Auto eat loop
 local function startAutoEatLoop()
+    if eatLoop then
+        eatLoop:Disconnect()
+    end
+    
     eatLoop = RunService.Heartbeat:Connect(function()
         if not autoEatEnabled then
             if eatLoop then
                 eatLoop:Disconnect()
                 eatLoop = nil
             end
+            return
+        end
+        
+        -- Check if any food is selected
+        if #selectedFoods == 0 then
+            wait(1)
             return
         end
         
@@ -1102,7 +1123,6 @@ local function startAutoEatLoop()
             goToAndEatFood(foodItem)
             wait(2) -- Wait before next eat
         else
-            print("❌ No Carrot or Berry found, searching...")
             wait(1) -- Wait before searching again
         end
     end)
@@ -1113,8 +1133,12 @@ local function toggleAutoEat(state)
     autoEatEnabled = state
     
     if autoEatEnabled then
-        print("🍴 Auto Eat ENABLED - Searching for Carrot and Berry")
-        startAutoEatLoop()
+        print("🍴 Auto Eat ENABLED - Selected foods:", table.concat(selectedFoods, ", "))
+        if #selectedFoods == 0 then
+            warn("⚠️ No foods selected! Please select foods from dropdown first.")
+        else
+            startAutoEatLoop()
+        end
     else
         print("🛑 Auto Eat DISABLED")
         if eatLoop then
@@ -1124,12 +1148,50 @@ local function toggleAutoEat(state)
     end
 end
 
--- TOGGLE FUNCTION (You can call this with your UI)
--- Usage: toggleAutoEat(true) to enable, toggleAutoEat(false) to disable
-_G.toggleAutoEat = toggleAutoEat
+-- Update selected foods from dropdown
+local function updateSelectedFoods(foodList)
+    selectedFoods = foodList
+    print("📋 Updated food list:", table.concat(selectedFoods, ", "))
+    
+    -- If auto eat is enabled, restart the loop
+    if autoEatEnabled then
+        if #selectedFoods > 0 then
+            startAutoEatLoop()
+        else
+            if eatLoop then
+                eatLoop:Disconnect()
+                eatLoop = nil
+            end
+        end
+    end
+end
 
--- Example: Auto-start (comment out if you don't want this)
--- toggleAutoEat(true)
+-- Store functions globally for Wind UI access
+_G.toggleAutoEat = toggleAutoEat
+_G.updateSelectedFoods = updateSelectedFoods
+
+-- WIND UI INTEGRATION EXAMPLE:
+local Toggle1 = Tab1:Toggle({
+    Title = "Auto Eat",
+    Desc = "Automatically eat selected foods",
+    Icon = "check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        _G.toggleAutoEat(state)
+    end
+})
+
+local Dropdown3 = Tab2:Dropdown({
+    Title = "Select Foods to Eat",
+    Values = { "Carrot", "Berry", "Apple", "Meat" },
+    Value = { "Carrot" },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        _G.updateSelectedFoods(options)
+    end
+})
 
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
