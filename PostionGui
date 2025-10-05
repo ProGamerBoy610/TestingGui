@@ -1126,7 +1126,10 @@ end
 
 -- TOGGLE FUNCTION (You can call this with your UI)
 -- Usage: toggleAutoEat(true) to enable, toggleAutoEat(false) to disable
-return toggleAutoEat
+_G.toggleAutoEat = toggleAutoEat
+
+-- Example: Auto-start (comment out if you don't want this)
+-- toggleAutoEat(true)
 
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
