@@ -57,7 +57,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v32.0",
+    Title = "v32.1",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
