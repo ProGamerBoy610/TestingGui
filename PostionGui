@@ -1171,7 +1171,7 @@ _G.toggleAutoEat = toggleAutoEat
 _G.updateSelectedFoods = updateSelectedFoods
 
 -- WIND UI INTEGRATION EXAMPLE:
-local Toggle1 = Tab1:Toggle({
+local toggleAutoEat = AutoTab:Toggle({
     Title = "Auto Eat",
     Desc = "Automatically eat selected foods",
     Icon = "check",
@@ -1182,7 +1182,7 @@ local Toggle1 = Tab1:Toggle({
     end
 })
 
-local Dropdown3 = Tab2:Dropdown({
+local dropdownautoeat = AutoTab:Dropdown({
     Title = "Select Foods to Eat",
     Values = { "Carrot", "Berry", "Apple", "Meat" },
     Value = { "Carrot" },
