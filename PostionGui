@@ -57,7 +57,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v32.1",
+    Title = "v32.0",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
@@ -1100,31 +1100,27 @@ local function startAutoEatLoop()
         eatLoop:Disconnect()
     end
     
-    eatLoop = RunService.Heartbeat:Connect(function()
-        if not autoEatEnabled then
-            if eatLoop then
-                eatLoop:Disconnect()
-                eatLoop = nil
+    spawn(function()
+        while autoEatEnabled do
+            -- Check if any food is selected
+            if #selectedFoods == 0 then
+                print("⚠️ Waiting for food selection...")
+                wait(2)
+            else
+                -- Find and eat food
+                local foodItem, distance = findNearestFood()
+                
+                if foodItem then
+                    print("🔍 Found", foodItem.Name, "at", math.floor(distance), "studs")
+                    goToAndEatFood(foodItem)
+                    wait(2) -- Wait before next eat
+                else
+                    print("🔍 Searching for:", table.concat(selectedFoods, ", "))
+                    wait(1) -- Wait before searching again
+                end
             end
-            return
         end
-        
-        -- Check if any food is selected
-        if #selectedFoods == 0 then
-            wait(1)
-            return
-        end
-        
-        -- Find and eat food
-        local foodItem, distance = findNearestFood()
-        
-        if foodItem then
-            print("🔍 Found", foodItem.Name, "at", math.floor(distance), "studs")
-            goToAndEatFood(foodItem)
-            wait(2) -- Wait before next eat
-        else
-            wait(1) -- Wait before searching again
-        end
+        print("🛑 Auto eat loop stopped")
     end)
 end
 
@@ -1133,14 +1129,14 @@ local function toggleAutoEat(state)
     autoEatEnabled = state
     
     if autoEatEnabled then
-        print("🍴 Auto Eat ENABLED - Selected foods:", table.concat(selectedFoods, ", "))
+        print("🍴 AUTO EAT ENABLED!")
+        print("📋 Selected foods:", #selectedFoods > 0 and table.concat(selectedFoods, ", ") or "NONE")
         if #selectedFoods == 0 then
-            warn("⚠️ No foods selected! Please select foods from dropdown first.")
-        else
-            startAutoEatLoop()
+            warn("⚠️ No foods selected! Select foods from dropdown first!")
         end
+        startAutoEatLoop()
     else
-        print("🛑 Auto Eat DISABLED")
+        print("🛑 AUTO EAT DISABLED!")
         if eatLoop then
             eatLoop:Disconnect()
             eatLoop = nil
@@ -1171,7 +1167,7 @@ _G.toggleAutoEat = toggleAutoEat
 _G.updateSelectedFoods = updateSelectedFoods
 
 -- WIND UI INTEGRATION EXAMPLE:
-local toggleAutoEat = AutoTab:Toggle({
+local ToggleAutoeat = AutoTab:Toggle({
     Title = "Auto Eat",
     Desc = "Automatically eat selected foods",
     Icon = "check",
@@ -1182,7 +1178,7 @@ local toggleAutoEat = AutoTab:Toggle({
     end
 })
 
-local dropdownautoeat = AutoTab:Dropdown({
+local Dropdownautoeat = AutoTab:Dropdown({
     Title = "Select Foods to Eat",
     Values = { "Carrot", "Berry", "Apple", "Meat" },
     Value = { "Carrot" },
@@ -1192,6 +1188,7 @@ local dropdownautoeat = AutoTab:Dropdown({
         _G.updateSelectedFoods(options)
     end
 })
+
 
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
