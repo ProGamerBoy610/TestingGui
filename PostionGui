@@ -1008,7 +1008,7 @@ AutoTab:Button({
     end
 })
 
-local Button2 = Tab1:Button({
+local Buttonlockedcoming = Tab1:Button({
     Title = "Auto Farm Days",
     Desc = "Comming Soon",
     Locked = true,
