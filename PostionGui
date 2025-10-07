@@ -19,7 +19,7 @@ WindUI:AddTheme({
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "door-open",
-    Author = "Version 34.0",
+    Author = "Version 34.2",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -1226,20 +1226,6 @@ local Buttonlockedcoming2 = AutoTab:Button({
     Locked = true,
     Callback = function()
         print("Wait it will come soon")
-    end
-})
-
-local Slider1 = Tab3:Slider({
-    Title = "Slider 1 (Int)",
-    Locked = true,
-    Step = 1,
-    Value = {
-        Min = 0,
-        Max = 100,
-        Default = 50,
-    },
-    Callback = function(value)
-        print("Slider 1: " .. value)
     end
 })
 
@@ -3607,6 +3593,42 @@ local MiscTab = Window:Tab({
     Title = "Misc",
     Icon = "folder",
     Locked = false,
+})
+
+local Toggleantivoid = MiscTab:Toggle({
+    Title = "Anti Void",
+    Desc = "Prevents you from falling into the void",
+    Icon = "shield",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        print("Anti Void: " .. tostring(state))
+        
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+        
+        if state then
+            -- Enable anti-void
+            _G.AntiVoidConnection = game:GetService("RunService").Heartbeat:Connect(function()
+                local char = player.Character
+                if char then
+                    local hrp = char:FindFirstChild("HumanoidRootPart")
+                    if hrp and hrp.Position.Y < -50 then
+                        -- Teleport player back up if they fall below Y = -50
+                        hrp.CFrame = CFrame.new(hrp.Position.X, 100, hrp.Position.Z)
+                        hrp.Velocity = Vector3.new(0, 0, 0)
+                    end
+                end
+            end)
+        else
+            -- Disable anti-void
+            if _G.AntiVoidConnection then
+                _G.AntiVoidConnection:Disconnect()
+                _G.AntiVoidConnection = nil
+            end
+        end
+    end
 })
 
 local ToggleAntiAFK = MiscTab:Toggle({
