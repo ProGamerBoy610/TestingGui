@@ -1,1 +1,3739 @@
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
+WindUI:SetNotificationLower(true)
+
+-- Add Custom Blue Theme
+WindUI:AddTheme({
+    Name = "Blue Theme",
+    Accent = Color3.fromRGB(37, 99, 235),      -- Bright blue accent
+    Dialog = Color3.fromRGB(15, 23, 42),       -- Dark blue dialog
+    Outline = Color3.fromRGB(59, 130, 246),    -- Blue outline
+    Text = Color3.fromRGB(248, 250, 252),      -- Light text
+    Placeholder = Color3.fromRGB(100, 116, 139), -- Gray placeholder
+    Background = Color3.fromRGB(15, 23, 42),   -- Dark blue background
+    Button = Color3.fromRGB(30, 58, 138),      -- Medium blue button
+    Icon = Color3.fromRGB(147, 197, 253)       -- Light blue icon
+})
+
+-- Create Main Window
+local Window = WindUI:CreateWindow({
+    Title = "Fryzer Hub",
+    Icon = "door-open",
+    Author = "Version 32.0",
+    Folder = "MySuperHub",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Blue Theme",  -- Changed to match the theme name
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+    User = {
+        Enabled = true,
+        Anonymous = false,
+        Callback = function()
+            print("clicked")
+        end,
+    },
+})
+
+-- Edit Open Button
+Window:EditOpenButton({
+    Title = "Open Hub",
+    Icon = "user",
+    CornerRadius = UDim.new(0,12),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("#3b82f6"), 
+        Color3.fromHex("#6366f1")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
+-- ==================== TAB 1: INFO ====================
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
+
+InfoTab:Select()
+
+local Section1 = InfoTab:Section({
+    Title = "Player Information Dashboard",
+    Icon = "user-check",
+})
+
+InfoTab:Paragraph({
+    Title = "Player Information Dashboard",
+    Desc = "Complete player details, game information, and community access",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+-- Player Info Paragraph
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Player = Players.LocalPlayer
+local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
+local AccountAge = Player.AccountAge
+local GameName = "Unknown Game"
+pcall(function()
+    GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+end)
+
+InfoTab:Paragraph({
+    Title = "👤 " .. PlayerName,
+    Desc = string.format(
+        "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
+        Player.Name, AccountAge, Player.UserId, GameName,
+        #Players:GetPlayers(), Players.MaxPlayers,
+        game:GetService("LocalizationService").RobloxLocaleId
+    ),
+    Color = "Blue",
+    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
+    ImageSize = 52,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+InfoTab:Divider()
+
+local Section2 = InfoTab:Section({
+    Title = "Join Our Discord Community",
+    Icon = "users",
+})
+
+InfoTab:Paragraph({
+    Title = "Join Our Discord Community",
+    Desc = "Connect with other users, get support, and stay updated!",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+InfoTab:Button({
+    Title = "Copy Discord Link",
+    Desc = "Copy invite link to clipboard",
+    Locked = false,
+    Callback = function()
+        setclipboard("https://discord.gg/SYHphHCq9a")
+        WindUI:Notify({
+            Title = "Link Copied!",
+            Content = "Discord link copied to clipboard",
+            Duration = 3,
+            Icon = "copy",
+        })
+    end
+})
+
+InfoTab:Space()
+
+-- ==================== TAB 2: PLAYER ====================
+local PlayerTab = Window:Tab({
+    Title = "Player",
+    Icon = "user-check",
+    Locked = false,
+})
+
+local Section3 = PlayerTab:Section({
+    Title = "Player Controls",
+    Icon = "user-check",
+})
+
+PlayerTab:Paragraph({
+    Title = "Player Controls",
+    Desc = "Use the buttons below to control your player character",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+PlayerTab:Divider()
+
+local Section4 = PlayerTab:Section({
+    Title = "Movement System",
+    Icon = "zap",
+    Opened = true,
+})
+
+-- Infinite Jump Toggle
+local infiniteJumpEnabled = false
+local UserInputService = game:GetService("UserInputService")
+
+PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Press Space to jump infinitely",
+    Icon = "arrow-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+        WindUI:Notify({
+            Title = state and "Infinite Jump Enabled! 🚀" or "Infinite Jump Disabled!",
+            Content = state and "Press Space to jump infinitely" or "Jump mechanics restored to normal",
+            Duration = 3,
+        })
+    end
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled and Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        local humanoid = Player.Character.Humanoid
+        if humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local ActiveSpeedBoost = false
+local ActiveJumpBoost = false
+local ActiveNoclip = false
+local ActiveInstantPrompts = false
+local ValueSpeed = 16
+local ValueJumpHeight = 7.2
+local OldSpeed = 16
+local OldJumpHeight = 7.2
+
+local function getCharacter()
+    return LocalPlayer.Character
+end
+
+local function getHumanoid()
+    local character = getCharacter()
+    return character and character:FindFirstChildOfClass("Humanoid")
+end
+
+local function updateOriginalValues()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
+        OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
+    end
+end
+
+updateOriginalValues()
+LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
+
+
+
+PlayerTab:Divider()
+
+-- Speed Controls
+PlayerTab:Slider({
+    Title = "Walk Speed Setting",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 500,
+        Default = 16,
+    },
+    Callback = function(value)
+        ValueSpeed = value
+        print("🏃 Walk speed set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Speed Boost",
+    Desc = "Boost your walking speed",
+    Icon = "zap",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveSpeedBoost = state
+        
+        task.spawn(function()
+            while ActiveSpeedBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+            end
+        end)
+        
+        print("🏃 Speed Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+-- Jump Controls
+PlayerTab:Slider({
+    Title = "Jump Height Setting",
+    Step = 1,
+    Value = {
+        Min = 7,
+        Max = 200,
+        Default = 50,
+    },
+    Callback = function(value)
+        ValueJumpHeight = value
+        print("🦘 Jump height set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Jump Boost",
+    Desc = "Increase your jump height",
+    Icon = "move-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveJumpBoost = state
+        
+        task.spawn(function()
+            while ActiveJumpBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    local humanoid = LocalPlayer.Character.Humanoid
+                    humanoid.UseJumpPower = false
+                    humanoid.JumpHeight = ValueJumpHeight
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                local humanoid = LocalPlayer.Character.Humanoid
+                humanoid.JumpHeight = 7.2
+            end
+        end)
+        
+        print("🦘 Jump Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+-- Noclip Toggle
+PlayerTab:Toggle({
+    Title = "Noclip Mode",
+    Desc = "Pass through walls and objects",
+    Icon = "ghost",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveNoclip = state
+        
+        task.spawn(function()
+            while ActiveNoclip do 
+                if LocalPlayer.Character then
+                    for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                        if part:IsA("BasePart") and part.CanCollide then
+                            part.CanCollide = false
+                        end
+                    end
+                end
+                task.wait(0.1)
+            end 
+            if LocalPlayer.Character then
+                for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
+                    if part:IsA("BasePart") and not part.CanCollide then
+                        part.CanCollide = true
+                    end
+                end
+            end
+        end)
+        
+        print("👻 Noclip: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Space()
+
+-- Fly System
+local IYMouse = Players.LocalPlayer:GetMouse()
+local FLYING = false
+local QEfly = true
+local iyflyspeed = 1
+local vehicleflyspeed = 1
+local ActivateFly = false
+
+local function sFLY(vfly)
+    repeat task.wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat task.wait() until IYMouse
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+
+    local function FLY()
+        FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        task.spawn(function()
+            repeat task.wait()
+                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+            until not FLYING
+            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            SPEED = 0
+            BG:Destroy()
+            BV:Destroy()
+            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            end
+        end)
+    end
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 's' then
+            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'd' then 
+            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif QEfly and KEY:lower() == 'e' then
+            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+        elseif QEfly and KEY:lower() == 'q' then
+            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+        end
+        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = 0
+        elseif KEY:lower() == 's' then
+            CONTROL.B = 0
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = 0
+        elseif KEY:lower() == 'd' then
+            CONTROL.R = 0
+        elseif KEY:lower() == 'e' then
+            CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then
+            CONTROL.E = 0
+        end
+    end)
+    FLY()
+end
+
+local function NOFLY()
+    FLYING = false
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+end
+
+-- Mobile Fly
+local velocityHandlerName = "BodyVelocity"
+local gyroHandlerName = "BodyGyro"
+local mfly1
+local mfly2
+
+local function UnMobileFly()
+    pcall(function()
+        FLYING = false
+        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        root:FindFirstChild(velocityHandlerName):Destroy()
+        root:FindFirstChild(gyroHandlerName):Destroy()
+        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+        mfly1:Disconnect()
+        mfly2:Disconnect()
+    end)
+end
+
+local function MobileFly()
+    UnMobileFly()
+    FLYING = true
+
+    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local camera = workspace.CurrentCamera
+    local v3none = Vector3.new()
+    local v3zero = Vector3.new(0, 0, 0)
+    local v3inf = Vector3.new(9e9, 9e9, 9e9)
+
+    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = v3zero
+    bv.Velocity = v3zero
+
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = v3inf
+    bg.P = 1000
+    bg.D = 50
+
+    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = velocityHandlerName
+        bv.Parent = root
+        bv.MaxForce = v3zero
+        bv.Velocity = v3zero
+
+        local bg = Instance.new("BodyGyro")
+        bg.Name = gyroHandlerName
+        bg.Parent = root
+        bg.MaxTorque = v3inf
+        bg.P = 1000
+        bg.D = 50
+    end)
+
+    mfly2 = RunService.RenderStepped:Connect(function()
+        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        camera = workspace.CurrentCamera
+        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
+            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
+            local GyroHandler = root:FindFirstChild(gyroHandlerName)
+
+            VelocityHandler.MaxForce = v3inf
+            GyroHandler.MaxTorque = v3inf
+            humanoid.PlatformStand = true
+            GyroHandler.CFrame = camera.CoordinateFrame
+            VelocityHandler.Velocity = v3none
+
+            local direction = controlModule:GetMoveVector()
+            if direction.X > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.X < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.Z > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+            if direction.Z < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+        end
+    end)
+end
+
+PlayerTab:Slider({
+    Title = "Fly Speed",
+    Step = 0.1,
+    Value = {
+        Min = 0.1,
+        Max = 10,
+        Default = 1
+    },
+    Callback = function(val)
+        iyflyspeed = val
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Fly",
+    Desc = "Enable flying with WASD and QE",
+    Icon = "plane",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActivateFly = state
+        task.spawn(function()
+            if not FLYING and ActivateFly then
+                if UserInputService.TouchEnabled then
+                    MobileFly()
+                else
+                    NOFLY()
+                    task.wait()
+                    sFLY()
+                end
+            elseif FLYING and not ActivateFly then
+                if UserInputService.TouchEnabled then
+                    UnMobileFly()
+                else
+                    NOFLY()
+                end
+            end
+        end)
+    end
+})
+
+PlayerTab:Space()
+
+-- ==================== TAB 3: MAIN ====================
+local AutoTab = Window:Tab({
+    Title = "Automation",
+    Icon = "bot",
+    Locked = false,
+})
+
+local Section50 = AutoTab:Section({
+    Title = "Automation Scripts",
+    Icon = "Users",
+})
+
+local AutoChild = AutoTab:Button({
+    Title = "Save all child",
+    Desc = "Automatically find and save all Lost Children and drop them in camp",
+    Locked = false,
+    Callback = function()
+-- Lost Child Auto Save Script for Roblox Executor (One by One)
+-- Finds Lost Children ONE BY ONE: TP to child → Save → TP back → Drop → Repeat
+
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local StarterGui = game:GetService("StarterGui")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
+
+-- Return position after saving children
+local RETURN_POSITION = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+
+-- Lost Child names to search for
+local LOST_CHILD_NAMES = {
+    "Lost Child",
+    "Lost Child2",
+    "Lost Child3",
+    "Lost Child4"
+}
+
+-- Function to send notification
+local function sendNotification(title, text, duration)
+    StarterGui:SetCore("SendNotification", {
+        Title = title;
+        Text = text;
+        Duration = duration or 5;
+    })
+end
+
+-- Function to find Characters folder
+local function getCharactersFolder()
+    return Workspace:FindFirstChild("Characters")
+end
+
+-- Function to teleport player
+local function teleportTo(position)
+    if humanoidRootPart then
+        humanoidRootPart.CFrame = CFrame.new(position)
+    end
+end
+
+-- Function to find ProximityPrompt in a model
+local function findProximityPrompt(model)
+    for _, descendant in pairs(model:GetDescendants()) do
+        if descendant:IsA("ProximityPrompt") then
+            return descendant
+        end
+    end
+    return nil
+end
+
+-- Function to modify and trigger ProximityPrompt
+local function processProximityPrompt(prompt)
+    if not prompt then return false end
+    
+    -- Save original hold duration
+    local originalHoldDuration = prompt.HoldDuration
+    
+    -- Change to fast duration
+    prompt.HoldDuration = 0.1
+    
+    -- Wait a bit for the change to register
+    wait(0.2)
+    
+    -- Trigger the prompt twice
+    for i = 1, 2 do
+        fireproximityprompt(prompt)
+        wait(0.3) -- Wait between clicks
+    end
+    
+    -- Restore original duration (optional)
+    prompt.HoldDuration = originalHoldDuration
+    
+    return true
+end
+
+-- Function to find all sacks in inventory
+local function findAllSacksInInventory()
+    local inventory = player:FindFirstChild("Inventory")
+    if not inventory then return {} end
+    
+    local sacks = {}
+    
+    -- Search for all items containing "sack" or "bag" in their name
+    for _, item in pairs(inventory:GetChildren()) do
+        local itemNameLower = item.Name:lower()
+        if itemNameLower:find("sack") or itemNameLower:find("bag") then
+            table.insert(sacks, item)
+        end
+    end
+    
+    return sacks
+end
+
+-- Function to drop child from sack
+local function dropFromSack()
+    wait(1.5) -- Wait for child to be put in sack
+    
+    local allSacks = findAllSacksInInventory()
+    
+    if #allSacks == 0 then
+        print("No sacks found in inventory")
+        sendNotification("Drop Failed", "No sacks found in inventory", 3)
+        return false
+    end
+    
+    print("Found " .. #allSacks .. " sack(s) in inventory")
+    
+    -- Try each sack to find the one with the child
+    local usedSack = nil
+    for _, sack in ipairs(allSacks) do
+        print("Checking sack: " .. sack.Name)
+        -- Use the first sack found
+        usedSack = sack
+        break
+    end
+    
+    if not usedSack then
+        print("Could not determine which sack to use")
+        sendNotification("Drop Failed", "No valid sack found", 3)
+        return false
+    end
+    
+    print("Using sack: " .. usedSack.Name)
+    
+    -- Find a suitable drop location (Log or any item in workspace.Items)
+    local itemsFolder = Workspace:FindFirstChild("Items")
+    local dropTarget = nil
+    
+    if itemsFolder then
+        dropTarget = itemsFolder:FindFirstChild("Log")
+        if not dropTarget then
+            -- Try to find any other item
+            for _, item in pairs(itemsFolder:GetChildren()) do
+                if item:IsA("BasePart") or item:IsA("Model") then
+                    dropTarget = item
+                    break
+                end
+            end
+        end
+    end
+    
+    if not dropTarget then
+        print("No drop target found in Items folder, creating temporary target")
+        -- Create a temporary part as drop target
+        local tempPart = Instance.new("Part")
+        tempPart.Name = "TempDropTarget"
+        tempPart.Anchored = true
+        tempPart.Position = RETURN_POSITION + Vector3.new(0, -3, 0)
+        tempPart.Transparency = 1
+        tempPart.CanCollide = false
+        tempPart.Parent = Workspace
+        dropTarget = tempPart
+        
+        -- Clean up after a delay
+        task.delay(5, function()
+            if tempPart and tempPart.Parent then
+                tempPart:Destroy()
+            end
+        end)
+    end
+    
+    -- Fire the remote event to drop item from sack
+    local remoteEvents = ReplicatedStorage:FindFirstChild("RemoteEvents")
+    if not remoteEvents then
+        print("RemoteEvents folder not found")
+        sendNotification("Drop Failed", "RemoteEvents not found", 3)
+        return false
+    end
+    
+    local requestBagDropItem = remoteEvents:FindFirstChild("RequestBagDropItem")
+    if not requestBagDropItem then
+        print("RequestBagDropItem remote not found")
+        sendNotification("Drop Failed", "Remote event not found", 3)
+        return false
+    end
+    
+    -- Try to drop from the sack
+    local success, err = pcall(function()
+        local args = {
+            usedSack,
+            dropTarget,
+            true
+        }
+        
+        print("Attempting to drop child from sack...")
+        requestBagDropItem:FireServer(unpack(args))
+    end)
+    
+    if not success then
+        print("Error dropping from sack: " .. tostring(err))
+        sendNotification("Drop Error", "Failed to drop: " .. tostring(err), 3)
+        return false
+    end
+    
+    wait(0.5)
+    print("Child dropped from sack!")
+    sendNotification("✓ Dropped", "Child dropped from " .. usedSack.Name, 3)
+    
+    return true
+end
+
+-- Function to process a single Lost Child (ONE AT A TIME)
+local function processLostChildOneByOne(childModel, childName)
+    print("\n=== Processing: " .. childName .. " ===")
+    
+    -- Check for ProximityPrompt
+    local proximityPrompt = findProximityPrompt(childModel)
+    
+    if not proximityPrompt then
+        print("✓ " .. childName .. " -- ALREADY SAVED (No ProximityPrompt found)")
+        sendNotification("Already Saved", childName .. " is already safe!", 3)
+        return "already_saved"
+    end
+    
+    print("Found ProximityPrompt in " .. childName)
+    print("Step 1: Teleporting to " .. childName .. "...")
+    sendNotification("Step 1/4", "Teleporting to " .. childName, 3)
+    
+    -- Get the child's position
+    local childPosition = nil
+    if childModel:FindFirstChild("HumanoidRootPart") then
+        childPosition = childModel.HumanoidRootPart.Position
+    elseif childModel.PrimaryPart then
+        childPosition = childModel.PrimaryPart.Position
+    elseif childModel:FindFirstChildWhichIsA("BasePart") then
+        childPosition = childModel:FindFirstChildWhichIsA("BasePart").Position
+    end
+    
+    if not childPosition then
+        print("✗ Could not find position for " .. childName)
+        sendNotification("Error", "Could not find " .. childName .. " position", 3)
+        return "failed"
+    end
+    
+    -- STEP 1: Teleport to the child
+    teleportTo(childPosition)
+    wait(1) -- Wait for teleport to complete
+    
+    -- STEP 2: Click ProximityPrompt to save child
+    print("Step 2: Clicking ProximityPrompt to save " .. childName .. "...")
+    sendNotification("Step 2/4", "Saving " .. childName .. "...", 3)
+    
+    local success = processProximityPrompt(proximityPrompt)
+    
+    if not success then
+        print("✗ Failed to click ProximityPrompt for " .. childName)
+        sendNotification("✗ Failed", "Failed to save " .. childName, 3)
+        return "failed"
+    end
+    
+    print("✓ ProximityPrompt clicked successfully!")
+    wait(1) -- Wait for child to be picked up
+    
+    -- STEP 3: Teleport back to return position
+    print("Step 3: Teleporting back to return position...")
+    sendNotification("Step 3/4", "Returning with " .. childName, 3)
+    teleportTo(RETURN_POSITION)
+    wait(1) -- Wait for teleport to complete
+    
+    -- STEP 4: Drop child from sack
+    print("Step 4: Dropping " .. childName .. " from sack...")
+    sendNotification("Step 4/4", "Dropping " .. childName .. " from sack", 3)
+    
+    local dropSuccess = dropFromSack()
+    
+    if dropSuccess then
+        print("✓✓✓ Successfully completed all steps for " .. childName .. " ✓✓✓")
+        sendNotification("✓ Complete!", childName .. " has been saved and dropped!", 4)
+        return "saved"
+    else
+        print("⚠ Saved " .. childName .. " but failed to drop from sack")
+        sendNotification("⚠ Warning", childName .. " saved but not dropped", 3)
+        return "saved_no_drop"
+    end
+end
+
+-- Main function
+local function autoSaveLostChildren()
+    print("\n╔════════════════════════════════════════╗")
+    print("║  Lost Child Auto Save Started         ║")
+    print("║  Processing ONE BY ONE                 ║")
+    print("╚════════════════════════════════════════╝\n")
+    sendNotification("Auto Save Started", "Processing children one by one...", 4)
+    
+    print("Searching for Characters folder...")
+    
+    local charactersFolder = getCharactersFolder()
+    
+    if not charactersFolder then
+        warn("Characters folder not found in Workspace!")
+        sendNotification("Error", "Characters folder not found!", 5)
+        return
+    end
+    
+    print("✓ Characters folder found!")
+    print("Searching for Lost Children...\n")
+    
+    local savedCount = 0
+    local alreadySavedCount = 0
+    local notFoundCount = 0
+    local failedCount = 0
+    
+    -- Process each Lost Child ONE BY ONE
+    for index, childName in ipairs(LOST_CHILD_NAMES) do
+        print("────────────────────────────────────────")
+        print("Child " .. index .. " of " .. #LOST_CHILD_NAMES .. ": " .. childName)
+        print("────────────────────────────────────────")
+        
+        local childModel = charactersFolder:FindFirstChild(childName)
+        
+        if childModel then
+            local result = processLostChildOneByOne(childModel, childName)
+            
+            if result == "saved" or result == "saved_no_drop" then
+                savedCount = savedCount + 1
+                -- Wait before processing next child
+                wait(2)
+            elseif result == "already_saved" then
+                alreadySavedCount = alreadySavedCount + 1
+                -- No need to wait long for already saved children
+                wait(0.5)
+            elseif result == "failed" then
+                failedCount = failedCount + 1
+                wait(1)
+            end
+        else
+            print("✗ " .. childName .. " not found in Characters folder")
+            notFoundCount = notFoundCount + 1
+            wait(0.3)
+        end
+    end
+    
+    -- Print final summary
+    print("\n╔════════════════════════════════════════╗")
+    print("║           FINAL SUMMARY                ║")
+    print("╠════════════════════════════════════════╣")
+    print("║  Children Saved:       " .. savedCount .. "              ║")
+    print("║  Already Saved:        " .. alreadySavedCount .. "              ║")
+    print("║  Failed:               " .. failedCount .. "              ║")
+    print("║  Not Found:            " .. notFoundCount .. "              ║")
+    print("║  Total Processed:      " .. (savedCount + alreadySavedCount) .. "              ║")
+    print("╚════════════════════════════════════════╝\n")
+    
+    -- Final notification
+    local summaryText = string.format("Saved: %d | Already Safe: %d | Failed: %d", savedCount, alreadySavedCount, failedCount)
+    sendNotification("✓ All Done!", summaryText, 6)
+    
+    print("Script completed successfully!")
+end
+
+-- Run the script
+autoSaveLostChildren()
+    end
+})
+
+AutoTab:Divider()
+
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+-- AUTO EAT VARIABLES
+local autoEatEnabled = false
+local selectedFoods = {} -- Foods to auto eat
+local eatLoop = nil
+
+-- Get character parts
+local function getCharacterParts()
+    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    return char, hrp
+end
+
+-- Get item position
+local function getItemPosition(item)
+    if item:IsA("Model") then
+        return item.PrimaryPart and item.PrimaryPart.Position or 
+               (item:FindFirstChildWhichIsA("BasePart") and item:FindFirstChildWhichIsA("BasePart").Position)
+    elseif item:IsA("BasePart") then
+        return item.Position
+    end
+    return nil
+end
+
+-- Check if food is in selected list
+local function isFoodSelected(foodName)
+    for _, selectedFood in pairs(selectedFoods) do
+        if selectedFood == foodName then
+            return true
+        end
+    end
+    return false
+end
+
+-- Find nearest selected food
+local function findNearestFood()
+    local char, hrp = getCharacterParts()
+    local nearestFood = nil
+    local nearestDistance = math.huge
+    
+    -- Search in workspace.Items
+    for _, item in pairs(workspace.Items:GetChildren()) do
+        if isFoodSelected(item.Name) then
+            local itemPos = getItemPosition(item)
+            if itemPos then
+                local distance = (itemPos - hrp.Position).Magnitude
+                if distance < nearestDistance then
+                    nearestDistance = distance
+                    nearestFood = item
+                end
+            end
+        end
+    end
+    
+    return nearestFood, nearestDistance
+end
+
+-- Get remote events
+local function getRemoteEvents()
+    local remoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
+    local dragEvent = remoteEvents:WaitForChild("RequestStartDraggingItem")
+    local stopDragEvent = remoteEvents:WaitForChild("StopDraggingItem")
+    local consumeEvent = remoteEvents:WaitForChild("RequestConsumeItem")
+    return dragEvent, stopDragEvent, consumeEvent
+end
+
+-- Go to food and eat it
+local function goToAndEatFood(foodItem)
+    if not foodItem then return false end
+    
+    local char, hrp = getCharacterParts()
+    local dragEvent, stopDragEvent, consumeEvent = getRemoteEvents()
+    
+    local itemPos = getItemPosition(foodItem)
+    if not itemPos then
+        warn("Could not get food position")
+        return false
+    end
+    
+    print("🍴 Going to eat", foodItem.Name)
+    
+    -- Move to food
+    hrp.CFrame = CFrame.new(itemPos + Vector3.new(0, 5, 0))
+    wait(0.1)
+    
+    hrp.CFrame = CFrame.new(itemPos + Vector3.new(0, 2, 0))
+    wait(0.1)
+    
+    -- Drag the food
+    dragEvent:FireServer(foodItem)
+    wait(0.1)
+    
+    -- Consume the food
+    local success = pcall(function()
+        consumeEvent:InvokeServer(foodItem)
+    end)
+    
+    if success then
+        print("✅ Successfully ate", foodItem.Name)
+    else
+        print("❌ Failed to consume", foodItem.Name)
+    end
+    
+    -- Stop dragging
+    wait(0.1)
+    stopDragEvent:FireServer(foodItem)
+    
+    return success
+end
+
+-- Auto eat loop
+local function startAutoEatLoop()
+    if eatLoop then
+        eatLoop:Disconnect()
+    end
+    
+    spawn(function()
+        while autoEatEnabled do
+            -- Check if any food is selected
+            if #selectedFoods == 0 then
+                print("⚠️ Waiting for food selection...")
+                wait(0.2)
+            else
+                -- Find and eat food
+                local foodItem, distance = findNearestFood()
+                
+                if foodItem then
+                    print("🔍 Found", foodItem.Name, "at", math.floor(distance), "studs")
+                    goToAndEatFood(foodItem)
+                    wait(0.2) -- Wait before next eat
+                else
+                    print("🔍 Searching for:", table.concat(selectedFoods, ", "))
+                    wait(0.3) -- Wait before searching again
+                end
+            end
+        end
+        print("🛑 Auto eat loop stopped")
+    end)
+end
+
+-- Toggle auto eat
+local function toggleAutoEat(state)
+    autoEatEnabled = state
+    
+    if autoEatEnabled then
+        print("🍴 AUTO EAT ENABLED!")
+        print("📋 Selected foods:", #selectedFoods > 0 and table.concat(selectedFoods, ", ") or "NONE")
+        if #selectedFoods == 0 then
+            warn("⚠️ No foods selected! Select foods from dropdown first!")
+        end
+        startAutoEatLoop()
+    else
+        print("🛑 AUTO EAT DISABLED!")
+        if eatLoop then
+            eatLoop:Disconnect()
+            eatLoop = nil
+        end
+    end
+end
+
+-- Update selected foods from dropdown
+local function updateSelectedFoods(foodList)
+    selectedFoods = foodList
+    print("📋 Updated food list:", table.concat(selectedFoods, ", "))
+    
+    -- If auto eat is enabled, restart the loop
+    if autoEatEnabled then
+        if #selectedFoods > 0 then
+            startAutoEatLoop()
+        else
+            if eatLoop then
+                eatLoop:Disconnect()
+                eatLoop = nil
+            end
+        end
+    end
+end
+
+-- Store functions globally for Wind UI access
+_G.toggleAutoEat = toggleAutoEat
+_G.updateSelectedFoods = updateSelectedFoods
+
+-- WIND UI INTEGRATION EXAMPLE:
+local ToggleAutoeat = AutoTab:Toggle({
+    Title = "Auto Eat",
+    Desc = "Automatically eat selected foods",
+    Icon = "check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        _G.toggleAutoEat(state)
+    end
+})
+
+local Dropdownautoeat = AutoTab:Dropdown({
+    Title = "Select Foods to Eat",
+    Values = { "Carrot", "Berry", "Apple", "Meat" },
+    Value = { "Carrot" },
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        _G.updateSelectedFoods(options)
+    end
+})
+
+
+AutoTab:Paragraph({
+    Title = "More Features Coming Soon!",
+    Desc = "Join the Discord to suggest features or report bugs also to get the latest updates.",
+    Color = "Green",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+AutoTab:Button({
+    Title = "Copy Discord Link",
+    Desc = "Copy invite link to clipboard",
+    Locked = false,
+    Callback = function()
+        setclipboard("https://discord.gg/SYHphHCq9a")
+        WindUI:Notify({
+            Title = "Link Copied!",
+            Content = "Discord link copied to clipboard",
+            Duration = 3,
+            Icon = "copy",
+        })
+    end
+})
+
+local Buttonlockedcoming = AutoTab:Button({
+    Title = "Auto Farm Days",
+    Desc = "Comming Soon",
+    Locked = true,
+    Callback = function()
+        print("Wait it will come soon")
+    end
+})
+
+-- ==================== TAB 3: HITBOX ====================
+local HitboxTab = Window:Tab({
+    Title = "Hitbox",
+    Icon = "target",
+    Locked = false,
+})
+
+local Section5 = HitboxTab:Section({
+    Title = "Tree Hitbox Modifier",
+    Icon = "tree",
+})
+
+local modificationEnabled = false
+local hitboxSizeMultiplier = 1000000
+
+local function modifyTreeTrunk(trunk, sizeMultiplier)
+    if not trunk:IsA("BasePart") then return end
+    if trunk.Transparency == 1 then return end
+    
+    local originalSize = trunk.Size
+    local originalCFrame = trunk.CFrame
+    local originalTransparency = trunk.Transparency
+    local originalMaterial = trunk.Material
+    local originalColor = trunk.Color
+    local originalCanCollide = trunk.CanCollide
+    local originalAnchored = trunk.Anchored
+    
+    trunk.Size = Vector3.new(sizeMultiplier, sizeMultiplier, sizeMultiplier)
+    trunk.CFrame = originalCFrame
+    trunk.Transparency = 1
+    trunk.CanCollide = false
+    trunk.CanQuery = true
+    trunk.Anchored = true
+    
+    local visualPart = trunk:Clone()
+    visualPart.Size = originalSize
+    visualPart.CFrame = originalCFrame
+    visualPart.Transparency = originalTransparency
+    visualPart.Material = originalMaterial
+    visualPart.Color = originalColor
+    visualPart.CanCollide = originalCanCollide
+    visualPart.CanQuery = false
+    visualPart.Anchored = originalAnchored
+    visualPart.Name = "Visual"
+    visualPart.Parent = trunk.Parent
+    
+    for _, child in pairs(visualPart:GetChildren()) do
+        child:Destroy()
+    end
+    
+    print("Modified trunk: " .. trunk:GetFullName())
+end
+
+local function modifyAllTrees()
+    if not modificationEnabled then return end
+    
+    local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
+    local count = 0
+    
+    for _, obj in pairs(workspace:GetDescendants()) do
+        if obj:IsA("Model") and table.find(types, obj.Name) then
+            local trunk = obj:FindFirstChild("Trunk", true)
+            if trunk and trunk:IsA("BasePart") then
+                modifyTreeTrunk(trunk, hitboxSizeMultiplier)
+                count = count + 1
+            end
+        end
+    end
+    
+    return count
+end
+
+HitboxTab:Toggle({
+    Title = "🌲 Tree Hitbox Modifier",
+    Desc = "Make tree hitboxes massive for easier chopping",
+    Icon = "settings",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        modificationEnabled = state
+        print("Tree modification: " .. tostring(state))
+        
+        if state then
+            local count = modifyAllTrees()
+            WindUI:Notify({
+                Title = "Tree Modifier Enabled! ✅",
+                Content = "Modified " .. count .. " trees with " .. hitboxSizeMultiplier .. "x hitbox size",
+                Duration = 3,
+            })
+        else
+            WindUI:Notify({
+                Title = "Tree Modifier Disabled! ⚠️",
+                Content = "Reload the game to restore original trees",
+                Duration = 3,
+            })
+        end
+    end
+})
+
+HitboxTab:Slider({
+    Title = "Hitbox Size Multiplier",
+    Step = 1000,
+    Value = {
+        Min = 10,
+        Max = 10000000,
+        Default = 1000000,
+    },
+    Callback = function(value) 
+        hitboxSizeMultiplier = value
+        print("Hitbox size adjusted to: " .. value)
+        
+        if modificationEnabled then
+            WindUI:Notify({
+                Title = "Size Changed",
+                Content = "Toggle OFF then ON to apply new size: " .. value,
+                Duration = 2,
+            })
+        end
+    end
+})
+
+HitboxTab:Divider()
+
+local Section6 = HitboxTab:Section({
+    Title = "Entity Hitbox Modifier",
+    Icon = "target",
+    Opened = true,
+})
+
+local entityStates = {
+    Bunny = false,
+    CrossbowCultist = false,
+    Cultist = false,
+    Wolf = false
+}
+local hitboxSize = 50
+local modifiedEntities = {}
+local connectionActive = false
+local renderConnection = nil
+
+local function resetEntity(character)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp:IsA("BasePart") then
+            if not hrp:GetAttribute("OriginalSize") then
+                hrp:SetAttribute("OriginalSize", tostring(hrp.Size))
+                hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
+                hrp:SetAttribute("OriginalColor", tostring(hrp.BrickColor))
+                hrp:SetAttribute("OriginalMaterial", hrp.Material.Name)
+            end
+        end
+    end)
+end
+
+local function modifyEntity(character, size)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if not hrp or not hrp:IsA("BasePart") then return end
+        
+        if not hrp:GetAttribute("OriginalSize") then
+            hrp:SetAttribute("OriginalSize", tostring(hrp.Size))
+            hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
+            hrp:SetAttribute("OriginalColor", tostring(hrp.BrickColor))
+            hrp:SetAttribute("OriginalMaterial", hrp.Material.Name)
+        end
+        
+        hrp.Size = Vector3.new(size, size, size)
+        hrp.Transparency = 0.7
+        hrp.BrickColor = BrickColor.new("Really blue")
+        hrp.Material = Enum.Material.Neon
+        hrp.CanCollide = false
+        
+        if not modifiedEntities[character] then
+            modifiedEntities[character] = true
+            
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                humanoid.Died:Connect(function()
+                    restoreEntity(character)
+                    modifiedEntities[character] = nil
+                end)
+            end
+            
+            character.AncestryChanged:Connect(function(_, parent)
+                if not parent then
+                    modifiedEntities[character] = nil
+                end
+            end)
+        end
+    end)
+end
+
+local function restoreEntity(character)
+    pcall(function()
+        local hrp = character:FindFirstChild("HumanoidRootPart")
+        if hrp and hrp:IsA("BasePart") then
+            local origSize = hrp:GetAttribute("OriginalSize")
+            local origTrans = hrp:GetAttribute("OriginalTransparency")
+            local origColor = hrp:GetAttribute("OriginalColor")
+            local origMaterial = hrp:GetAttribute("OriginalMaterial")
+            
+            if origSize then
+                local x, y, z = origSize:match("([^,]+), ([^,]+), ([^,]+)")
+                hrp.Size = Vector3.new(tonumber(x), tonumber(y), tonumber(z))
+            end
+            if origTrans then hrp.Transparency = origTrans end
+            if origColor then hrp.BrickColor = BrickColor.new(origColor) end
+            if origMaterial then hrp.Material = Enum.Material[origMaterial] end
+            hrp.CanCollide = true
+            
+            hrp:SetAttribute("OriginalSize", nil)
+            hrp:SetAttribute("OriginalTransparency", nil)
+            hrp:SetAttribute("OriginalColor", nil)
+            hrp:SetAttribute("OriginalMaterial", nil)
+        end
+    end)
+end
+
+local function getActiveEntities()
+    local active = {}
+    for entity, enabled in pairs(entityStates) do
+        if enabled then
+            table.insert(active, entity)
+        end
+    end
+    return active
+end
+
+local function shouldModifyEntity(entityName, activeList)
+    local normalizedName = entityName:gsub("%s+", "")
+    
+    for _, activeName in pairs(activeList) do
+        if normalizedName == activeName or entityName == activeName then
+            return true
+        end
+        
+        local normalizedActive = activeName:gsub("%s+", "")
+        if normalizedName == normalizedActive then
+            return true
+        end
+    end
+    return false
+end
+
+local function startModification()
+    if connectionActive then return end
+    connectionActive = true
+    
+    renderConnection = RunService.RenderStepped:Connect(function()
+        local activeEntities = getActiveEntities()
+        if #activeEntities == 0 then return end
+        
+        local charactersFolder = workspace:FindFirstChild("Characters")
+        if not charactersFolder then return end
+        
+        for _, child in pairs(charactersFolder:GetChildren()) do
+            if child:IsA("Model") then
+                if shouldModifyEntity(child.Name, activeEntities) then
+                    local humanoid = child:FindFirstChildOfClass("Humanoid")
+                    if humanoid and humanoid.Health > 0 then
+                        modifyEntity(child, hitboxSize)
+                    elseif modifiedEntities[child] then
+                        restoreEntity(child)
+                        modifiedEntities[child] = nil
+                    end
+                elseif modifiedEntities[child] then
+                    restoreEntity(child)
+                    modifiedEntities[child] = nil
+                end
+            end
+        end
+    end)
+end
+
+local function stopModification()
+    if not connectionActive then return end
+    connectionActive = false
+    
+    if renderConnection then
+        renderConnection:Disconnect()
+        renderConnection = nil
+    end
+    
+    for character, _ in pairs(modifiedEntities) do
+        if character and character.Parent then
+            restoreEntity(character)
+        end
+    end
+    modifiedEntities = {}
+end
+
+local function updateModificationState()
+    local anyActive = false
+    for _, enabled in pairs(entityStates) do
+        if enabled then
+            anyActive = true
+            break
+        end
+    end
+    
+    if anyActive then
+        startModification()
+    else
+        stopModification()
+    end
+end
+
+HitboxTab:Toggle({
+    Title = "Bunny Hitbox",
+    Desc = "Expand Bunny hitbox",
+    Icon = "target",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        entityStates.Bunny = state
+        updateModificationState()
+        print("Bunny modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Bunny Enabled! " or "Bunny Disabled! ",
+            Content = "Bunny hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+HitboxTab:Toggle({
+    Title = "Crossbow Cultist Hitbox",
+    Desc = "Expand Crossbow Cultist hitbox",
+    Icon = "target",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        entityStates.CrossbowCultist = state
+        updateModificationState()
+        print("Crossbow Cultist modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Crossbow Cultist Enabled! " or "Crossbow Cultist Disabled! ",
+            Content = "Crossbow Cultist hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+HitboxTab:Toggle({
+    Title = "Cultist Hitbox",
+    Desc = "Expand Cultist hitbox",
+    Icon = "target",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        entityStates.Cultist = state
+        updateModificationState()
+        print("Cultist modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Cultist Enabled! " or "Cultist Disabled! ",
+            Content = "Cultist hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+HitboxTab:Toggle({
+    Title = "Wolf Hitbox",
+    Desc = "Expand Wolf hitbox",
+    Icon = "target",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state) 
+        entityStates.Wolf = state
+        updateModificationState()
+        print("Wolf modification: " .. tostring(state))
+        WindUI:Notify({
+            Title = state and "Wolf Enabled! " or "Wolf Disabled! ",
+            Content = "Wolf hitbox " .. (state and "activated" or "deactivated"),
+            Duration = 2,
+        })
+    end
+})
+
+HitboxTab:Slider({
+    Title = "Hitbox Size",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 200,
+        Default = 50,
+    },
+    Callback = function(value) 
+        hitboxSize = value
+        print("Hitbox size adjusted to: " .. value)
+        WindUI:Notify({
+            Title = "Size Updated",
+            Content = "Hitbox size set to: " .. value,
+            Duration = 1.5,
+        })
+    end
+})
+
+HitboxTab:Space()
+
+
+--- ==================== TAB 4: MAIN ====================
+local MainTab = Window:Tab({
+    Title = "Main",
+    Icon = "home",
+    Locked = false,
+})
+
+-- Sky Platform
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Player = Players.LocalPlayer
+
+local isOnPlatform = false
+local skyPlatform = nil
+local platformConnection = nil
+local platformHeight = 20 -- Default height
+
+local function createSkyPlatform(playerPosition)
+    if skyPlatform then
+        skyPlatform:Destroy()
+    end
+    
+    skyPlatform = Instance.new("Part")
+    skyPlatform.Name = "SkyPlatform"
+    skyPlatform.Size = Vector3.new(100000000, 1, 100000000) -- Increased size for better coverage
+    skyPlatform.Position = Vector3.new(playerPosition.X, platformHeight, playerPosition.Z)
+    skyPlatform.Anchored = true
+    skyPlatform.Transparency = 1
+    skyPlatform.CanCollide = true
+    skyPlatform.TopSurface = Enum.SurfaceType.Smooth
+    skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
+    skyPlatform.Parent = workspace
+    
+    platformConnection = RunService.Heartbeat:Connect(function()
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform and skyPlatform then
+            local humanoidRootPart = Player.Character.HumanoidRootPart
+            local playerPos = humanoidRootPart.Position
+            
+            -- Always update platform position to follow player instantly
+            skyPlatform.Position = Vector3.new(playerPos.X, platformHeight, playerPos.Z)
+            
+            -- Keep platform size large
+            local minSize = 100
+            if skyPlatform.Size.X < minSize then
+                skyPlatform.Size = Vector3.new(minSize, 1, minSize)
+            end
+        end
+    end)
+end
+
+local function teleportToSky()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    
+    createSkyPlatform(humanoidRootPart.Position)
+    
+    wait(0.1) -- Small delay to ensure platform is created
+    
+    humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, platformHeight + 5, humanoidRootPart.Position.Z)
+    
+    isOnPlatform = true
+    print("☁️ Teleported to invisible sky platform at height: " .. platformHeight)
+end
+
+local function teleportToGround()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    local currentPosition = humanoidRootPart.Position
+    
+    local rayParams = RaycastParams.new()
+    rayParams.FilterType = Enum.RaycastFilterType.Blacklist
+    rayParams.FilterDescendantsInstances = {character, skyPlatform}
+    
+    local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0), rayParams)
+    
+    if raycast then
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
+    else
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
+    end
+    
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    
+    isOnPlatform = false
+    print("☁️ Teleported back to ground!")
+end
+
+local function updatePlatformHeight(newHeight)
+    platformHeight = newHeight
+    print("☁️ Platform height set to: " .. newHeight)
+    
+    -- Update player position if on platform
+    if isOnPlatform and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        local humanoidRootPart = Player.Character.HumanoidRootPart
+        local currentPos = humanoidRootPart.Position
+        
+        -- Teleport player to new height
+        humanoidRootPart.CFrame = CFrame.new(currentPos.X, newHeight + 5, currentPos.Z)
+    end
+end
+
+-- Height Slider (Place BEFORE the Toggle)
+MainTab:Slider({
+    Title = "Hip Height",
+    Step = 5,
+    Value = {
+        Min = 20,
+        Max = 1000,
+        Default = 200,
+    },
+    Callback = function(value)
+        updatePlatformHeight(value)
+    end
+})
+
+-- Toggle
+MainTab:Toggle({
+    Title = "Hip Hieght changer",
+    Desc = "Create an invisible platform in the sky",
+    Icon = "cloud",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
+        
+        if state then
+            teleportToSky()
+        else
+            teleportToGround()
+        end
+    end
+})
+
+local function cleanupSkyPlatform()
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    isOnPlatform = false
+end
+
+Player.CharacterRemoving:Connect(cleanupSkyPlatform)
+
+-- Instant Prompts Toggle
+PlayerTab:Toggle({
+    Title = "Instant Open Chests",
+    Desc = "Automatically open proximity prompts instantly",
+    Icon = "zap-off",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveInstantPrompts = state
+        
+        task.spawn(function()
+            if ActiveInstantPrompts then
+                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
+                    if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then 
+                        prompt:SetAttribute("HoldDurationOld", prompt.HoldDuration)
+                        prompt.HoldDuration = 0
+                    end 
+                end
+                
+                local promptConnection
+                promptConnection = game.Workspace.DescendantAdded:Connect(function(descendant)
+                    if ActiveInstantPrompts and descendant:IsA("ProximityPrompt") and descendant.HoldDuration ~= 0 then
+                        descendant:SetAttribute("HoldDurationOld", descendant.HoldDuration)
+                        descendant.HoldDuration = 0
+                    end
+                end)
+                
+                while ActiveInstantPrompts do
+                    task.wait(1)
+                end
+                
+                if promptConnection then
+                    promptConnection:Disconnect()
+                end
+            else 
+                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
+                    if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then 
+                        prompt.HoldDuration = prompt:GetAttribute("HoldDurationOld")
+                        prompt:SetAttribute("HoldDurationOld", nil)
+                    end 
+                end  
+            end
+        end)
+        
+        print("⚡ Instant Prompts: " .. (state and "ON" or "OFF"))
+    end
+})
+
+local Section13 = MainTab:Section({
+    Title = "Warning",
+    Icon = "alert-triangle",
+})
+
+MainTab:Paragraph({
+    Title = "Warning",
+    Desc = "Do not change the distance sliders below, they are set to optimal values. Changing them may cause issues or bans.",
+    Color = "Red",
+})
+
+MainTab:Divider()
+
+local Section14 = MainTab:Section({
+    Title = "Auto Farm Features",
+    Icon = "zap",
+})
+
+local ActiveAutoChopTree = false
+local DistanceForAutoChopTree = 2500
+
+MainTab:Slider({
+    Title = "Auto Chop Distance (Don't Change)",
+    Step = 100,
+    Value = {
+        Min = 0,
+        Max = 3000,
+        Default = 2500
+    },
+    Callback = function(val)
+        DistanceForAutoChopTree = val
+        print("Auto Chop Tree distance set to:", val)
+        WindUI:Notify({
+            Title = "Distance Updated",
+            Content = "Auto Chop distance set to " .. val .. ". Use at your own risk!",
+            Duration = 3,
+            Icon = "alert-triangle",
+        })
+    end
+})
+
+MainTab:Toggle({
+    Title = "Auto Chop Tree", 
+    Desc = "Automatically chop all trees within the set distance. May cause lag in dense areas.",
+    Icon = "axe",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveAutoChopTree = state
+        print("Auto Chop Tree is now:", state)
+        
+        if ActiveAutoChopTree then
+            WindUI:Notify({
+                Title = "Auto Chop Enabled",
+                Content = "Starting to chop trees within " .. DistanceForAutoChopTree .. " studs.",
+                Duration = 3,
+                Icon = "check",
+            })
+            task.spawn(function()
+                while ActiveAutoChopTree do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                   player.Inventory:FindFirstChild("Good Axe") or 
+                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    
+                    if not weapon then
+                        WindUI:Notify({
+                            Title = "Error",
+                            Content = "No axe found in inventory! Auto Chop disabled.",
+                            Duration = 5,
+                            Icon = "x",
+                        })
+                        ActiveAutoChopTree = false
+                        break
+                    end
+                    
+                    task.spawn(function()
+                        for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
+                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end 
+                    end)
+                    
+                    task.spawn(function()
+                        for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
+                            if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
+                                local distance = (tree.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForAutoChopTree then
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    
+                    task.wait(0.1)
+                end
+            end)
+        else
+            WindUI:Notify({
+                Title = "Auto Chop Disabled",
+                Content = "Stopped chopping trees.",
+                Duration = 3,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+local ActiveKillAura = false
+local DistanceForKillAura = 2500
+
+MainTab:Slider({
+    Title = "Kill Aura Distance (Don't Change)",
+    Step = 100,
+    Value = {
+        Min = 25,
+        Max = 10000,
+        Default = 2500
+    },
+    Callback = function(val)
+        DistanceForKillAura = val
+        print("Kill Aura distance set to:", val)
+        WindUI:Notify({
+            Title = "Distance Updated",
+            Content = "Kill Aura distance set to " .. val .. ". Use at your own risk!",
+            Duration = 3,
+            Icon = "alert-triangle",
+        })
+    end
+})
+
+MainTab:Toggle({
+    Title = "Kill Aura", 
+    Desc = "Automatically damage all enemies within the set distance. Use with caution.",
+    Icon = "sword",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveKillAura = state
+        print("Kill Aura is now:", state)
+        
+        if ActiveKillAura then
+            WindUI:Notify({
+                Title = "Kill Aura Enabled",
+                Content = "Starting to attack enemies within " .. DistanceForKillAura .. " studs.",
+                Duration = 3,
+                Icon = "check",
+            })
+            task.spawn(function()
+                while ActiveKillAura do 
+                    local player = game.Players.LocalPlayer
+                    local character = player.Character or player.CharacterAdded:Wait()
+                    local hrp = character:WaitForChild("HumanoidRootPart")
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
+                                   player.Inventory:FindFirstChild("Good Axe") or 
+                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                                   player.Inventory:FindFirstChild("Chainsaw"))
+                    
+                    if not weapon then
+                        WindUI:Notify({
+                            Title = "Error",
+                            Content = "No weapon found in inventory! Kill Aura disabled.",
+                            Duration = 5,
+                            Icon = "x",
+                        })
+                        ActiveKillAura = false
+                        break
+                    end
+                    
+                    task.spawn(function()
+                        for _, enemy in pairs(workspace.Characters:GetChildren()) do
+                            if enemy:IsA("Model") and enemy.PrimaryPart then
+                                local distance = (enemy.PrimaryPart.Position - hrp.Position).Magnitude
+                                if distance <= DistanceForKillAura then
+                                    game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(enemy, weapon, 999, hrp.CFrame)
+                                end
+                            end
+                        end
+                    end)
+                    
+                    task.wait(0.1)
+                end
+            end)
+        else
+            WindUI:Notify({
+                Title = "Kill Aura Disabled",
+                Content = "Stopped attacking enemies.",
+                Duration = 3,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+-- ==================== TAB 4: VISUAL ====================
+local VisualTab = Window:Tab({
+    Title = "Visual",
+    Icon = "eye",
+    Locked = false,
+})
+
+local Section7 = VisualTab:Section({
+    Title = "General Visuals",
+    Icon = "map",
+})
+
+local ToggleFullbright = VisualTab:Toggle({
+    Title = "Fullbright",
+    Desc = "Enable or disable fullbright",
+    Icon = "check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        print("Toggle 1: " .. tostring(state))
+        
+        -- Fullbright functionality
+        local Lighting = game:GetService("Lighting")
+        
+        if state then
+            -- Enable fullbright
+            Lighting.Brightness = 2
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 100000
+            Lighting.GlobalShadows = false
+            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
+        else
+            -- Disable fullbright (restore defaults)
+            Lighting.Brightness = 1
+            Lighting.ClockTime = 14
+            Lighting.FogEnd = 100000
+            Lighting.GlobalShadows = true
+            Lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 70)
+        end
+    end
+})
+
+local Toggle68 = VisualTab:Toggle({
+    Title = "No Fog",
+    Desc = "Enable or disable fog removal",
+    Icon = "check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        local Lighting = game:GetService("Lighting")
+
+        if state then
+            -- Turn OFF fog
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1e6
+            Lighting.FogDensity = 0
+
+            -- Keep fog removed if changed
+            Lighting:GetPropertyChangedSignal("FogStart"):Connect(function()
+                if state then Lighting.FogStart = 0 end
+            end)
+            Lighting:GetPropertyChangedSignal("FogEnd"):Connect(function()
+                if state then Lighting.FogEnd = 1e6 end
+            end)
+            Lighting:GetPropertyChangedSignal("FogDensity"):Connect(function()
+                if state then Lighting.FogDensity = 0 end
+            end)
+
+            print("✅ No Fog Enabled")
+        else
+            -- Restore fog to default
+            Lighting.FogStart = 0
+            Lighting.FogEnd = 1000
+            Lighting.FogDensity = 0.02
+            print("🌫️ Fog Restored")
+        end
+    end
+})
+
+local Toggle37 = VisualTab:Toggle({
+    Title = "Remove Sky",
+    Desc = "Temporarily remove the current skybox",
+    Icon = "cloud-off",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        local Lighting = game:GetService("Lighting")
+
+        -- store original sky
+        if not getgenv().OriginalSky then
+            for _, obj in pairs(Lighting:GetChildren()) do
+                if obj:IsA("Sky") then
+                    getgenv().OriginalSky = obj:Clone()
+                end
+            end
+        end
+
+        if state then
+            -- remove all sky-related effects
+            for _, obj in pairs(Lighting:GetChildren()) do
+                if obj:IsA("Sky") or obj:IsA("BloomEffect") or obj:IsA("BlurEffect") or obj:IsA("ColorCorrectionEffect") then
+                    obj.Parent = nil
+                end
+            end
+
+            Lighting.GlobalShadows = false
+            Lighting.Brightness = 3
+            Lighting.Ambient = Color3.new(1, 1, 1)
+            Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
+
+            print("☁️ Sky removed (original saved)")
+        else
+            -- restore original sky if saved
+            if getgenv().OriginalSky then
+                local restoredSky = getgenv().OriginalSky:Clone()
+                restoredSky.Parent = Lighting
+                print("🌤️ Original sky restored")
+            else
+                print("⚠️ No saved sky to restore")
+            end
+
+            Lighting.GlobalShadows = true
+            Lighting.Brightness = 2
+            Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
+            Lighting.OutdoorAmbient = Color3.new(0.5, 0.5, 0.5)
+        end
+    end
+})
+
+
+local Section7 = VisualTab:Section({
+    Title = "Health Billboard",
+    Icon = "heart",
+})
+
+local healthBillboardEnabled = false
+local connections = {}
+local tracked = {}
+
+local SETTINGS = {
+    Name = "HealthBillboard",
+    MaxDistance = 250,
+    StudsOffset = Vector3.new(0, 3.5, 0),
+    TextFont = Enum.Font.GothamBold,
+    TextSize = 14,
+    AlwaysOnTop = true,
+    UpdateHz = 30,
+    UseBar = true,
+    ShowModelName = false,
+    BarHeight = 6,
+    BorderThickness = 2.5,
+}
+
+local function clamp(n, a, b) return math.max(a, math.min(b, n)) end
+
+local function lerpColor(c1, c2, t)
+    return Color3.new(
+        c1.R + (c2.R - c1.R) * t,
+        c1.G + (c2.G - c1.G) * t,
+        c1.B + (c2.B - c1.B) * t
+    )
+end
+
+local function colorByPercent(p)
+    p = clamp(p, 0, 1)
+    return lerpColor(Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 90), p)
+end
+
+local function findHead(model)
+    local head = model:FindFirstChild("Head")
+    if head and head:IsA("BasePart") then return head end
+    local best, bestY = nil, -math.huge
+    for _, obj in ipairs(model:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.CanCollide then
+            if obj.Position.Y > bestY then
+                bestY = obj.Position.Y
+                best = obj
+            end
+        end
+    end
+    return best
+end
+
+local function makeBillboard(humanoid, head, model)
+    if tracked[humanoid] and tracked[humanoid].Parent then return tracked[humanoid] end
+
+    local bb = Instance.new("BillboardGui")
+    bb.Name = SETTINGS.Name
+    bb.Adornee = head
+    bb.AlwaysOnTop = SETTINGS.AlwaysOnTop
+    bb.Size = UDim2.fromOffset(160, SETTINGS.UseBar and (26 + SETTINGS.BarHeight) or 26)
+    bb.StudsOffset = SETTINGS.StudsOffset
+    bb.MaxDistance = SETTINGS.MaxDistance
+    bb.ResetOnSpawn = false
+    bb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    bb.Parent = head
+
+    local holder = Instance.new("Frame")
+    holder.Size = UDim2.fromScale(1, 1)
+    holder.BackgroundTransparency = 1
+    holder.Parent = bb
+
+    local text = Instance.new("TextLabel")
+    text.Name = "HPText"
+    text.Size = UDim2.new(1, -12, 0, 24)
+    text.Position = UDim2.fromOffset(6, 2)
+    text.BackgroundTransparency = 1
+    text.TextColor3 = Color3.new(1,1,1)
+    text.TextStrokeTransparency = 0.5
+    text.Font = SETTINGS.TextFont
+    text.TextSize = SETTINGS.TextSize
+    text.Parent = holder
+
+    local barFrame, barFill
+    if SETTINGS.UseBar then
+        barFrame = Instance.new("Frame")
+        barFrame.Name = "Bar"
+        barFrame.Size = UDim2.new(1, -12, 0, SETTINGS.BarHeight)
+        barFrame.Position = UDim2.fromOffset(6, 26)
+        barFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
+        barFrame.BorderSizePixel = SETTINGS.BorderThickness
+        barFrame.Parent = holder
+
+        barFill = Instance.new("Frame")
+        barFill.Name = "Fill"
+        barFill.Size = UDim2.fromScale(1, 1)
+        barFill.BackgroundColor3 = Color3.fromRGB(60, 255, 90)
+        barFill.BorderSizePixel = 0
+        barFill.Parent = barFrame
+    end
+
+    tracked[humanoid] = bb
+
+    local lastDisplayPct = 1
+    local function update()
+        if not healthBillboardEnabled then return end
+        local hp = clamp(humanoid.Health, 0, math.max(1, humanoid.MaxHealth))
+        local maxHp = math.max(1, humanoid.MaxHealth)
+        local pct = hp / maxHp
+        text.Text = string.format("%d / %d", math.floor(hp + 0.5), math.floor(maxHp + 0.5))
+
+        if barFill then
+            lastDisplayPct = lastDisplayPct + (pct - lastDisplayPct) * 0.35
+            barFill.Size = UDim2.fromScale(lastDisplayPct, 1)
+            barFill.BackgroundColor3 = colorByPercent(lastDisplayPct)
+        else
+            text.TextColor3 = colorByPercent(pct)
+        end
+    end
+
+    local healthConn = humanoid.HealthChanged:Connect(update)
+    local maxHealthConn = humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(update)
+    local diedConn = humanoid.Died:Connect(function()
+        if tracked[humanoid] then
+            tracked[humanoid]:Destroy()
+            tracked[humanoid] = nil
+        end
+    end)
+    local heartbeatConn = RunService.Heartbeat:Connect(update)
+
+    connections[humanoid] = {healthConn, maxHealthConn, diedConn, heartbeatConn}
+
+    update()
+end
+
+local function attachToModel(model)
+    if not model or not model:IsA("Model") then return end
+    if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end
+    local humanoid = model:FindFirstChildOfClass("Humanoid")
+    if not humanoid then return end
+    local head = findHead(model)
+    if not head then return end
+    makeBillboard(humanoid, head, model)
+end
+
+local function enableHealthBillboards()
+    for _, hum in ipairs(workspace:GetDescendants()) do
+        if hum:IsA("Humanoid") and hum.Parent and hum.Parent:IsA("Model") then
+            attachToModel(hum.Parent)
+        end
+    end
+
+    connections.descendantAdded = workspace.DescendantAdded:Connect(function(obj)
+        if obj:IsA("Humanoid") then
+            local model = obj.Parent
+            if model and model:IsA("Model") then
+                task.defer(function()
+                    attachToModel(model)
+                end)
+            end
+        end
+    end)
+
+    connections.playerAdded = Players.PlayerAdded:Connect(function(plr)
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end)
+
+    for _, plr in ipairs(Players:GetPlayers()) do
+        if plr.Character then attachToModel(plr.Character) end
+        plr.CharacterAdded:Connect(function(char)
+            task.defer(function()
+                attachToModel(char)
+            end)
+        end)
+    end
+end
+
+local function disableHealthBillboards()
+    for humanoid, connList in pairs(connections) do
+        if type(connList) == "table" then
+            for _, conn in ipairs(connList) do
+                conn:Disconnect()
+            end
+        elseif connList.Disconnect then
+            connList:Disconnect()
+        end
+    end
+    connections = {}
+
+    for humanoid, billboard in pairs(tracked) do
+        if billboard and billboard.Parent then
+            billboard:Destroy()
+        end
+    end
+    tracked = {}
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("BillboardGui") and obj.Name == SETTINGS.Name then
+            obj:Destroy()
+        end
+    end
+end
+
+VisualTab:Toggle({
+    Title = "Health Billboard",
+    Desc = "Show health bars on entities",
+    Icon = "heart",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        healthBillboardEnabled = state
+        if state then
+            enableHealthBillboards()
+        else
+            disableHealthBillboards()
+        end
+        print("✅ Health Billboard", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Divider()
+
+local Section8 = VisualTab:Section({
+    Title = "ESP System",
+    Icon = "eye",
+    Opened = true,
+})
+
+local ActiveEspItems = false
+local ActiveEspEnemy = false
+local ActiveEspChildren = false
+local ActiveEspPeltTrader = false
+local ActiveDistanceEsp = false
+
+local function CreateEsp(Char, Color, Text, Parent, number)
+    if not Char or not Parent or not Parent:IsA("BasePart") then return end
+    if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
+
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "ESP_Highlight"
+    highlight.Adornee = Char
+    highlight.FillColor = Color
+    highlight.FillTransparency = 1
+    highlight.OutlineColor = Color
+    highlight.OutlineTransparency = 0
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = Char
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "ESP"
+    billboard.Size = UDim2.new(0, 50, 0, 25)
+    billboard.AlwaysOnTop = true
+    billboard.StudsOffset = Vector3.new(0, number or 2, 0)
+    billboard.Adornee = Parent
+    billboard.Parent = Parent
+
+    local label = Instance.new("TextLabel")
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.BackgroundTransparency = 1
+    label.Text = Text
+    label.TextColor3 = Color
+    label.TextScaled = true
+    label.Parent = billboard
+
+    task.spawn(function()
+        while highlight.Parent and billboard.Parent and Parent.Parent do
+            local camera = workspace.CurrentCamera
+            if ActiveDistanceEsp and camera and Parent:IsA("BasePart") then
+                local distance = (camera.CFrame.Position - Parent.Position).Magnitude
+                label.Text = Text .. " (" .. math.floor(distance + 0.5) .. " m)"
+            else
+                label.Text = Text
+            end
+            RunService.Heartbeat:Wait()
+        end
+        if highlight.Parent then highlight:Destroy() end
+        if billboard.Parent then billboard:Destroy() end
+    end)
+end
+
+local function RemoveEsp(Char, Parent)
+    if Char and Char:FindFirstChildOfClass("Highlight") then
+        Char:FindFirstChildOfClass("Highlight"):Destroy()
+    end
+    if Parent and Parent:FindFirstChild("ESP") then
+        Parent:FindFirstChild("ESP"):Destroy()
+    end
+end
+
+local function UpdateItemsEsp()
+    if not workspace:FindFirstChild("Items") then return end
+    if ActiveEspItems then
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                CreateEsp(obj, Color3.fromRGB(255, 255, 0), obj.Name, obj.PrimaryPart, 2)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Items:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateEnemiesEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspEnemy then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                CreateEsp(obj, Color3.fromRGB(255, 0, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               not (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                    obj.Name == "Lost Child3" or obj.Name == "Lost Child4" or
+                    obj.Name == "Pelt Trader") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdateChildrenEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspChildren then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 0), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and
+               (obj.Name == "Lost Child" or obj.Name == "Lost Child2" or
+                obj.Name == "Lost Child3" or obj.Name == "Lost Child4") then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+local function UpdatePeltTraderEsp()
+    if not workspace:FindFirstChild("Characters") then return end
+    if ActiveEspPeltTrader then
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                CreateEsp(obj, Color3.fromRGB(0, 255, 255), obj.Name, obj.PrimaryPart, 3)
+            end
+        end
+    else
+        for _, obj in pairs(workspace.Characters:GetChildren()) do
+            if obj:IsA("Model") and obj.PrimaryPart and obj.Name == "Pelt Trader" then
+                RemoveEsp(obj, obj.PrimaryPart)
+            end
+        end
+    end
+end
+
+VisualTab:Toggle({
+    Title = "ESP Items",
+    Desc = "Highlight items in the world",
+    Icon = "package",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveEspItems = state
+        UpdateItemsEsp()
+        print("✅ ESP Items", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "ESP Enemies",
+    Desc = "Highlight enemy entities",
+    Icon = "skull",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveEspEnemy = state
+        UpdateEnemiesEsp()
+        print("✅ ESP Enemies", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "ESP Children",
+    Desc = "Highlight lost children",
+    Icon = "baby",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveEspChildren = state
+        UpdateChildrenEsp()
+        print("✅ ESP Children", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "ESP Pelt Trader",
+    Desc = "Highlight pelt trader",
+    Icon = "user",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveEspPeltTrader = state
+        UpdatePeltTraderEsp()
+        print("✅ ESP Pelt Trader", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Show Distance in ESP",
+    Desc = "Display distance to ESP targets",
+    Icon = "ruler",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveDistanceEsp = state
+        if ActiveEspItems then UpdateItemsEsp() end
+        if ActiveEspEnemy then UpdateEnemiesEsp() end
+        if ActiveEspChildren then UpdateChildrenEsp() end
+        if ActiveEspPeltTrader then UpdatePeltTraderEsp() end
+        print("✅ Show Distance in ESP", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Button({
+    Title = "Clear All ESP",
+    Desc = "Removes all active ESP elements",
+    Locked = false,
+    Callback = function()
+        ActiveEspItems = false
+        ActiveEspEnemy = false
+        ActiveEspChildren = false
+        ActiveEspPeltTrader = false
+        
+        UpdateItemsEsp()
+        UpdateEnemiesEsp()
+        UpdateChildrenEsp()
+        UpdatePeltTraderEsp()
+        
+        print("✅ All ESP cleared!")
+    end
+})
+
+VisualTab:Dropdown({
+    Title = "ESP Color Theme",
+    Values = { "Default", "Bright", "Dark", "Neon" },
+    Value = "Default",
+    Callback = function(option)
+        print("🎨 ESP Color Theme selected:", option)
+    end
+})
+
+local function setupEspConnections()
+    if workspace:FindFirstChild("Items") then
+        workspace.Items.ChildAdded:Connect(function(child)
+            if ActiveEspItems and child:IsA("Model") and child.PrimaryPart then
+                CreateEsp(child, Color3.fromRGB(255, 255, 0), child.Name, child.PrimaryPart, 2)
+            end
+        end)
+
+        workspace.Items.ChildRemoved:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                RemoveEsp(child, child.PrimaryPart)
+            end
+        end)
+    end
+
+    if workspace:FindFirstChild("Characters") then
+        workspace.Characters.ChildAdded:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                if ActiveEspEnemy and
+                   not (child.Name == "Lost Child" or child.Name == "Lost Child2" or
+                        child.Name == "Lost Child3" or child.Name == "Lost Child4" or
+                        child.Name == "Pelt Trader") then
+                    CreateEsp(child, Color3.fromRGB(255, 0, 0), child.Name, child.PrimaryPart, 3)
+                elseif ActiveEspChildren and
+                   (child.Name == "Lost Child" or child.Name == "Lost Child2" or
+                    child.Name == "Lost Child3" or child.Name == "Lost Child4") then
+                    CreateEsp(child, Color3.fromRGB(0, 255, 0), child.Name, child.PrimaryPart, 3)
+                elseif ActiveEspPeltTrader and child.Name == "Pelt Trader" then
+                    CreateEsp(child, Color3.fromRGB(0, 255, 255), child.Name, child.PrimaryPart, 3)
+                end
+            end
+        end)
+
+        workspace.Characters.ChildRemoved:Connect(function(child)
+            if child:IsA("Model") and child.PrimaryPart then
+                RemoveEsp(child, child.PrimaryPart)
+            end
+        end)
+    end
+end
+
+setupEspConnections()
+
+VisualTab:Paragraph({
+    Title = "Player ESP System",
+    Desc = "Advanced ESP system for tracking other players",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {
+        {
+            Icon = "users",
+            Title = "Player ESP",
+            Callback = function()
+                print("Player ESP clicked")
+            end,
+        }
+    }
+})
+
+local playerESPEnabled = false
+local trackedPlayers = {}
+local espConnections = {}
+
+local ESP_SETTINGS = {
+    FillColor = Color3.fromRGB(255, 0, 0),
+    FillTransparency = 0.8,
+    OutlineColor = Color3.fromRGB(255, 255, 255),
+    OutlineTransparency = 0,
+    TextColor = Color3.fromRGB(255, 255, 255),
+    TextSize = 14,
+    MaxDistance = 1000,
+    ShowDistance = true,
+    ShowHealth = true,
+    ShowNames = true,
+    HealthBarEnabled = true,
+    HealthBarHeight = 4
+}
+
+local function createPlayerESP(player)
+    if player == LocalPlayer then return end
+    if not player.Character then return end
+    if trackedPlayers[player] then return end
+    
+    local character = player.Character
+    local humanoid = character:FindFirstChildOfClass("Humanoid")
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    
+    if not humanoid or not rootPart then return end
+    
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "PlayerESP_Highlight"
+    highlight.Adornee = character
+    highlight.FillColor = ESP_SETTINGS.FillColor
+    highlight.FillTransparency = ESP_SETTINGS.FillTransparency
+    highlight.OutlineColor = ESP_SETTINGS.OutlineColor
+    highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Parent = character
+    
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name = "PlayerESP_Billboard"
+    billboard.Size = UDim2.new(0, 200, 0, 100)
+    billboard.StudsOffset = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop = true
+    billboard.MaxDistance = ESP_SETTINGS.MaxDistance
+    billboard.Adornee = rootPart
+    billboard.Parent = rootPart
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 1
+    frame.Parent = billboard
+    
+    local nameLabel = Instance.new("TextLabel")
+    nameLabel.Name = "NameLabel"
+    nameLabel.Size = UDim2.new(1, 0, 0, 20)
+    nameLabel.Position = UDim2.new(0, 0, 0, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.Text = player.DisplayName
+    nameLabel.TextColor3 = ESP_SETTINGS.TextColor
+    nameLabel.TextSize = ESP_SETTINGS.TextSize
+    nameLabel.TextStrokeTransparency = 0.5
+    nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    nameLabel.Font = Enum.Font.GothamBold
+    nameLabel.Parent = frame
+    
+    local distanceLabel = Instance.new("TextLabel")
+    distanceLabel.Name = "DistanceLabel"
+    distanceLabel.Size = UDim2.new(1, 0, 0, 15)
+    distanceLabel.Position = UDim2.new(0, 0, 0, 20)
+    distanceLabel.BackgroundTransparency = 1
+    distanceLabel.Text = "0m"
+    distanceLabel.TextColor3 = Color3.fromRGB(200, 200, 200)
+    distanceLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    distanceLabel.TextStrokeTransparency = 0.5
+    distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    distanceLabel.Font = Enum.Font.Gotham
+    distanceLabel.Parent = frame
+    
+    local healthLabel = Instance.new("TextLabel")
+    healthLabel.Name = "HealthLabel"
+    healthLabel.Size = UDim2.new(1, 0, 0, 15)
+    healthLabel.Position = UDim2.new(0, 0, 0, 35)
+    healthLabel.BackgroundTransparency = 1
+    healthLabel.Text = "100/100"
+    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+    healthLabel.TextSize = ESP_SETTINGS.TextSize - 2
+    healthLabel.TextStrokeTransparency = 0.5
+    healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+    healthLabel.Font = Enum.Font.Gotham
+    healthLabel.Parent = frame
+    
+    local healthBarBG = Instance.new("Frame")
+    healthBarBG.Name = "HealthBarBG"
+    healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
+    healthBarBG.Position = UDim2.new(0, 0, 0, 50)
+    healthBarBG.BackgroundColor3 = Color3.new(0, 0, 0)
+    healthBarBG.BorderSizePixel = 1
+    healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
+    healthBarBG.Parent = frame
+    
+    local healthBarFill = Instance.new("Frame")
+    healthBarFill.Name = "HealthBarFill"
+    healthBarFill.Size = UDim2.new(1, 0, 1, 0)
+    healthBarFill.Position = UDim2.new(0, 0, 0, 0)
+    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    healthBarFill.BorderSizePixel = 0
+    healthBarFill.Parent = healthBarBG
+    
+    local function updateESP()
+        if not playerESPEnabled then return end
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
+        if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
+        
+        local playerRoot = player.Character.HumanoidRootPart
+        local localRoot = LocalPlayer.Character.HumanoidRootPart
+        local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
+        
+        if not playerRoot or not localRoot or not playerHumanoid then return end
+        
+        if ESP_SETTINGS.ShowDistance then
+            local distance = (localRoot.Position - playerRoot.Position).Magnitude
+            distanceLabel.Text = math.floor(distance) .. "m"
+            distanceLabel.Visible = true
+        else
+            distanceLabel.Visible = false
+        end
+        
+        if ESP_SETTINGS.ShowHealth then
+            local health = math.floor(playerHumanoid.Health)
+            local maxHealth = math.floor(playerHumanoid.MaxHealth)
+            local healthPercent = health / maxHealth
+            
+            healthLabel.Text = health .. "/" .. maxHealth
+            healthLabel.Visible = true
+            
+            if ESP_SETTINGS.HealthBarEnabled then
+                healthBarBG.Visible = true
+                healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
+                
+                if healthPercent > 0.6 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+                    healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
+                elseif healthPercent > 0.3 then
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+                else
+                    healthBarFill.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+                    healthLabel.TextColor3 = Color3.fromRGB(255, 0, 0)
+                end
+            else
+                healthBarBG.Visible = false
+            end
+        else
+            healthLabel.Visible = false
+            healthBarBG.Visible = false
+        end
+        
+        if ESP_SETTINGS.ShowNames then
+            nameLabel.Text = player.DisplayName
+            nameLabel.Visible = true
+        else
+            nameLabel.Visible = false
+        end
+    end
+    
+    trackedPlayers[player] = {
+        highlight = highlight,
+        billboard = billboard,
+        updateFunction = updateESP
+    }
+    
+    local connection = RunService.Heartbeat:Connect(updateESP)
+    espConnections[player] = connection
+    
+    local function onPlayerRemoving()
+        removePlayerESP(player)
+    end
+    
+    local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
+        if removedPlayer == player then
+            onPlayerRemoving()
+        end
+    end)
+    
+    if not espConnections[player] then
+        espConnections[player] = {}
+    end
+    if type(espConnections[player]) == "table" then
+        espConnections[player].removeConnection = removeConnection
+    end
+    
+    updateESP()
+end
+
+local function removePlayerESP(player)
+    if trackedPlayers[player] then
+        if trackedPlayers[player].highlight then
+            trackedPlayers[player].highlight:Destroy()
+        end
+        if trackedPlayers[player].billboard then
+            trackedPlayers[player].billboard:Destroy()
+        end
+        trackedPlayers[player] = nil
+    end
+    
+    if espConnections[player] then
+        if type(espConnections[player]) == "userdata" then
+            espConnections[player]:Disconnect()
+        elseif type(espConnections[player]) == "table" then
+            if espConnections[player].removeConnection then
+                espConnections[player].removeConnection:Disconnect()
+            end
+        end
+        espConnections[player] = nil
+    end
+end
+
+local function enablePlayerESP()
+    playerESPEnabled = true
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and player.Character then
+            createPlayerESP(player)
+        end
+    end
+    
+    espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
+        if playerESPEnabled then
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    task.wait(1)
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end)
+    
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            player.CharacterAdded:Connect(function(character)
+                if playerESPEnabled then
+                    task.wait(1)
+                    createPlayerESP(player)
+                end
+            end)
+        end
+    end
+    
+    print("✅ Player ESP Enabled")
+end
+
+local function disablePlayerESP()
+    playerESPEnabled = false
+    
+    for player, _ in pairs(trackedPlayers) do
+        removePlayerESP(player)
+    end
+    
+    if espConnections.playerAdded then
+        espConnections.playerAdded:Disconnect()
+        espConnections.playerAdded = nil
+    end
+    
+    for player, connection in pairs(espConnections) do
+        if type(connection) == "userdata" then
+            connection:Disconnect()
+        elseif type(connection) == "table" then
+            if connection.removeConnection then
+                connection.removeConnection:Disconnect()
+            end
+        end
+    end
+    espConnections = {}
+    
+    print("❌ Player ESP Disabled")
+end
+
+VisualTab:Toggle({
+    Title = "Player ESP",
+    Desc = "Enable ESP for other players",
+    Icon = "users",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            enablePlayerESP()
+        else
+            disablePlayerESP()
+        end
+        print("✅ Player ESP", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Show Player Names",
+    Desc = "Display player names in ESP",
+    Icon = "user-check",
+    Type = "Checkbox",
+    Default = true,
+    Callback = function(state)
+        ESP_SETTINGS.ShowNames = state
+        print("✅ Show Player Names", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Show Player Distance",
+    Desc = "Show distance to players",
+    Icon = "ruler",
+    Type = "Checkbox",
+    Default = true,
+    Callback = function(state)
+        ESP_SETTINGS.ShowDistance = state
+        print("✅ Show Player Distance", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Show Player Health",
+    Desc = "Display player health",
+    Icon = "heart-pulse",
+    Type = "Checkbox",
+    Default = true,
+    Callback = function(state)
+        ESP_SETTINGS.ShowHealth = state
+        print("✅ Show Player Health", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Toggle({
+    Title = "Show Health Bar",
+    Desc = "Enable health bar in player ESP",
+    Icon = "activity",
+    Type = "Checkbox",
+    Default = true,
+    Callback = function(state)
+        ESP_SETTINGS.HealthBarEnabled = state
+        print("✅ Show Health Bar", state and "ON" or "OFF")
+    end
+})
+
+VisualTab:Slider({
+    Title = "ESP Max Distance",
+    Step = 50,
+    Value = { Min = 100, Max = 2000, Default = 1000 },
+    Callback = function(value)
+        ESP_SETTINGS.MaxDistance = value
+        print("📏 ESP Max Distance set to:", value)
+    end
+})
+
+VisualTab:Slider({
+    Title = "ESP Text Size",
+    Step = 1,
+    Value = { Min = 8, Max = 24, Default = 14 },
+    Callback = function(value)
+        ESP_SETTINGS.TextSize = value
+        print("📏 ESP Text Size set to:", value)
+    end
+})
+
+VisualTab:Space()
+
+-- ==================== TAB 5: TELEPORT ====================
+local TpTab = Window:Tab({
+    Title = "Teleport",
+    Icon = "navigation",
+    Locked = false,
+})
+
+local Section9 = TpTab:Section({
+    Title = "Quick Teleports",
+    Icon = "zap",
+})
+
+TpTab:Button({
+    Title = "Teleport to Campfire",
+    Desc = "Quick teleport to campfire location",
+    Locked = false,
+    Callback = function()
+        local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+        
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
+            print("✅ Teleported to campfire successfully!")
+        else
+            print("❌ Teleport failed - Character not found!")
+        end
+    end
+})
+
+TpTab:Button({
+    Title = "Teleport to Spawn",
+    Desc = "Quick teleport back to spawn area",
+    Locked = false,
+    Callback = function()
+        local spawnPosition = Vector3.new(0, 10, 0)
+        
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(spawnPosition)
+            print("✅ Teleported to spawn!")
+        else
+            print("❌ Teleport failed - Character not found!")
+        end
+    end
+})
+
+TpTab:Button({
+    Title = "Teleport to Random Item",
+    Desc = "Teleport to a random item in the workspace",
+    Locked = false,
+    Callback = function()
+        local ItemsFolder = workspace:FindFirstChild("Items")
+        if ItemsFolder then
+            local allItems = {}
+            for _, item in pairs(ItemsFolder:GetChildren()) do
+                if item:IsA("Model") and (item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")) then
+                    table.insert(allItems, item)
+                end
+            end
+            
+            if #allItems > 0 then
+                local randomItem = allItems[math.random(1, #allItems)]
+                local targetPart = randomItem.PrimaryPart or randomItem:FindFirstChildWhichIsA("BasePart")
+                local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+                
+                if targetPart and hrp then
+                    hrp.CFrame = targetPart.CFrame + Vector3.new(0, 5, 0)
+                    print("✅ Teleported to random item:", randomItem.Name)
+                else
+                    print("❌ Failed to teleport to random item!")
+                end
+            else
+                print("❌ No items found to teleport to!")
+            end
+        else
+            print("❌ Items folder not found!")
+        end
+    end
+})
+
+TpTab:Divider()
+
+local Section10 = TpTab:Section({
+    Title = "Lost Child Teleports",
+    Icon = "baby",
+    Opened = true,
+})
+
+local CharactersFolder = workspace:FindFirstChild("Characters")
+
+if CharactersFolder then
+    local lostChildPaths = {
+        "Lost Child",
+        "Lost Child2", 
+        "Lost Child3",
+        "Lost Child4"
+    }
+    
+    local availableChildren = {}
+    local selectedChild = nil
+
+    local function refreshLostChildren()
+        local previousChildren = {}
+        for _, child in pairs(availableChildren) do
+            previousChildren[child] = true
+        end
+        
+        availableChildren = {}
+        
+        for _, childName in pairs(lostChildPaths) do
+            local childModel = CharactersFolder:FindFirstChild(childName)
+            if childModel and childModel:IsA("Model") then
+                table.insert(availableChildren, childName)
+            end
+        end
+        
+        print("👶 Found", #availableChildren, "Lost Children available for teleport")
+        
+        if selectedChild and not CharactersFolder:FindFirstChild(selectedChild) then
+            selectedChild = nil
+            print("⚠️ Previously selected Lost Child no longer exists")
+        end
+    end
+
+    local function getLostChildTeleportPosition(childName)
+        local childModel = CharactersFolder:FindFirstChild(childName)
+        if not childModel then
+            return nil
+        end
+        
+        local rootPart = childModel:FindFirstChild("HumanoidRootPart")
+        if rootPart then
+            return rootPart.Position
+        end
+        
+        local anyPart = childModel:FindFirstChildWhichIsA("BasePart")
+        if anyPart then
+            return anyPart.Position
+        end
+        
+        if childModel.PrimaryPart then
+            return childModel.PrimaryPart.Position
+        end
+        
+        return nil
+    end
+
+    local function safeTeleportToLostChild(childName)
+        local player = LocalPlayer
+        if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
+            print("❌ Player character not found!")
+            return false
+        end
+        
+        local targetPosition = getLostChildTeleportPosition(childName)
+        if not targetPosition then
+            print("❌ Could not find valid teleport position for", childName)
+            return false
+        end
+        
+        local safeLostChildTP = false -- Default false, can be toggled if needed
+        local heightOffset = safeLostChildTP and 15 or 5
+        local teleportPosition = targetPosition + Vector3.new(0, heightOffset, 0)
+        
+        player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
+        
+        local safetyText = safeLostChildTP and " (Safe Mode)" or ""
+        print("✅ Teleported to", childName .. safetyText)
+        return true
+    end
+
+    refreshLostChildren()
+
+    local childDropdown = TpTab:Dropdown({
+        Title = "Select Lost Child",
+        Values = availableChildren,
+        Value = availableChildren[1] or "None",
+        Callback = function(selected)
+            selectedChild = selected
+            print("👶 Selected Lost Child:", selected)
+        end
+    })
+
+    TpTab:Button({
+        Title = "Teleport to Selected Lost Child",
+        Desc = "Teleport to the currently selected Lost Child",
+        Locked = false,
+        Callback = function()
+            if not selectedChild then
+                print("❌ No Lost Child selected!")
+                return
+            end
+            
+            safeTeleportToLostChild(selectedChild)
+        end
+    })
+
+    for _, childName in pairs(lostChildPaths) do
+        TpTab:Button({
+            Title = "TP to " .. childName,
+            Desc = "Direct teleport to " .. childName,
+            Locked = false,
+            Callback = function()
+                if not CharactersFolder:FindFirstChild(childName) then
+                    print("❌", childName, "not found!")
+                    return
+                end
+                
+                safeTeleportToLostChild(childName)
+            end
+        })
+    end
+
+    TpTab:Button({
+        Title = "Refresh Lost Children",
+        Desc = "Manually refresh the Lost Children list",
+        Locked = false,
+        Callback = function()
+            print("🔄 Manually refreshing Lost Children...")
+            refreshLostChildren()
+            print("🔄 Lost Children list refreshed!")
+        end
+    })
+
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            refreshLostChildren()
+        end
+    end)
+
+    TpTab:Toggle({
+        Title = "Safe Lost Child TP",
+        Desc = "Add extra height to avoid collision",
+        Icon = "shield",
+        Type = "Checkbox",
+        Default = false,
+        Callback = function(state)
+            -- Note: This would need to be integrated into the teleport function dynamically
+            print("👶 Safe Lost Child Teleport:", state and "ON" or "OFF")
+        end
+    })
+else
+    TpTab:Paragraph({
+        Title = "⚠️ Characters Folder Missing",
+        Desc = "workspace.Characters folder not found",
+        Color = "Red",
+        Image = "",
+        ImageSize = 30,
+        Thumbnail = "",
+        ThumbnailSize = 80,
+        Locked = false,
+        Buttons = {}
+    })
+end
+
+TpTab:Divider()
+
+local Section11 = TpTab:Section({
+    Title = "Item Teleports",
+    Icon = "package",
+    Opened = true,
+})
+
+local ItemsFolder = workspace:FindFirstChild("Items")
+
+if ItemsFolder then
+    local uniqueModelNames = {}
+    local modelMap = {}
+    local selectedModelName = nil
+
+    local function refreshModelList()
+        local previousCount = #uniqueModelNames
+        local previousNames = {}
+        for _, name in pairs(uniqueModelNames) do
+            previousNames[name] = true
+        end
+        
+        uniqueModelNames = {}
+        modelMap = {}
+
+        for _, item in pairs(ItemsFolder:GetDescendants()) do
+            if item:IsA("Model") then
+                local name = item.Name
+                if not modelMap[name] then
+                    modelMap[name] = {}
+                    table.insert(uniqueModelNames, name)
+                end
+                table.insert(modelMap[name], item)
+            end
+        end
+
+        print("📦 Found", #uniqueModelNames, "unique item types")
+        
+        if selectedModelName and not modelMap[selectedModelName] then
+            selectedModelName = nil
+            print("⚠️ Previously selected item no longer exists")
+        end
+    end
+
+    refreshModelList()
+
+    local itemDropdown = TpTab:Dropdown({
+        Title = "Select Item to Teleport",
+        Values = uniqueModelNames,
+        Value = uniqueModelNames[1] or "None",
+        Callback = function(selected)
+            selectedModelName = selected
+            print("🎯 Selected item:", selected)
+        end
+    })
+
+    task.spawn(function()
+        while true do
+            task.wait(1)
+            refreshModelList()
+        end
+    end)
+
+    local function getClosestModel(modelList)
+        local char = LocalPlayer.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        if not hrp or not modelList then return nil end
+
+        local closest, minDist = nil, math.huge
+        for _, model in pairs(modelList) do
+            local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
+            if primary then
+                local dist = (hrp.Position - primary.Position).Magnitude
+                if dist < minDist then
+                    minDist = dist
+                    closest = primary
+                end
+            end
+        end
+        return closest
+    end
+
+    TpTab:Button({
+        Title = "Teleport to Selected Item",
+        Desc = "Teleport to the closest instance of selected item",
+        Locked = false,
+        Callback = function()
+            if not selectedModelName or not modelMap[selectedModelName] then
+                print("❌ No item selected or item not found!")
+                return
+            end
+
+            local closestPart = getClosestModel(modelMap[selectedModelName])
+            local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+
+            if closestPart and hrp then
+                hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
+                print("✅ Teleported to nearest:", selectedModelName)
+            else
+                print("❌ Could not find valid item to teleport to!")
+            end
+        end
+    })
+
+    TpTab:Button({
+        Title = "Manual Refresh Items",
+        Desc = "Force refresh the item list immediately",
+        Locked = false,
+        Callback = function()
+            print("🔄 Manually refreshing item list...")
+            refreshModelList()
+            print("🔄 Item list manually refreshed! Found", #uniqueModelNames, "item types")
+            if selectedModelName then
+                print("🎯 Currently selected:", selectedModelName)
+            else
+                print("⚠️ No item selected")
+            end
+        end
+    })
+else
+    TpTab:Paragraph({
+        Title = "❌ Items Folder Missing",
+        Desc = "workspace.Items folder not found",
+        Color = "Red",
+        Image = "",
+        ImageSize = 30,
+        Thumbnail = "",
+        ThumbnailSize = 80,
+        Locked = false,
+        Buttons = {}
+    })
+end
+
+TpTab:Divider()
+
+local Section12 = TpTab:Section({
+    Title = "Advanced Teleports",
+    Icon = "cloud",
+})
+
+local safeTeleportMode = false
+
+TpTab:Toggle({
+    Title = "Safe Teleport Mode",
+    Desc = "Adds extra height to teleports to avoid clipping",
+    Icon = "shield",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        safeTeleportMode = state
+        print("✅ Safe Teleport Mode", state and "ON" or "OFF")
+    end
+})
+
+local function safeTeleport(targetCFrame, locationName)
+    local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
+    if not hrp then
+        print("❌ Teleport failed - Character not found!")
+        return false
+    end
+    
+    local finalCFrame = targetCFrame
+    if safeTeleportMode then
+        finalCFrame = targetCFrame + Vector3.new(0, 10, 0)
+    end
+    
+    hrp.CFrame = finalCFrame
+    print("✅ Safely teleported to:", locationName or "Unknown location")
+    return true
+end
+
+-- Sky Platform
+local isOnPlatform = false
+local skyPlatform = nil
+local platformConnection = nil
+
+local function createSkyPlatform(playerPosition)
+    if skyPlatform then
+        skyPlatform:Destroy()
+    end
+    
+    skyPlatform = Instance.new("Part")
+    skyPlatform.Name = "SkyPlatform"
+    skyPlatform.Size = Vector3.new(50, 1, 50)
+    skyPlatform.Position = Vector3.new(playerPosition.X, 200, playerPosition.Z)
+    skyPlatform.Anchored = true
+    skyPlatform.Transparency = 1
+    skyPlatform.CanCollide = true
+    skyPlatform.TopSurface = Enum.SurfaceType.Smooth
+    skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
+    skyPlatform.Parent = workspace
+    
+    platformConnection = RunService.Heartbeat:Connect(function()
+        if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform then
+            local humanoidRootPart = Player.Character.HumanoidRootPart
+            local playerPos = humanoidRootPart.Position
+            
+            if playerPos.Y > 150 then
+                local distance = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(skyPlatform.Position.X, skyPlatform.Position.Z)).Magnitude
+                
+                if distance > 20 then
+                    skyPlatform.Position = Vector3.new(playerPos.X, 200, playerPos.Z)
+                end
+                
+                local minSize = 100
+                if skyPlatform.Size.X < minSize then
+                    skyPlatform.Size = Vector3.new(minSize, 1, minSize)
+                end
+            end
+        end
+    end)
+end
+
+local function teleportToSky()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    
+    createSkyPlatform(humanoidRootPart.Position)
+    
+    humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 205, humanoidRootPart.Position.Z)
+    
+    isOnPlatform = true
+    print("☁️ Teleported to invisible sky platform!")
+end
+
+local function teleportToGround()
+    local character = Player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("☁️ Error: Character not found")
+        return
+    end
+    
+    local humanoidRootPart = character.HumanoidRootPart
+    local currentPosition = humanoidRootPart.Position
+    
+    local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0))
+    
+    if raycast then
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
+    else
+        humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
+    end
+    
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    
+    isOnPlatform = false
+    print("☁️ Teleported back to ground!")
+end
+
+TpTab:Toggle({
+    Title = "Sky Platform",
+    Desc = "Create an invisible platform in the sky",
+    Icon = "cloud",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
+        
+        if state then
+            teleportToSky()
+        else
+            teleportToGround()
+        end
+    end
+})
+
+local function cleanupSkyPlatform()
+    if skyPlatform then
+        skyPlatform:Destroy()
+        skyPlatform = nil
+    end
+    if platformConnection then
+        platformConnection:Disconnect()
+        platformConnection = nil
+    end
+    isOnPlatform = false
+end
+
+Player.CharacterRemoving:Connect(cleanupSkyPlatform)
+
+TpTab:Space()
+
+
+local MiscTab = Window:Tab({
+    Title = "Misc",
+    Icon = "folder",
+    Locked = false,
+})
+
+local ToggleAntiAFK = MiscTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Prevents automatic idle kick",
+    Icon = "shield-check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local player = game.Players.LocalPlayer
+
+            -- Disconnect existing idle connections if any
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+            end
+
+            -- Connect to Idled event
+            getgenv().AntiAFKConnection = player.Idled:Connect(function()
+                -- simulate click or jump to prevent kick
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+                print("⏱ Anti-AFK triggered!")
+            end)
+
+            print("✅ Anti-AFK enabled")
+        else
+            -- Disconnect Anti-AFK
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+                getgenv().AntiAFKConnection = nil
+            end
+            print("⛔ Anti-AFK disabled")
+        end
+    end
+})
+
+MiscTab:Divider()
+
+local Section15 = MiscTab:Section({
+    Title = "External Scripts",
+    Icon = "code",
+})
+
+MiscTab:Paragraph({
+    Title = "External Scripts Info",
+    Desc = "These scripts are loaded from external sources. Use at your own risk. I will try to keep them updated.",
+    Color = "Blue",
+})
+
+MiscTab:Button({
+    Title = "Load Fling All Script",
+    Desc = "Loads a script to fling all players. Can kill players. Use wisely.",
+    Locked = false,
+    Callback = function()
+        WindUI:Notify({
+            Title = "Loading Fling Script",
+            Content = "Loading external fling script...",
+            Duration = 3,
+            Icon = "download",
+        })
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Universal-script-/refs/heads/main/Fling%20all%20v2%20best"))()
+        end)
+        if success then
+            WindUI:Notify({
+                Title = "Script Loaded",
+                Content = "Fling All script loaded successfully!",
+                Duration = 3,
+                Icon = "check",
+            })
+        else
+            WindUI:Notify({
+                Title = "Load Error",
+                Content = "Failed to load Fling All script: " .. (err or "Unknown error"),
+                Duration = 5,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+MiscTab:Paragraph({
+    Title = "Item Bring Update",
+    Desc = "Item Bring script updated to v3.0. May cause lag when bringing many items.",
+    Color = "Green",
+})
+
+MiscTab:Button({
+    Title = "Load Bring Items Script",
+    Desc = "Loads script to bring items to you. May cause lag.",
+    Locked = false,
+    Callback = function() 
+        WindUI:Notify({
+            Title = "Loading Bring Script",
+            Content = "Loading external bring items script...",
+            Duration = 3,
+            Icon = "download",
+        })
+        local success, err = pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/Button-gui/refs/heads/main/99%20nights%20bring%20items%20v2"))()
+        end)
+        if success then
+            WindUI:Notify({
+                Title = "Script Loaded",
+                Content = "Bring Items script loaded successfully!",
+                Duration = 3,
+                Icon = "check",
+            })
+        else
+            WindUI:Notify({
+                Title = "Load Error",
+                Content = "Failed to load Bring Items script: " .. (err or "Unknown error"),
+                Duration = 5,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+Window:OnDestroy(function()
+    print("Window destroyed")
+end)
