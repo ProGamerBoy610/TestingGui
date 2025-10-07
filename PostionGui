@@ -19,7 +19,7 @@ WindUI:AddTheme({
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "door-open",
-    Author = "Version 32.0",
+    Author = "Version 34.0",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
