@@ -1174,7 +1174,7 @@ local ToggleAutoeat = AutoTab:Toggle({
 
 local Dropdownautoeat = AutoTab:Dropdown({
     Title = "Select Foods to Eat",
-    Values = { "Carrot", "Berry", "Apple", "Meat" },
+    Values = { "Carrot", "Berry", "Apple", "Meat","Stew" },
     Value = { "Carrot" },
     Multi = true,
     AllowNone = true,
@@ -1217,6 +1217,29 @@ local Buttonlockedcoming = AutoTab:Button({
     Locked = true,
     Callback = function()
         print("Wait it will come soon")
+    end
+})
+
+local Buttonlockedcoming2 = AutoTab:Button({
+    Title = "Auto plant Trees",
+    Desc = "Comming Soon",
+    Locked = true,
+    Callback = function()
+        print("Wait it will come soon")
+    end
+})
+
+local Slider1 = Tab3:Slider({
+    Title = "Slider 1 (Int)",
+    Locked = true,
+    Step = 1,
+    Value = {
+        Min = 0,
+        Max = 100,
+        Default = 50,
+    },
+    Callback = function(value)
+        print("Slider 1: " .. value)
     end
 })
 
@@ -2045,36 +2068,6 @@ local VisualTab = Window:Tab({
 local Section7 = VisualTab:Section({
     Title = "General Visuals",
     Icon = "map",
-})
-
-local ToggleFullbright = VisualTab:Toggle({
-    Title = "Fullbright",
-    Desc = "Enable or disable fullbright",
-    Icon = "check",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        print("Toggle 1: " .. tostring(state))
-        
-        -- Fullbright functionality
-        local Lighting = game:GetService("Lighting")
-        
-        if state then
-            -- Enable fullbright
-            Lighting.Brightness = 2
-            Lighting.ClockTime = 14
-            Lighting.FogEnd = 100000
-            Lighting.GlobalShadows = false
-            Lighting.OutdoorAmbient = Color3.fromRGB(128, 128, 128)
-        else
-            -- Disable fullbright (restore defaults)
-            Lighting.Brightness = 1
-            Lighting.ClockTime = 14
-            Lighting.FogEnd = 100000
-            Lighting.GlobalShadows = true
-            Lighting.OutdoorAmbient = Color3.fromRGB(70, 70, 70)
-        end
-    end
 })
 
 local Toggle68 = VisualTab:Toggle({
