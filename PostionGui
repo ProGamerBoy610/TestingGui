@@ -58,7 +58,7 @@ Window:EditOpenButton({
 local Section = Window:Section({
     Title = "Section for the tabs",
     Icon = "bird",
-    Opened = true,
+    Opened = false,
 })
 
 -- ==================== TAB 1: INFO ====================
@@ -74,8 +74,6 @@ local Sectiontest = InfoTab:Section({
     Title = "Player Information Dashboard",
     Icon = "user-check",
 })
-
-Section:SetTitle("New Title Example")
 
 InfoTab:Paragraph({
     Title = "Player Information Dashboard",
