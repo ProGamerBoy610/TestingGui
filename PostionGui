@@ -1616,7 +1616,25 @@ showOffset()
     end
 })
 
--- Auto Sapling Planter Script with Circle Pattern + GUI Integration
+[9:12 am, 10/10/2025] Aadi: -- Auto Sapling Planter Script with Circle Pattern + GUI Integration
+-- Finds saplings and plants them in a circle around a location
+-- Paste this into your executor
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local RS = game:GetService("ReplicatedStorage")
+
+-- Configuration
+local autoPlant = false -- Start disabled, will be triggered by button
+local checkInterval = 0.5
+
+-- ========== CIRCLE PLANTING CONFIGURATION ==========
+local centerLocation = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+local circleRadius = 5 -- Distance from center (controlled by slider)
+local saplingSpacing = 2 -- Space between each sapli…
+[9:24 am, 10/10/2025] Aadi: -- Auto Sapling Planter Script with Circle Pattern + GUI Integration
 -- Finds saplings and plants them in a circle around a location
 -- Paste this into your executor
 
@@ -1664,7 +1682,8 @@ end
 local function setRadius(radius)
     if type(radius) == "number" and radius > 0 then
         circleRadius = radius
-        print("✓ Circle radius set to: " .. radius)
+        currentAngle = 0 -- Reset angle when radius changes
+        print("✓ Circle radius set to: " .. radius .. " studs")
         return true
     else
         warn("✗ Invalid radius! Use a positive number.")
@@ -1676,10 +1695,22 @@ end
 local function setSpacing(spacing)
     if type(spacing) == "number" and spacing > 0 then
         saplingSpacing = spacing
-        print("✓ Sapling spacing set to: " .. spacing)
+        print("✓ Sapling spacing set to: " .. spacing .. " studs")
         return true
     else
         warn("✗ Invalid spacing! Use a positive number.")
+        return false
+    end
+end
+
+-- Function to set plant height
+local function setHeight(height)
+    if type(height) == "number" then
+        plantHeightOffset = height
+        print("✓ Plant height set to: " .. height .. " studs")
+        return true
+    else
+        warn("✗ Invalid height! Use a number.")
         return false
     end
 end
@@ -1694,24 +1725,25 @@ end
 local function showSettings()
     print("========== PLANTING SETTINGS ==========")
     print("Center: X=" .. centerLocation.X .. ", Y=" .. centerLocation.Y .. ", Z=" .. centerLocation.Z)
-    print("Radius: " .. circleRadius)
-    print("Spacing: " .. saplingSpacing)
-    print("Height Offset: " .. plantHeightOffset)
+    print("Radius: " .. circleRadius .. " studs")
+    print("Spacing: " .. saplingSpacing .. " studs")
+    print("Height Offset: " .. plantHeightOffset .. " studs")
     print("Current Angle: " .. math.deg(currentAngle) .. " degrees")
     print("======================================")
 end
 
 -- Function to calculate next position in circle
 local function getNextCirclePosition()
-    -- Calculate position using circle formula
+    -- Calculate position using circle formula with CURRENT radius value
     local x = centerLocation.X + (circleRadius * math.cos(currentAngle))
     local z = centerLocation.Z + (circleRadius * math.sin(currentAngle))
-    local y = centerLocation.Y + plantHeightOffset -- Plant at half body height above ground
+    local y = centerLocation.Y + plantHeightOffset -- Plant at configured height above ground
     
-    -- Increment angle for next sapling
-    -- Calculate angle increment based on spacing and radius
+    -- Increment angle for next sapling using CURRENT spacing value
     local angleIncrement = saplingSpacing / circleRadius
     currentAngle = currentAngle + angleIncrement
+    
+    print("Next position - Radius: " .. circleRadius .. ", Angle: " .. math.deg(currentAngle) .. "°")
     
     return Vector3.new(x, y, z)
 end
@@ -1733,7 +1765,7 @@ local function plantSapling(sapling)
     
     task.wait(0.15)
     
-    -- Get next position in circle
+    -- Get next position in circle (uses current radius/spacing values)
     local plantPos = getNextCirclePosition()
     
     -- Plant the sapling at calculated position
@@ -1742,7 +1774,7 @@ local function plantSapling(sapling)
     end)
     
     if plantSuccess then
-        print("✓ Planted sapling at: X=" .. math.floor(plantPos.X*100)/100 .. ", Y=" .. math.floor(plantPos.Y*100)/100 .. ", Z=" .. math.floor(plantPos.Z*100)/100)
+        print("✓ Planted at: X=" .. math.floor(plantPos.X*100)/100 .. ", Y=" .. math.floor(plantPos.Y*100)/100 .. ", Z=" .. math.floor(plantPos.Z*100)/100 .. " (R=" .. circleRadius .. ")")
         return true
     else
         return false
@@ -1787,11 +1819,16 @@ local function startPlanting()
     end
     
     isPlanting = true
-    resetCircle() -- Start from beginning of circle
+    resetCircle() -- Start from beginning of circle with NEW settings
+    
+    print("Starting planting with:")
+    print("- Radius: " .. circleRadius)
+    print("- Spacing: " .. saplingSpacing)
+    print("- Height: " .. plantHeightOffset)
     
     WindUI:Notify({
         Title = "Sapling Planter",
-        Content = "Started planting with radius " .. circleRadius,
+        Content = "Started! R=" .. circleRadius .. " S=" .. saplingSpacing .. " H=" .. plantHeightOffset,
         Duration = 3,
         Icon = "check",
     })
@@ -1862,7 +1899,12 @@ local RadiusSlider = AutoTab:Slider({
     },
     Callback = function(value)
         setRadius(value)
-        print("Circle radius set to: " .. value)
+        WindUI:Notify({
+            Title = "Radius Changed",
+            Content = "New radius: " .. value .. " studs",
+            Duration = 1.5,
+            Icon = "info",
+        })
     end
 })
 
@@ -1876,8 +1918,13 @@ local HeightSlider = AutoTab:Slider({
         Default = 2.5,
     },
     Callback = function(value)
-        plantHeightOffset = value
-        print("Plant height offset set to: " .. value)
+        setHeight(value)
+        WindUI:Notify({
+            Title = "Height Changed",
+            Content = "New height: " .. value .. " studs",
+            Duration = 1.5,
+            Icon = "info",
+        })
     end
 })
 
@@ -1892,7 +1939,12 @@ local SpacingSlider = AutoTab:Slider({
     },
     Callback = function(value)
         setSpacing(value)
-        print("Sapling spacing set to: " .. value)
+        WindUI:Notify({
+            Title = "Spacing Changed",
+            Content = "New spacing: " .. value .. " studs",
+            Duration = 1.5,
+            Icon = "info",
+        })
     end
 })
 
@@ -1911,6 +1963,21 @@ local StopPlantButton = AutoTab:Button({
     Desc = "Stop the planting process",
     Callback = function()
         stopPlanting()
+    end
+})
+
+-- Reset Circle Button
+local ResetButton = AutoTab:Button({
+    Title = "Reset Circle",
+    Desc = "Reset to start of circle pattern",
+    Callback = function()
+        resetCircle()
+        WindUI:Notify({
+            Title = "Sapling Planter",
+            Content = "Circle pattern reset",
+            Duration = 2,
+            Icon = "info",
+        })
     end
 })
 
@@ -1953,6 +2020,21 @@ local SetCenterButton = AutoTab:Button({
     end
 })
 
+-- Show Settings Button
+local ShowSettingsButton = AutoTab:Button({
+    Title = "Show Current Settings",
+    Desc = "Display current planting configuration",
+    Callback = function()
+        showSettings()
+        WindUI:Notify({
+            Title = "Current Settings",
+            Content = "R=" .. circleRadius .. " S=" .. saplingSpacing .. " H=" .. plantHeightOffset,
+            Duration = 3,
+            Icon = "info",
+        })
+    end
+})
+
 -- ========== GLOBAL COMMANDS ==========
 _G.SaplingPlanter = {
     -- Planting Functions
@@ -1964,6 +2046,7 @@ _G.SaplingPlanter = {
     setCenter = setCenter,
     setRadius = setRadius,
     setSpacing = setSpacing,
+    setHeight = setHeight,
     resetCircle = resetCircle,
     showSettings = showSettings,
 }
@@ -1971,10 +2054,10 @@ _G.SaplingPlanter = {
 print("==================================")
 print("Auto Sapling Planter with GUI Loaded!")
 print("==================================")
-print("GUI Controls:")
-print("- Adjust Circle Radius slider")
-print("- Adjust Plant Height slider")
-print("- Adjust Sapling Spacing slider")
+print("GUI Controls in AutoTab:")
+print("- Adjust Circle Radius slider (1-50)")
+print("- Adjust Plant Height slider (0-10)")
+print("- Adjust Sapling Spacing slider (0.5-10)")
 print("- Click 'Start Planting' to begin")
 print("- Click 'Stop Planting' to stop")
 print("==================================")
