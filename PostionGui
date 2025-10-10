@@ -55,12 +55,6 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
-local Section = Window:Section({
-    Title = "Section for the tabs",
-    Icon = "bird",
-    Opened = false,
-})
-
 -- ==================== TAB 1: INFO ====================
 local InfoTab = Window:Tab({
     Title = "Info",
@@ -1189,6 +1183,804 @@ local Dropdownautoeat = AutoTab:Dropdown({
     end
 })
 
+local buttonrefresheate = AutoTab:Button({
+    Title = "Bring fuel items",
+    Desc = "Bring fuel items to Campfire",
+    Locked = false,
+    Callback = function()
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local RS = game:GetService("ReplicatedStorage")
+
+local bringDistance = 5
+local checkInterval = 0.1
+local autoCollect = true
+
+
+local customLocation = Vector3.new(-0.26, 12.41, 0.03)
+
+
+local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
+local stopDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
+
+
+local itemsToFind = {
+    "Log",
+    "Coal",
+    "Fuel Canister",
+    "Oil Bararel",
+}
+
+local itemsFolder = workspace:WaitForChild("Items")
+
+-- Function to set custom location
+local function setLocation(x, y, z)
+    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        customLocation = Vector3.new(x, y, z)
+        print("✓ Location set to: " .. tostring(customLocation))
+        return true
+    else
+        warn("✗ Invalid coordinates! Use numbers only.")
+        return false
+    end
+end
+
+-- Function to clear custom location (bring to player)
+local function clearLocation()
+    customLocation = nil
+    print("✓ Location cleared - items will now bring to player")
+end
+
+-- Function to show current location
+local function showLocation()
+    if customLocation then
+        print("Current location: X=" .. customLocation.X .. ", Y=" .. customLocation.Y .. ", Z=" .. customLocation.Z)
+    else
+        print("Current location: Player position (dynamic)")
+    end
+end
+
+-- Function to add a new item name to bring
+local function addItemName(itemName)
+    if itemName and type(itemName) == "string" then
+        table.insert(itemsToFind, itemName)
+        print("✓ Added item: " .. itemName)
+        return true
+    else
+        warn("✗ Invalid item name!")
+        return false
+    end
+end
+
+-- Function to remove an item name
+local function removeItemName(itemName)
+    for i, name in pairs(itemsToFind) do
+        if name == itemName then
+            table.remove(itemsToFind, i)
+            print("✓ Removed item: " .. itemName)
+            return true
+        end
+    end
+    warn("✗ Item not found in list!")
+    return false
+end
+
+-- Function to list all item names
+local function listItemNames()
+    print("========== ITEMS TO BRING ==========")
+    for i, name in pairs(itemsToFind) do
+        print(i .. ". " .. name)
+    end
+    print("====================================")
+end
+
+-- Function to bring a single item
+local function bringItem(item)
+    if not item:IsA("BasePart") and not item:FindFirstChildWhichIsA("BasePart") then
+        return false
+    end
+    
+    local itemPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
+    if not itemPart then return false end
+    
+    -- Start dragging
+    pcall(function()
+        startDragging:FireServer(item)
+    end)
+    
+    task.wait(0.03)
+    
+    -- Determine target position
+    local targetPos
+    if customLocation then
+        -- Use custom location - place items directly at the coordinates
+        targetPos = CFrame.new(customLocation.X, customLocation.Y, customLocation.Z)
+    else
+        -- Use player position
+        targetPos = hrp.CFrame * CFrame.new(0, bringDistance, -bringDistance)
+    end
+    
+    -- Instantly teleport item to target
+    pcall(function()
+        itemPart.CFrame = targetPos
+        itemPart.CanCollide = false
+        itemPart.Velocity = Vector3.new(0, 0, 0)
+        itemPart.RotVelocity = Vector3.new(0, 0, 0)
+        itemPart.Anchored = false
+    end)
+    
+    task.wait(0.03)
+    
+    -- Stop dragging to collect
+    pcall(function()
+        stopDragging:FireServer(item)
+    end)
+    
+    task.wait(0.03)
+    return true
+end
+
+-- Function to bring all items from the list
+local function bringAllItems()
+    local itemCount = 0
+    
+    -- Loop through all item names to find
+    for _, itemName in pairs(itemsToFind) do
+        -- Find all items with this name in workspace.Items
+        for _, item in pairs(itemsFolder:GetChildren()) do
+            if item.Name == itemName and (item:IsA("Model") or item:IsA("BasePart")) then
+                pcall(function()
+                    if bringItem(item) then
+                        itemCount = itemCount + 1
+                    end
+                end)
+            end
+        end
+    end
+    
+    return itemCount
+end
+
+-- Function to bring specific item by name
+local function bringSpecificItem(itemName)
+    local count = 0
+    
+    -- Find all items with this name
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == itemName then
+            pcall(function()
+                if bringItem(item) then
+                    count = count + 1
+                end
+            end)
+        end
+    end
+    
+    if count > 0 then
+        print("Brought " .. count .. " " .. itemName .. "(s)")
+    else
+        warn("Item not found: " .. itemName)
+    end
+    
+    return count
+end
+
+-- Auto collect loop
+if autoCollect then
+    spawn(function()
+        print("Starting auto-collect from workspace.Items...")
+        local attempts = 0
+        local maxAttempts = 3
+        
+        while true do
+            task.wait(checkInterval)
+            local count = bringAllItems()
+            
+            if count > 0 then
+                print("Brought " .. count .. " items")
+                attempts = 0 -- Reset attempts if items found
+            else
+                attempts = attempts + 1
+                if attempts >= maxAttempts then
+                    print("No items found after " .. maxAttempts .. " attempts - stopping auto-collect")
+                    break
+                end
+            end
+        end
+        print("Auto-collect stopped - all items collected!")
+    end)
+    print("Auto-collect enabled! Only bringing items from your list.")
+else
+    print("Manual mode: Use commands below")
+end
+
+-- ========== GLOBAL COMMANDS ==========
+_G.ItemBringer = {
+    -- Location Management
+    setLocation = setLocation,
+    clearLocation = clearLocation,
+    showLocation = showLocation,
+    
+    -- Item Management
+    addItem = addItemName,
+    removeItem = removeItemName,
+    listItems = listItemNames,
+    
+    -- Bringing Functions
+    bringAll = bringAllItems,
+    bring = bringSpecificItem,
+    
+    -- Quick Access
+    bringCarrot = function() bringSpecificItem("Carrot") end,
+    bringLog = function() bringSpecificItem("Log") end,
+    bringWood = function() bringSpecificItem("Wood") end,
+    bringCoal = function() bringSpecificItem("Coal") end,
+}
+
+showLocation()
+listItemNames()
+    end
+})
+
+local ButtonPlantsapling = AutoTab:Button({
+    Title = "Plant Saplings",
+    Desc = "Plant all saplings at your position",
+    Locked = false,
+    Callback = function()
+        -- Auto Sapling Planter Script
+-- Finds saplings and plants them at player position
+-- Paste this into your executor
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local RS = game:GetService("ReplicatedStorage")
+
+-- Configuration
+local autoPlant = true
+local checkInterval = 0.5
+local plantOffset = Vector3.new(0, 0, 0) -- Offset from player position
+
+-- Get remote events
+local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
+local plantItem = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem")
+
+-- Items folder path
+local itemsFolder = workspace:WaitForChild("Items")
+
+-- Function to get player position as vector
+local function getPlayerPosition()
+    local pos = hrp.Position + plantOffset
+    return Vector3.new(pos.X, pos.Y, pos.Z)
+end
+
+-- Function to plant a single sapling
+local function plantSapling(sapling)
+    if not sapling or not sapling.Parent then
+        return false
+    end
+    
+    -- Start dragging the sapling
+    local dragSuccess = pcall(function()
+        startDragging:FireServer(sapling)
+    end)
+    
+    if not dragSuccess then
+        warn("Failed to start dragging sapling")
+        return false
+    end
+    
+    task.wait(0.1)
+    
+    -- Get player position
+    local plantPos = getPlayerPosition()
+    
+    -- Plant the sapling at player position
+    local plantSuccess = pcall(function()
+        plantItem:InvokeServer(sapling, plantPos)
+    end)
+    
+    if plantSuccess then
+        print("✓ Planted sapling at: " .. tostring(plantPos))
+        return true
+    else
+        warn("✗ Failed to plant sapling")
+        return false
+    end
+end
+
+-- Function to find and plant all saplings
+local function plantAllSaplings()
+    local plantedCount = 0
+    
+    -- Find all Sapling items in workspace.Items
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" and item:IsA("Model") then
+            local success = pcall(function()
+                if plantSapling(item) then
+                    plantedCount = plantedCount + 1
+                    task.wait(0.1) -- Small delay between plants
+                end
+            end)
+            
+            if not success then
+                warn("Error planting sapling: " .. item.Name)
+            end
+        end
+    end
+    
+    return plantedCount
+end
+
+-- Function to set plant offset
+local function setOffset(x, y, z)
+    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        plantOffset = Vector3.new(x, y, z)
+        print("✓ Plant offset set to: " .. tostring(plantOffset))
+        return true
+    else
+        warn("✗ Invalid offset! Use numbers only.")
+        return false
+    end
+end
+
+-- Function to clear offset
+local function clearOffset()
+    plantOffset = Vector3.new(0, 0, 0)
+    print("✓ Offset cleared - planting at exact player position")
+end
+
+-- Function to show current offset
+local function showOffset()
+    print("Current plant offset: " .. tostring(plantOffset))
+end
+
+-- Function to plant single sapling manually
+local function plantOne()
+    -- Find first available sapling
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" and item:IsA("Model") then
+            return plantSapling(item)
+        end
+    end
+    warn("No saplings found!")
+    return false
+end
+
+-- Auto plant loop
+if autoPlant then
+    spawn(function()
+        print("Starting auto-planter...")
+        local attempts = 0
+        local maxAttempts = 5
+        
+        while true do
+            task.wait(checkInterval)
+            local count = plantAllSaplings()
+            
+            if count > 0 then
+                print("Planted " .. count .. " sapling(s)")
+                attempts = 0 -- Reset attempts if saplings found
+            else
+                attempts = attempts + 1
+                if attempts >= maxAttempts then
+                    print("No saplings found after " .. maxAttempts .. " attempts - stopping auto-planter")
+                    break
+                end
+            end
+        end
+        print("Auto-planter stopped - all saplings planted!")
+    end)
+    print("Auto-planter enabled!")
+else
+    print("Manual mode: Use commands below")
+end
+
+-- ========== GLOBAL COMMANDS ==========
+_G.SaplingPlanter = {
+    -- Planting Functions
+    plantAll = plantAllSaplings,
+    plantOne = plantOne,
+    
+    -- Offset Management
+    setOffset = setOffset,
+    clearOffset = clearOffset,
+    showOffset = showOffset,
+    
+    -- Toggle auto-plant
+    toggleAuto = function()
+        autoPlant = not autoPlant
+        print("Auto-plant: " .. tostring(autoPlant))
+    end,
+}
+
+print("==================================")
+print("Auto Sapling Planter Loaded!")
+print("Auto-plant: " .. tostring(autoPlant))
+print("==================================")
+print("COMMANDS:")
+print("_G.SaplingPlanter.plantAll() - Plant all saplings")
+print("_G.SaplingPlanter.plantOne() - Plant one sapling")
+print("_G.SaplingPlanter.setOffset(x, y, z) - Set plant offset")
+print("  Example: _G.SaplingPlanter.setOffset(2, 0, 2)")
+print("_G.SaplingPlanter.clearOffset() - Clear offset")
+print("_G.SaplingPlanter.showOffset() - Show current offset")
+print("_G.SaplingPlanter.toggleAuto() - Toggle auto-plant")
+print("==================================")
+
+-- Show initial settings
+showOffset()
+    end
+})
+
+-- Auto Sapling Planter Script with Circle Pattern + GUI Integration
+-- Finds saplings and plants them in a circle around a location
+-- Paste this into your executor
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local RS = game:GetService("ReplicatedStorage")
+
+-- Configuration
+local autoPlant = false -- Start disabled, will be triggered by button
+local checkInterval = 0.5
+
+-- ========== CIRCLE PLANTING CONFIGURATION ==========
+local centerLocation = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+local circleRadius = 5 -- Distance from center (controlled by slider)
+local saplingSpacing = 2 -- Space between each sapling
+local currentAngle = 0 -- Current angle in the circle
+local plantHeightOffset = 2.5 -- Half body height above ground (adjust if needed)
+
+-- Get remote events
+local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
+local plantItem = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem")
+
+-- Items folder path
+local itemsFolder = workspace:WaitForChild("Items")
+
+-- Planting state
+local isPlanting = false
+local plantingCoroutine = nil
+
+-- Function to set center location
+local function setCenter(x, y, z)
+    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        centerLocation = Vector3.new(x, y, z)
+        print("✓ Center location set to: X=" .. x .. ", Y=" .. y .. ", Z=" .. z)
+        return true
+    else
+        warn("✗ Invalid coordinates! Use numbers only.")
+        return false
+    end
+end
+
+-- Function to set circle radius
+local function setRadius(radius)
+    if type(radius) == "number" and radius > 0 then
+        circleRadius = radius
+        print("✓ Circle radius set to: " .. radius)
+        return true
+    else
+        warn("✗ Invalid radius! Use a positive number.")
+        return false
+    end
+end
+
+-- Function to set spacing between saplings
+local function setSpacing(spacing)
+    if type(spacing) == "number" and spacing > 0 then
+        saplingSpacing = spacing
+        print("✓ Sapling spacing set to: " .. spacing)
+        return true
+    else
+        warn("✗ Invalid spacing! Use a positive number.")
+        return false
+    end
+end
+
+-- Function to reset circle (start from beginning)
+local function resetCircle()
+    currentAngle = 0
+    print("✓ Circle pattern reset")
+end
+
+-- Function to show current settings
+local function showSettings()
+    print("========== PLANTING SETTINGS ==========")
+    print("Center: X=" .. centerLocation.X .. ", Y=" .. centerLocation.Y .. ", Z=" .. centerLocation.Z)
+    print("Radius: " .. circleRadius)
+    print("Spacing: " .. saplingSpacing)
+    print("Height Offset: " .. plantHeightOffset)
+    print("Current Angle: " .. math.deg(currentAngle) .. " degrees")
+    print("======================================")
+end
+
+-- Function to calculate next position in circle
+local function getNextCirclePosition()
+    -- Calculate position using circle formula
+    local x = centerLocation.X + (circleRadius * math.cos(currentAngle))
+    local z = centerLocation.Z + (circleRadius * math.sin(currentAngle))
+    local y = centerLocation.Y + plantHeightOffset -- Plant at half body height above ground
+    
+    -- Increment angle for next sapling
+    -- Calculate angle increment based on spacing and radius
+    local angleIncrement = saplingSpacing / circleRadius
+    currentAngle = currentAngle + angleIncrement
+    
+    return Vector3.new(x, y, z)
+end
+
+-- Function to plant a single sapling
+local function plantSapling(sapling)
+    if not sapling or not sapling.Parent then
+        return false
+    end
+    
+    -- Start dragging the sapling
+    local dragSuccess, dragError = pcall(function()
+        startDragging:FireServer(sapling)
+    end)
+    
+    if not dragSuccess then
+        return false
+    end
+    
+    task.wait(0.15)
+    
+    -- Get next position in circle
+    local plantPos = getNextCirclePosition()
+    
+    -- Plant the sapling at calculated position
+    local plantSuccess, plantError = pcall(function()
+        plantItem:InvokeServer(sapling, plantPos)
+    end)
+    
+    if plantSuccess then
+        print("✓ Planted sapling at: X=" .. math.floor(plantPos.X*100)/100 .. ", Y=" .. math.floor(plantPos.Y*100)/100 .. ", Z=" .. math.floor(plantPos.Z*100)/100)
+        return true
+    else
+        return false
+    end
+end
+
+-- Function to find and plant all saplings
+local function plantAllSaplings()
+    local plantedCount = 0
+    
+    -- Find all Sapling items in workspace.Items
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" then
+            local success = pcall(function()
+                if plantSapling(item) then
+                    plantedCount = plantedCount + 1
+                    task.wait(0.2)
+                end
+            end)
+        end
+    end
+    
+    return plantedCount
+end
+
+-- Function to plant single sapling manually
+local function plantOne()
+    -- Find first available sapling
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" then
+            return plantSapling(item)
+        end
+    end
+    return false
+end
+
+-- Function to start planting
+local function startPlanting()
+    if isPlanting then
+        print("Already planting!")
+        return
+    end
+    
+    isPlanting = true
+    resetCircle() -- Start from beginning of circle
+    
+    WindUI:Notify({
+        Title = "Sapling Planter",
+        Content = "Started planting with radius " .. circleRadius,
+        Duration = 3,
+        Icon = "check",
+    })
+    
+    plantingCoroutine = coroutine.create(function()
+        print("Starting planting process...")
+        local attempts = 0
+        local maxAttempts = 5
+        local totalPlanted = 0
+        
+        while isPlanting do
+            task.wait(checkInterval)
+            local count = plantAllSaplings()
+            
+            if count > 0 then
+                totalPlanted = totalPlanted + count
+                print("Planted " .. count .. " sapling(s) - Total: " .. totalPlanted)
+                attempts = 0
+            else
+                attempts = attempts + 1
+                if attempts >= maxAttempts then
+                    print("No more saplings found - stopping")
+                    isPlanting = false
+                    WindUI:Notify({
+                        Title = "Sapling Planter",
+                        Content = "Finished! Planted " .. totalPlanted .. " saplings",
+                        Duration = 5,
+                        Icon = "check",
+                    })
+                    break
+                end
+            end
+        end
+    end)
+    
+    coroutine.resume(plantingCoroutine)
+end
+
+-- Function to stop planting
+local function stopPlanting()
+    if not isPlanting then
+        print("Not currently planting")
+        return
+    end
+    
+    isPlanting = false
+    
+    WindUI:Notify({
+        Title = "Sapling Planter",
+        Content = "Stopped planting",
+        Duration = 2,
+        Icon = "info",
+    })
+    
+    print("Stopped planting")
+end
+
+-- ========== GUI INTEGRATION ==========
+
+-- Radius Slider
+local RadiusSlider = AutoTab:Slider({
+    Title = "Circle Radius",
+    Step = 1,
+    Value = {
+        Min = 1,
+        Max = 50,
+        Default = 5,
+    },
+    Callback = function(value)
+        setRadius(value)
+        print("Circle radius set to: " .. value)
+    end
+})
+
+-- Plant Height Slider
+local HeightSlider = AutoTab:Slider({
+    Title = "Plant Height",
+    Step = 0.5,
+    Value = {
+        Min = 0,
+        Max = 10,
+        Default = 2.5,
+    },
+    Callback = function(value)
+        plantHeightOffset = value
+        print("Plant height offset set to: " .. value)
+    end
+})
+
+-- Spacing Slider
+local SpacingSlider = AutoTab:Slider({
+    Title = "Sapling Spacing",
+    Step = 0.5,
+    Value = {
+        Min = 0.5,
+        Max = 10,
+        Default = 2,
+    },
+    Callback = function(value)
+        setSpacing(value)
+        print("Sapling spacing set to: " .. value)
+    end
+})
+
+-- Start Planting Button
+local StartPlantButton = AutoTab:Button({
+    Title = "Start Planting",
+    Desc = "Begin planting saplings in circle",
+    Callback = function()
+        startPlanting()
+    end
+})
+
+-- Stop Planting Button
+local StopPlantButton = AutoTab:Button({
+    Title = "Stop Planting",
+    Desc = "Stop the planting process",
+    Callback = function()
+        stopPlanting()
+    end
+})
+
+-- Plant One Button
+local PlantOneButton = AutoTab:Button({
+    Title = "Plant One",
+    Desc = "Plant a single sapling",
+    Callback = function()
+        if plantOne() then
+            WindUI:Notify({
+                Title = "Sapling Planter",
+                Content = "Planted one sapling",
+                Duration = 2,
+                Icon = "check",
+            })
+        else
+            WindUI:Notify({
+                Title = "Sapling Planter",
+                Content = "No saplings available",
+                Duration = 2,
+                Icon = "alert-triangle",
+            })
+        end
+    end
+})
+
+-- Set Center to Player Button
+local SetCenterButton = AutoTab:Button({
+    Title = "Set Center to Player",
+    Desc = "Set planting center to current position",
+    Callback = function()
+        local pos = hrp.Position
+        setCenter(pos.X, pos.Y, pos.Z)
+        WindUI:Notify({
+            Title = "Sapling Planter",
+            Content = "Center set to player position",
+            Duration = 2,
+            Icon = "check",
+        })
+    end
+})
+
+-- ========== GLOBAL COMMANDS ==========
+_G.SaplingPlanter = {
+    -- Planting Functions
+    startPlanting = startPlanting,
+    stopPlanting = stopPlanting,
+    plantOne = plantOne,
+    
+    -- Configuration
+    setCenter = setCenter,
+    setRadius = setRadius,
+    setSpacing = setSpacing,
+    resetCircle = resetCircle,
+    showSettings = showSettings,
+}
+
+print("==================================")
+print("Auto Sapling Planter with GUI Loaded!")
+print("==================================")
+print("GUI Controls:")
+print("- Adjust Circle Radius slider")
+print("- Adjust Plant Height slider")
+print("- Adjust Sapling Spacing slider")
+print("- Click 'Start Planting' to begin")
+print("- Click 'Stop Planting' to stop")
+print("==================================")
+
+-- Show initial settings
+showSettings()
 
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
@@ -1225,16 +2017,6 @@ local Buttonlockedcoming = AutoTab:Button({
         print("Wait it will come soon")
     end
 })
-
-local Buttonlockedcoming2 = AutoTab:Button({
-    Title = "Auto plant Trees",
-    Desc = "Comming Soon",
-    Locked = true,
-    Callback = function()
-        print("Wait it will come soon")
-    end
-})
-
 -- ==================== TAB 3: HITBOX ====================
 local HitboxTab = Window:Tab({
     Title = "Hitbox",
@@ -1634,7 +2416,6 @@ HitboxTab:Slider({
 })
 
 HitboxTab:Space()
-
 
 --- ==================== TAB 4: MAIN ====================
 local MainTab = Window:Tab({
@@ -2047,6 +2828,198 @@ MainTab:Toggle({
                 Icon = "x",
             })
         end
+    end
+})
+
+local ButtonPlantsapling = MainTab:Button({
+    Title = "Plant Saplings",
+    Desc = "Plant all saplings at your position",
+    Locked = false,
+    Callback = function()
+        -- Auto Sapling Planter Script
+-- Finds saplings and plants them at player position
+-- Paste this into your executor
+
+local player = game.Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+
+local RS = game:GetService("ReplicatedStorage")
+
+-- Configuration
+local autoPlant = true
+local checkInterval = 0.5
+local plantOffset = Vector3.new(0, 0, 0) -- Offset from player position
+
+-- Get remote events
+local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
+local plantItem = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem")
+
+-- Items folder path
+local itemsFolder = workspace:WaitForChild("Items")
+
+-- Function to get player position as vector
+local function getPlayerPosition()
+    local pos = hrp.Position + plantOffset
+    return Vector3.new(pos.X, pos.Y, pos.Z)
+end
+
+-- Function to plant a single sapling
+local function plantSapling(sapling)
+    if not sapling or not sapling.Parent then
+        return false
+    end
+    
+    -- Start dragging the sapling
+    local dragSuccess = pcall(function()
+        startDragging:FireServer(sapling)
+    end)
+    
+    if not dragSuccess then
+        warn("Failed to start dragging sapling")
+        return false
+    end
+    
+    task.wait(0.1)
+    
+    -- Get player position
+    local plantPos = getPlayerPosition()
+    
+    -- Plant the sapling at player position
+    local plantSuccess = pcall(function()
+        plantItem:InvokeServer(sapling, plantPos)
+    end)
+    
+    if plantSuccess then
+        print("✓ Planted sapling at: " .. tostring(plantPos))
+        return true
+    else
+        warn("✗ Failed to plant sapling")
+        return false
+    end
+end
+
+-- Function to find and plant all saplings
+local function plantAllSaplings()
+    local plantedCount = 0
+    
+    -- Find all Sapling items in workspace.Items
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" and item:IsA("Model") then
+            local success = pcall(function()
+                if plantSapling(item) then
+                    plantedCount = plantedCount + 1
+                    task.wait(0.1) -- Small delay between plants
+                end
+            end)
+            
+            if not success then
+                warn("Error planting sapling: " .. item.Name)
+            end
+        end
+    end
+    
+    return plantedCount
+end
+
+-- Function to set plant offset
+local function setOffset(x, y, z)
+    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        plantOffset = Vector3.new(x, y, z)
+        print("✓ Plant offset set to: " .. tostring(plantOffset))
+        return true
+    else
+        warn("✗ Invalid offset! Use numbers only.")
+        return false
+    end
+end
+
+-- Function to clear offset
+local function clearOffset()
+    plantOffset = Vector3.new(0, 0, 0)
+    print("✓ Offset cleared - planting at exact player position")
+end
+
+-- Function to show current offset
+local function showOffset()
+    print("Current plant offset: " .. tostring(plantOffset))
+end
+
+-- Function to plant single sapling manually
+local function plantOne()
+    -- Find first available sapling
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" and item:IsA("Model") then
+            return plantSapling(item)
+        end
+    end
+    warn("No saplings found!")
+    return false
+end
+
+-- Auto plant loop
+if autoPlant then
+    spawn(function()
+        print("Starting auto-planter...")
+        local attempts = 0
+        local maxAttempts = 5
+        
+        while true do
+            task.wait(checkInterval)
+            local count = plantAllSaplings()
+            
+            if count > 0 then
+                print("Planted " .. count .. " sapling(s)")
+                attempts = 0 -- Reset attempts if saplings found
+            else
+                attempts = attempts + 1
+                if attempts >= maxAttempts then
+                    print("No saplings found after " .. maxAttempts .. " attempts - stopping auto-planter")
+                    break
+                end
+            end
+        end
+        print("Auto-planter stopped - all saplings planted!")
+    end)
+    print("Auto-planter enabled!")
+else
+    print("Manual mode: Use commands below")
+end
+
+-- ========== GLOBAL COMMANDS ==========
+_G.SaplingPlanter = {
+    -- Planting Functions
+    plantAll = plantAllSaplings,
+    plantOne = plantOne,
+    
+    -- Offset Management
+    setOffset = setOffset,
+    clearOffset = clearOffset,
+    showOffset = showOffset,
+    
+    -- Toggle auto-plant
+    toggleAuto = function()
+        autoPlant = not autoPlant
+        print("Auto-plant: " .. tostring(autoPlant))
+    end,
+}
+
+print("==================================")
+print("Auto Sapling Planter Loaded!")
+print("Auto-plant: " .. tostring(autoPlant))
+print("==================================")
+print("COMMANDS:")
+print("_G.SaplingPlanter.plantAll() - Plant all saplings")
+print("_G.SaplingPlanter.plantOne() - Plant one sapling")
+print("_G.SaplingPlanter.setOffset(x, y, z) - Set plant offset")
+print("  Example: _G.SaplingPlanter.setOffset(2, 0, 2)")
+print("_G.SaplingPlanter.clearOffset() - Clear offset")
+print("_G.SaplingPlanter.showOffset() - Show current offset")
+print("_G.SaplingPlanter.toggleAuto() - Toggle auto-plant")
+print("==================================")
+
+-- Show initial settings
+showOffset()
     end
 })
 
