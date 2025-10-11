@@ -20,7 +20,7 @@ WindUI:AddTheme({
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "door-open",
-    Author = "Version 34.6",
+    Author = "Version 34.5",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -1472,7 +1472,7 @@ local autoCollect = true
 
 -- Timer Settings
 local timerEnabled = true
-local timerDuration = 1 -- Duration in seconds (change this value)
+local timerDuration = 10 -- Duration in seconds (change this value)
 
 local customLocation = Vector3.new(-0.26, 12.41, 0.03)
 
@@ -1491,6 +1491,7 @@ local itemsFolder = workspace:WaitForChild("Items")
 -- Timer control variables
 local isRunning = false
 local startTime = 0
+local shouldStop = false
 
 -- Function to set timer duration
 local function setTimer(seconds)
@@ -1591,6 +1592,11 @@ end
 
 -- Function to bring a single item
 local function bringItem(item)
+    -- Check if we should stop before processing
+    if shouldStop or isTimerExpired() then
+        return false
+    end
+    
     if not item:IsA("BasePart") and not item:FindFirstChildWhichIsA("BasePart") then
         return false
     end
@@ -1604,6 +1610,11 @@ local function bringItem(item)
     end)
     
     task.wait(0.03)
+    
+    -- Check timer again after wait
+    if shouldStop or isTimerExpired() then
+        return false
+    end
     
     -- Determine target position
     local targetPos
@@ -1626,6 +1637,11 @@ local function bringItem(item)
     
     task.wait(0.03)
     
+    -- Check timer again after wait
+    if shouldStop or isTimerExpired() then
+        return false
+    end
+    
     -- Stop dragging to collect
     pcall(function()
         stopDragging:FireServer(item)
@@ -1641,8 +1657,18 @@ local function bringAllItems()
     
     -- Loop through all item names to find
     for _, itemName in pairs(itemsToFind) do
+        -- Check timer before processing each item type
+        if shouldStop or isTimerExpired() then
+            break
+        end
+        
         -- Find all items with this name in workspace.Items
         for _, item in pairs(itemsFolder:GetChildren()) do
+            -- Check timer before processing each item
+            if shouldStop or isTimerExpired() then
+                break
+            end
+            
             if item.Name == itemName and (item:IsA("Model") or item:IsA("BasePart")) then
                 pcall(function()
                     if bringItem(item) then
@@ -1682,6 +1708,7 @@ end
 
 -- Function to stop the auto-collect manually
 local function stopAutoCollect()
+    shouldStop = true
     isRunning = false
     print("✓ Auto-collect stopped manually")
 end
@@ -1690,6 +1717,7 @@ end
 if autoCollect then
     spawn(function()
         isRunning = true
+        shouldStop = false
         startTime = tick()
         
         if timerEnabled then
@@ -1701,18 +1729,20 @@ if autoCollect then
         local attempts = 0
         local maxAttempts = 3
         
-        while isRunning do
-            -- Check timer BEFORE doing anything
+        while isRunning and not shouldStop do
+            -- Check timer at start of loop
             if isTimerExpired() then
                 print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
+                shouldStop = true
                 break
             end
             
             local count = bringAllItems()
             
-            -- Check timer AFTER bringing items too
+            -- Check timer after bringing items
             if isTimerExpired() then
                 print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
+                shouldStop = true
                 break
             end
             
@@ -1726,10 +1756,13 @@ if autoCollect then
                     break
                 end
             end
+            
+            task.wait(checkInterval)
         end
         
         isRunning = false
-        print("Auto-collect stopped - all items collected!")
+        shouldStop = false
+        print("Auto-collect stopped!")
     end)
     print("Auto-collect enabled! Only bringing items from your list.")
 else
