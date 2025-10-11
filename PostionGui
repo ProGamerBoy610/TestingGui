@@ -1,3 +1,4 @@
+-- 99 Night Fryzer Hub New
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 WindUI:SetNotificationLower(true)
@@ -1446,7 +1447,7 @@ local ToggleAutoeat = AutoTab:Toggle({
 local Dropdownautoeat = AutoTab:Dropdown({
     Title = "Select Foods to Eat",
     Values = { "Carrot", "Berry", "Apple", "Meat","Stew" },
-    Value = { "Carrot" },
+    Value = { "" },
     Multi = true,
     AllowNone = true,
     Callback = function(options)
@@ -1469,13 +1470,14 @@ local bringDistance = 5
 local checkInterval = 0.1
 local autoCollect = true
 
+-- Timer Settings
+local timerEnabled = true
+local timerDuration = 10 -- Duration in seconds (change this value)
 
 local customLocation = Vector3.new(-0.26, 12.41, 0.03)
 
-
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
 local stopDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
-
 
 local itemsToFind = {
     "Log",
@@ -1485,6 +1487,47 @@ local itemsToFind = {
 }
 
 local itemsFolder = workspace:WaitForChild("Items")
+
+-- Timer control variables
+local isRunning = false
+local startTime = 0
+
+-- Function to set timer duration
+local function setTimer(seconds)
+    if type(seconds) == "number" and seconds > 0 then
+        timerDuration = seconds
+        print("✓ Timer set to: " .. seconds .. " seconds")
+        return true
+    else
+        warn("✗ Invalid duration! Use a positive number.")
+        return false
+    end
+end
+
+-- Function to enable/disable timer
+local function toggleTimer(enabled)
+    timerEnabled = enabled
+    if enabled then
+        print("✓ Timer enabled (" .. timerDuration .. " seconds)")
+    else
+        print("✓ Timer disabled - will run until no items found")
+    end
+end
+
+-- Function to check if timer has expired
+local function isTimerExpired()
+    if not timerEnabled then return false end
+    local elapsed = tick() - startTime
+    return elapsed >= timerDuration
+end
+
+-- Function to get remaining time
+local function getRemainingTime()
+    if not timerEnabled then return "Timer disabled" end
+    local elapsed = tick() - startTime
+    local remaining = math.max(0, timerDuration - elapsed)
+    return string.format("%.1f seconds remaining", remaining)
+end
 
 -- Function to set custom location
 local function setLocation(x, y, z)
@@ -1637,19 +1680,39 @@ local function bringSpecificItem(itemName)
     return count
 end
 
--- Auto collect loop
+-- Function to stop the auto-collect manually
+local function stopAutoCollect()
+    isRunning = false
+    print("✓ Auto-collect stopped manually")
+end
+
+-- Auto collect loop with timer
 if autoCollect then
     spawn(function()
-        print("Starting auto-collect from workspace.Items...")
+        isRunning = true
+        startTime = tick()
+        
+        if timerEnabled then
+            print("Starting auto-collect from workspace.Items (Timer: " .. timerDuration .. " seconds)...")
+        else
+            print("Starting auto-collect from workspace.Items (No timer)...")
+        end
+        
         local attempts = 0
         local maxAttempts = 3
         
-        while true do
+        while isRunning do
+            -- Check timer first
+            if isTimerExpired() then
+                print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
+                break
+            end
+            
             task.wait(checkInterval)
             local count = bringAllItems()
             
             if count > 0 then
-                print("Brought " .. count .. " items")
+                print("Brought " .. count .. " items | " .. getRemainingTime())
                 attempts = 0 -- Reset attempts if items found
             else
                 attempts = attempts + 1
@@ -1659,6 +1722,8 @@ if autoCollect then
                 end
             end
         end
+        
+        isRunning = false
         print("Auto-collect stopped - all items collected!")
     end)
     print("Auto-collect enabled! Only bringing items from your list.")
@@ -1678,6 +1743,12 @@ _G.ItemBringer = {
     removeItem = removeItemName,
     listItems = listItemNames,
     
+    -- Timer Management
+    setTimer = setTimer,
+    toggleTimer = toggleTimer,
+    getRemainingTime = getRemainingTime,
+    stopNow = stopAutoCollect,
+    
     -- Bringing Functions
     bringAll = bringAllItems,
     bring = bringSpecificItem,
@@ -1691,6 +1762,11 @@ _G.ItemBringer = {
 
 showLocation()
 listItemNames()
+if timerEnabled then
+    print("⏱️ Timer: " .. timerDuration .. " seconds")
+else
+    print("⏱️ Timer: Disabled")
+end
     end
 })
 
@@ -1712,7 +1788,7 @@ local RS = game:GetService("ReplicatedStorage")
 -- Configuration
 local autoPlant = true
 local checkInterval = 0.5
-local plantOffset = Vector3.new(0, 0, 0) -- Offset from player position
+local plantOffset = Vector3.new(0, -5.20, 0) -- Offset from player position
 
 -- Get remote events
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
@@ -4721,7 +4797,7 @@ MiscTab:Button({
     end
 })
 
-print("✅ Script fully initialized!")
+
 
 Window:OnDestroy(function()
     print("Window destroyed")
