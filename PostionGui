@@ -1,25 +1,4 @@
--- ========================================
--- FRYZER HUB WITH INTEGRATED SAPLING PLANTER
--- Combined script
--- ========================================
-
-print("========================================")
-print("STARTING FRYZER HUB WITH SAPLING PLANTER")
-print("========================================")
-
--- Load WindUI once
-print("[1/10] Loading WindUI library...")
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-end)
-
-if not success or not WindUI then
-    warn("❌ ERROR: Failed to load WindUI library!")
-    warn("Error:", WindUI)
-    return
-end
-
-print("✓ WindUI library loaded successfully!")
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 WindUI:SetNotificationLower(true)
 
@@ -1888,24 +1867,111 @@ _G.SaplingPlanter = {
     end,
 }
 
-print("==================================")
-print("Auto Sapling Planter Loaded!")
-print("Auto-plant: " .. tostring(autoPlant))
-print("==================================")
-print("COMMANDS:")
-print("_G.SaplingPlanter.plantAll() - Plant all saplings")
-print("_G.SaplingPlanter.plantOne() - Plant one sapling")
-print("_G.SaplingPlanter.setOffset(x, y, z) - Set plant offset")
-print("  Example: _G.SaplingPlanter.setOffset(2, 0, 2)")
-print("_G.SaplingPlanter.clearOffset() - Clear offset")
-print("_G.SaplingPlanter.showOffset() - Show current offset")
-print("_G.SaplingPlanter.toggleAuto() - Toggle auto-plant")
-print("==================================")
-
 -- Show initial settings
 showOffset()
     end
 })
+
+AutoTab:Paragraph({
+    Title = "🌱 Auto Sapling Planter",
+    Content = "Plants saplings in a circle pattern. Adjust settings below."
+})
+
+print("  → Adding divider...")
+AutoTab:Divider()
+
+print("  → Adding config paragraph...")
+AutoTab:Paragraph({
+    Title = "Configuration",
+    Content = "Adjust planting parameters. Height is automatically set to perfect ground level planting."
+})
+
+print("  → Adding radius slider...")
+AutoTab:Slider({
+    Title = "Circle Radius",
+    Value = {
+        Min = 30,
+        Max = 100,
+        Default = 30
+    },
+    Callback = function(value)
+        circleRadius = value
+        print("✓✓✓ RADIUS CHANGED TO: " .. value .. " ✓✓✓")
+        WindUI:Notify({
+            Title = "Radius = " .. value,
+            Content = "Next plant will use this radius!",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding spacing slider...")
+AutoTab:Slider({
+    Title = "Spacing",
+    Value = {
+        Min = 0.5,
+        Max = 10,
+        Default = 2
+    },
+    Callback = function(value)
+        saplingSpacing = value
+        print("✓✓✓ SPACING CHANGED TO: " .. value .. " ✓✓✓")
+        WindUI:Notify({
+            Title = "Spacing = " .. value,
+            Content = "Next plant will use this spacing!",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding divider...")
+AutoTab:Divider()
+
+print("  → Adding controls paragraph...")
+AutoTab:Paragraph({
+    Title = "Controls",
+    Content = ""
+})
+
+print("  → Adding start button...")
+AutoTab:Button({
+    Title = "▶️ Start Planting",
+    Desc = "Begin automatic planting",
+    Callback = function()
+        print("Start button clicked!")
+        startPlanting()
+    end
+})
+
+print("  → Adding stop button...")
+AutoTab:Button({
+    Title = "⏹️ Stop Planting",
+    Desc = "Stop planting immediately",
+    Callback = function()
+        print("Stop button clicked!")
+        stopPlanting()
+    end
+})
+
+-- Global access for planter
+_G.SaplingPlanter = {
+    start = startPlanting,
+    stop = stopPlanting,
+    plantOne = plantOne,
+    setCenter = setCenter,
+    setRadius = setRadius,
+    setSpacing = setSpacing,
+    setHeight = setHeight,
+    reset = resetCircle,
+}
+
+print("✓ All UI elements added!")
+-- Force window to open automatically
+wait(1)
+print("🔓 Attempting to open window automatically...")
+pcall(function()
+    Window:Show()
+end)
 
 --Add the new code here
 
@@ -4654,204 +4720,6 @@ MiscTab:Button({
         end
     end
 })
-
--- Create Planter Tab (Integrated at approximate line 1619 position in combined script)
-print("[6/10] Creating Planter tab...")
-local PlantTab = Window:Tab({
-    Title = "Planter",
-    Icon = "leaf"
-})
-
-if not PlantTab then
-    warn("❌ Failed to create planter tab!")
-    return
-end
-print("✓ Planter tab created successfully!")
-
--- ========== ADD UI ELEMENTS for planter ==========
-
-print("  → Adding title paragraph...")
-PlantTab:Paragraph({
-    Title = "🌱 Auto Sapling Planter",
-    Content = "Plants saplings in a circle pattern. Adjust settings below."
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding config paragraph...")
-PlantTab:Paragraph({
-    Title = "⚙️ Configuration",
-    Content = "Adjust planting parameters. Height is automatically set to -5.50 for perfect ground level planting."
-})
-
-print("  → Adding radius slider...")
-PlantTab:Slider({
-    Title = "Circle Radius",
-    Value = {
-        Min = 30,
-        Max = 100,
-        Default = 30
-    },
-    Callback = function(value)
-        circleRadius = value
-        print("✓✓✓ RADIUS CHANGED TO: " .. value .. " ✓✓✓")
-        WindUI:Notify({
-            Title = "Radius = " .. value,
-            Content = "Next plant will use this radius!",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding spacing slider...")
-PlantTab:Slider({
-    Title = "Spacing",
-    Value = {
-        Min = 0.5,
-        Max = 10,
-        Default = 2
-    },
-    Callback = function(value)
-        saplingSpacing = value
-        print("✓✓✓ SPACING CHANGED TO: " .. value .. " ✓✓✓")
-        WindUI:Notify({
-            Title = "Spacing = " .. value,
-            Content = "Next plant will use this spacing!",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding controls paragraph...")
-PlantTab:Paragraph({
-    Title = "🎮 Controls",
-    Content = "Start, stop, and manage planting."
-})
-
-print("  → Adding start button...")
-PlantTab:Button({
-    Title = "▶️ Start Planting",
-    Desc = "Begin automatic planting",
-    Callback = function()
-        print("Start button clicked!")
-        startPlanting()
-    end
-})
-
-print("  → Adding stop button...")
-PlantTab:Button({
-    Title = "⏹️ Stop Planting",
-    Desc = "Stop planting immediately",
-    Callback = function()
-        print("Stop button clicked!")
-        stopPlanting()
-    end
-})
-
-print("  → Adding reset button...")
-PlantTab:Button({
-    Title = "🔄 Reset Circle",
-    Desc = "Reset to start",
-    Callback = function()
-        resetCircle()
-        WindUI:Notify({
-            Title = "Reset",
-            Content = "Circle reset",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding plant one button...")
-PlantTab:Button({
-    Title = "1️⃣ Plant One",
-    Desc = "Plant single sapling",
-    Callback = function()
-        plantOne()
-    end
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding location paragraph...")
-PlantTab:Paragraph({
-    Title = "📍 Location",
-    Content = "Set center point."
-})
-
-print("  → Adding center button...")
-PlantTab:Button({
-    Title = "👤 Set Center to Player",
-    Desc = "Use current position",
-    Callback = function()
-        local pos = hrp.Position
-        setCenter(pos.X, pos.Y, pos.Z)
-        WindUI:Notify({
-            Title = "Center Set",
-            Content = "Position updated",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding show settings button...")
-PlantTab:Button({
-    Title = "ℹ️ Show Settings",
-    Desc = "Display current config",
-    Callback = function()
-        print("========== SETTINGS ==========")
-        print("Center: X=" .. math.floor(centerLocation.X*10)/10 .. ", Y=" .. math.floor(centerLocation.Y*10)/10 .. ", Z=" .. math.floor(centerLocation.Z*10)/10)
-        print("Radius: " .. circleRadius)
-        print("Spacing: " .. saplingSpacing)
-        print("Height: -5.50 (locked at ground level)")
-        print("Status: " .. (isPlanting and "RUNNING" or "STOPPED"))
-        print("==============================")
-        
-        WindUI:Notify({
-            Title = "Settings",
-            Content = "R=" .. circleRadius .. " S=" .. saplingSpacing .. " H=-5.50 (locked)",
-            Duration = 3
-        })
-    end
-})
-
--- Global access for planter
-_G.SaplingPlanter = {
-    start = startPlanting,
-    stop = stopPlanting,
-    plantOne = plantOne,
-    setCenter = setCenter,
-    setRadius = setRadius,
-    setSpacing = setSpacing,
-    setHeight = setHeight,
-    reset = resetCircle,
-}
-
-print("✓ All UI elements added!")
-
-print("========================================")
-print("✅ FRYZER HUB WITH SAPLING PLANTER FULLY LOADED")
-print("========================================")
-print("GUI should now be visible!")
-print("Look for the open button or press the UI key")
-print("========================================")
-print("Commands available:")
-print("_G.SaplingPlanter.start()")
-print("_G.SaplingPlanter.stop()")
-print("_G.SaplingPlanter.plantOne()")
-print("========================================")
-
--- Force window to open automatically
-wait(1)
-print("🔓 Attempting to open window automatically...")
-pcall(function()
-    Window:Show()
-end)
 
 print("✅ Script fully initialized!")
 
