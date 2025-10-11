@@ -20,7 +20,7 @@ WindUI:AddTheme({
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "door-open",
-    Author = "Version 34.5",
+    Author = "Version 34.7",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -1472,7 +1472,7 @@ local autoCollect = true
 
 -- Timer Settings
 local timerEnabled = true
-local timerDuration = 10 -- Duration in seconds (change this value)
+local timerDuration = 3 -- Duration in seconds (change this value)
 
 local customLocation = Vector3.new(-0.26, 12.41, 0.03)
 
