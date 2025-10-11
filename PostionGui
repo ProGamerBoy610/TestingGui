@@ -20,7 +20,7 @@ WindUI:AddTheme({
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
     Icon = "door-open",
-    Author = "Version 34.2",
+    Author = "Version 34.5",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -1702,14 +1702,19 @@ if autoCollect then
         local maxAttempts = 3
         
         while isRunning do
-            -- Check timer first
+            -- Check timer BEFORE doing anything
             if isTimerExpired() then
                 print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
                 break
             end
             
-            task.wait(checkInterval)
             local count = bringAllItems()
+            
+            -- Check timer AFTER bringing items too
+            if isTimerExpired() then
+                print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
+                break
+            end
             
             if count > 0 then
                 print("Brought " .. count .. " items | " .. getRemainingTime())
@@ -1776,8 +1781,7 @@ local ButtonPlantsapling = AutoTab:Button({
     Locked = false,
     Callback = function()
         -- Auto Sapling Planter Script
--- Finds saplings and plants them at player position
--- Paste this into your executor
+
 
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
@@ -1788,7 +1792,7 @@ local RS = game:GetService("ReplicatedStorage")
 -- Configuration
 local autoPlant = true
 local checkInterval = 0.5
-local plantOffset = Vector3.new(0, -5.20, 0) -- Offset from player position
+local plantOffset = Vector3.new(0, -5.05, 0) -- Offset from player position
 
 -- Get remote events
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
@@ -2918,7 +2922,7 @@ local RS = game:GetService("ReplicatedStorage")
 -- Configuration
 local autoPlant = true
 local checkInterval = 0.5
-local plantOffset = Vector3.new(0, 0, 0) -- Offset from player position
+local plantOffset = Vector3.new(0, -5.05, 0) -- Offset from player position
 
 -- Get remote events
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
