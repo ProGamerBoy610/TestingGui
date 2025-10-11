@@ -1,4 +1,25 @@
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+-- ========================================
+-- FRYZER HUB WITH INTEGRATED SAPLING PLANTER
+-- Combined script
+-- ========================================
+
+print("========================================")
+print("STARTING FRYZER HUB WITH SAPLING PLANTER")
+print("========================================")
+
+-- Load WindUI once
+print("[1/10] Loading WindUI library...")
+local success, WindUI = pcall(function()
+    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+end)
+
+if not success or not WindUI then
+    warn("❌ ERROR: Failed to load WindUI library!")
+    warn("Error:", WindUI)
+    return
+end
+
+print("✓ WindUI library loaded successfully!")
 
 WindUI:SetNotificationLower(true)
 
@@ -54,6 +75,277 @@ Window:EditOpenButton({
     Enabled = true,
     Draggable = true,
 })
+
+-- Services
+print("[2/10] Loading services...")
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+local player = Players.LocalPlayer
+print("✓ Player:", player.Name)
+
+print("[3/10] Waiting for character...")
+local character = player.Character or player.CharacterAdded:Wait()
+local hrp = character:WaitForChild("HumanoidRootPart")
+print("✓ Character loaded")
+
+-- Get remote events
+print("[4/10] Finding RemoteEvents...")
+local RS = ReplicatedStorage
+local remoteEvents = RS:WaitForChild("RemoteEvents", 10)
+if not remoteEvents then
+    warn("❌ RemoteEvents not found!")
+    return
+end
+
+local startDragging = remoteEvents:WaitForChild("RequestStartDraggingItem", 5)
+local plantItem = remoteEvents:WaitForChild("RequestPlantItem", 5)
+
+if not startDragging or not plantItem then
+    warn("❌ Required remote events not found!")
+    return
+end
+print("✓ Remote events found")
+
+-- Items folder
+print("[5/10] Finding Items folder...")
+local itemsFolder = workspace:WaitForChild("Items", 5)
+if not itemsFolder then
+    warn("❌ Items folder not found!")
+    return
+end
+print("✓ Items folder found")
+
+-- Configuration for planter
+local centerLocation = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
+local circleRadius = 30  -- Changed from 5 to 30
+local saplingSpacing = 2
+local plantHeightOffset = -5.50  -- Fixed at -5.50 for proper ground level (not adjustable)
+local currentAngle = 0
+local checkInterval = 0.5
+
+-- Planting state
+local isPlanting = false
+
+-- ========== CORE FUNCTIONS for planter ==========
+
+local function setCenter(x, y, z)
+    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
+        centerLocation = Vector3.new(x, y, z)
+        print("✓ Center: X=" .. math.floor(x*10)/10 .. ", Y=" .. math.floor(y*10)/10 .. ", Z=" .. math.floor(z*10)/10)
+        return true
+    end
+    return false
+end
+
+local function setRadius(radius)
+    if type(radius) == "number" and radius > 0 then
+        circleRadius = radius
+        -- Don't reset angle - let it continue from current position with new radius
+        print("✓ Radius UPDATED: " .. radius .. " studs (applied immediately)")
+        return true
+    end
+    return false
+end
+
+local function setSpacing(spacing)
+    if type(spacing) == "number" and spacing > 0 then
+        saplingSpacing = spacing
+        print("✓ Spacing UPDATED: " .. spacing .. " studs (applied immediately)")
+        return true
+    end
+    return false
+end
+
+local function setHeight(height)
+    -- Height is now locked at -5.50, this function is kept for compatibility
+    plantHeightOffset = -5.50
+    print("✓ Height locked at -5.50 studs (ground level)")
+    return true
+end
+
+local function resetCircle()
+    currentAngle = 0
+    print("✓ Circle reset to start")
+end
+
+local function getNextCirclePosition()
+    -- Read current values directly each time this is called
+    local currentRadius = circleRadius
+    local currentSpacing = saplingSpacing
+    local currentHeight = -5.50  -- Always use -5.50 for ground level
+    local currentCenter = centerLocation
+    
+    local x = currentCenter.X + (currentRadius * math.cos(currentAngle))
+    local z = currentCenter.Z + (currentRadius * math.sin(currentAngle))
+    local y = currentCenter.Y + currentHeight
+    
+    local angleIncrement = currentSpacing / currentRadius
+    currentAngle = currentAngle + angleIncrement
+    
+    print("DEBUG: Planting at R=" .. currentRadius .. " S=" .. currentSpacing .. " H=-5.50 (ground) Angle=" .. math.floor(math.deg(currentAngle)))
+    
+    return Vector3.new(x, y, z)
+end
+
+local function plantSapling(sapling)
+    if not sapling or not sapling.Parent then
+        return false
+    end
+    
+    -- Debug: Print current settings before planting (height always -5.50)
+    print("DEBUG BEFORE PLANT: Radius=" .. circleRadius .. " Spacing=" .. saplingSpacing .. " Height=-5.50 (ground)")
+    
+    local dragSuccess = pcall(function()
+        startDragging:FireServer(sapling)
+    end)
+    
+    if not dragSuccess then
+        return false
+    end
+    
+    task.wait(0.15)
+    
+    -- Get position with current settings
+    local plantPos = getNextCirclePosition()
+    
+    local plantSuccess = pcall(function()
+        plantItem:InvokeServer(sapling, plantPos)
+    end)
+    
+    if plantSuccess then
+        print("✓ PLANTED: X=" .. math.floor(plantPos.X*10)/10 .. " Y=" .. math.floor(plantPos.Y*10)/10 .. " Z=" .. math.floor(plantPos.Z*10)/10)
+        return true
+    end
+    
+    return false
+end
+
+local function findAndPlantSaplings()
+    local plantedCount = 0
+    
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" and isPlanting then
+            local success = pcall(function()
+                if plantSapling(item) then
+                    plantedCount = plantedCount + 1
+                    task.wait(0.2)
+                end
+            end)
+        end
+    end
+    
+    return plantedCount
+end
+
+local function startPlanting()
+    if isPlanting then
+        WindUI:Notify({
+            Title = "Already Running",
+            Content = "Planter is already active!",
+            Duration = 2
+        })
+        return
+    end
+    
+    isPlanting = true
+    resetCircle()
+    
+    WindUI:Notify({
+        Title = "Started",
+        Content = "R=" .. circleRadius .. " S=" .. saplingSpacing,
+        Duration = 3
+    })
+    
+    print("========================================")
+    print("🌱 STARTED PLANTING")
+    print("Radius: " .. circleRadius .. " studs")
+    print("Spacing: " .. saplingSpacing .. " studs")
+    print("Height: " .. plantHeightOffset .. " studs")
+    print("========================================")
+    
+    task.spawn(function()
+        local totalPlanted = 0
+        local noItemAttempts = 0
+        local maxNoItemAttempts = 5
+        
+        while isPlanting do
+            task.wait(checkInterval)
+            
+            if not isPlanting then
+                break
+            end
+            
+            local count = findAndPlantSaplings()
+            
+            if count > 0 then
+                totalPlanted = totalPlanted + count
+                print("✓ Planted " .. count .. " | Total: " .. totalPlanted)
+                noItemAttempts = 0
+            else
+                noItemAttempts = noItemAttempts + 1
+                
+                if noItemAttempts >= maxNoItemAttempts then
+                    print("🛑 No more saplings")
+                    isPlanting = false
+                    
+                    WindUI:Notify({
+                        Title = "Complete",
+                        Content = "Planted " .. totalPlanted .. " saplings",
+                        Duration = 5
+                    })
+                    break
+                end
+            end
+        end
+        
+        print("🛑 Planting stopped")
+    end)
+end
+
+local function stopPlanting()
+    if not isPlanting then
+        WindUI:Notify({
+            Title = "Not Running",
+            Content = "Planter is not active",
+            Duration = 2
+        })
+        return
+    end
+    
+    isPlanting = false
+    
+    WindUI:Notify({
+        Title = "Stopped",
+        Content = "Planting stopped",
+        Duration = 2
+    })
+    
+    print("🛑 STOPPED BY USER")
+end
+
+local function plantOne()
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == "Sapling" then
+            if plantSapling(item) then
+                WindUI:Notify({
+                    Title = "Planted",
+                    Content = "One sapling planted",
+                    Duration = 2
+                })
+                return true
+            end
+        end
+    end
+    
+    WindUI:Notify({
+        Title = "No Saplings",
+        Content = "None available",
+        Duration = 2
+    })
+    return false
+end
 
 -- ==================== TAB 1: INFO ====================
 local InfoTab = Window:Tab({
@@ -596,7 +888,7 @@ PlayerTab:Toggle({
 
 PlayerTab:Space()
 
--- ==================== TAB 3: MAIN ====================
+-- ==================== TAB 3: AUTOMATION ====================
 local AutoTab = Window:Tab({
     Title = "Automation",
     Icon = "bot",
@@ -1244,14 +1536,13 @@ end
 
 -- Function to add a new item name to bring
 local function addItemName(itemName)
-    if itemName and type(itemName) == "string" then
-        table.insert(itemsToFind, itemName)
-        print("✓ Added item: " .. itemName)
-        return true
-    else
+    if not itemName or type(itemName) ~= "string" then
         warn("✗ Invalid item name!")
         return false
     end
+    table.insert(itemsToFind, itemName)
+    print("✓ Added item: " .. itemName)
+    return true
 end
 
 -- Function to remove an item name
@@ -1617,543 +1908,6 @@ showOffset()
 })
 
 --Add the new code here
-print("========================================")
-print("STARTING SAPLING PLANTER SCRIPT")
-print("========================================")
-
--- Load WindUI
-print("[1/10] Loading WindUI library...")
-local success, WindUI = pcall(function()
-    return loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-end)
-
-if not success or not WindUI then
-    warn("❌ ERROR: Failed to load WindUI library!")
-    warn("Error:", WindUI)
-    return
-end
-
-print("✓ WindUI library loaded successfully!")
-
--- Services
-print("[2/10] Loading services...")
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-
-local player = Players.LocalPlayer
-print("✓ Player:", player.Name)
-
-print("[3/10] Waiting for character...")
-local character = player.Character or player.CharacterAdded:Wait()
-local hrp = character:WaitForChild("HumanoidRootPart")
-print("✓ Character loaded")
-
--- Get remote events
-print("[4/10] Finding RemoteEvents...")
-local RS = ReplicatedStorage
-local remoteEvents = RS:WaitForChild("RemoteEvents", 10)
-if not remoteEvents then
-    warn("❌ RemoteEvents not found!")
-    return
-end
-
-local startDragging = remoteEvents:WaitForChild("RequestStartDraggingItem", 5)
-local plantItem = remoteEvents:WaitForChild("RequestPlantItem", 5)
-
-if not startDragging or not plantItem then
-    warn("❌ Required remote events not found!")
-    return
-end
-print("✓ Remote events found")
-
--- Items folder
-print("[5/10] Finding Items folder...")
-local itemsFolder = workspace:WaitForChild("Items", 5)
-if not itemsFolder then
-    warn("❌ Items folder not found!")
-    return
-end
-print("✓ Items folder found")
-
--- Configuration
-local centerLocation = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
-local circleRadius = 30  -- Changed from 5 to 30
-local saplingSpacing = 2
-local plantHeightOffset = -5.50  -- Fixed at -5.50 for proper ground level (not adjustable)
-local currentAngle = 0
-local checkInterval = 0.5
-
--- Planting state
-local isPlanting = false
-
-print("[6/10] Creating WindUI window...")
-
--- Create Window with minimal config
-local Window = WindUI:CreateWindow({
-    Title = "Sapling Planter",
-    Icon = "leaf",
-    Author = "Fryzer",
-    Folder = "FryzerPlanter",
-    Size = UDim2.fromOffset(500, 400),
-    Theme = "Dark",
-})
-
-if not Window then
-    warn("❌ Failed to create window!")
-    return
-end
-
-print("✓ Window created successfully!")
-
-print("[7/10] Configuring open button...")
-
--- Edit open button
-Window:EditOpenButton({
-    Title = "Planter",
-    Icon = "leaf",
-    Draggable = true,
-})
-
-print("✓ Open button configured")
-
-print("[8/10] Sending initial notification...")
-
--- Wait a moment before notification
-wait(0.5)
-
-WindUI:Notify({
-    Title = "Planter Loaded",
-    Content = "Auto Sapling Planter ready!",
-    Duration = 3
-})
-
-print("✓ Notification sent")
-
-print("[9/10] Creating main tab...")
-
--- Create Tab
-local PlantTab = Window:Tab({
-    Title = "Planter",
-    Icon = "leaf"
-})
-
-if not PlantTab then
-    warn("❌ Failed to create tab!")
-    return
-end
-
-print("✓ Tab created successfully!")
-
-print("[10/10] Adding UI elements...")
-
--- ========== CORE FUNCTIONS ==========
-
-local function setCenter(x, y, z)
-    if type(x) == "number" and type(y) == "number" and type(z) == "number" then
-        centerLocation = Vector3.new(x, y, z)
-        print("✓ Center: X=" .. math.floor(x*10)/10 .. ", Y=" .. math.floor(y*10)/10 .. ", Z=" .. math.floor(z*10)/10)
-        return true
-    end
-    return false
-end
-
-local function setRadius(radius)
-    if type(radius) == "number" and radius > 0 then
-        circleRadius = radius
-        -- Don't reset angle - let it continue from current position with new radius
-        print("✓ Radius UPDATED: " .. radius .. " studs (applied immediately)")
-        return true
-    end
-    return false
-end
-
-local function setSpacing(spacing)
-    if type(spacing) == "number" and spacing > 0 then
-        saplingSpacing = spacing
-        print("✓ Spacing UPDATED: " .. spacing .. " studs (applied immediately)")
-        return true
-    end
-    return false
-end
-
-local function setHeight(height)
-    -- Height is now locked at -5.50, this function is kept for compatibility
-    plantHeightOffset = -5.50
-    print("✓ Height locked at -5.50 studs (ground level)")
-    return true
-end
-
-local function resetCircle()
-    currentAngle = 0
-    print("✓ Circle reset to start")
-end
-
-local function getNextCirclePosition()
-    -- Read current values directly each time this is called
-    local currentRadius = circleRadius
-    local currentSpacing = saplingSpacing
-    local currentHeight = -5.50  -- Always use -5.50 for ground level
-    local currentCenter = centerLocation
-    
-    local x = currentCenter.X + (currentRadius * math.cos(currentAngle))
-    local z = currentCenter.Z + (currentRadius * math.sin(currentAngle))
-    local y = currentCenter.Y + currentHeight
-    
-    local angleIncrement = currentSpacing / currentRadius
-    currentAngle = currentAngle + angleIncrement
-    
-    print("DEBUG: Planting at R=" .. currentRadius .. " S=" .. currentSpacing .. " H=-5.50 (ground) Angle=" .. math.floor(math.deg(currentAngle)))
-    
-    return Vector3.new(x, y, z)
-end
-
-local function plantSapling(sapling)
-    if not sapling or not sapling.Parent then
-        return false
-    end
-    
-    -- Debug: Print current settings before planting (height always -5.50)
-    print("DEBUG BEFORE PLANT: Radius=" .. circleRadius .. " Spacing=" .. saplingSpacing .. " Height=-5.50 (ground)")
-    
-    local dragSuccess = pcall(function()
-        startDragging:FireServer(sapling)
-    end)
-    
-    if not dragSuccess then
-        return false
-    end
-    
-    task.wait(0.15)
-    
-    -- Get position with current settings
-    local plantPos = getNextCirclePosition()
-    
-    local plantSuccess = pcall(function()
-        plantItem:InvokeServer(sapling, plantPos)
-    end)
-    
-    if plantSuccess then
-        print("✓ PLANTED: X=" .. math.floor(plantPos.X*10)/10 .. " Y=" .. math.floor(plantPos.Y*10)/10 .. " Z=" .. math.floor(plantPos.Z*10)/10)
-        return true
-    end
-    
-    return false
-end
-
-local function findAndPlantSaplings()
-    local plantedCount = 0
-    
-    for _, item in pairs(itemsFolder:GetChildren()) do
-        if item.Name == "Sapling" and isPlanting then
-            local success = pcall(function()
-                if plantSapling(item) then
-                    plantedCount = plantedCount + 1
-                    task.wait(0.2)
-                end
-            end)
-        end
-    end
-    
-    return plantedCount
-end
-
-local function startPlanting()
-    if isPlanting then
-        WindUI:Notify({
-            Title = "Already Running",
-            Content = "Planter is already active!",
-            Duration = 2
-        })
-        return
-    end
-    
-    isPlanting = true
-    resetCircle()
-    
-    WindUI:Notify({
-        Title = "Started",
-        Content = "R=" .. circleRadius .. " S=" .. saplingSpacing,
-        Duration = 3
-    })
-    
-    print("========================================")
-    print("🌱 STARTED PLANTING")
-    print("Radius: " .. circleRadius .. " studs")
-    print("Spacing: " .. saplingSpacing .. " studs")
-    print("Height: " .. plantHeightOffset .. " studs")
-    print("========================================")
-    
-    task.spawn(function()
-        local totalPlanted = 0
-        local noItemAttempts = 0
-        local maxNoItemAttempts = 5
-        
-        while isPlanting do
-            task.wait(checkInterval)
-            
-            if not isPlanting then
-                break
-            end
-            
-            local count = findAndPlantSaplings()
-            
-            if count > 0 then
-                totalPlanted = totalPlanted + count
-                print("✓ Planted " .. count .. " | Total: " .. totalPlanted)
-                noItemAttempts = 0
-            else
-                noItemAttempts = noItemAttempts + 1
-                
-                if noItemAttempts >= maxNoItemAttempts then
-                    print("🛑 No more saplings")
-                    isPlanting = false
-                    
-                    WindUI:Notify({
-                        Title = "Complete",
-                        Content = "Planted " .. totalPlanted .. " saplings",
-                        Duration = 5
-                    })
-                    break
-                end
-            end
-        end
-        
-        print("🛑 Planting stopped")
-    end)
-end
-
-local function stopPlanting()
-    if not isPlanting then
-        WindUI:Notify({
-            Title = "Not Running",
-            Content = "Planter is not active",
-            Duration = 2
-        })
-        return
-    end
-    
-    isPlanting = false
-    
-    WindUI:Notify({
-        Title = "Stopped",
-        Content = "Planting stopped",
-        Duration = 2
-    })
-    
-    print("🛑 STOPPED BY USER")
-end
-
-local function plantOne()
-    for _, item in pairs(itemsFolder:GetChildren()) do
-        if item.Name == "Sapling" then
-            if plantSapling(item) then
-                WindUI:Notify({
-                    Title = "Planted",
-                    Content = "One sapling planted",
-                    Duration = 2
-                })
-                return true
-            end
-        end
-    end
-    
-    WindUI:Notify({
-        Title = "No Saplings",
-        Content = "None available",
-        Duration = 2
-    })
-    return false
-end
-
--- ========== ADD UI ELEMENTS ==========
-
-print("  → Adding title paragraph...")
-PlantTab:Paragraph({
-    Title = "🌱 Auto Sapling Planter",
-    Content = "Plants saplings in a circle pattern. Adjust settings below."
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding config paragraph...")
-PlantTab:Paragraph({
-    Title = "⚙️ Configuration",
-    Content = "Adjust planting parameters. Height is automatically set to -5.50 for perfect ground level planting."
-})
-
-print("  → Adding radius slider...")
-PlantTab:Slider({
-    Title = "Circle Radius",
-    Value = {
-        Min = 30,
-        Max = 100,
-        Default = 30
-    },
-    Callback = function(value)
-        circleRadius = value
-        print("✓✓✓ RADIUS CHANGED TO: " .. value .. " ✓✓✓")
-        WindUI:Notify({
-            Title = "Radius = " .. value,
-            Content = "Next plant will use this radius!",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding spacing slider...")
-PlantTab:Slider({
-    Title = "Spacing",
-    Value = {
-        Min = 0.5,
-        Max = 10,
-        Default = 2
-    },
-    Callback = function(value)
-        saplingSpacing = value
-        print("✓✓✓ SPACING CHANGED TO: " .. value .. " ✓✓✓")
-        WindUI:Notify({
-            Title = "Spacing = " .. value,
-            Content = "Next plant will use this spacing!",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding controls paragraph...")
-PlantTab:Paragraph({
-    Title = "🎮 Controls",
-    Content = "Start, stop, and manage planting."
-})
-
-print("  → Adding start button...")
-PlantTab:Button({
-    Title = "▶️ Start Planting",
-    Desc = "Begin automatic planting",
-    Callback = function()
-        print("Start button clicked!")
-        startPlanting()
-    end
-})
-
-print("  → Adding stop button...")
-PlantTab:Button({
-    Title = "⏹️ Stop Planting",
-    Desc = "Stop planting immediately",
-    Callback = function()
-        print("Stop button clicked!")
-        stopPlanting()
-    end
-})
-
-print("  → Adding reset button...")
-PlantTab:Button({
-    Title = "🔄 Reset Circle",
-    Desc = "Reset to start",
-    Callback = function()
-        resetCircle()
-        WindUI:Notify({
-            Title = "Reset",
-            Content = "Circle reset",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding plant one button...")
-PlantTab:Button({
-    Title = "1️⃣ Plant One",
-    Desc = "Plant single sapling",
-    Callback = function()
-        plantOne()
-    end
-})
-
-print("  → Adding divider...")
-PlantTab:Divider()
-
-print("  → Adding location paragraph...")
-PlantTab:Paragraph({
-    Title = "📍 Location",
-    Content = "Set center point."
-})
-
-print("  → Adding center button...")
-PlantTab:Button({
-    Title = "👤 Set Center to Player",
-    Desc = "Use current position",
-    Callback = function()
-        local pos = hrp.Position
-        setCenter(pos.X, pos.Y, pos.Z)
-        WindUI:Notify({
-            Title = "Center Set",
-            Content = "Position updated",
-            Duration = 2
-        })
-    end
-})
-
-print("  → Adding show settings button...")
-PlantTab:Button({
-    Title = "ℹ️ Show Settings",
-    Desc = "Display current config",
-    Callback = function()
-        print("========== SETTINGS ==========")
-        print("Center: X=" .. math.floor(centerLocation.X*10)/10 .. ", Y=" .. math.floor(centerLocation.Y*10)/10 .. ", Z=" .. math.floor(centerLocation.Z*10)/10)
-        print("Radius: " .. circleRadius)
-        print("Spacing: " .. saplingSpacing)
-        print("Height: -5.50 (locked at ground level)")
-        print("Status: " .. (isPlanting and "RUNNING" or "STOPPED"))
-        print("==============================")
-        
-        WindUI:Notify({
-            Title = "Settings",
-            Content = "R=" .. circleRadius .. " S=" .. saplingSpacing .. " H=-5.50 (locked)",
-            Duration = 3
-        })
-    end
-})
-
--- Global access
-_G.SaplingPlanter = {
-    start = startPlanting,
-    stop = stopPlanting,
-    plantOne = plantOne,
-    setCenter = setCenter,
-    setRadius = setRadius,
-    setSpacing = setSpacing,
-    setHeight = setHeight,
-    reset = resetCircle,
-}
-
-print("✓ All UI elements added!")
-
-print("========================================")
-print("✅ AUTO SAPLING PLANTER FULLY LOADED")
-print("========================================")
-print("GUI should now be visible!")
-print("Look for the open button or press the UI key")
-print("========================================")
-print("Commands available:")
-print("_G.SaplingPlanter.start()")
-print("_G.SaplingPlanter.stop()")
-print("_G.SaplingPlanter.plantOne()")
-print("========================================")
-
--- Force window to open automatically
-wait(1)
-print("🔓 Attempting to open window automatically...")
-pcall(function()
-    Window:Show()
-end)
-
-print("✅ Script fully initialized!")
-
-
 
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
@@ -4172,7 +3926,7 @@ VisualTab:Toggle({
 VisualTab:Slider({
     Title = "ESP Max Distance",
     Step = 50,
-    Value = { Min = 1, Max = 2000, Default = 1000 },
+    Value = { Min = 100, Max = 2000, Default = 1000 },
     Callback = function(value)
         ESP_SETTINGS.MaxDistance = value
         print("📏 ESP Max Distance set to:", value)
@@ -4900,6 +4654,206 @@ MiscTab:Button({
         end
     end
 })
+
+-- Create Planter Tab (Integrated at approximate line 1619 position in combined script)
+print("[6/10] Creating Planter tab...")
+local PlantTab = Window:Tab({
+    Title = "Planter",
+    Icon = "leaf"
+})
+
+if not PlantTab then
+    warn("❌ Failed to create planter tab!")
+    return
+end
+print("✓ Planter tab created successfully!")
+
+-- ========== ADD UI ELEMENTS for planter ==========
+
+print("  → Adding title paragraph...")
+PlantTab:Paragraph({
+    Title = "🌱 Auto Sapling Planter",
+    Content = "Plants saplings in a circle pattern. Adjust settings below."
+})
+
+print("  → Adding divider...")
+PlantTab:Divider()
+
+print("  → Adding config paragraph...")
+PlantTab:Paragraph({
+    Title = "⚙️ Configuration",
+    Content = "Adjust planting parameters. Height is automatically set to -5.50 for perfect ground level planting."
+})
+
+print("  → Adding radius slider...")
+PlantTab:Slider({
+    Title = "Circle Radius",
+    Value = {
+        Min = 30,
+        Max = 100,
+        Default = 30
+    },
+    Callback = function(value)
+        circleRadius = value
+        print("✓✓✓ RADIUS CHANGED TO: " .. value .. " ✓✓✓")
+        WindUI:Notify({
+            Title = "Radius = " .. value,
+            Content = "Next plant will use this radius!",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding spacing slider...")
+PlantTab:Slider({
+    Title = "Spacing",
+    Value = {
+        Min = 0.5,
+        Max = 10,
+        Default = 2
+    },
+    Callback = function(value)
+        saplingSpacing = value
+        print("✓✓✓ SPACING CHANGED TO: " .. value .. " ✓✓✓")
+        WindUI:Notify({
+            Title = "Spacing = " .. value,
+            Content = "Next plant will use this spacing!",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding divider...")
+PlantTab:Divider()
+
+print("  → Adding controls paragraph...")
+PlantTab:Paragraph({
+    Title = "🎮 Controls",
+    Content = "Start, stop, and manage planting."
+})
+
+print("  → Adding start button...")
+PlantTab:Button({
+    Title = "▶️ Start Planting",
+    Desc = "Begin automatic planting",
+    Callback = function()
+        print("Start button clicked!")
+        startPlanting()
+    end
+})
+
+print("  → Adding stop button...")
+PlantTab:Button({
+    Title = "⏹️ Stop Planting",
+    Desc = "Stop planting immediately",
+    Callback = function()
+        print("Stop button clicked!")
+        stopPlanting()
+    end
+})
+
+print("  → Adding reset button...")
+PlantTab:Button({
+    Title = "🔄 Reset Circle",
+    Desc = "Reset to start",
+    Callback = function()
+        resetCircle()
+        WindUI:Notify({
+            Title = "Reset",
+            Content = "Circle reset",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding plant one button...")
+PlantTab:Button({
+    Title = "1️⃣ Plant One",
+    Desc = "Plant single sapling",
+    Callback = function()
+        plantOne()
+    end
+})
+
+print("  → Adding divider...")
+PlantTab:Divider()
+
+print("  → Adding location paragraph...")
+PlantTab:Paragraph({
+    Title = "📍 Location",
+    Content = "Set center point."
+})
+
+print("  → Adding center button...")
+PlantTab:Button({
+    Title = "👤 Set Center to Player",
+    Desc = "Use current position",
+    Callback = function()
+        local pos = hrp.Position
+        setCenter(pos.X, pos.Y, pos.Z)
+        WindUI:Notify({
+            Title = "Center Set",
+            Content = "Position updated",
+            Duration = 2
+        })
+    end
+})
+
+print("  → Adding show settings button...")
+PlantTab:Button({
+    Title = "ℹ️ Show Settings",
+    Desc = "Display current config",
+    Callback = function()
+        print("========== SETTINGS ==========")
+        print("Center: X=" .. math.floor(centerLocation.X*10)/10 .. ", Y=" .. math.floor(centerLocation.Y*10)/10 .. ", Z=" .. math.floor(centerLocation.Z*10)/10)
+        print("Radius: " .. circleRadius)
+        print("Spacing: " .. saplingSpacing)
+        print("Height: -5.50 (locked at ground level)")
+        print("Status: " .. (isPlanting and "RUNNING" or "STOPPED"))
+        print("==============================")
+        
+        WindUI:Notify({
+            Title = "Settings",
+            Content = "R=" .. circleRadius .. " S=" .. saplingSpacing .. " H=-5.50 (locked)",
+            Duration = 3
+        })
+    end
+})
+
+-- Global access for planter
+_G.SaplingPlanter = {
+    start = startPlanting,
+    stop = stopPlanting,
+    plantOne = plantOne,
+    setCenter = setCenter,
+    setRadius = setRadius,
+    setSpacing = setSpacing,
+    setHeight = setHeight,
+    reset = resetCircle,
+}
+
+print("✓ All UI elements added!")
+
+print("========================================")
+print("✅ FRYZER HUB WITH SAPLING PLANTER FULLY LOADED")
+print("========================================")
+print("GUI should now be visible!")
+print("Look for the open button or press the UI key")
+print("========================================")
+print("Commands available:")
+print("_G.SaplingPlanter.start()")
+print("_G.SaplingPlanter.stop()")
+print("_G.SaplingPlanter.plantOne()")
+print("========================================")
+
+-- Force window to open automatically
+wait(1)
+print("🔓 Attempting to open window automatically...")
+pcall(function()
+    Window:Show()
+end)
+
+print("✅ Script fully initialized!")
 
 Window:OnDestroy(function()
     print("Window destroyed")
