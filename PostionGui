@@ -2888,9 +2888,9 @@ end
     end
 })
 
-local buttonrefresheate = AutoTab:Button({
-    Title = "Bring fuel items",
-    Desc = "Bring fuel items to Campfire",
+local buttonrefresheate2 = BringTab:Button({
+    Title = "Bring items",
+    Desc = "Bring items \n Bandage, MedKit",
     Locked = false,
     Callback = function()
 local player = game.Players.LocalPlayer
