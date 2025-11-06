@@ -1,3 +1,4 @@
+print("HIIIIIIIIIIIIIIIIIIIIIIIIIIIIII")
 -- Circle Toggle Button
 local CircleConfig = {
     CircleSize = 60,
@@ -236,14 +237,13 @@ end)
 
 Library:SetToggleKey(Enum.KeyCode.RightControl)
 
-return Librarypcall(function()
-    local Players = game:GetService("Players")
-    local TweenService = game:GetService("TweenService")
-    local UserInputService = game:GetService("UserInputService")
-    local RunService = game:GetService("RunService")
+return Librarylocal Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 
-    local LocalPlayer = Players.LocalPlayer
-    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+local LocalPlayer = Players.LocalPlayer
+local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 if PlayerGui:FindFirstChild("FryzerModernHub") then
     PlayerGui:FindFirstChild("FryzerModernHub"):Destroy()
