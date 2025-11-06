@@ -1,21 +1,17 @@
--- wind ui library V2
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
 WindUI:SetNotificationLower(true)
-
 -- Add Custom Blue Theme
 WindUI:AddTheme({
     Name = "Blue Theme",
-    Accent = Color3.fromRGB(37, 99, 235),      -- Bright blue accent
-    Dialog = Color3.fromRGB(15, 23, 42),       -- Dark blue dialog
-    Outline = Color3.fromRGB(59, 130, 246),    -- Blue outline
-    Text = Color3.fromRGB(248, 250, 252),      -- Light text
+    Accent = Color3.fromRGB(37, 99, 235), -- Bright blue accent
+    Dialog = Color3.fromRGB(15, 23, 42), -- Dark blue dialog
+    Outline = Color3.fromRGB(59, 130, 246), -- Blue outline
+    Text = Color3.fromRGB(248, 250, 252), -- Light text
     Placeholder = Color3.fromRGB(100, 116, 139), -- Gray placeholder
-    Background = Color3.fromRGB(15, 23, 42),   -- Dark blue background
-    Button = Color3.fromRGB(30, 58, 138),      -- Medium blue button
-    Icon = Color3.fromRGB(147, 197, 253)       -- Light blue icon
+    Background = Color3.fromRGB(15, 23, 42), -- Dark blue background
+    Button = Color3.fromRGB(30, 58, 138), -- Medium blue button
+    Icon = Color3.fromRGB(147, 197, 253) -- Light blue icon
 })
-
 -- Create Main Window
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
@@ -26,7 +22,7 @@ local Window = WindUI:CreateWindow({
     MinSize = Vector2.new(560, 350),
     MaxSize = Vector2.new(850, 560),
     Transparent = true,
-    Theme = "Blue Theme",  -- Changed to match the theme name
+    Theme = "Blue Theme", -- Changed to match the theme name
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
@@ -40,7 +36,6 @@ local Window = WindUI:CreateWindow({
         end,
     },
 })
-
 -- Edit Open Button
 Window:EditOpenButton({
     Title = "Open",
@@ -48,35 +43,30 @@ Window:EditOpenButton({
     CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
     Color = ColorSequence.new(
-        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("FF0F7B"),
         Color3.fromHex("F89B29")
     ),
     OnlyMobile = false,
     Enabled = true,
     Draggable = true,
 })
-
 --Add Version Tag
 Window:Tag({
     Title = "v35.0",
     Color = Color3.fromHex("#30ff6a"),
     Radius = 8,
 })
-
 -- Services
 print("[2/10] Loading services...")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-
 local player = Players.LocalPlayer
 print("✓ Player:", player.Name)
-
 print("[3/10] Waiting for character...")
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
 print("✓ Character loaded")
-
 -- Get remote events
 print("[4/10] Finding RemoteEvents...")
 local RS = ReplicatedStorage
@@ -85,16 +75,13 @@ if not remoteEvents then
     warn("❌ RemoteEvents not found!")
     return
 end
-
 local startDragging = remoteEvents:WaitForChild("RequestStartDraggingItem", 5)
 local plantItem = remoteEvents:WaitForChild("RequestPlantItem", 5)
-
 if not startDragging or not plantItem then
     warn("❌ Required remote events not found!")
     return
 end
 print("✓ Remote events found")
-
 -- Items folder
 print("[5/10] Finding Items folder...")
 local itemsFolder = workspace:WaitForChild("Items", 5)
@@ -103,20 +90,16 @@ if not itemsFolder then
     return
 end
 print("✓ Items folder found")
-
 -- Configuration for planter
 local centerLocation = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
-local circleRadius = 30  -- Changed from 5 to 30
+local circleRadius = 30 -- Changed from 5 to 30
 local saplingSpacing = 2
-local plantHeightOffset = -5.50  -- Fixed at -5.50 for proper ground level (not adjustable)
+local plantHeightOffset = -5.50 -- Fixed at -5.50 for proper ground level (not adjustable)
 local currentAngle = 0
 local checkInterval = 0.5
-
 -- Planting state
 local isPlanting = false
-
 -- ========== CORE FUNCTIONS for planter ==========
-
 local function setCenter(x, y, z)
     if type(x) == "number" and type(y) == "number" and type(z) == "number" then
         centerLocation = Vector3.new(x, y, z)
@@ -125,7 +108,6 @@ local function setCenter(x, y, z)
     end
     return false
 end
-
 local function setRadius(radius)
     if type(radius) == "number" and radius > 0 then
         circleRadius = radius
@@ -135,7 +117,6 @@ local function setRadius(radius)
     end
     return false
 end
-
 local function setSpacing(spacing)
     if type(spacing) == "number" and spacing > 0 then
         saplingSpacing = spacing
@@ -144,74 +125,69 @@ local function setSpacing(spacing)
     end
     return false
 end
-
 local function setHeight(height)
     -- Height is now locked at -5.50, this function is kept for compatibility
     plantHeightOffset = -5.50
     print("✓ Height locked at -5.50 studs (ground level)")
     return true
 end
-
 local function resetCircle()
     currentAngle = 0
     print("✓ Circle reset to start")
 end
-
 local function getNextCirclePosition()
     -- Read current values directly each time this is called
     local currentRadius = circleRadius
     local currentSpacing = saplingSpacing
-    local currentHeight = -5.50  -- Always use -5.50 for ground level
+    local currentHeight = -5.50 -- Always use -5.50 for ground level
     local currentCenter = centerLocation
-    
+   
     local x = currentCenter.X + (currentRadius * math.cos(currentAngle))
     local z = currentCenter.Z + (currentRadius * math.sin(currentAngle))
     local y = currentCenter.Y + currentHeight
-    
+   
     local angleIncrement = currentSpacing / currentRadius
     currentAngle = currentAngle + angleIncrement
-    
+   
     print("DEBUG: Planting at R=" .. currentRadius .. " S=" .. currentSpacing .. " H=-5.50 (ground) Angle=" .. math.floor(math.deg(currentAngle)))
-    
+   
     return Vector3.new(x, y, z)
 end
-
 local function plantSapling(sapling)
     if not sapling or not sapling.Parent then
         return false
     end
-    
+   
     -- Debug: Print current settings before planting (height always -5.50)
     print("DEBUG BEFORE PLANT: Radius=" .. circleRadius .. " Spacing=" .. saplingSpacing .. " Height=-5.50 (ground)")
-    
+   
     local dragSuccess = pcall(function()
         startDragging:FireServer(sapling)
     end)
-    
+   
     if not dragSuccess then
         return false
     end
-    
+   
     task.wait(0.15)
-    
+   
     -- Get position with current settings
     local plantPos = getNextCirclePosition()
-    
+   
     local plantSuccess = pcall(function()
         plantItem:InvokeServer(sapling, plantPos)
     end)
-    
+   
     if plantSuccess then
         print("✓ PLANTED: X=" .. math.floor(plantPos.X*10)/10 .. " Y=" .. math.floor(plantPos.Y*10)/10 .. " Z=" .. math.floor(plantPos.Z*10)/10)
         return true
     end
-    
+   
     return false
 end
-
 local function findAndPlantSaplings()
     local plantedCount = 0
-    
+   
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == "Sapling" and isPlanting then
             local success = pcall(function()
@@ -222,10 +198,9 @@ local function findAndPlantSaplings()
             end)
         end
     end
-    
+   
     return plantedCount
 end
-
 local function startPlanting()
     if isPlanting then
         WindUI:Notify({
@@ -235,48 +210,48 @@ local function startPlanting()
         })
         return
     end
-    
+   
     isPlanting = true
     resetCircle()
-    
+   
     WindUI:Notify({
         Title = "Started",
         Content = "R=" .. circleRadius .. " S=" .. saplingSpacing,
         Duration = 3
     })
-    
+   
     print("========================================")
     print("🌱 STARTED PLANTING")
     print("Radius: " .. circleRadius .. " studs")
     print("Spacing: " .. saplingSpacing .. " studs")
     print("Height: " .. plantHeightOffset .. " studs")
     print("========================================")
-    
+   
     task.spawn(function()
         local totalPlanted = 0
         local noItemAttempts = 0
         local maxNoItemAttempts = 5
-        
+       
         while isPlanting do
             task.wait(checkInterval)
-            
+           
             if not isPlanting then
                 break
             end
-            
+           
             local count = findAndPlantSaplings()
-            
+           
             if count > 0 then
                 totalPlanted = totalPlanted + count
                 print("✓ Planted " .. count .. " | Total: " .. totalPlanted)
                 noItemAttempts = 0
             else
                 noItemAttempts = noItemAttempts + 1
-                
+               
                 if noItemAttempts >= maxNoItemAttempts then
                     print("🛑 No more saplings")
                     isPlanting = false
-                    
+                   
                     WindUI:Notify({
                         Title = "Complete",
                         Content = "Planted " .. totalPlanted .. " saplings",
@@ -286,11 +261,10 @@ local function startPlanting()
                 end
             end
         end
-        
+       
         print("🛑 Planting stopped")
     end)
 end
-
 local function stopPlanting()
     if not isPlanting then
         WindUI:Notify({
@@ -300,18 +274,17 @@ local function stopPlanting()
         })
         return
     end
-    
+   
     isPlanting = false
-    
+   
     WindUI:Notify({
         Title = "Stopped",
         Content = "Planting stopped",
         Duration = 2
     })
-    
+   
     print("🛑 STOPPED BY USER")
 end
-
 local function plantOne()
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == "Sapling" then
@@ -325,7 +298,7 @@ local function plantOne()
             end
         end
     end
-    
+   
     WindUI:Notify({
         Title = "No Saplings",
         Content = "None available",
@@ -333,21 +306,17 @@ local function plantOne()
     })
     return false
 end
-
 -- ==================== TAB 1: INFO ====================
 local InfoTab = Window:Tab({
     Title = "Info",
     Icon = "info",
     Locked = false,
 })
-
 InfoTab:Select()
-
 local Sectiontest = InfoTab:Section({
     Title = "Player Information Dashboard",
     Icon = "user-check",
 })
-
 InfoTab:Paragraph({
     Title = "Player Information Dashboard",
     Desc = "Complete player details, game information, and community access",
@@ -359,7 +328,6 @@ InfoTab:Paragraph({
     Locked = false,
     Buttons = {}
 })
-
 -- Player Info Paragraph
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
@@ -370,7 +338,6 @@ local GameName = "Unknown Game"
 pcall(function()
     GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
 end)
-
 InfoTab:Paragraph({
     Title = "👤 " .. PlayerName,
     Desc = string.format(
@@ -387,14 +354,11 @@ InfoTab:Paragraph({
     Locked = false,
     Buttons = {}
 })
-
 InfoTab:Divider()
-
 local Section2 = InfoTab:Section({
     Title = "Join Our Discord Community",
     Icon = "users",
 })
-
 InfoTab:Paragraph({
     Title = "Join Our Discord Community",
     Desc = "Connect with other users, get support, and stay updated!",
@@ -406,7 +370,6 @@ InfoTab:Paragraph({
     Locked = false,
     Buttons = {}
 })
-
 InfoTab:Button({
     Title = "Copy Discord Link",
     Desc = "Copy invite link to clipboard",
@@ -421,21 +384,17 @@ InfoTab:Button({
         })
     end
 })
-
 InfoTab:Space()
-
 -- ==================== TAB 2: PLAYER ====================
 local PlayerTab = Window:Tab({
     Title = "Player",
     Icon = "user-check",
     Locked = false,
 })
-
 local Section3 = PlayerTab:Section({
     Title = "Player Controls",
     Icon = "user-check",
 })
-
 PlayerTab:Paragraph({
     Title = "Player Controls",
     Desc = "Use the buttons below to control your player character",
@@ -447,19 +406,15 @@ PlayerTab:Paragraph({
     Locked = false,
     Buttons = {}
 })
-
 PlayerTab:Divider()
-
 local Section4 = PlayerTab:Section({
     Title = "Movement System",
     Icon = "zap",
     Opened = true,
 })
-
 -- Infinite Jump Toggle
 local infiniteJumpEnabled = false
 local UserInputService = game:GetService("UserInputService")
-
 PlayerTab:Toggle({
     Title = "Infinite Jump",
     Desc = "Press Space to jump infinitely",
@@ -475,7 +430,6 @@ PlayerTab:Toggle({
         })
     end
 })
-
 UserInputService.JumpRequest:Connect(function()
     if infiniteJumpEnabled and Player.Character and Player.Character:FindFirstChild("Humanoid") then
         local humanoid = Player.Character.Humanoid
@@ -484,7 +438,6 @@ UserInputService.JumpRequest:Connect(function()
         end
     end
 end)
-
 local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
 local ActiveSpeedBoost = false
@@ -495,30 +448,22 @@ local ValueSpeed = 16
 local ValueJumpHeight = 7.2
 local OldSpeed = 16
 local OldJumpHeight = 7.2
-
 local function getCharacter()
     return LocalPlayer.Character
 end
-
 local function getHumanoid()
     local character = getCharacter()
     return character and character:FindFirstChildOfClass("Humanoid")
 end
-
 local function updateOriginalValues()
     if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
         OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
         OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
     end
 end
-
 updateOriginalValues()
 LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
-
-
-
 PlayerTab:Divider()
-
 -- Speed Controls
 PlayerTab:Slider({
     Title = "Walk Speed Setting",
@@ -533,7 +478,6 @@ PlayerTab:Slider({
         print("🏃 Walk speed set to: " .. value)
     end
 })
-
 PlayerTab:Toggle({
     Title = "Enable Speed Boost",
     Desc = "Boost your walking speed",
@@ -542,7 +486,7 @@ PlayerTab:Toggle({
     Default = false,
     Callback = function(state)
         ActiveSpeedBoost = state
-        
+       
         task.spawn(function()
             while ActiveSpeedBoost do
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -554,13 +498,11 @@ PlayerTab:Toggle({
                 LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
             end
         end)
-        
+       
         print("🏃 Speed Boost: " .. (state and "ON" or "OFF"))
     end
 })
-
 PlayerTab:Divider()
-
 -- Jump Controls
 PlayerTab:Slider({
     Title = "Jump Height Setting",
@@ -575,7 +517,6 @@ PlayerTab:Slider({
         print("🦘 Jump height set to: " .. value)
     end
 })
-
 PlayerTab:Toggle({
     Title = "Enable Jump Boost",
     Desc = "Increase your jump height",
@@ -584,7 +525,7 @@ PlayerTab:Toggle({
     Default = false,
     Callback = function(state)
         ActiveJumpBoost = state
-        
+       
         task.spawn(function()
             while ActiveJumpBoost do
                 if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
@@ -599,13 +540,11 @@ PlayerTab:Toggle({
                 humanoid.JumpHeight = 7.2
             end
         end)
-        
+       
         print("🦘 Jump Boost: " .. (state and "ON" or "OFF"))
     end
 })
-
 PlayerTab:Divider()
-
 -- Noclip Toggle
 PlayerTab:Toggle({
     Title = "Noclip Mode",
@@ -615,9 +554,9 @@ PlayerTab:Toggle({
     Default = false,
     Callback = function(state)
         ActiveNoclip = state
-        
+       
         task.spawn(function()
-            while ActiveNoclip do 
+            while ActiveNoclip do
                 if LocalPlayer.Character then
                     for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
                         if part:IsA("BasePart") and part.CanCollide then
@@ -626,7 +565,7 @@ PlayerTab:Toggle({
                     end
                 end
                 task.wait(0.1)
-            end 
+            end
             if LocalPlayer.Character then
                 for _, part in pairs(LocalPlayer.Character:GetDescendants()) do
                     if part:IsA("BasePart") and not part.CanCollide then
@@ -635,13 +574,11 @@ PlayerTab:Toggle({
                 end
             end
         end)
-        
+       
         print("👻 Noclip: " .. (state and "ON" or "OFF"))
     end
 })
-
 PlayerTab:Space()
-
 -- Fly System
 local IYMouse = Players.LocalPlayer:GetMouse()
 local FLYING = false
@@ -649,17 +586,14 @@ local QEfly = true
 local iyflyspeed = 1
 local vehicleflyspeed = 1
 local ActivateFly = false
-
 local function sFLY(vfly)
     repeat task.wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
     repeat task.wait() until IYMouse
     if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
-
     local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
     local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
     local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
     local SPEED = 0
-
     local function FLY()
         FLYING = true
         local BG = Instance.new('BodyGyro')
@@ -708,7 +642,7 @@ local function sFLY(vfly)
             CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
         elseif KEY:lower() == 'a' then
             CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
-        elseif KEY:lower() == 'd' then 
+        elseif KEY:lower() == 'd' then
             CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
         elseif QEfly and KEY:lower() == 'e' then
             CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
@@ -734,7 +668,6 @@ local function sFLY(vfly)
     end)
     FLY()
 end
-
 local function NOFLY()
     FLYING = false
     if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
@@ -743,13 +676,11 @@ local function NOFLY()
     end
     pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
 end
-
 -- Mobile Fly
 local velocityHandlerName = "BodyVelocity"
 local gyroHandlerName = "BodyGyro"
 local mfly1
 local mfly2
-
 local function UnMobileFly()
     pcall(function()
         FLYING = false
@@ -761,38 +692,32 @@ local function UnMobileFly()
         mfly2:Disconnect()
     end)
 end
-
 local function MobileFly()
     UnMobileFly()
     FLYING = true
-
     local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
     local camera = workspace.CurrentCamera
     local v3none = Vector3.new()
     local v3zero = Vector3.new(0, 0, 0)
     local v3inf = Vector3.new(9e9, 9e9, 9e9)
-
     local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
     local bv = Instance.new("BodyVelocity")
     bv.Name = velocityHandlerName
     bv.Parent = root
     bv.MaxForce = v3zero
     bv.Velocity = v3zero
-
     local bg = Instance.new("BodyGyro")
     bg.Name = gyroHandlerName
     bg.Parent = root
     bg.MaxTorque = v3inf
     bg.P = 1000
     bg.D = 50
-
     mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
         local bv = Instance.new("BodyVelocity")
         bv.Name = velocityHandlerName
         bv.Parent = root
         bv.MaxForce = v3zero
         bv.Velocity = v3zero
-
         local bg = Instance.new("BodyGyro")
         bg.Name = gyroHandlerName
         bg.Parent = root
@@ -800,7 +725,6 @@ local function MobileFly()
         bg.P = 1000
         bg.D = 50
     end)
-
     mfly2 = RunService.RenderStepped:Connect(function()
         root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
         camera = workspace.CurrentCamera
@@ -808,13 +732,11 @@ local function MobileFly()
             local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
             local VelocityHandler = root:FindFirstChild(velocityHandlerName)
             local GyroHandler = root:FindFirstChild(gyroHandlerName)
-
             VelocityHandler.MaxForce = v3inf
             GyroHandler.MaxTorque = v3inf
             humanoid.PlatformStand = true
             GyroHandler.CFrame = camera.CoordinateFrame
             VelocityHandler.Velocity = v3none
-
             local direction = controlModule:GetMoveVector()
             if direction.X > 0 then
                 VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
@@ -831,7 +753,6 @@ local function MobileFly()
         end
     end)
 end
-
 PlayerTab:Slider({
     Title = "Fly Speed",
     Step = 0.1,
@@ -844,7 +765,6 @@ PlayerTab:Slider({
         iyflyspeed = val
     end
 })
-
 PlayerTab:Toggle({
     Title = "Fly",
     Desc = "Enable flying with WASD + (mobile supported)",
@@ -872,21 +792,17 @@ PlayerTab:Toggle({
         end)
     end
 })
-
 PlayerTab:Space()
-
 -- ==================== TAB 3: AUTOMATION ====================
 local AutoTab = Window:Tab({
     Title = "Automation",
     Icon = "bot",
     Locked = false,
 })
-
 local Section50 = AutoTab:Section({
     Title = "Automation Scripts",
     Icon = "Users",
 })
-
 local AutoChild = AutoTab:Button({
     Title = "Save all child",
     Desc = "Automatically find and save all Lost Children and drop them in camp",
@@ -894,19 +810,15 @@ local AutoChild = AutoTab:Button({
     Callback = function()
 -- Lost Child Auto Save Script for Roblox Executor (One by One)
 -- Finds Lost Children ONE BY ONE: TP to child → Save → TP back → Drop → Repeat
-
 local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local StarterGui = game:GetService("StarterGui")
-
 local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-
 -- Return position after saving children
 local RETURN_POSITION = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
-
 -- Lost Child names to search for
 local LOST_CHILD_NAMES = {
     "Lost Child",
@@ -914,7 +826,6 @@ local LOST_CHILD_NAMES = {
     "Lost Child3",
     "Lost Child4"
 }
-
 -- Function to send notification
 local function sendNotification(title, text, duration)
     StarterGui:SetCore("SendNotification", {
@@ -923,19 +834,16 @@ local function sendNotification(title, text, duration)
         Duration = duration or 5;
     })
 end
-
 -- Function to find Characters folder
 local function getCharactersFolder()
     return Workspace:FindFirstChild("Characters")
 end
-
 -- Function to teleport player
 local function teleportTo(position)
     if humanoidRootPart then
         humanoidRootPart.CFrame = CFrame.new(position)
     end
 end
-
 -- Function to find ProximityPrompt in a model
 local function findProximityPrompt(model)
     for _, descendant in pairs(model:GetDescendants()) do
@@ -945,39 +853,37 @@ local function findProximityPrompt(model)
     end
     return nil
 end
-
 -- Function to modify and trigger ProximityPrompt
 local function processProximityPrompt(prompt)
     if not prompt then return false end
-    
+   
     -- Save original hold duration
     local originalHoldDuration = prompt.HoldDuration
-    
+   
     -- Change to fast duration
     prompt.HoldDuration = 0.1
-    
+   
     -- Wait a bit for the change to register
     wait(0.2)
-    
+   
     -- Trigger the prompt twice
     for i = 1, 2 do
         fireproximityprompt(prompt)
         wait(0.3) -- Wait between clicks
     end
-    
+   
     -- Restore original duration (optional)
     prompt.HoldDuration = originalHoldDuration
-    
+   
     return true
 end
-
 -- Function to find all sacks in inventory
 local function findAllSacksInInventory()
     local inventory = player:FindFirstChild("Inventory")
     if not inventory then return {} end
-    
+   
     local sacks = {}
-    
+   
     -- Search for all items containing "sack" or "bag" in their name
     for _, item in pairs(inventory:GetChildren()) do
         local itemNameLower = item.Name:lower()
@@ -985,24 +891,23 @@ local function findAllSacksInInventory()
             table.insert(sacks, item)
         end
     end
-    
+   
     return sacks
 end
-
 -- Function to drop child from sack
 local function dropFromSack()
     wait(1.5) -- Wait for child to be put in sack
-    
+   
     local allSacks = findAllSacksInInventory()
-    
+   
     if #allSacks == 0 then
         print("No sacks found in inventory")
         sendNotification("Drop Failed", "No sacks found in inventory", 3)
         return false
     end
-    
+   
     print("Found " .. #allSacks .. " sack(s) in inventory")
-    
+   
     -- Try each sack to find the one with the child
     local usedSack = nil
     for _, sack in ipairs(allSacks) do
@@ -1011,19 +916,19 @@ local function dropFromSack()
         usedSack = sack
         break
     end
-    
+   
     if not usedSack then
         print("Could not determine which sack to use")
         sendNotification("Drop Failed", "No valid sack found", 3)
         return false
     end
-    
+   
     print("Using sack: " .. usedSack.Name)
-    
+   
     -- Find a suitable drop location (Log or any item in workspace.Items)
     local itemsFolder = Workspace:FindFirstChild("Items")
     local dropTarget = nil
-    
+   
     if itemsFolder then
         dropTarget = itemsFolder:FindFirstChild("Log")
         if not dropTarget then
@@ -1036,7 +941,7 @@ local function dropFromSack()
             end
         end
     end
-    
+   
     if not dropTarget then
         print("No drop target found in Items folder, creating temporary target")
         -- Create a temporary part as drop target
@@ -1048,7 +953,7 @@ local function dropFromSack()
         tempPart.CanCollide = false
         tempPart.Parent = Workspace
         dropTarget = tempPart
-        
+       
         -- Clean up after a delay
         task.delay(5, function()
             if tempPart and tempPart.Parent then
@@ -1056,7 +961,7 @@ local function dropFromSack()
             end
         end)
     end
-    
+   
     -- Fire the remote event to drop item from sack
     local remoteEvents = ReplicatedStorage:FindFirstChild("RemoteEvents")
     if not remoteEvents then
@@ -1064,14 +969,14 @@ local function dropFromSack()
         sendNotification("Drop Failed", "RemoteEvents not found", 3)
         return false
     end
-    
+   
     local requestBagDropItem = remoteEvents:FindFirstChild("RequestBagDropItem")
     if not requestBagDropItem then
         print("RequestBagDropItem remote not found")
         sendNotification("Drop Failed", "Remote event not found", 3)
         return false
     end
-    
+   
     -- Try to drop from the sack
     local success, err = pcall(function()
         local args = {
@@ -1079,41 +984,40 @@ local function dropFromSack()
             dropTarget,
             true
         }
-        
+       
         print("Attempting to drop child from sack...")
         requestBagDropItem:FireServer(unpack(args))
     end)
-    
+   
     if not success then
         print("Error dropping from sack: " .. tostring(err))
         sendNotification("Drop Error", "Failed to drop: " .. tostring(err), 3)
         return false
     end
-    
+   
     wait(0.5)
     print("Child dropped from sack!")
     sendNotification("✓ Dropped", "Child dropped from " .. usedSack.Name, 3)
-    
+   
     return true
 end
-
 -- Function to process a single Lost Child (ONE AT A TIME)
 local function processLostChildOneByOne(childModel, childName)
     print("\n=== Processing: " .. childName .. " ===")
-    
+   
     -- Check for ProximityPrompt
     local proximityPrompt = findProximityPrompt(childModel)
-    
+   
     if not proximityPrompt then
         print("✓ " .. childName .. " -- ALREADY SAVED (No ProximityPrompt found)")
         sendNotification("Already Saved", childName .. " is already safe!", 3)
         return "already_saved"
     end
-    
+   
     print("Found ProximityPrompt in " .. childName)
     print("Step 1: Teleporting to " .. childName .. "...")
     sendNotification("Step 1/4", "Teleporting to " .. childName, 3)
-    
+   
     -- Get the child's position
     local childPosition = nil
     if childModel:FindFirstChild("HumanoidRootPart") then
@@ -1123,44 +1027,44 @@ local function processLostChildOneByOne(childModel, childName)
     elseif childModel:FindFirstChildWhichIsA("BasePart") then
         childPosition = childModel:FindFirstChildWhichIsA("BasePart").Position
     end
-    
+   
     if not childPosition then
         print("✗ Could not find position for " .. childName)
         sendNotification("Error", "Could not find " .. childName .. " position", 3)
         return "failed"
     end
-    
+   
     -- STEP 1: Teleport to the child
     teleportTo(childPosition)
     wait(1) -- Wait for teleport to complete
-    
+   
     -- STEP 2: Click ProximityPrompt to save child
     print("Step 2: Clicking ProximityPrompt to save " .. childName .. "...")
     sendNotification("Step 2/4", "Saving " .. childName .. "...", 3)
-    
+   
     local success = processProximityPrompt(proximityPrompt)
-    
+   
     if not success then
         print("✗ Failed to click ProximityPrompt for " .. childName)
         sendNotification("✗ Failed", "Failed to save " .. childName, 3)
         return "failed"
     end
-    
+   
     print("✓ ProximityPrompt clicked successfully!")
     wait(1) -- Wait for child to be picked up
-    
+   
     -- STEP 3: Teleport back to return position
     print("Step 3: Teleporting back to return position...")
     sendNotification("Step 3/4", "Returning with " .. childName, 3)
     teleportTo(RETURN_POSITION)
     wait(1) -- Wait for teleport to complete
-    
+   
     -- STEP 4: Drop child from sack
     print("Step 4: Dropping " .. childName .. " from sack...")
     sendNotification("Step 4/4", "Dropping " .. childName .. " from sack", 3)
-    
+   
     local dropSuccess = dropFromSack()
-    
+   
     if dropSuccess then
         print("✓✓✓ Successfully completed all steps for " .. childName .. " ✓✓✓")
         sendNotification("✓ Complete!", childName .. " has been saved and dropped!", 4)
@@ -1171,44 +1075,43 @@ local function processLostChildOneByOne(childModel, childName)
         return "saved_no_drop"
     end
 end
-
 -- Main function
 local function autoSaveLostChildren()
     print("\n╔════════════════════════════════════════╗")
-    print("║  Lost Child Auto Save Started         ║")
-    print("║  Processing ONE BY ONE                 ║")
+    print("║ Lost Child Auto Save Started ║")
+    print("║ Processing ONE BY ONE ║")
     print("╚════════════════════════════════════════╝\n")
     sendNotification("Auto Save Started", "Processing children one by one...", 4)
-    
+   
     print("Searching for Characters folder...")
-    
+   
     local charactersFolder = getCharactersFolder()
-    
+   
     if not charactersFolder then
         warn("Characters folder not found in Workspace!")
         sendNotification("Error", "Characters folder not found!", 5)
         return
     end
-    
+   
     print("✓ Characters folder found!")
     print("Searching for Lost Children...\n")
-    
+   
     local savedCount = 0
     local alreadySavedCount = 0
     local notFoundCount = 0
     local failedCount = 0
-    
+   
     -- Process each Lost Child ONE BY ONE
     for index, childName in ipairs(LOST_CHILD_NAMES) do
         print("────────────────────────────────────────")
         print("Child " .. index .. " of " .. #LOST_CHILD_NAMES .. ": " .. childName)
         print("────────────────────────────────────────")
-        
+       
         local childModel = charactersFolder:FindFirstChild(childName)
-        
+       
         if childModel then
             local result = processLostChildOneByOne(childModel, childName)
-            
+           
             if result == "saved" or result == "saved_no_drop" then
                 savedCount = savedCount + 1
                 -- Wait before processing next child
@@ -1227,60 +1130,53 @@ local function autoSaveLostChildren()
             wait(0.3)
         end
     end
-    
+   
     -- Print final summary
     print("\n╔════════════════════════════════════════╗")
-    print("║           FINAL SUMMARY                ║")
+    print("║ FINAL SUMMARY ║")
     print("╠════════════════════════════════════════╣")
-    print("║  Children Saved:       " .. savedCount .. "              ║")
-    print("║  Already Saved:        " .. alreadySavedCount .. "              ║")
-    print("║  Failed:               " .. failedCount .. "              ║")
-    print("║  Not Found:            " .. notFoundCount .. "              ║")
-    print("║  Total Processed:      " .. (savedCount + alreadySavedCount) .. "              ║")
+    print("║ Children Saved: " .. savedCount .. " ║")
+    print("║ Already Saved: " .. alreadySavedCount .. " ║")
+    print("║ Failed: " .. failedCount .. " ║")
+    print("║ Not Found: " .. notFoundCount .. " ║")
+    print("║ Total Processed: " .. (savedCount + alreadySavedCount) .. " ║")
     print("╚════════════════════════════════════════╝\n")
-    
+   
     -- Final notification
     local summaryText = string.format("Saved: %d | Already Safe: %d | Failed: %d", savedCount, alreadySavedCount, failedCount)
     sendNotification("✓ All Done!", summaryText, 6)
-    
+   
     print("Script completed successfully!")
 end
-
 -- Run the script
 autoSaveLostChildren()
     end
 })
-
 AutoTab:Divider()
-
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
-
 -- AUTO EAT VARIABLES
 local autoEatEnabled = false
 local selectedFoods = {} -- Foods to auto eat
 local eatLoop = nil
-
 -- Get character parts
 local function getCharacterParts()
     local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
     local hrp = char:WaitForChild("HumanoidRootPart")
     return char, hrp
 end
-
 -- Get item position
 local function getItemPosition(item)
     if item:IsA("Model") then
-        return item.PrimaryPart and item.PrimaryPart.Position or 
+        return item.PrimaryPart and item.PrimaryPart.Position or
                (item:FindFirstChildWhichIsA("BasePart") and item:FindFirstChildWhichIsA("BasePart").Position)
     elseif item:IsA("BasePart") then
         return item.Position
     end
     return nil
 end
-
 -- Check if food is in selected list
 local function isFoodSelected(foodName)
     for _, selectedFood in pairs(selectedFoods) do
@@ -1290,13 +1186,12 @@ local function isFoodSelected(foodName)
     end
     return false
 end
-
 -- Find nearest selected food
 local function findNearestFood()
     local char, hrp = getCharacterParts()
     local nearestFood = nil
     local nearestDistance = math.huge
-    
+   
     -- Search in workspace.Items
     for _, item in pairs(workspace.Items:GetChildren()) do
         if isFoodSelected(item.Name) then
@@ -1310,10 +1205,9 @@ local function findNearestFood()
             end
         end
     end
-    
+   
     return nearestFood, nearestDistance
 end
-
 -- Get remote events
 local function getRemoteEvents()
     local remoteEvents = ReplicatedStorage:WaitForChild("RemoteEvents")
@@ -1322,57 +1216,55 @@ local function getRemoteEvents()
     local consumeEvent = remoteEvents:WaitForChild("RequestConsumeItem")
     return dragEvent, stopDragEvent, consumeEvent
 end
-
 -- Go to food and eat it
 local function goToAndEatFood(foodItem)
     if not foodItem then return false end
-    
+   
     local char, hrp = getCharacterParts()
     local dragEvent, stopDragEvent, consumeEvent = getRemoteEvents()
-    
+   
     local itemPos = getItemPosition(foodItem)
     if not itemPos then
         warn("Could not get food position")
         return false
     end
-    
+   
     print("🍴 Going to eat", foodItem.Name)
-    
+   
     -- Move to food
     hrp.CFrame = CFrame.new(itemPos + Vector3.new(0, 5, 0))
     wait(0.1)
-    
+   
     hrp.CFrame = CFrame.new(itemPos + Vector3.new(0, 2, 0))
     wait(0.1)
-    
+   
     -- Drag the food
     dragEvent:FireServer(foodItem)
     wait(0.1)
-    
+   
     -- Consume the food
     local success = pcall(function()
         consumeEvent:InvokeServer(foodItem)
     end)
-    
+   
     if success then
         print("✅ Successfully ate", foodItem.Name)
     else
         print("❌ Failed to consume", foodItem.Name)
     end
-    
+   
     -- Stop dragging
     wait(0.1)
     stopDragEvent:FireServer(foodItem)
-    
+   
     return success
 end
-
 -- Auto eat loop
 local function startAutoEatLoop()
     if eatLoop then
         eatLoop:Disconnect()
     end
-    
+   
     spawn(function()
         while autoEatEnabled do
             -- Check if any food is selected
@@ -1382,7 +1274,7 @@ local function startAutoEatLoop()
             else
                 -- Find and eat food
                 local foodItem, distance = findNearestFood()
-                
+               
                 if foodItem then
                     print("🔍 Found", foodItem.Name, "at", math.floor(distance), "studs")
                     goToAndEatFood(foodItem)
@@ -1396,11 +1288,10 @@ local function startAutoEatLoop()
         print("🛑 Auto eat loop stopped")
     end)
 end
-
 -- Toggle auto eat
 local function toggleAutoEat(state)
     autoEatEnabled = state
-    
+   
     if autoEatEnabled then
         print("🍴 AUTO EAT ENABLED!")
         print("📋 Selected foods:", #selectedFoods > 0 and table.concat(selectedFoods, ", ") or "NONE")
@@ -1416,12 +1307,11 @@ local function toggleAutoEat(state)
         end
     end
 end
-
 -- Update selected foods from dropdown
 local function updateSelectedFoods(foodList)
     selectedFoods = foodList
     print("📋 Updated food list:", table.concat(selectedFoods, ", "))
-    
+   
     -- If auto eat is enabled, restart the loop
     if autoEatEnabled then
         if #selectedFoods > 0 then
@@ -1434,11 +1324,9 @@ local function updateSelectedFoods(foodList)
         end
     end
 end
-
 -- Store functions globally for Wind UI access
 _G.toggleAutoEat = toggleAutoEat
 _G.updateSelectedFoods = updateSelectedFoods
-
 -- WIND UI INTEGRATION EXAMPLE:
 local ToggleAutoeat = AutoTab:Toggle({
     Title = "Auto Eat",
@@ -1450,7 +1338,6 @@ local ToggleAutoeat = AutoTab:Toggle({
         _G.toggleAutoEat(state)
     end
 })
-
 local Dropdownautoeat = AutoTab:Dropdown({
     Title = "Select Foods to Eat",
     Values = { "Carrot", "Berry", "Apple", "Meat","Stew" },
@@ -1461,7 +1348,6 @@ local Dropdownautoeat = AutoTab:Dropdown({
         _G.updateSelectedFoods(options)
     end
 })
-
 local buttonrefresheate = AutoTab:Button({
     Title = "Bring fuel items",
     Desc = "Bring fuel items to Campfire",
@@ -1470,36 +1356,27 @@ local buttonrefresheate = AutoTab:Button({
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
-
 local RS = game:GetService("ReplicatedStorage")
-
 local bringDistance = 5
 local checkInterval = 0.1
 local autoCollect = true
-
 -- Timer Settings
 local timerEnabled = true
 local timerDuration = 10 -- Duration in seconds (change this value)
-
 local customLocation = Vector3.new(-0.26, 12.41, 0.03)
-
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
 local stopDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
-
 local itemsToFind = {
     "Log",
     "Coal",
     "Fuel Canister",
     "Oil Bararel",
 }
-
 local itemsFolder = workspace:WaitForChild("Items")
-
 -- Timer control variables
 local isRunning = false
 local startTime = 0
 local shouldStop = false
-
 -- Function to set timer duration
 local function setTimer(seconds)
     if type(seconds) == "number" and seconds > 0 then
@@ -1511,7 +1388,6 @@ local function setTimer(seconds)
         return false
     end
 end
-
 -- Function to enable/disable timer
 local function toggleTimer(enabled)
     timerEnabled = enabled
@@ -1521,14 +1397,12 @@ local function toggleTimer(enabled)
         print("✓ Timer disabled - will run until no items found")
     end
 end
-
 -- Function to check if timer has expired
 local function isTimerExpired()
     if not timerEnabled then return false end
     local elapsed = tick() - startTime
     return elapsed >= timerDuration
 end
-
 -- Function to get remaining time
 local function getRemainingTime()
     if not timerEnabled then return "Timer disabled" end
@@ -1536,7 +1410,6 @@ local function getRemainingTime()
     local remaining = math.max(0, timerDuration - elapsed)
     return string.format("%.1f seconds remaining", remaining)
 end
-
 -- Function to set custom location
 local function setLocation(x, y, z)
     if type(x) == "number" and type(y) == "number" and type(z) == "number" then
@@ -1548,13 +1421,11 @@ local function setLocation(x, y, z)
         return false
     end
 end
-
 -- Function to clear custom location (bring to player)
 local function clearLocation()
     customLocation = nil
     print("✓ Location cleared - items will now bring to player")
 end
-
 -- Function to show current location
 local function showLocation()
     if customLocation then
@@ -1563,7 +1434,6 @@ local function showLocation()
         print("Current location: Player position (dynamic)")
     end
 end
-
 -- Function to add a new item name to bring
 local function addItemName(itemName)
     if not itemName or type(itemName) ~= "string" then
@@ -1574,7 +1444,6 @@ local function addItemName(itemName)
     print("✓ Added item: " .. itemName)
     return true
 end
-
 -- Function to remove an item name
 local function removeItemName(itemName)
     for i, name in pairs(itemsToFind) do
@@ -1587,7 +1456,6 @@ local function removeItemName(itemName)
     warn("✗ Item not found in list!")
     return false
 end
-
 -- Function to list all item names
 local function listItemNames()
     print("========== ITEMS TO BRING ==========")
@@ -1596,33 +1464,32 @@ local function listItemNames()
     end
     print("====================================")
 end
-
 -- Function to bring a single item
 local function bringItem(item)
     -- Check if we should stop before processing
     if shouldStop or isTimerExpired() then
         return false
     end
-    
+   
     if not item:IsA("BasePart") and not item:FindFirstChildWhichIsA("BasePart") then
         return false
     end
-    
+   
     local itemPart = item:IsA("BasePart") and item or item:FindFirstChildWhichIsA("BasePart")
     if not itemPart then return false end
-    
+   
     -- Start dragging
     pcall(function()
         startDragging:FireServer(item)
     end)
-    
+   
     task.wait(0.03)
-    
+   
     -- Check timer again after wait
     if shouldStop or isTimerExpired() then
         return false
     end
-    
+   
     -- Determine target position
     local targetPos
     if customLocation then
@@ -1632,7 +1499,7 @@ local function bringItem(item)
         -- Use player position
         targetPos = hrp.CFrame * CFrame.new(0, bringDistance, -bringDistance)
     end
-    
+   
     -- Instantly teleport item to target
     pcall(function()
         itemPart.CFrame = targetPos
@@ -1641,41 +1508,40 @@ local function bringItem(item)
         itemPart.RotVelocity = Vector3.new(0, 0, 0)
         itemPart.Anchored = false
     end)
-    
+   
     task.wait(0.03)
-    
+   
     -- Check timer again after wait
     if shouldStop or isTimerExpired() then
         return false
     end
-    
+   
     -- Stop dragging to collect
     pcall(function()
         stopDragging:FireServer(item)
     end)
-    
+   
     task.wait(0.03)
     return true
 end
-
 -- Function to bring all items from the list
 local function bringAllItems()
     local itemCount = 0
-    
+   
     -- Loop through all item names to find
     for _, itemName in pairs(itemsToFind) do
         -- Check timer before processing each item type
         if shouldStop or isTimerExpired() then
             break
         end
-        
+       
         -- Find all items with this name in workspace.Items
         for _, item in pairs(itemsFolder:GetChildren()) do
             -- Check timer before processing each item
             if shouldStop or isTimerExpired() then
                 break
             end
-            
+           
             if item.Name == itemName and (item:IsA("Model") or item:IsA("BasePart")) then
                 pcall(function()
                     if bringItem(item) then
@@ -1685,14 +1551,13 @@ local function bringAllItems()
             end
         end
     end
-    
+   
     return itemCount
 end
-
 -- Function to bring specific item by name
 local function bringSpecificItem(itemName)
     local count = 0
-    
+   
     -- Find all items with this name
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == itemName then
@@ -1703,39 +1568,37 @@ local function bringSpecificItem(itemName)
             end)
         end
     end
-    
+   
     if count > 0 then
         print("Brought " .. count .. " " .. itemName .. "(s)")
     else
         warn("Item not found: " .. itemName)
     end
-    
+   
     return count
 end
-
 -- Function to stop the auto-collect manually
 local function stopAutoCollect()
     shouldStop = true
     isRunning = false
     print("✓ Auto-collect stopped manually")
 end
-
 -- Auto collect loop with timer
 if autoCollect then
     spawn(function()
         isRunning = true
         shouldStop = false
         startTime = tick()
-        
+       
         if timerEnabled then
             print("Starting auto-collect from workspace.Items (Timer: " .. timerDuration .. " seconds)...")
         else
             print("Starting auto-collect from workspace.Items (No timer)...")
         end
-        
+       
         local attempts = 0
         local maxAttempts = 3
-        
+       
         while isRunning and not shouldStop do
             -- Check timer at start of loop
             if isTimerExpired() then
@@ -1743,16 +1606,16 @@ if autoCollect then
                 shouldStop = true
                 break
             end
-            
+           
             local count = bringAllItems()
-            
+           
             -- Check timer after bringing items
             if isTimerExpired() then
                 print("⏱️ Timer expired (" .. timerDuration .. " seconds) - stopping auto-collect")
                 shouldStop = true
                 break
             end
-            
+           
             if count > 0 then
                 print("Brought " .. count .. " items | " .. getRemainingTime())
                 attempts = 0 -- Reset attempts if items found
@@ -1763,10 +1626,10 @@ if autoCollect then
                     break
                 end
             end
-            
+           
             task.wait(checkInterval)
         end
-        
+       
         isRunning = false
         shouldStop = false
         print("Auto-collect stopped!")
@@ -1775,36 +1638,34 @@ if autoCollect then
 else
     print("Manual mode: Use commands below")
 end
-
 -- ========== GLOBAL COMMANDS ==========
 _G.ItemBringer = {
     -- Location Management
     setLocation = setLocation,
     clearLocation = clearLocation,
     showLocation = showLocation,
-    
+   
     -- Item Management
     addItem = addItemName,
     removeItem = removeItemName,
     listItems = listItemNames,
-    
+   
     -- Timer Management
     setTimer = setTimer,
     toggleTimer = toggleTimer,
     getRemainingTime = getRemainingTime,
     stopNow = stopAutoCollect,
-    
+   
     -- Bringing Functions
     bringAll = bringAllItems,
     bring = bringSpecificItem,
-    
+   
     -- Quick Access
     bringCarrot = function() bringSpecificItem("Carrot") end,
     bringLog = function() bringSpecificItem("Log") end,
     bringWood = function() bringSpecificItem("Wood") end,
     bringCoal = function() bringSpecificItem("Coal") end,
 }
-
 showLocation()
 listItemNames()
 if timerEnabled then
@@ -1814,65 +1675,56 @@ else
 end
     end
 })
-
 local ButtonPlantsapling = AutoTab:Button({
     Title = "Plant Saplings",
     Desc = "Plant all saplings at your position",
     Locked = false,
     Callback = function()
         -- Auto Sapling Planter Script
-
-
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
-
 local RS = game:GetService("ReplicatedStorage")
-
 -- Configuration
 local autoPlant = true
 local checkInterval = 0.5
 local plantOffset = Vector3.new(0, -5.05, 0) -- Offset from player position
-
 -- Get remote events
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
 local plantItem = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem")
-
 -- Items folder path
 local itemsFolder = workspace:WaitForChild("Items")
-
 -- Function to get player position as vector
 local function getPlayerPosition()
     local pos = hrp.Position + plantOffset
     return Vector3.new(pos.X, pos.Y, pos.Z)
 end
-
 -- Function to plant a single sapling
 local function plantSapling(sapling)
     if not sapling or not sapling.Parent then
         return false
     end
-    
+   
     -- Start dragging the sapling
     local dragSuccess = pcall(function()
         startDragging:FireServer(sapling)
     end)
-    
+   
     if not dragSuccess then
         warn("Failed to start dragging sapling")
         return false
     end
-    
+   
     task.wait(0.1)
-    
+   
     -- Get player position
     local plantPos = getPlayerPosition()
-    
+   
     -- Plant the sapling at player position
     local plantSuccess = pcall(function()
         plantItem:InvokeServer(sapling, plantPos)
     end)
-    
+   
     if plantSuccess then
         print("✓ Planted sapling at: " .. tostring(plantPos))
         return true
@@ -1881,11 +1733,10 @@ local function plantSapling(sapling)
         return false
     end
 end
-
 -- Function to find and plant all saplings
 local function plantAllSaplings()
     local plantedCount = 0
-    
+   
     -- Find all Sapling items in workspace.Items
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == "Sapling" and item:IsA("Model") then
@@ -1895,16 +1746,15 @@ local function plantAllSaplings()
                     task.wait(0.1) -- Small delay between plants
                 end
             end)
-            
+           
             if not success then
                 warn("Error planting sapling: " .. item.Name)
             end
         end
     end
-    
+   
     return plantedCount
 end
-
 -- Function to set plant offset
 local function setOffset(x, y, z)
     if type(x) == "number" and type(y) == "number" and type(z) == "number" then
@@ -1916,18 +1766,15 @@ local function setOffset(x, y, z)
         return false
     end
 end
-
 -- Function to clear offset
 local function clearOffset()
     plantOffset = Vector3.new(0, 0, 0)
     print("✓ Offset cleared - planting at exact player position")
 end
-
 -- Function to show current offset
 local function showOffset()
     print("Current plant offset: " .. tostring(plantOffset))
 end
-
 -- Function to plant single sapling manually
 local function plantOne()
     -- Find first available sapling
@@ -1939,18 +1786,17 @@ local function plantOne()
     warn("No saplings found!")
     return false
 end
-
 -- Auto plant loop
 if autoPlant then
     spawn(function()
         print("Starting auto-planter...")
         local attempts = 0
         local maxAttempts = 5
-        
+       
         while true do
             task.wait(checkInterval)
             local count = plantAllSaplings()
-            
+           
             if count > 0 then
                 print("Planted " .. count .. " sapling(s)")
                 attempts = 0 -- Reset attempts if saplings found
@@ -1968,43 +1814,37 @@ if autoPlant then
 else
     print("Manual mode: Use commands below")
 end
-
 -- ========== GLOBAL COMMANDS ==========
 _G.SaplingPlanter = {
     -- Planting Functions
     plantAll = plantAllSaplings,
     plantOne = plantOne,
-    
+   
     -- Offset Management
     setOffset = setOffset,
     clearOffset = clearOffset,
     showOffset = showOffset,
-    
+   
     -- Toggle auto-plant
     toggleAuto = function()
         autoPlant = not autoPlant
         print("Auto-plant: " .. tostring(autoPlant))
     end,
 }
-
 -- Show initial settings
 showOffset()
     end
 })
-
 AutoTab:Paragraph({
     Title = "🌱 Auto Sapling Planter",
     Content = "Plants saplings in a circle pattern. Adjust settings below."
 })
-
 AutoTab:Divider()
-
 AutoTab:Paragraph({
     Title = "Configuration",
     Content = "Adjust planting parameters. Height is automatically set to perfect ground level planting."
 })
-
-print("  → Adding radius slider...")
+print(" → Adding radius slider...")
 AutoTab:Slider({
     Title = "Circle Radius",
     Value = {
@@ -2022,8 +1862,7 @@ AutoTab:Slider({
         })
     end
 })
-
-print("  → Adding spacing slider...")
+print(" → Adding spacing slider...")
 AutoTab:Slider({
     Title = "Spacing",
     Value = {
@@ -2041,17 +1880,14 @@ AutoTab:Slider({
         })
     end
 })
-
-print("  → Adding divider...")
+print(" → Adding divider...")
 AutoTab:Divider()
-
-print("  → Adding controls paragraph...")
+print(" → Adding controls paragraph...")
 AutoTab:Paragraph({
     Title = "Controls",
     Content = ""
 })
-
-print("  → Adding start button...")
+print(" → Adding start button...")
 AutoTab:Button({
     Title = "▶️ Start Planting",
     Desc = "Begin automatic planting",
@@ -2060,8 +1896,7 @@ AutoTab:Button({
         startPlanting()
     end
 })
-
-print("  → Adding stop button...")
+print(" → Adding stop button...")
 AutoTab:Button({
     Title = "⏹️ Stop Planting",
     Desc = "Stop planting immediately",
@@ -2070,7 +1905,6 @@ AutoTab:Button({
         stopPlanting()
     end
 })
-
 -- Global access for planter
 _G.SaplingPlanter = {
     start = startPlanting,
@@ -2082,7 +1916,6 @@ _G.SaplingPlanter = {
     setHeight = setHeight,
     reset = resetCircle,
 }
-
 print("✓ All UI elements added!")
 -- Force window to open automatically
 wait(1)
@@ -2090,49 +1923,45 @@ print("🔓 Attempting to open window automatically...")
 pcall(function()
     Window:Show()
 end)
-
 _G.Auto = false -- Set to false to match the toggle's default
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Event = ReplicatedStorage.RemoteEvents.CarnivalCompleteShootingGallery
-
 local function findTargets(parent, depth)
     if depth > 3 then return {} end
-   
+  
     local targets = {}
-   
+  
     for _, child in ipairs(parent:GetChildren()) do
         if child:IsA("BasePart") then
             table.insert(targets, child)
         end
-       
+      
         for _, subTarget in ipairs(findTargets(child, depth + 1)) do
             table.insert(targets, subTarget)
         end
     end
-   
+  
     return targets
 end
-
 spawn(function()
     while task.wait(3) do
-   
+  
         local targets = {}
         local areas = {
             workspace.Map,
             workspace.Items,
             workspace.Characters
         }
-       
+      
         for _, area in ipairs(areas) do
             for _, target in ipairs(findTargets(area, 0)) do
                 table.insert(targets, target)
             end
         end
-       
+      
         for index, target in ipairs(targets) do
             if not _G.Auto then break end
-           
+          
             local success = pcall(function()
                 Event:FireServer(target)
             end)
@@ -2140,7 +1969,6 @@ spawn(function()
         end
     end
 end)
-
 -- Assuming Tab1 is already defined in your UI library setup
 local Togglecandy = AutoTab:Toggle({
     Title = "Auto Farm Candies",
@@ -2151,9 +1979,7 @@ local Togglecandy = AutoTab:Toggle({
         print("Auto Shooting Gallery: " .. tostring(state))
     end
 })
-
 --Add the new code here
-
 AutoTab:Paragraph({
     Title = "More Features Coming Soon!",
     Desc = "Join the Discord to suggest features or report bugs also to get the latest updates.",
@@ -2165,7 +1991,6 @@ AutoTab:Paragraph({
     Locked = false,
     Buttons = {}
 })
-
 AutoTab:Button({
     Title = "Copy Discord Link",
     Desc = "Copy invite link to clipboard",
@@ -2180,7 +2005,6 @@ AutoTab:Button({
         })
     end
 })
-
 local Buttonlockedcoming = AutoTab:Button({
     Title = "Auto Farm Days",
     Desc = "Comming Soon",
@@ -2195,19 +2019,16 @@ local HitboxTab = Window:Tab({
     Icon = "target",
     Locked = false,
 })
-
 local Section5 = HitboxTab:Section({
     Title = "Tree Hitbox Modifier",
     Icon = "tree",
 })
-
 local modificationEnabled = false
 local hitboxSizeMultiplier = 1000000
-
 local function modifyTreeTrunk(trunk, sizeMultiplier)
     if not trunk:IsA("BasePart") then return end
     if trunk.Transparency == 1 then return end
-    
+   
     local originalSize = trunk.Size
     local originalCFrame = trunk.CFrame
     local originalTransparency = trunk.Transparency
@@ -2215,14 +2036,14 @@ local function modifyTreeTrunk(trunk, sizeMultiplier)
     local originalColor = trunk.Color
     local originalCanCollide = trunk.CanCollide
     local originalAnchored = trunk.Anchored
-    
+   
     trunk.Size = Vector3.new(sizeMultiplier, sizeMultiplier, sizeMultiplier)
     trunk.CFrame = originalCFrame
     trunk.Transparency = 1
     trunk.CanCollide = false
     trunk.CanQuery = true
     trunk.Anchored = true
-    
+   
     local visualPart = trunk:Clone()
     visualPart.Size = originalSize
     visualPart.CFrame = originalCFrame
@@ -2234,20 +2055,19 @@ local function modifyTreeTrunk(trunk, sizeMultiplier)
     visualPart.Anchored = originalAnchored
     visualPart.Name = "Visual"
     visualPart.Parent = trunk.Parent
-    
+   
     for _, child in pairs(visualPart:GetChildren()) do
         child:Destroy()
     end
-    
+   
     print("Modified trunk: " .. trunk:GetFullName())
 end
-
 local function modifyAllTrees()
     if not modificationEnabled then return end
-    
+   
     local types = {"Small Tree", "small tree", "SmallTree", "TreeBig1", "TreeBig2", "TreeBig3", "Big Tree", "big tree", "BigTree"}
     local count = 0
-    
+   
     for _, obj in pairs(workspace:GetDescendants()) do
         if obj:IsA("Model") and table.find(types, obj.Name) then
             local trunk = obj:FindFirstChild("Trunk", true)
@@ -2257,20 +2077,19 @@ local function modifyAllTrees()
             end
         end
     end
-    
+   
     return count
 end
-
 HitboxTab:Toggle({
     Title = "🌲 Tree Hitbox Modifier",
     Desc = "Make tree hitboxes massive for easier chopping",
     Icon = "settings",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state) 
+    Callback = function(state)
         modificationEnabled = state
         print("Tree modification: " .. tostring(state))
-        
+       
         if state then
             local count = modifyAllTrees()
             WindUI:Notify({
@@ -2287,7 +2106,6 @@ HitboxTab:Toggle({
         end
     end
 })
-
 HitboxTab:Slider({
     Title = "Hitbox Size Multiplier",
     Step = 1000,
@@ -2296,10 +2114,10 @@ HitboxTab:Slider({
         Max = 10000000,
         Default = 1000000,
     },
-    Callback = function(value) 
+    Callback = function(value)
         hitboxSizeMultiplier = value
         print("Hitbox size adjusted to: " .. value)
-        
+       
         if modificationEnabled then
             WindUI:Notify({
                 Title = "Size Changed",
@@ -2309,15 +2127,12 @@ HitboxTab:Slider({
         end
     end
 })
-
 HitboxTab:Divider()
-
 local Section6 = HitboxTab:Section({
     Title = "Entity Hitbox Modifier",
     Icon = "target",
     Opened = true,
 })
-
 local entityStates = {
     Bunny = false,
     CrossbowCultist = false,
@@ -2328,7 +2143,6 @@ local hitboxSize = 50
 local modifiedEntities = {}
 local connectionActive = false
 local renderConnection = nil
-
 local function resetEntity(character)
     pcall(function()
         local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -2342,28 +2156,27 @@ local function resetEntity(character)
         end
     end)
 end
-
 local function modifyEntity(character, size)
     pcall(function()
         local hrp = character:FindFirstChild("HumanoidRootPart")
         if not hrp or not hrp:IsA("BasePart") then return end
-        
+       
         if not hrp:GetAttribute("OriginalSize") then
             hrp:SetAttribute("OriginalSize", tostring(hrp.Size))
             hrp:SetAttribute("OriginalTransparency", hrp.Transparency)
             hrp:SetAttribute("OriginalColor", tostring(hrp.BrickColor))
             hrp:SetAttribute("OriginalMaterial", hrp.Material.Name)
         end
-        
+       
         hrp.Size = Vector3.new(size, size, size)
         hrp.Transparency = 0.7
         hrp.BrickColor = BrickColor.new("Really blue")
         hrp.Material = Enum.Material.Neon
         hrp.CanCollide = false
-        
+       
         if not modifiedEntities[character] then
             modifiedEntities[character] = true
-            
+           
             local humanoid = character:FindFirstChildOfClass("Humanoid")
             if humanoid then
                 humanoid.Died:Connect(function()
@@ -2371,7 +2184,7 @@ local function modifyEntity(character, size)
                     modifiedEntities[character] = nil
                 end)
             end
-            
+           
             character.AncestryChanged:Connect(function(_, parent)
                 if not parent then
                     modifiedEntities[character] = nil
@@ -2380,7 +2193,6 @@ local function modifyEntity(character, size)
         end
     end)
 end
-
 local function restoreEntity(character)
     pcall(function()
         local hrp = character:FindFirstChild("HumanoidRootPart")
@@ -2389,7 +2201,7 @@ local function restoreEntity(character)
             local origTrans = hrp:GetAttribute("OriginalTransparency")
             local origColor = hrp:GetAttribute("OriginalColor")
             local origMaterial = hrp:GetAttribute("OriginalMaterial")
-            
+           
             if origSize then
                 local x, y, z = origSize:match("([^,]+), ([^,]+), ([^,]+)")
                 hrp.Size = Vector3.new(tonumber(x), tonumber(y), tonumber(z))
@@ -2398,7 +2210,7 @@ local function restoreEntity(character)
             if origColor then hrp.BrickColor = BrickColor.new(origColor) end
             if origMaterial then hrp.Material = Enum.Material[origMaterial] end
             hrp.CanCollide = true
-            
+           
             hrp:SetAttribute("OriginalSize", nil)
             hrp:SetAttribute("OriginalTransparency", nil)
             hrp:SetAttribute("OriginalColor", nil)
@@ -2406,7 +2218,6 @@ local function restoreEntity(character)
         end
     end)
 end
-
 local function getActiveEntities()
     local active = {}
     for entity, enabled in pairs(entityStates) do
@@ -2416,15 +2227,14 @@ local function getActiveEntities()
     end
     return active
 end
-
 local function shouldModifyEntity(entityName, activeList)
     local normalizedName = entityName:gsub("%s+", "")
-    
+   
     for _, activeName in pairs(activeList) do
         if normalizedName == activeName or entityName == activeName then
             return true
         end
-        
+       
         local normalizedActive = activeName:gsub("%s+", "")
         if normalizedName == normalizedActive then
             return true
@@ -2432,18 +2242,17 @@ local function shouldModifyEntity(entityName, activeList)
     end
     return false
 end
-
 local function startModification()
     if connectionActive then return end
     connectionActive = true
-    
+   
     renderConnection = RunService.RenderStepped:Connect(function()
         local activeEntities = getActiveEntities()
         if #activeEntities == 0 then return end
-        
+       
         local charactersFolder = workspace:FindFirstChild("Characters")
         if not charactersFolder then return end
-        
+       
         for _, child in pairs(charactersFolder:GetChildren()) do
             if child:IsA("Model") then
                 if shouldModifyEntity(child.Name, activeEntities) then
@@ -2462,16 +2271,15 @@ local function startModification()
         end
     end)
 end
-
 local function stopModification()
     if not connectionActive then return end
     connectionActive = false
-    
+   
     if renderConnection then
         renderConnection:Disconnect()
         renderConnection = nil
     end
-    
+   
     for character, _ in pairs(modifiedEntities) do
         if character and character.Parent then
             restoreEntity(character)
@@ -2479,7 +2287,6 @@ local function stopModification()
     end
     modifiedEntities = {}
 end
-
 local function updateModificationState()
     local anyActive = false
     for _, enabled in pairs(entityStates) do
@@ -2488,21 +2295,20 @@ local function updateModificationState()
             break
         end
     end
-    
+   
     if anyActive then
         startModification()
     else
         stopModification()
     end
 end
-
 HitboxTab:Toggle({
     Title = "Bunny Hitbox",
     Desc = "Expand Bunny hitbox",
     Icon = "target",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state) 
+    Callback = function(state)
         entityStates.Bunny = state
         updateModificationState()
         print("Bunny modification: " .. tostring(state))
@@ -2513,14 +2319,13 @@ HitboxTab:Toggle({
         })
     end
 })
-
 HitboxTab:Toggle({
     Title = "Crossbow Cultist Hitbox",
     Desc = "Expand Crossbow Cultist hitbox",
     Icon = "target",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state) 
+    Callback = function(state)
         entityStates.CrossbowCultist = state
         updateModificationState()
         print("Crossbow Cultist modification: " .. tostring(state))
@@ -2531,14 +2336,13 @@ HitboxTab:Toggle({
         })
     end
 })
-
 HitboxTab:Toggle({
     Title = "Cultist Hitbox",
     Desc = "Expand Cultist hitbox",
     Icon = "target",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state) 
+    Callback = function(state)
         entityStates.Cultist = state
         updateModificationState()
         print("Cultist modification: " .. tostring(state))
@@ -2549,14 +2353,13 @@ HitboxTab:Toggle({
         })
     end
 })
-
 HitboxTab:Toggle({
     Title = "Wolf Hitbox",
     Desc = "Expand Wolf hitbox",
     Icon = "target",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state) 
+    Callback = function(state)
         entityStates.Wolf = state
         updateModificationState()
         print("Wolf modification: " .. tostring(state))
@@ -2567,7 +2370,6 @@ HitboxTab:Toggle({
         })
     end
 })
-
 HitboxTab:Slider({
     Title = "Hitbox Size",
     Step = 1,
@@ -2576,7 +2378,7 @@ HitboxTab:Slider({
         Max = 200,
         Default = 50,
     },
-    Callback = function(value) 
+    Callback = function(value)
         hitboxSize = value
         print("Hitbox size adjusted to: " .. value)
         WindUI:Notify({
@@ -2586,31 +2388,22 @@ HitboxTab:Slider({
         })
     end
 })
-
 HitboxTab:Space()
-
 -- ==================== TAB 2: BRING ====================
 local BringallTab = Window:Tab({
     Title = "Bring",
     Icon = "Box",
     Locked = false,
 })
-
-
 -- Item Teleport Script with Toggle & Dropdown Integration
--- Direct integration with BringallTabTab (ABSOLUTELY NO RETURN STATEMENTS)
-
+-- Direct integration with BringallTab (ABSOLUTELY NO RETURN STATEMENTS)
 print("🔄 Loading Item Teleport System...")
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
 local player = Players.LocalPlayer
-
 -- Remote Events
 local RequestStartDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
 local StopDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
-
 -- Item Categories with all items
 local itemCategories = {
     {
@@ -2644,12 +2437,10 @@ local itemCategories = {
         items = {"Frog Key", "Feather", "Wildfire", "Sacrifice Totem", "Old Rod", "Flower", "Coin Stack", "Infernal Sack", "Giant Sack", "Good Sack", "Seed Box", "Old Flashlight", "Strong Flashlight", "Bunny Foot", "Wolf Pelt", "Bear Pelt", "Mammonth Tusk", "Alpha Wolf Pelt", "Bear Corpse", "Meteor Shard", "Gold Shard", "Raw Obsidiron Ore", "Gem of the Forest Fragment", "Diamond", "Defense Blueprint"}
     }
 }
-
 -- State tracking
 local categoryToggles = {}
 local categoryDropdowns = {}
 local activeCategories = {}
-
 -- Location settings
 local selectedLocation = "Player"
 local locations = {
@@ -2657,7 +2448,6 @@ local locations = {
     ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
     ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
 }
-
 -- Function to bring ALL instances of an item to player (without marking)
 local function BringAllItems(itemName)
     local itemsFolder = workspace:FindFirstChild("Items")
@@ -2668,7 +2458,7 @@ local function BringAllItems(itemName)
         if character and character:FindFirstChild("HumanoidRootPart") then
             local hrp = character.HumanoidRootPart
             local itemsCollected = 0
-            
+           
             -- Determine target position based on selected location
             local basePosition
             if selectedLocation == "Player" then
@@ -2681,19 +2471,19 @@ local function BringAllItems(itemName)
                     basePosition = hrp.CFrame -- Fallback to player
                 end
             end
-            
+           
             print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
-            
+           
             -- Find and collect ALL items without marking (so they can be collected again)
             for _, item in pairs(itemsFolder:GetChildren()) do
                 if item.Name == itemName then
                     local success, err = pcall(function()
                         RequestStartDraggingItem:FireServer(item)
                         task.wait(0.05)
-                        
+                       
                         -- Teleport item to the exact same location (no offset)
                         local targetPos = basePosition
-                        
+                       
                         if item:IsA("Model") then
                             local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
                             if primaryPart then
@@ -2702,22 +2492,22 @@ local function BringAllItems(itemName)
                         elseif item:IsA("BasePart") then
                             item.CFrame = targetPos
                         end
-                        
+                       
                         task.wait(0.05)
                         StopDraggingItem:FireServer(item)
                     end)
-                    
+                   
                     if success then
                         itemsCollected = itemsCollected + 1
                         print("✅ Brought " .. itemName .. " #" .. itemsCollected)
                     else
                         warn("❌ Failed to bring item:", err)
                     end
-                    
+                   
                     task.wait(0.1)
                 end
             end
-            
+           
             if itemsCollected > 0 then
                 print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName .. " to " .. selectedLocation)
             else
@@ -2728,11 +2518,10 @@ local function BringAllItems(itemName)
         end
     end
 end
-
 -- Function to collect all selected items from a category once
 local function CollectCategoryItems(categoryName)
     local selectedItems = categoryDropdowns[categoryName] or {}
-    
+   
     if #selectedItems == 0 then
         print("⚠️ No items selected in '" .. categoryName .. "'")
     else
@@ -2744,12 +2533,10 @@ local function CollectCategoryItems(categoryName)
         print("✅ Finished collecting from " .. categoryName)
     end
 end
-
--- Setup with BringallTabTab (assuming BringallTabTab is globally accessible or passed)
-BringallTabTab:Divider()
-
+-- Setup with BringallTab (assuming BringallTab is globally accessible or passed)
+BringallTab:Divider()
 -- Location Dropdown at the top
-local LocationDropdown = BringallTabTab:Dropdown({
+local LocationDropdown = BringallTab:Dropdown({
     Title = "📍 Item Destination",
     Values = { "Player", "Workbench", "Campfire" },
     Value = "Player",
@@ -2758,19 +2545,17 @@ local LocationDropdown = BringallTabTab:Dropdown({
         print("📍 Location changed to: " .. option)
     end
 })
-
-BringallTabTab:Divider()
-
+BringallTab:Divider()
 -- Create sections and controls for each category
 for categoryIndex, category in ipairs(itemCategories) do
-    local Section = BringallTabTab:Section({
+    local Section = BringallTab:Section({
         Title = category.name,
         Icon = category.icon,
         Opened = true,
     })
-    
+   
     -- Button to collect all items from this category
-    local Button = BringallTabTab:Button({
+    local Button = BringallTab:Button({
         Title = "Collect " .. category.name,
         Desc = "Click to collect all selected items from " .. category.name,
         Locked = false,
@@ -2779,11 +2564,11 @@ for categoryIndex, category in ipairs(itemCategories) do
             CollectCategoryItems(category.name)
         end
     })
-    
+   
     categoryToggles[category.name] = Button
-    
+   
     -- Multi-select dropdown for item selection
-    local Dropdown = BringallTabTab:Dropdown({
+    local Dropdown = BringallTab:Dropdown({
         Title = category.name .. " Items",
         Values = category.items,
         Value = {},
@@ -2794,36 +2579,31 @@ for categoryIndex, category in ipairs(itemCategories) do
             print(category.name .. " Dropdown: " .. game:GetService("HttpService"):JSONEncode(options))
         end
     })
-    
-    BringallTabTab:Divider()
+   
+    BringallTab:Divider()
 end
-
 print("✅ Item Teleporter System loaded!")
 print("📦 Select items from dropdowns and click the collect button!")
 print("🔄 Click button again to collect items again!")
-
 --- ==================== TAB 4: MAIN ====================
 local MainTab = Window:Tab({
     Title = "Main",
     Icon = "home",
     Locked = false,
 })
-
 -- Sky Platform
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Player = Players.LocalPlayer
-
 local isOnPlatform = false
 local skyPlatform = nil
 local platformConnection = nil
 local platformHeight = 20 -- Default height
-
 local function createSkyPlatform(playerPosition)
     if skyPlatform then
         skyPlatform:Destroy()
     end
-    
+   
     skyPlatform = Instance.new("Part")
     skyPlatform.Name = "SkyPlatform"
     skyPlatform.Size = Vector3.new(100000000, 1, 100000000) -- Increased size for better coverage
@@ -2834,15 +2614,15 @@ local function createSkyPlatform(playerPosition)
     skyPlatform.TopSurface = Enum.SurfaceType.Smooth
     skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
     skyPlatform.Parent = workspace
-    
+   
     platformConnection = RunService.Heartbeat:Connect(function()
         if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform and skyPlatform then
             local humanoidRootPart = Player.Character.HumanoidRootPart
             local playerPos = humanoidRootPart.Position
-            
+           
             -- Always update platform position to follow player instantly
             skyPlatform.Position = Vector3.new(playerPos.X, platformHeight, playerPos.Z)
-            
+           
             -- Keep platform size large
             local minSize = 100
             if skyPlatform.Size.X < minSize then
@@ -2851,76 +2631,72 @@ local function createSkyPlatform(playerPosition)
         end
     end)
 end
-
 local function teleportToSky()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
         print("☁️ Error: Character not found")
         return
     end
-    
+   
     local humanoidRootPart = character.HumanoidRootPart
-    
+   
     createSkyPlatform(humanoidRootPart.Position)
-    
+   
     wait(0.1) -- Small delay to ensure platform is created
-    
+   
     humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, platformHeight + 5, humanoidRootPart.Position.Z)
-    
+   
     isOnPlatform = true
     print("☁️ Teleported to invisible sky platform at height: " .. platformHeight)
 end
-
 local function teleportToGround()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
         print("☁️ Error: Character not found")
         return
     end
-    
+   
     local humanoidRootPart = character.HumanoidRootPart
     local currentPosition = humanoidRootPart.Position
-    
+   
     local rayParams = RaycastParams.new()
     rayParams.FilterType = Enum.RaycastFilterType.Blacklist
     rayParams.FilterDescendantsInstances = {character, skyPlatform}
-    
+   
     local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0), rayParams)
-    
+   
     if raycast then
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
     else
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
     end
-    
+   
     if skyPlatform then
         skyPlatform:Destroy()
         skyPlatform = nil
     end
-    
+   
     if platformConnection then
         platformConnection:Disconnect()
         platformConnection = nil
     end
-    
+   
     isOnPlatform = false
     print("☁️ Teleported back to ground!")
 end
-
 local function updatePlatformHeight(newHeight)
     platformHeight = newHeight
     print("☁️ Platform height set to: " .. newHeight)
-    
+   
     -- Update player position if on platform
     if isOnPlatform and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
         local humanoidRootPart = Player.Character.HumanoidRootPart
         local currentPos = humanoidRootPart.Position
-        
+       
         -- Teleport player to new height
         humanoidRootPart.CFrame = CFrame.new(currentPos.X, newHeight + 5, currentPos.Z)
     end
 end
-
 -- Height Slider (Place BEFORE the Toggle)
 MainTab:Slider({
     Title = "Hip Height",
@@ -2934,7 +2710,6 @@ MainTab:Slider({
         updatePlatformHeight(value)
     end
 })
-
 -- Toggle
 MainTab:Toggle({
     Title = "Hip Hieght changer",
@@ -2944,7 +2719,7 @@ MainTab:Toggle({
     Default = false,
     Callback = function(state)
         print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
-        
+       
         if state then
             teleportToSky()
         else
@@ -2952,7 +2727,6 @@ MainTab:Toggle({
         end
     end
 })
-
 local function cleanupSkyPlatform()
     if skyPlatform then
         skyPlatform:Destroy()
@@ -2964,9 +2738,7 @@ local function cleanupSkyPlatform()
     end
     isOnPlatform = false
 end
-
 Player.CharacterRemoving:Connect(cleanupSkyPlatform)
-
 -- Instant Prompts Toggle
 PlayerTab:Toggle({
     Title = "Instant Open Chests",
@@ -2976,16 +2748,16 @@ PlayerTab:Toggle({
     Default = false,
     Callback = function(state)
         ActiveInstantPrompts = state
-        
+       
         task.spawn(function()
             if ActiveInstantPrompts then
-                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
-                    if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then 
+                for _, prompt in pairs(game.Workspace:GetDescendants()) do
+                    if prompt:IsA("ProximityPrompt") and prompt.HoldDuration ~= 0 then
                         prompt:SetAttribute("HoldDurationOld", prompt.HoldDuration)
                         prompt.HoldDuration = 0
-                    end 
+                    end
                 end
-                
+               
                 local promptConnection
                 promptConnection = game.Workspace.DescendantAdded:Connect(function(descendant)
                     if ActiveInstantPrompts and descendant:IsA("ProximityPrompt") and descendant.HoldDuration ~= 0 then
@@ -2993,49 +2765,43 @@ PlayerTab:Toggle({
                         descendant.HoldDuration = 0
                     end
                 end)
-                
+               
                 while ActiveInstantPrompts do
                     task.wait(1)
                 end
-                
+               
                 if promptConnection then
                     promptConnection:Disconnect()
                 end
-            else 
-                for _, prompt in pairs(game.Workspace:GetDescendants()) do  
-                    if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then 
+            else
+                for _, prompt in pairs(game.Workspace:GetDescendants()) do
+                    if prompt:IsA("ProximityPrompt") and prompt:GetAttribute("HoldDurationOld") then
                         prompt.HoldDuration = prompt:GetAttribute("HoldDurationOld")
                         prompt:SetAttribute("HoldDurationOld", nil)
-                    end 
-                end  
+                    end
+                end
             end
         end)
-        
+       
         print("⚡ Instant Prompts: " .. (state and "ON" or "OFF"))
     end
 })
-
 local Section13 = MainTab:Section({
     Title = "Warning",
     Icon = "alert-triangle",
 })
-
 MainTab:Paragraph({
     Title = "Warning",
     Desc = "Do not change the distance sliders below, they are set to optimal values. Changing them may cause issues or bans.",
     Color = "Red",
 })
-
 MainTab:Divider()
-
 local Section14 = MainTab:Section({
     Title = "Auto Farm Features",
     Icon = "zap",
 })
-
 local ActiveAutoChopTree = false
 local DistanceForAutoChopTree = 2500000
-
 MainTab:Slider({
     Title = "Auto Chop Distance (Don't Change)",
     Step = 100,
@@ -3055,9 +2821,8 @@ MainTab:Slider({
         })
     end
 })
-
 MainTab:Toggle({
-    Title = "Auto Chop Tree", 
+    Title = "Auto Chop Tree",
     Desc = "Automatically chop all trees within the set distance. May cause lag in dense areas.",
     Icon = "axe",
     Type = "Checkbox",
@@ -3065,7 +2830,7 @@ MainTab:Toggle({
     Callback = function(state)
         ActiveAutoChopTree = state
         print("Auto Chop Tree is now:", state)
-        
+       
         if ActiveAutoChopTree then
             WindUI:Notify({
                 Title = "Auto Chop Enabled",
@@ -3074,15 +2839,15 @@ MainTab:Toggle({
                 Icon = "check",
             })
             task.spawn(function()
-                while ActiveAutoChopTree do 
+                while ActiveAutoChopTree do
                     local player = game.Players.LocalPlayer
                     local character = player.Character or player.CharacterAdded:Wait()
                     local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or
+                                   player.Inventory:FindFirstChild("Good Axe") or
+                                   player.Inventory:FindFirstChild("Strong Axe") or
                                    player.Inventory:FindFirstChild("Chainsaw"))
-                    
+                   
                     if not weapon then
                         WindUI:Notify({
                             Title = "Error",
@@ -3093,7 +2858,7 @@ MainTab:Toggle({
                         ActiveAutoChopTree = false
                         break
                     end
-                    
+                   
                     task.spawn(function()
                         for _, tree in pairs(workspace.Map.Foliage:GetChildren()) do
                             if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
@@ -3102,9 +2867,9 @@ MainTab:Toggle({
                                     game:GetService("ReplicatedStorage").RemoteEvents.ToolDamageObject:InvokeServer(tree, weapon, 999, hrp.CFrame)
                                 end
                             end
-                        end 
+                        end
                     end)
-                    
+                   
                     task.spawn(function()
                         for _, tree in pairs(workspace.Map.Landmarks:GetChildren()) do
                             if tree:IsA("Model") and (tree.Name == "Small Tree" or tree.Name == "TreeBig1" or tree.Name == "TreeBig2") and tree.PrimaryPart then
@@ -3115,7 +2880,7 @@ MainTab:Toggle({
                             end
                         end
                     end)
-                    
+                   
                     task.wait(0.1)
                 end
             end)
@@ -3129,10 +2894,8 @@ MainTab:Toggle({
         end
     end
 })
-
 local ActiveKillAura = false
 local DistanceForKillAura = 250
-
 MainTab:Slider({
     Title = "Kill Aura Distance (Don't Change)",
     Step = 100,
@@ -3152,9 +2915,8 @@ MainTab:Slider({
         })
     end
 })
-
 MainTab:Toggle({
-    Title = "Kill Aura", 
+    Title = "Kill Aura",
     Desc = "Automatically damage all enemies within the set distance. Use with caution.",
     Icon = "sword",
     Type = "Checkbox",
@@ -3162,7 +2924,7 @@ MainTab:Toggle({
     Callback = function(state)
         ActiveKillAura = state
         print("Kill Aura is now:", state)
-        
+       
         if ActiveKillAura then
             WindUI:Notify({
                 Title = "Kill Aura Enabled",
@@ -3171,15 +2933,15 @@ MainTab:Toggle({
                 Icon = "check",
             })
             task.spawn(function()
-                while ActiveKillAura do 
+                while ActiveKillAura do
                     local player = game.Players.LocalPlayer
                     local character = player.Character or player.CharacterAdded:Wait()
                     local hrp = character:WaitForChild("HumanoidRootPart")
-                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or 
-                                   player.Inventory:FindFirstChild("Good Axe") or 
-                                   player.Inventory:FindFirstChild("Strong Axe") or 
+                    local weapon = (player.Inventory:FindFirstChild("Old Axe") or
+                                   player.Inventory:FindFirstChild("Good Axe") or
+                                   player.Inventory:FindFirstChild("Strong Axe") or
                                    player.Inventory:FindFirstChild("Chainsaw"))
-                    
+                   
                     if not weapon then
                         WindUI:Notify({
                             Title = "Error",
@@ -3190,7 +2952,7 @@ MainTab:Toggle({
                         ActiveKillAura = false
                         break
                     end
-                    
+                   
                     task.spawn(function()
                         for _, enemy in pairs(workspace.Characters:GetChildren()) do
                             if enemy:IsA("Model") and enemy.PrimaryPart then
@@ -3201,7 +2963,7 @@ MainTab:Toggle({
                             end
                         end
                     end)
-                    
+                   
                     task.wait(0.1)
                 end
             end)
@@ -3215,7 +2977,6 @@ MainTab:Toggle({
         end
     end
 })
-
 local ButtonPlantsapling = MainTab:Button({
     Title = "Plant Saplings",
     Desc = "Plant all saplings at your position",
@@ -3224,57 +2985,50 @@ local ButtonPlantsapling = MainTab:Button({
         -- Auto Sapling Planter Script
 -- Finds saplings and plants them at player position
 -- Paste this into your executor
-
 local player = game.Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local hrp = character:WaitForChild("HumanoidRootPart")
-
 local RS = game:GetService("ReplicatedStorage")
-
 -- Configuration
 local autoPlant = true
 local checkInterval = 0.5
 local plantOffset = Vector3.new(0, -5.05, 0) -- Offset from player position
-
 -- Get remote events
 local startDragging = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
 local plantItem = RS:WaitForChild("RemoteEvents"):WaitForChild("RequestPlantItem")
-
 -- Items folder path
 local itemsFolder = workspace:WaitForChild("Items")
-
 -- Function to get player position as vector
 local function getPlayerPosition()
     local pos = hrp.Position + plantOffset
     return Vector3.new(pos.X, pos.Y, pos.Z)
 end
-
 -- Function to plant a single sapling
 local function plantSapling(sapling)
     if not sapling or not sapling.Parent then
         return false
     end
-    
+   
     -- Start dragging the sapling
     local dragSuccess = pcall(function()
         startDragging:FireServer(sapling)
     end)
-    
+   
     if not dragSuccess then
         warn("Failed to start dragging sapling")
         return false
     end
-    
+   
     task.wait(0.1)
-    
+   
     -- Get player position
     local plantPos = getPlayerPosition()
-    
+   
     -- Plant the sapling at player position
     local plantSuccess = pcall(function()
         plantItem:InvokeServer(sapling, plantPos)
     end)
-    
+   
     if plantSuccess then
         print("✓ Planted sapling at: " .. tostring(plantPos))
         return true
@@ -3283,11 +3037,10 @@ local function plantSapling(sapling)
         return false
     end
 end
-
 -- Function to find and plant all saplings
 local function plantAllSaplings()
     local plantedCount = 0
-    
+   
     -- Find all Sapling items in workspace.Items
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == "Sapling" and item:IsA("Model") then
@@ -3297,16 +3050,15 @@ local function plantAllSaplings()
                     task.wait(0.1) -- Small delay between plants
                 end
             end)
-            
+           
             if not success then
                 warn("Error planting sapling: " .. item.Name)
             end
         end
     end
-    
+   
     return plantedCount
 end
-
 -- Function to set plant offset
 local function setOffset(x, y, z)
     if type(x) == "number" and type(y) == "number" and type(z) == "number" then
@@ -3318,18 +3070,15 @@ local function setOffset(x, y, z)
         return false
     end
 end
-
 -- Function to clear offset
 local function clearOffset()
     plantOffset = Vector3.new(0, 0, 0)
     print("✓ Offset cleared - planting at exact player position")
 end
-
 -- Function to show current offset
 local function showOffset()
     print("Current plant offset: " .. tostring(plantOffset))
 end
-
 -- Function to plant single sapling manually
 local function plantOne()
     -- Find first available sapling
@@ -3341,18 +3090,17 @@ local function plantOne()
     warn("No saplings found!")
     return false
 end
-
 -- Auto plant loop
 if autoPlant then
     spawn(function()
         print("Starting auto-planter...")
         local attempts = 0
         local maxAttempts = 5
-        
+       
         while true do
             task.wait(checkInterval)
             local count = plantAllSaplings()
-            
+           
             if count > 0 then
                 print("Planted " .. count .. " sapling(s)")
                 attempts = 0 -- Reset attempts if saplings found
@@ -3370,25 +3118,23 @@ if autoPlant then
 else
     print("Manual mode: Use commands below")
 end
-
 -- ========== GLOBAL COMMANDS ==========
 _G.SaplingPlanter = {
     -- Planting Functions
     plantAll = plantAllSaplings,
     plantOne = plantOne,
-    
+   
     -- Offset Management
     setOffset = setOffset,
     clearOffset = clearOffset,
     showOffset = showOffset,
-    
+   
     -- Toggle auto-plant
     toggleAuto = function()
         autoPlant = not autoPlant
         print("Auto-plant: " .. tostring(autoPlant))
     end,
 }
-
 print("==================================")
 print("Auto Sapling Planter Loaded!")
 print("Auto-plant: " .. tostring(autoPlant))
@@ -3397,29 +3143,25 @@ print("COMMANDS:")
 print("_G.SaplingPlanter.plantAll() - Plant all saplings")
 print("_G.SaplingPlanter.plantOne() - Plant one sapling")
 print("_G.SaplingPlanter.setOffset(x, y, z) - Set plant offset")
-print("  Example: _G.SaplingPlanter.setOffset(2, 0, 2)")
+print(" Example: _G.SaplingPlanter.setOffset(2, 0, 2)")
 print("_G.SaplingPlanter.clearOffset() - Clear offset")
 print("_G.SaplingPlanter.showOffset() - Show current offset")
 print("_G.SaplingPlanter.toggleAuto() - Toggle auto-plant")
 print("==================================")
-
 -- Show initial settings
 showOffset()
     end
 })
-
 -- ==================== TAB 4: VISUAL ====================
 local VisualTab = Window:Tab({
     Title = "Visual",
     Icon = "eye",
     Locked = false,
 })
-
 local Section7 = VisualTab:Section({
     Title = "General Visuals",
     Icon = "map",
 })
-
 local Toggle68 = VisualTab:Toggle({
     Title = "No Fog",
     Desc = "Enable or disable fog removal",
@@ -3428,13 +3170,11 @@ local Toggle68 = VisualTab:Toggle({
     Default = false,
     Callback = function(state)
         local Lighting = game:GetService("Lighting")
-
         if state then
             -- Turn OFF fog
             Lighting.FogStart = 0
             Lighting.FogEnd = 1e6
             Lighting.FogDensity = 0
-
             -- Keep fog removed if changed
             Lighting:GetPropertyChangedSignal("FogStart"):Connect(function()
                 if state then Lighting.FogStart = 0 end
@@ -3445,7 +3185,6 @@ local Toggle68 = VisualTab:Toggle({
             Lighting:GetPropertyChangedSignal("FogDensity"):Connect(function()
                 if state then Lighting.FogDensity = 0 end
             end)
-
             print("✅ No Fog Enabled")
         else
             -- Restore fog to default
@@ -3456,7 +3195,6 @@ local Toggle68 = VisualTab:Toggle({
         end
     end
 })
-
 local Toggle37 = VisualTab:Toggle({
     Title = "Remove Sky",
     Desc = "Temporarily remove the current skybox",
@@ -3465,7 +3203,6 @@ local Toggle37 = VisualTab:Toggle({
     Default = false,
     Callback = function(state)
         local Lighting = game:GetService("Lighting")
-
         -- store original sky
         if not getgenv().OriginalSky then
             for _, obj in pairs(Lighting:GetChildren()) do
@@ -3474,7 +3211,6 @@ local Toggle37 = VisualTab:Toggle({
                 end
             end
         end
-
         if state then
             -- remove all sky-related effects
             for _, obj in pairs(Lighting:GetChildren()) do
@@ -3482,12 +3218,10 @@ local Toggle37 = VisualTab:Toggle({
                     obj.Parent = nil
                 end
             end
-
             Lighting.GlobalShadows = false
             Lighting.Brightness = 3
             Lighting.Ambient = Color3.new(1, 1, 1)
             Lighting.OutdoorAmbient = Color3.new(1, 1, 1)
-
             print("☁️ Sky removed (original saved)")
         else
             -- restore original sky if saved
@@ -3498,7 +3232,6 @@ local Toggle37 = VisualTab:Toggle({
             else
                 print("⚠️ No saved sky to restore")
             end
-
             Lighting.GlobalShadows = true
             Lighting.Brightness = 2
             Lighting.Ambient = Color3.new(0.5, 0.5, 0.5)
@@ -3506,17 +3239,13 @@ local Toggle37 = VisualTab:Toggle({
         end
     end
 })
-
-
 local Section7 = VisualTab:Section({
     Title = "Health Billboard",
     Icon = "heart",
 })
-
 local healthBillboardEnabled = false
 local connections = {}
 local tracked = {}
-
 local SETTINGS = {
     Name = "HealthBillboard",
     MaxDistance = 250,
@@ -3530,9 +3259,7 @@ local SETTINGS = {
     BarHeight = 6,
     BorderThickness = 2.5,
 }
-
 local function clamp(n, a, b) return math.max(a, math.min(b, n)) end
-
 local function lerpColor(c1, c2, t)
     return Color3.new(
         c1.R + (c2.R - c1.R) * t,
@@ -3540,12 +3267,10 @@ local function lerpColor(c1, c2, t)
         c1.B + (c2.B - c1.B) * t
     )
 end
-
 local function colorByPercent(p)
     p = clamp(p, 0, 1)
     return lerpColor(Color3.fromRGB(255, 60, 60), Color3.fromRGB(60, 255, 90), p)
 end
-
 local function findHead(model)
     local head = model:FindFirstChild("Head")
     if head and head:IsA("BasePart") then return head end
@@ -3560,10 +3285,8 @@ local function findHead(model)
     end
     return best
 end
-
 local function makeBillboard(humanoid, head, model)
     if tracked[humanoid] and tracked[humanoid].Parent then return tracked[humanoid] end
-
     local bb = Instance.new("BillboardGui")
     bb.Name = SETTINGS.Name
     bb.Adornee = head
@@ -3574,12 +3297,10 @@ local function makeBillboard(humanoid, head, model)
     bb.ResetOnSpawn = false
     bb.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     bb.Parent = head
-
     local holder = Instance.new("Frame")
     holder.Size = UDim2.fromScale(1, 1)
     holder.BackgroundTransparency = 1
     holder.Parent = bb
-
     local text = Instance.new("TextLabel")
     text.Name = "HPText"
     text.Size = UDim2.new(1, -12, 0, 24)
@@ -3590,7 +3311,6 @@ local function makeBillboard(humanoid, head, model)
     text.Font = SETTINGS.TextFont
     text.TextSize = SETTINGS.TextSize
     text.Parent = holder
-
     local barFrame, barFill
     if SETTINGS.UseBar then
         barFrame = Instance.new("Frame")
@@ -3600,7 +3320,6 @@ local function makeBillboard(humanoid, head, model)
         barFrame.BackgroundColor3 = Color3.fromRGB(0,0,0)
         barFrame.BorderSizePixel = SETTINGS.BorderThickness
         barFrame.Parent = holder
-
         barFill = Instance.new("Frame")
         barFill.Name = "Fill"
         barFill.Size = UDim2.fromScale(1, 1)
@@ -3608,9 +3327,7 @@ local function makeBillboard(humanoid, head, model)
         barFill.BorderSizePixel = 0
         barFill.Parent = barFrame
     end
-
     tracked[humanoid] = bb
-
     local lastDisplayPct = 1
     local function update()
         if not healthBillboardEnabled then return end
@@ -3618,7 +3335,6 @@ local function makeBillboard(humanoid, head, model)
         local maxHp = math.max(1, humanoid.MaxHealth)
         local pct = hp / maxHp
         text.Text = string.format("%d / %d", math.floor(hp + 0.5), math.floor(maxHp + 0.5))
-
         if barFill then
             lastDisplayPct = lastDisplayPct + (pct - lastDisplayPct) * 0.35
             barFill.Size = UDim2.fromScale(lastDisplayPct, 1)
@@ -3627,7 +3343,6 @@ local function makeBillboard(humanoid, head, model)
             text.TextColor3 = colorByPercent(pct)
         end
     end
-
     local healthConn = humanoid.HealthChanged:Connect(update)
     local maxHealthConn = humanoid:GetPropertyChangedSignal("MaxHealth"):Connect(update)
     local diedConn = humanoid.Died:Connect(function()
@@ -3637,12 +3352,9 @@ local function makeBillboard(humanoid, head, model)
         end
     end)
     local heartbeatConn = RunService.Heartbeat:Connect(update)
-
     connections[humanoid] = {healthConn, maxHealthConn, diedConn, heartbeatConn}
-
     update()
 end
-
 local function attachToModel(model)
     if not model or not model:IsA("Model") then return end
     if Players:GetPlayerFromCharacter(model) == LocalPlayer then return end
@@ -3652,14 +3364,12 @@ local function attachToModel(model)
     if not head then return end
     makeBillboard(humanoid, head, model)
 end
-
 local function enableHealthBillboards()
     for _, hum in ipairs(workspace:GetDescendants()) do
         if hum:IsA("Humanoid") and hum.Parent and hum.Parent:IsA("Model") then
             attachToModel(hum.Parent)
         end
     end
-
     connections.descendantAdded = workspace.DescendantAdded:Connect(function(obj)
         if obj:IsA("Humanoid") then
             local model = obj.Parent
@@ -3670,7 +3380,6 @@ local function enableHealthBillboards()
             end
         end
     end)
-
     connections.playerAdded = Players.PlayerAdded:Connect(function(plr)
         plr.CharacterAdded:Connect(function(char)
             task.defer(function()
@@ -3678,7 +3387,6 @@ local function enableHealthBillboards()
             end)
         end)
     end)
-
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr.Character then attachToModel(plr.Character) end
         plr.CharacterAdded:Connect(function(char)
@@ -3688,7 +3396,6 @@ local function enableHealthBillboards()
         end)
     end
 end
-
 local function disableHealthBillboards()
     for humanoid, connList in pairs(connections) do
         if type(connList) == "table" then
@@ -3700,21 +3407,18 @@ local function disableHealthBillboards()
         end
     end
     connections = {}
-
     for humanoid, billboard in pairs(tracked) do
         if billboard and billboard.Parent then
             billboard:Destroy()
         end
     end
     tracked = {}
-
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("BillboardGui") and obj.Name == SETTINGS.Name then
             obj:Destroy()
         end
     end
 end
-
 VisualTab:Toggle({
     Title = "Health Billboard",
     Desc = "Show health bars on entities",
@@ -3731,25 +3435,20 @@ VisualTab:Toggle({
         print("✅ Health Billboard", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Divider()
-
 local Section8 = VisualTab:Section({
     Title = "ESP System",
     Icon = "eye",
     Opened = true,
 })
-
 local ActiveEspItems = false
 local ActiveEspEnemy = false
 local ActiveEspChildren = false
 local ActiveEspPeltTrader = false
 local ActiveDistanceEsp = false
-
 local function CreateEsp(Char, Color, Text, Parent, number)
     if not Char or not Parent or not Parent:IsA("BasePart") then return end
     if Char:FindFirstChildOfClass("Highlight") or Parent:FindFirstChild("ESP") then return end
-
     local highlight = Instance.new("Highlight")
     highlight.Name = "ESP_Highlight"
     highlight.Adornee = Char
@@ -3759,7 +3458,6 @@ local function CreateEsp(Char, Color, Text, Parent, number)
     highlight.OutlineTransparency = 0
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.Parent = Char
-
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "ESP"
     billboard.Size = UDim2.new(0, 50, 0, 25)
@@ -3767,7 +3465,6 @@ local function CreateEsp(Char, Color, Text, Parent, number)
     billboard.StudsOffset = Vector3.new(0, number or 2, 0)
     billboard.Adornee = Parent
     billboard.Parent = Parent
-
     local label = Instance.new("TextLabel")
     label.Size = UDim2.new(1, 0, 1, 0)
     label.BackgroundTransparency = 1
@@ -3775,7 +3472,6 @@ local function CreateEsp(Char, Color, Text, Parent, number)
     label.TextColor3 = Color
     label.TextScaled = true
     label.Parent = billboard
-
     task.spawn(function()
         while highlight.Parent and billboard.Parent and Parent.Parent do
             local camera = workspace.CurrentCamera
@@ -3791,7 +3487,6 @@ local function CreateEsp(Char, Color, Text, Parent, number)
         if billboard.Parent then billboard:Destroy() end
     end)
 end
-
 local function RemoveEsp(Char, Parent)
     if Char and Char:FindFirstChildOfClass("Highlight") then
         Char:FindFirstChildOfClass("Highlight"):Destroy()
@@ -3800,7 +3495,6 @@ local function RemoveEsp(Char, Parent)
         Parent:FindFirstChild("ESP"):Destroy()
     end
 end
-
 local function UpdateItemsEsp()
     if not workspace:FindFirstChild("Items") then return end
     if ActiveEspItems then
@@ -3817,7 +3511,6 @@ local function UpdateItemsEsp()
         end
     end
 end
-
 local function UpdateEnemiesEsp()
     if not workspace:FindFirstChild("Characters") then return end
     if ActiveEspEnemy then
@@ -3840,7 +3533,6 @@ local function UpdateEnemiesEsp()
         end
     end
 end
-
 local function UpdateChildrenEsp()
     if not workspace:FindFirstChild("Characters") then return end
     if ActiveEspChildren then
@@ -3861,7 +3553,6 @@ local function UpdateChildrenEsp()
         end
     end
 end
-
 local function UpdatePeltTraderEsp()
     if not workspace:FindFirstChild("Characters") then return end
     if ActiveEspPeltTrader then
@@ -3878,7 +3569,6 @@ local function UpdatePeltTraderEsp()
         end
     end
 end
-
 VisualTab:Toggle({
     Title = "ESP Items",
     Desc = "Highlight items in the world",
@@ -3891,7 +3581,6 @@ VisualTab:Toggle({
         print("✅ ESP Items", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "ESP Enemies",
     Desc = "Highlight enemy entities",
@@ -3904,7 +3593,6 @@ VisualTab:Toggle({
         print("✅ ESP Enemies", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "ESP Children",
     Desc = "Highlight lost children",
@@ -3917,7 +3605,6 @@ VisualTab:Toggle({
         print("✅ ESP Children", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "ESP Pelt Trader",
     Desc = "Highlight pelt trader",
@@ -3930,7 +3617,6 @@ VisualTab:Toggle({
         print("✅ ESP Pelt Trader", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "Show Distance in ESP",
     Desc = "Display distance to ESP targets",
@@ -3946,7 +3632,6 @@ VisualTab:Toggle({
         print("✅ Show Distance in ESP", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Button({
     Title = "Clear All ESP",
     Desc = "Removes all active ESP elements",
@@ -3956,16 +3641,15 @@ VisualTab:Button({
         ActiveEspEnemy = false
         ActiveEspChildren = false
         ActiveEspPeltTrader = false
-        
+       
         UpdateItemsEsp()
         UpdateEnemiesEsp()
         UpdateChildrenEsp()
         UpdatePeltTraderEsp()
-        
+       
         print("✅ All ESP cleared!")
     end
 })
-
 VisualTab:Dropdown({
     Title = "ESP Color Theme",
     Values = { "Default", "Bright", "Dark", "Neon" },
@@ -3974,7 +3658,6 @@ VisualTab:Dropdown({
         print("🎨 ESP Color Theme selected:", option)
     end
 })
-
 local function setupEspConnections()
     if workspace:FindFirstChild("Items") then
         workspace.Items.ChildAdded:Connect(function(child)
@@ -3982,14 +3665,12 @@ local function setupEspConnections()
                 CreateEsp(child, Color3.fromRGB(255, 255, 0), child.Name, child.PrimaryPart, 2)
             end
         end)
-
         workspace.Items.ChildRemoved:Connect(function(child)
             if child:IsA("Model") and child.PrimaryPart then
                 RemoveEsp(child, child.PrimaryPart)
             end
         end)
     end
-
     if workspace:FindFirstChild("Characters") then
         workspace.Characters.ChildAdded:Connect(function(child)
             if child:IsA("Model") and child.PrimaryPart then
@@ -4007,7 +3688,6 @@ local function setupEspConnections()
                 end
             end
         end)
-
         workspace.Characters.ChildRemoved:Connect(function(child)
             if child:IsA("Model") and child.PrimaryPart then
                 RemoveEsp(child, child.PrimaryPart)
@@ -4015,9 +3695,7 @@ local function setupEspConnections()
         end)
     end
 end
-
 setupEspConnections()
-
 VisualTab:Paragraph({
     Title = "Player ESP System",
     Desc = "Advanced ESP system for tracking other players",
@@ -4037,11 +3715,9 @@ VisualTab:Paragraph({
         }
     }
 })
-
 local playerESPEnabled = false
 local trackedPlayers = {}
 local espConnections = {}
-
 local ESP_SETTINGS = {
     FillColor = Color3.fromRGB(255, 0, 0),
     FillTransparency = 0.8,
@@ -4056,18 +3732,17 @@ local ESP_SETTINGS = {
     HealthBarEnabled = true,
     HealthBarHeight = 4
 }
-
 local function createPlayerESP(player)
     if player == LocalPlayer then return end
     if not player.Character then return end
     if trackedPlayers[player] then return end
-    
+   
     local character = player.Character
     local humanoid = character:FindFirstChildOfClass("Humanoid")
     local rootPart = character:FindFirstChild("HumanoidRootPart")
-    
+   
     if not humanoid or not rootPart then return end
-    
+   
     local highlight = Instance.new("Highlight")
     highlight.Name = "PlayerESP_Highlight"
     highlight.Adornee = character
@@ -4077,7 +3752,7 @@ local function createPlayerESP(player)
     highlight.OutlineTransparency = ESP_SETTINGS.OutlineTransparency
     highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
     highlight.Parent = character
-    
+   
     local billboard = Instance.new("BillboardGui")
     billboard.Name = "PlayerESP_Billboard"
     billboard.Size = UDim2.new(0, 200, 0, 100)
@@ -4086,12 +3761,12 @@ local function createPlayerESP(player)
     billboard.MaxDistance = ESP_SETTINGS.MaxDistance
     billboard.Adornee = rootPart
     billboard.Parent = rootPart
-    
+   
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(1, 0, 1, 0)
     frame.BackgroundTransparency = 1
     frame.Parent = billboard
-    
+   
     local nameLabel = Instance.new("TextLabel")
     nameLabel.Name = "NameLabel"
     nameLabel.Size = UDim2.new(1, 0, 0, 20)
@@ -4104,7 +3779,7 @@ local function createPlayerESP(player)
     nameLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
     nameLabel.Font = Enum.Font.GothamBold
     nameLabel.Parent = frame
-    
+   
     local distanceLabel = Instance.new("TextLabel")
     distanceLabel.Name = "DistanceLabel"
     distanceLabel.Size = UDim2.new(1, 0, 0, 15)
@@ -4117,7 +3792,7 @@ local function createPlayerESP(player)
     distanceLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
     distanceLabel.Font = Enum.Font.Gotham
     distanceLabel.Parent = frame
-    
+   
     local healthLabel = Instance.new("TextLabel")
     healthLabel.Name = "HealthLabel"
     healthLabel.Size = UDim2.new(1, 0, 0, 15)
@@ -4130,7 +3805,7 @@ local function createPlayerESP(player)
     healthLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
     healthLabel.Font = Enum.Font.Gotham
     healthLabel.Parent = frame
-    
+   
     local healthBarBG = Instance.new("Frame")
     healthBarBG.Name = "HealthBarBG"
     healthBarBG.Size = UDim2.new(1, 0, 0, ESP_SETTINGS.HealthBarHeight)
@@ -4139,7 +3814,7 @@ local function createPlayerESP(player)
     healthBarBG.BorderSizePixel = 1
     healthBarBG.BorderColor3 = Color3.new(1, 1, 1)
     healthBarBG.Parent = frame
-    
+   
     local healthBarFill = Instance.new("Frame")
     healthBarFill.Name = "HealthBarFill"
     healthBarFill.Size = UDim2.new(1, 0, 1, 0)
@@ -4147,18 +3822,18 @@ local function createPlayerESP(player)
     healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
     healthBarFill.BorderSizePixel = 0
     healthBarFill.Parent = healthBarBG
-    
+   
     local function updateESP()
         if not playerESPEnabled then return end
         if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then return end
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then return end
-        
+       
         local playerRoot = player.Character.HumanoidRootPart
         local localRoot = LocalPlayer.Character.HumanoidRootPart
         local playerHumanoid = player.Character:FindFirstChildOfClass("Humanoid")
-        
+       
         if not playerRoot or not localRoot or not playerHumanoid then return end
-        
+       
         if ESP_SETTINGS.ShowDistance then
             local distance = (localRoot.Position - playerRoot.Position).Magnitude
             distanceLabel.Text = math.floor(distance) .. "m"
@@ -4166,19 +3841,19 @@ local function createPlayerESP(player)
         else
             distanceLabel.Visible = false
         end
-        
+       
         if ESP_SETTINGS.ShowHealth then
             local health = math.floor(playerHumanoid.Health)
             local maxHealth = math.floor(playerHumanoid.MaxHealth)
             local healthPercent = health / maxHealth
-            
+           
             healthLabel.Text = health .. "/" .. maxHealth
             healthLabel.Visible = true
-            
+           
             if ESP_SETTINGS.HealthBarEnabled then
                 healthBarBG.Visible = true
                 healthBarFill.Size = UDim2.new(healthPercent, 0, 1, 0)
-                
+               
                 if healthPercent > 0.6 then
                     healthBarFill.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
                     healthLabel.TextColor3 = Color3.fromRGB(0, 255, 0)
@@ -4196,7 +3871,7 @@ local function createPlayerESP(player)
             healthLabel.Visible = false
             healthBarBG.Visible = false
         end
-        
+       
         if ESP_SETTINGS.ShowNames then
             nameLabel.Text = player.DisplayName
             nameLabel.Visible = true
@@ -4204,36 +3879,35 @@ local function createPlayerESP(player)
             nameLabel.Visible = false
         end
     end
-    
+   
     trackedPlayers[player] = {
         highlight = highlight,
         billboard = billboard,
         updateFunction = updateESP
     }
-    
+   
     local connection = RunService.Heartbeat:Connect(updateESP)
     espConnections[player] = connection
-    
+   
     local function onPlayerRemoving()
         removePlayerESP(player)
     end
-    
+   
     local removeConnection = Players.PlayerRemoving:Connect(function(removedPlayer)
         if removedPlayer == player then
             onPlayerRemoving()
         end
     end)
-    
+   
     if not espConnections[player] then
         espConnections[player] = {}
     end
     if type(espConnections[player]) == "table" then
         espConnections[player].removeConnection = removeConnection
     end
-    
+   
     updateESP()
 end
-
 local function removePlayerESP(player)
     if trackedPlayers[player] then
         if trackedPlayers[player].highlight then
@@ -4244,7 +3918,7 @@ local function removePlayerESP(player)
         end
         trackedPlayers[player] = nil
     end
-    
+   
     if espConnections[player] then
         if type(espConnections[player]) == "userdata" then
             espConnections[player]:Disconnect()
@@ -4256,16 +3930,15 @@ local function removePlayerESP(player)
         espConnections[player] = nil
     end
 end
-
 local function enablePlayerESP()
     playerESPEnabled = true
-    
+   
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and player.Character then
             createPlayerESP(player)
         end
     end
-    
+   
     espConnections.playerAdded = Players.PlayerAdded:Connect(function(player)
         if playerESPEnabled then
             player.CharacterAdded:Connect(function(character)
@@ -4276,7 +3949,7 @@ local function enablePlayerESP()
             end)
         end
     end)
-    
+   
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             player.CharacterAdded:Connect(function(character)
@@ -4287,22 +3960,21 @@ local function enablePlayerESP()
             end)
         end
     end
-    
+   
     print("✅ Player ESP Enabled")
 end
-
 local function disablePlayerESP()
     playerESPEnabled = false
-    
+   
     for player, _ in pairs(trackedPlayers) do
         removePlayerESP(player)
     end
-    
+   
     if espConnections.playerAdded then
         espConnections.playerAdded:Disconnect()
         espConnections.playerAdded = nil
     end
-    
+   
     for player, connection in pairs(espConnections) do
         if type(connection) == "userdata" then
             connection:Disconnect()
@@ -4313,10 +3985,9 @@ local function disablePlayerESP()
         end
     end
     espConnections = {}
-    
+   
     print("❌ Player ESP Disabled")
 end
-
 VisualTab:Toggle({
     Title = "Player ESP",
     Desc = "Enable ESP for other players",
@@ -4332,7 +4003,6 @@ VisualTab:Toggle({
         print("✅ Player ESP", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "Show Player Names",
     Desc = "Display player names in ESP",
@@ -4344,7 +4014,6 @@ VisualTab:Toggle({
         print("✅ Show Player Names", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "Show Player Distance",
     Desc = "Show distance to players",
@@ -4356,7 +4025,6 @@ VisualTab:Toggle({
         print("✅ Show Player Distance", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "Show Player Health",
     Desc = "Display player health",
@@ -4368,7 +4036,6 @@ VisualTab:Toggle({
         print("✅ Show Player Health", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Toggle({
     Title = "Show Health Bar",
     Desc = "Enable health bar in player ESP",
@@ -4380,7 +4047,6 @@ VisualTab:Toggle({
         print("✅ Show Health Bar", state and "ON" or "OFF")
     end
 })
-
 VisualTab:Slider({
     Title = "ESP Max Distance",
     Step = 50,
@@ -4390,7 +4056,6 @@ VisualTab:Slider({
         print("📏 ESP Max Distance set to:", value)
     end
 })
-
 VisualTab:Slider({
     Title = "ESP Text Size",
     Step = 1,
@@ -4400,28 +4065,24 @@ VisualTab:Slider({
         print("📏 ESP Text Size set to:", value)
     end
 })
-
 VisualTab:Space()
-
 -- ==================== TAB 5: TELEPORT ====================
 local TpTab = Window:Tab({
     Title = "Teleport",
     Icon = "navigation",
     Locked = false,
 })
-
 local Section9 = TpTab:Section({
     Title = "Quick Teleports",
     Icon = "zap",
 })
-
 TpTab:Button({
     Title = "Teleport to Campfire",
     Desc = "Quick teleport to campfire location",
     Locked = false,
     Callback = function()
         local targetPosition = Vector3.new(0.2976149320602417, 6.346785545349121, -0.043002475053071976)
-        
+       
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(targetPosition)
             print("✅ Teleported to campfire successfully!")
@@ -4430,14 +4091,13 @@ TpTab:Button({
         end
     end
 })
-
 TpTab:Button({
     Title = "Teleport to Spawn",
     Desc = "Quick teleport back to spawn area",
     Locked = false,
     Callback = function()
         local spawnPosition = Vector3.new(0, 10, 0)
-        
+       
         if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(spawnPosition)
             print("✅ Teleported to spawn!")
@@ -4446,7 +4106,6 @@ TpTab:Button({
         end
     end
 })
-
 TpTab:Button({
     Title = "Teleport to Random Item",
     Desc = "Teleport to a random item in the workspace",
@@ -4460,12 +4119,12 @@ TpTab:Button({
                     table.insert(allItems, item)
                 end
             end
-            
+           
             if #allItems > 0 then
                 local randomItem = allItems[math.random(1, #allItems)]
                 local targetPart = randomItem.PrimaryPart or randomItem:FindFirstChildWhichIsA("BasePart")
                 local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-                
+               
                 if targetPart and hrp then
                     hrp.CFrame = targetPart.CFrame + Vector3.new(0, 5, 0)
                     print("✅ Teleported to random item:", randomItem.Name)
@@ -4480,100 +4139,91 @@ TpTab:Button({
         end
     end
 })
-
 TpTab:Divider()
-
 local Section10 = TpTab:Section({
     Title = "Lost Child Teleports",
     Icon = "baby",
     Opened = true,
 })
-
 local CharactersFolder = workspace:FindFirstChild("Characters")
-
 if CharactersFolder then
     local lostChildPaths = {
         "Lost Child",
-        "Lost Child2", 
+        "Lost Child2",
         "Lost Child3",
         "Lost Child4"
     }
-    
+   
     local availableChildren = {}
     local selectedChild = nil
-
     local function refreshLostChildren()
         local previousChildren = {}
         for _, child in pairs(availableChildren) do
             previousChildren[child] = true
         end
-        
+       
         availableChildren = {}
-        
+       
         for _, childName in pairs(lostChildPaths) do
             local childModel = CharactersFolder:FindFirstChild(childName)
             if childModel and childModel:IsA("Model") then
                 table.insert(availableChildren, childName)
             end
         end
-        
+       
         print("👶 Found", #availableChildren, "Lost Children available for teleport")
-        
+       
         if selectedChild and not CharactersFolder:FindFirstChild(selectedChild) then
             selectedChild = nil
             print("⚠️ Previously selected Lost Child no longer exists")
         end
     end
-
     local function getLostChildTeleportPosition(childName)
         local childModel = CharactersFolder:FindFirstChild(childName)
         if not childModel then
             return nil
         end
-        
+       
         local rootPart = childModel:FindFirstChild("HumanoidRootPart")
         if rootPart then
             return rootPart.Position
         end
-        
+       
         local anyPart = childModel:FindFirstChildWhichIsA("BasePart")
         if anyPart then
             return anyPart.Position
         end
-        
+       
         if childModel.PrimaryPart then
             return childModel.PrimaryPart.Position
         end
-        
+       
         return nil
     end
-
     local function safeTeleportToLostChild(childName)
         local player = LocalPlayer
         if not player.Character or not player.Character:FindFirstChild("HumanoidRootPart") then
             print("❌ Player character not found!")
             return false
         end
-        
+       
         local targetPosition = getLostChildTeleportPosition(childName)
         if not targetPosition then
             print("❌ Could not find valid teleport position for", childName)
             return false
         end
-        
+       
         local safeLostChildTP = false -- Default false, can be toggled if needed
         local heightOffset = safeLostChildTP and 15 or 5
         local teleportPosition = targetPosition + Vector3.new(0, heightOffset, 0)
-        
+       
         player.Character.HumanoidRootPart.CFrame = CFrame.new(teleportPosition)
-        
+       
         local safetyText = safeLostChildTP and " (Safe Mode)" or ""
         print("✅ Teleported to", childName .. safetyText)
         return true
     end
-
     refreshLostChildren()
-
     local childDropdown = TpTab:Dropdown({
         Title = "Select Lost Child",
         Values = availableChildren,
@@ -4583,7 +4233,6 @@ if CharactersFolder then
             print("👶 Selected Lost Child:", selected)
         end
     })
-
     TpTab:Button({
         Title = "Teleport to Selected Lost Child",
         Desc = "Teleport to the currently selected Lost Child",
@@ -4593,11 +4242,10 @@ if CharactersFolder then
                 print("❌ No Lost Child selected!")
                 return
             end
-            
+           
             safeTeleportToLostChild(selectedChild)
         end
     })
-
     for _, childName in pairs(lostChildPaths) do
         TpTab:Button({
             Title = "TP to " .. childName,
@@ -4608,12 +4256,11 @@ if CharactersFolder then
                     print("❌", childName, "not found!")
                     return
                 end
-                
+               
                 safeTeleportToLostChild(childName)
             end
         })
     end
-
     TpTab:Button({
         Title = "Refresh Lost Children",
         Desc = "Manually refresh the Lost Children list",
@@ -4624,14 +4271,12 @@ if CharactersFolder then
             print("🔄 Lost Children list refreshed!")
         end
     })
-
     task.spawn(function()
         while true do
             task.wait(1)
             refreshLostChildren()
         end
     end)
-
     TpTab:Toggle({
         Title = "Safe Lost Child TP",
         Desc = "Add extra height to avoid collision",
@@ -4656,32 +4301,26 @@ else
         Buttons = {}
     })
 end
-
 TpTab:Divider()
-
 local Section11 = TpTab:Section({
     Title = "Item Teleports",
     Icon = "package",
     Opened = true,
 })
-
 local ItemsFolder = workspace:FindFirstChild("Items")
-
 if ItemsFolder then
     local uniqueModelNames = {}
     local modelMap = {}
     local selectedModelName = nil
-
     local function refreshModelList()
         local previousCount = #uniqueModelNames
         local previousNames = {}
         for _, name in pairs(uniqueModelNames) do
             previousNames[name] = true
         end
-        
+       
         uniqueModelNames = {}
         modelMap = {}
-
         for _, item in pairs(ItemsFolder:GetDescendants()) do
             if item:IsA("Model") then
                 local name = item.Name
@@ -4692,17 +4331,14 @@ if ItemsFolder then
                 table.insert(modelMap[name], item)
             end
         end
-
         print("📦 Found", #uniqueModelNames, "unique item types")
-        
+       
         if selectedModelName and not modelMap[selectedModelName] then
             selectedModelName = nil
             print("⚠️ Previously selected item no longer exists")
         end
     end
-
     refreshModelList()
-
     local itemDropdown = TpTab:Dropdown({
         Title = "Select Item to Teleport",
         Values = uniqueModelNames,
@@ -4712,19 +4348,16 @@ if ItemsFolder then
             print("🎯 Selected item:", selected)
         end
     })
-
     task.spawn(function()
         while true do
             task.wait(1)
             refreshModelList()
         end
     end)
-
     local function getClosestModel(modelList)
         local char = LocalPlayer.Character
         local hrp = char and char:FindFirstChild("HumanoidRootPart")
         if not hrp or not modelList then return nil end
-
         local closest, minDist = nil, math.huge
         for _, model in pairs(modelList) do
             local primary = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
@@ -4738,7 +4371,6 @@ if ItemsFolder then
         end
         return closest
     end
-
     TpTab:Button({
         Title = "Teleport to Selected Item",
         Desc = "Teleport to the closest instance of selected item",
@@ -4748,10 +4380,8 @@ if ItemsFolder then
                 print("❌ No item selected or item not found!")
                 return
             end
-
             local closestPart = getClosestModel(modelMap[selectedModelName])
             local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
-
             if closestPart and hrp then
                 hrp.CFrame = closestPart.CFrame + Vector3.new(0, 5, 0)
                 print("✅ Teleported to nearest:", selectedModelName)
@@ -4760,7 +4390,6 @@ if ItemsFolder then
             end
         end
     })
-
     TpTab:Button({
         Title = "Manual Refresh Items",
         Desc = "Force refresh the item list immediately",
@@ -4789,16 +4418,12 @@ else
         Buttons = {}
     })
 end
-
 TpTab:Divider()
-
 local Section12 = TpTab:Section({
     Title = "Advanced Teleports",
     Icon = "cloud",
 })
-
 local safeTeleportMode = false
-
 TpTab:Toggle({
     Title = "Safe Teleport Mode",
     Desc = "Adds extra height to teleports to avoid clipping",
@@ -4810,34 +4435,31 @@ TpTab:Toggle({
         print("✅ Safe Teleport Mode", state and "ON" or "OFF")
     end
 })
-
 local function safeTeleport(targetCFrame, locationName)
     local hrp = LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")
     if not hrp then
         print("❌ Teleport failed - Character not found!")
         return false
     end
-    
+   
     local finalCFrame = targetCFrame
     if safeTeleportMode then
         finalCFrame = targetCFrame + Vector3.new(0, 10, 0)
     end
-    
+   
     hrp.CFrame = finalCFrame
     print("✅ Safely teleported to:", locationName or "Unknown location")
     return true
 end
-
 -- Sky Platform
 local isOnPlatform = false
 local skyPlatform = nil
 local platformConnection = nil
-
 local function createSkyPlatform(playerPosition)
     if skyPlatform then
         skyPlatform:Destroy()
     end
-    
+   
     skyPlatform = Instance.new("Part")
     skyPlatform.Name = "SkyPlatform"
     skyPlatform.Size = Vector3.new(50, 1, 50)
@@ -4848,19 +4470,19 @@ local function createSkyPlatform(playerPosition)
     skyPlatform.TopSurface = Enum.SurfaceType.Smooth
     skyPlatform.BottomSurface = Enum.SurfaceType.Smooth
     skyPlatform.Parent = workspace
-    
+   
     platformConnection = RunService.Heartbeat:Connect(function()
         if Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") and isOnPlatform then
             local humanoidRootPart = Player.Character.HumanoidRootPart
             local playerPos = humanoidRootPart.Position
-            
+           
             if playerPos.Y > 150 then
                 local distance = (Vector2.new(playerPos.X, playerPos.Z) - Vector2.new(skyPlatform.Position.X, skyPlatform.Position.Z)).Magnitude
-                
+               
                 if distance > 20 then
                     skyPlatform.Position = Vector3.new(playerPos.X, 200, playerPos.Z)
                 end
-                
+               
                 local minSize = 100
                 if skyPlatform.Size.X < minSize then
                     skyPlatform.Size = Vector3.new(minSize, 1, minSize)
@@ -4869,56 +4491,53 @@ local function createSkyPlatform(playerPosition)
         end
     end)
 end
-
 local function teleportToSky()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
         print("☁️ Error: Character not found")
         return
     end
-    
+   
     local humanoidRootPart = character.HumanoidRootPart
-    
+   
     createSkyPlatform(humanoidRootPart.Position)
-    
+   
     humanoidRootPart.CFrame = CFrame.new(humanoidRootPart.Position.X, 205, humanoidRootPart.Position.Z)
-    
+   
     isOnPlatform = true
     print("☁️ Teleported to invisible sky platform!")
 end
-
 local function teleportToGround()
     local character = Player.Character
     if not character or not character:FindFirstChild("HumanoidRootPart") then
         print("☁️ Error: Character not found")
         return
     end
-    
+   
     local humanoidRootPart = character.HumanoidRootPart
     local currentPosition = humanoidRootPart.Position
-    
+   
     local raycast = workspace:Raycast(Vector3.new(currentPosition.X, currentPosition.Y, currentPosition.Z), Vector3.new(0, -1000, 0))
-    
+   
     if raycast then
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, raycast.Position.Y + 5, currentPosition.Z)
     else
         humanoidRootPart.CFrame = CFrame.new(currentPosition.X, 50, currentPosition.Z)
     end
-    
+   
     if skyPlatform then
         skyPlatform:Destroy()
         skyPlatform = nil
     end
-    
+   
     if platformConnection then
         platformConnection:Disconnect()
         platformConnection = nil
     end
-    
+   
     isOnPlatform = false
     print("☁️ Teleported back to ground!")
 end
-
 TpTab:Toggle({
     Title = "Sky Platform",
     Desc = "Create an invisible platform in the sky",
@@ -4927,7 +4546,7 @@ TpTab:Toggle({
     Default = false,
     Callback = function(state)
         print("☁️", state and "Sky Platform ON" or "Sky Platform OFF")
-        
+       
         if state then
             teleportToSky()
         else
@@ -4935,7 +4554,6 @@ TpTab:Toggle({
         end
     end
 })
-
 local function cleanupSkyPlatform()
     if skyPlatform then
         skyPlatform:Destroy()
@@ -4947,18 +4565,13 @@ local function cleanupSkyPlatform()
     end
     isOnPlatform = false
 end
-
 Player.CharacterRemoving:Connect(cleanupSkyPlatform)
-
 TpTab:Space()
-
-
 local MiscTab = Window:Tab({
     Title = "Misc",
     Icon = "folder",
     Locked = false,
 })
-
 local Buttonpowersave = MiscTab:Button({
     Title = "Power Save Mode",
     Desc = "Open Power Save Script",
@@ -4968,7 +4581,6 @@ local Buttonpowersave = MiscTab:Button({
         loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/SubScripts/refs/heads/main/screen%20saver"))()
     end
 })
-
 local Toggleantivoid = MiscTab:Toggle({
     Title = "Anti Void",
     Desc = "Prevents you from falling into the void",
@@ -4977,11 +4589,11 @@ local Toggleantivoid = MiscTab:Toggle({
     Default = false,
     Callback = function(state)
         print("Anti Void: " .. tostring(state))
-        
+       
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local humanoidRootPart = character:WaitForChild("HumanoidRootPart")
-        
+       
         if state then
             -- Enable anti-void
             _G.AntiVoidConnection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -5004,7 +4616,6 @@ local Toggleantivoid = MiscTab:Toggle({
         end
     end
 })
-
 local ToggleAntiAFK = MiscTab:Toggle({
     Title = "Anti AFK",
     Desc = "Prevents automatic idle kick",
@@ -5014,12 +4625,10 @@ local ToggleAntiAFK = MiscTab:Toggle({
     Callback = function(state)
         if state then
             local player = game.Players.LocalPlayer
-
             -- Disconnect existing idle connections if any
             if getgenv().AntiAFKConnection then
                 getgenv().AntiAFKConnection:Disconnect()
             end
-
             -- Connect to Idled event
             getgenv().AntiAFKConnection = player.Idled:Connect(function()
                 -- simulate click or jump to prevent kick
@@ -5027,7 +4636,6 @@ local ToggleAntiAFK = MiscTab:Toggle({
                 game:GetService("VirtualUser"):ClickButton2(Vector2.new())
                 print("⏱ Anti-AFK triggered!")
             end)
-
             print("✅ Anti-AFK enabled")
         else
             -- Disconnect Anti-AFK
@@ -5039,20 +4647,16 @@ local ToggleAntiAFK = MiscTab:Toggle({
         end
     end
 })
-
 MiscTab:Divider()
-
 local Section15 = MiscTab:Section({
     Title = "External Scripts",
     Icon = "code",
 })
-
 MiscTab:Paragraph({
     Title = "External Scripts Info",
     Desc = "These scripts are loaded from external sources. Use at your own risk. I will try to keep them updated.",
     Color = "Blue",
 })
-
 MiscTab:Button({
     Title = "Load Fling All Script",
     Desc = "Loads a script to fling all players. Can kill players. Use wisely.",
@@ -5084,18 +4688,16 @@ MiscTab:Button({
         end
     end
 })
-
 MiscTab:Paragraph({
     Title = "Item Bring Update",
     Desc = "Item Bring script updated to v3.0. May cause lag when bringing many items.",
     Color = "Green",
 })
-
 MiscTab:Button({
     Title = "Load Bring Items Script",
     Desc = "Loads script to bring items to you. May cause lag.",
     Locked = false,
-    Callback = function() 
+    Callback = function()
         WindUI:Notify({
             Title = "Loading Bring Script",
             Content = "Loading external bring items script...",
@@ -5122,21 +4724,17 @@ MiscTab:Button({
         end
     end
 })
-
 -- ==================== TAB 6: SETTINGS ====================
 local Tab6 = Window:Tab({
     Title = "Settings",
     Icon = "settings",
     Locked = false,
 })
-
 local SettingsSection1 = Tab6:Section({
     Title = "Window Settings",
     Icon = "layout",
 })
-
 Tab6:Space()
-
 -- Transparency Toggle
 local TransparencyToggle = Tab6:Toggle({
     Title = "Window Transparency",
@@ -5149,14 +4747,11 @@ local TransparencyToggle = Tab6:Toggle({
         print("Transparency: " .. tostring(state))
     end
 })
-
 Tab6:Divider()
-
 local SettingsSection2 = Tab6:Section({
     Title = "Keybind Settings",
     Icon = "keyboard",
 })
-
 -- Input field for keybind
 local KeybindInput = Tab6:Input({
     Title = "Toggle UI Keybind",
@@ -5168,9 +4763,9 @@ local KeybindInput = Tab6:Input({
     Callback = function(input)
         -- Trim whitespace
         input = input:gsub("^%s*(.-)%s*$", "%1")
-        
+       
         local keyCode
-        
+       
         -- Check if it's a single letter (case insensitive)
         if #input == 1 then
             local upperInput = input:upper()
@@ -5184,7 +4779,7 @@ local KeybindInput = Tab6:Input({
                 keyCode = result
             end
         end
-        
+       
         if keyCode then
             Window:SetToggleKey(keyCode)
             print("Keybind set to: " .. input)
@@ -5205,23 +4800,17 @@ local KeybindInput = Tab6:Input({
         end
     end
 })
-
 -- Set default toggle key
 Window:SetToggleKey(Enum.KeyCode.RightControl)
-
 Tab6:Space()
-
 -- ==================== WINDOW LEVEL COMPONENTS ====================
 Window:Divider()
-
 local WindowSection = Window:Section({
     Title = "Window Level Section",
     Icon = "window",
     Opened = true,
 })
-
 Window:Space()
-
 -- Final Notification
 WindUI:Notify({
     Title = "All Components Loaded",
@@ -5229,7 +4818,6 @@ WindUI:Notify({
     Duration = 5,
     Icon = "check-circle",
 })
-
 Window:OnDestroy(function()
     print("Window destroyed")
 end)
