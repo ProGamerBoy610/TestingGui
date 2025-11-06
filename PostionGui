@@ -5116,7 +5116,112 @@ MiscTab:Button({
     end
 })
 
+-- ==================== TAB 6: SETTINGS ====================
+local Tab6 = Window:Tab({
+    Title = "Settings",
+    Icon = "settings",
+    Locked = false,
+})
 
+local SettingsSection1 = Tab6:Section({
+    Title = "Window Settings",
+    Icon = "layout",
+})
+
+Tab6:Space()
+
+-- Transparency Toggle
+local TransparencyToggle = Tab6:Toggle({
+    Title = "Window Transparency",
+    Desc = "Toggle window transparency on/off",
+    Icon = "eye",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        Window:ToggleTransparency(state)
+        print("Transparency: " .. tostring(state))
+    end
+})
+
+Tab6:Divider()
+
+local SettingsSection2 = Tab6:Section({
+    Title = "Keybind Settings",
+    Icon = "keyboard",
+})
+
+-- Input field for keybind
+local KeybindInput = Tab6:Input({
+    Title = "Toggle UI Keybind",
+    Desc = "Type ONE letter or key (e.g., Q or RightControl)",
+    Value = "RightControl",
+    InputIcon = "keyboard",
+    Type = "Input",
+    Placeholder = "Enter key...",
+    Callback = function(input)
+        -- Trim whitespace
+        input = input:gsub("^%s*(.-)%s*$", "%1")
+        
+        local keyCode
+        
+        -- Check if it's a single letter (case insensitive)
+        if #input == 1 then
+            local upperInput = input:upper()
+            keyCode = Enum.KeyCode[upperInput]
+        else
+            -- Try as a full KeyCode name
+            local success, result = pcall(function()
+                return Enum.KeyCode[input]
+            end)
+            if success then
+                keyCode = result
+            end
+        end
+        
+        if keyCode then
+            Window:SetToggleKey(keyCode)
+            print("Keybind set to: " .. input)
+            WindUI:Notify({
+                Title = "Keybind Updated",
+                Content = "Press '" .. input .. "' to toggle UI",
+                Duration = 3,
+                Icon = "check",
+            })
+        else
+            print("Invalid key: " .. input)
+            WindUI:Notify({
+                Title = "Invalid Key",
+                Content = "Enter a single letter (Q) or key name (RightControl)",
+                Duration = 4,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+-- Set default toggle key
+Window:SetToggleKey(Enum.KeyCode.RightControl)
+
+Tab6:Space()
+
+-- ==================== WINDOW LEVEL COMPONENTS ====================
+Window:Divider()
+
+local WindowSection = Window:Section({
+    Title = "Window Level Section",
+    Icon = "window",
+    Opened = true,
+})
+
+Window:Space()
+
+-- Final Notification
+WindUI:Notify({
+    Title = "All Components Loaded",
+    Content = "Every component is now visible!",
+    Duration = 5,
+    Icon = "check-circle",
+})
 
 Window:OnDestroy(function()
     print("Window destroyed")
