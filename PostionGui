@@ -47,6 +47,23 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 100
 ScreenGui.Enabled = true
 
+-- Create invisible full-screen overlay for dropdown closing
+local DropdownOverlay = Instance.new("Frame")
+DropdownOverlay.Name = "DropdownOverlay"
+DropdownOverlay.Parent = ScreenGui
+DropdownOverlay.BackgroundTransparency = 1
+DropdownOverlay.Size = UDim2.new(1, 0, 1, 0)
+DropdownOverlay.Position = UDim2.new(0, 0, 0, 0)
+DropdownOverlay.BorderSizePixel = 0
+DropdownOverlay.Visible = false
+DropdownOverlay.ZIndex = 150
+
+DropdownOverlay.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        CloseAllDropdowns()
+    end
+end)
+
 local MainFrame = Instance.new("Frame")
 MainFrame.Name = "MainFrame"
 MainFrame.Parent = ScreenGui
@@ -755,6 +772,7 @@ function Library:CreateDropdown(tab, config)
             
             OptionsFrame.Visible = true
             Arrow.Text = "^"
+            DropdownOverlay.Visible = true
             
             local pos = ValueButton.AbsolutePosition
             local screenSize = ScreenGui.AbsoluteSize.Y
@@ -778,6 +796,7 @@ function Library:CreateDropdown(tab, config)
             isOpen = false
             OptionsFrame.Visible = false
             Arrow.Text = "v"
+            DropdownOverlay.Visible = false
             for i, dropdown in pairs(Library.OpenDropdowns) do
                 if dropdown == OptionsFrame then
                     table.remove(Library.OpenDropdowns, i)
@@ -982,6 +1001,7 @@ function Library:CreateMultiDropdown(tab, config)
             
             OptionsFrame.Visible = true
             Arrow.Text = "^"
+            DropdownOverlay.Visible = true
             
             local pos = ValueButton.AbsolutePosition
             local screenSize = ScreenGui.AbsoluteSize.Y
@@ -1005,6 +1025,7 @@ function Library:CreateMultiDropdown(tab, config)
             isOpen = false
             OptionsFrame.Visible = false
             Arrow.Text = "v"
+            DropdownOverlay.Visible = false
             for i, dropdown in pairs(Library.OpenDropdowns) do
                 if dropdown == OptionsFrame then
                     table.remove(Library.OpenDropdowns, i)
@@ -1347,17 +1368,14 @@ local function CloseAllDropdowns()
         local dropdown = Library.OpenDropdowns[i]
         if dropdown and dropdown.Parent then
             dropdown.Visible = false
-            local parent = dropdown.Parent
-            if parent:FindFirstChild("Arrow") then
-                parent:FindFirstChild("Arrow").Text = "v"
-            end
         end
         table.remove(Library.OpenDropdowns, i)
     end
+    DropdownOverlay.Visible = false
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not gameProcessed then
         local mouse = game:GetService("Mouse")
         local mousePos = Vector2.new(mouse.X, mouse.Y)
         
@@ -1511,7 +1529,6 @@ TweenService:Create(MainFrame, Config.Animations.Bounce, {
 }):Play()
 
 local InfoTab = Library:CreateTab("INFO")
-local HiTab = Library:CreateTab("HI")
 local HomeTab = Library:CreateTab("HOME")
 local SpecialTab = Library:CreateTab("SPECIAL")
 local MainTab = Library:CreateTab("MAIN")
