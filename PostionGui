@@ -1,6 +1,3 @@
-print("FRYZER HUB - Modern Edition loaded successfully!")
-print("Press RightControl to toggle UI")
-
 -- Circle Toggle Button
 local CircleConfig = {
     CircleSize = 60,
