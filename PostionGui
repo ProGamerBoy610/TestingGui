@@ -746,8 +746,13 @@ function Library:CreateDropdown(tab, config)
         isOpen = not isOpen
         
         if isOpen then
-            CloseAllDropdowns()
-            isOpen = true
+            for i = #Library.OpenDropdowns, 1, -1 do
+                if Library.OpenDropdowns[i] ~= OptionsFrame then
+                    Library.OpenDropdowns[i].Visible = false
+                    table.remove(Library.OpenDropdowns, i)
+                end
+            end
+            
             OptionsFrame.Visible = true
             Arrow.Text = "^"
             
@@ -953,8 +958,13 @@ function Library:CreateMultiDropdown(tab, config)
         isOpen = not isOpen
         
         if isOpen then
-            CloseAllDropdowns()
-            isOpen = true
+            for i = #Library.OpenDropdowns, 1, -1 do
+                if Library.OpenDropdowns[i] ~= OptionsFrame then
+                    Library.OpenDropdowns[i].Visible = false
+                    table.remove(Library.OpenDropdowns, i)
+                end
+            end
+            
             OptionsFrame.Visible = true
             Arrow.Text = "^"
             
@@ -1318,42 +1328,36 @@ end)
 
 -- Close dropdowns when clicking outside
 local function CloseAllDropdowns()
-    for _, dropdown in pairs(Library.OpenDropdowns) do
+    for i = #Library.OpenDropdowns, 1, -1 do
+        local dropdown = Library.OpenDropdowns[i]
         if dropdown and dropdown.Parent then
             dropdown.Visible = false
-            local arrowLabel = dropdown:FindFirstChild("Arrow")
-            if arrowLabel then
-                arrowLabel.Text = "v"
-            end
         end
+        table.remove(Library.OpenDropdowns, i)
     end
-    Library.OpenDropdowns = {}
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not gameProcessed then
         local mouse = game:GetService("Mouse")
-        local clickPosition = mouse.Hit.Position
+        local mousePos = Vector2.new(mouse.X, mouse.Y)
         
-        local anyDropdownOpen = #Library.OpenDropdowns > 0
-        if anyDropdownOpen then
+        if #Library.OpenDropdowns > 0 then
             local clickedOnDropdown = false
             for _, dropdown in pairs(Library.OpenDropdowns) do
                 if dropdown and dropdown.Parent and dropdown.Visible then
                     local dropdownPos = dropdown.AbsolutePosition
                     local dropdownSize = dropdown.AbsoluteSize
-                    local mousePos = mouse.X
-                    local mouseY = mouse.Y
                     
-                    if mousePos >= dropdownPos.X and mousePos <= dropdownPos.X + dropdownSize.X and
-                       mouseY >= dropdownPos.Y and mouseY <= dropdownPos.Y + dropdownSize.Y then
+                    if mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
+                       mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y then
                         clickedOnDropdown = true
                         break
                     end
                 end
             end
             
-            if not clickedOnDropdown and not gameProcessed then
+            if not clickedOnDropdown then
                 CloseAllDropdowns()
             end
         end
