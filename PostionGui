@@ -2084,6 +2084,67 @@ pcall(function()
     Window:Show()
 end)
 
+_G.Auto = false -- Set to false to match the toggle's default
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Event = ReplicatedStorage.RemoteEvents.CarnivalCompleteShootingGallery
+
+local function findTargets(parent, depth)
+    if depth > 3 then return {} end
+   
+    local targets = {}
+   
+    for _, child in ipairs(parent:GetChildren()) do
+        if child:IsA("BasePart") then
+            table.insert(targets, child)
+        end
+       
+        for _, subTarget in ipairs(findTargets(child, depth + 1)) do
+            table.insert(targets, subTarget)
+        end
+    end
+   
+    return targets
+end
+
+spawn(function()
+    while task.wait(3) do
+   
+        local targets = {}
+        local areas = {
+            workspace.Map,
+            workspace.Items,
+            workspace.Characters
+        }
+       
+        for _, area in ipairs(areas) do
+            for _, target in ipairs(findTargets(area, 0)) do
+                table.insert(targets, target)
+            end
+        end
+       
+        for index, target in ipairs(targets) do
+            if not _G.Auto then break end
+           
+            local success = pcall(function()
+                Event:FireServer(target)
+            end)
+            task.wait(0.05)
+        end
+    end
+end)
+
+-- Assuming Tab1 is already defined in your UI library setup
+local Togglecandy = AutoTab:Toggle({
+    Title = "Auto Farm Candies",
+    Desc = "",
+    Default = false,
+    Callback = function(state)
+        _G.Auto = state
+        print("Auto Shooting Gallery: " .. tostring(state))
+    end
+})
+
 --Add the new code here
 
 AutoTab:Paragraph({
@@ -2530,7 +2591,7 @@ local BringallTab = Window:Tab({
 
 
 -- Item Teleport Script with Toggle & Dropdown Integration
--- Direct integration with BringallTabTab (no return function)
+-- Direct integration with BringallTabTab (ABSOLUTELY NO RETURN STATEMENTS)
 
 print("🔄 Loading Item Teleport System...")
 
@@ -2595,74 +2656,70 @@ local function BringAllItems(itemName)
     local itemsFolder = workspace:FindFirstChild("Items")
     if not itemsFolder then
         warn("❌ Items folder not found in workspace!")
-        return 0
-    end
-    
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        warn("❌ Character not found!")
-        return 0
-    end
-    
-    local hrp = character.HumanoidRootPart
-    local itemsCollected = 0
-    
-    -- Determine target position based on selected location
-    local basePosition
-    if selectedLocation == "Player" then
-        basePosition = hrp.CFrame
     else
-        local locationVector = locations[selectedLocation]
-        if locationVector then
-            basePosition = CFrame.new(locationVector)
-        else
-            basePosition = hrp.CFrame -- Fallback to player
-        end
-    end
-    
-    print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
-    
-    -- Find and collect ALL items without marking (so they can be collected again)
-    for _, item in pairs(itemsFolder:GetChildren()) do
-        if item.Name == itemName then
-            local success, err = pcall(function()
-                RequestStartDraggingItem:FireServer(item)
-                task.wait(0.05)
-                
-                -- Teleport item to the exact same location (no offset)
-                local targetPos = basePosition
-                
-                if item:IsA("Model") then
-                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        primaryPart.CFrame = targetPos
-                    end
-                elseif item:IsA("BasePart") then
-                    item.CFrame = targetPos
-                end
-                
-                task.wait(0.05)
-                StopDraggingItem:FireServer(item)
-            end)
+        local character = player.Character
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local hrp = character.HumanoidRootPart
+            local itemsCollected = 0
             
-            if success then
-                itemsCollected = itemsCollected + 1
-                print("✅ Brought " .. itemName .. " #" .. itemsCollected)
+            -- Determine target position based on selected location
+            local basePosition
+            if selectedLocation == "Player" then
+                basePosition = hrp.CFrame
             else
-                warn("❌ Failed to bring item:", err)
+                local locationVector = locations[selectedLocation]
+                if locationVector then
+                    basePosition = CFrame.new(locationVector)
+                else
+                    basePosition = hrp.CFrame -- Fallback to player
+                end
             end
             
-            task.wait(0.1)
+            print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
+            
+            -- Find and collect ALL items without marking (so they can be collected again)
+            for _, item in pairs(itemsFolder:GetChildren()) do
+                if item.Name == itemName then
+                    local success, err = pcall(function()
+                        RequestStartDraggingItem:FireServer(item)
+                        task.wait(0.05)
+                        
+                        -- Teleport item to the exact same location (no offset)
+                        local targetPos = basePosition
+                        
+                        if item:IsA("Model") then
+                            local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                            if primaryPart then
+                                primaryPart.CFrame = targetPos
+                            end
+                        elseif item:IsA("BasePart") then
+                            item.CFrame = targetPos
+                        end
+                        
+                        task.wait(0.05)
+                        StopDraggingItem:FireServer(item)
+                    end)
+                    
+                    if success then
+                        itemsCollected = itemsCollected + 1
+                        print("✅ Brought " .. itemName .. " #" .. itemsCollected)
+                    else
+                        warn("❌ Failed to bring item:", err)
+                    end
+                    
+                    task.wait(0.1)
+                end
+            end
+            
+            if itemsCollected > 0 then
+                print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName .. " to " .. selectedLocation)
+            else
+                print("❌ No '" .. itemName .. "' items found in the world!")
+            end
+        else
+            warn("❌ Character not found!")
         end
     end
-    
-    if itemsCollected > 0 then
-        print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName .. " to " .. selectedLocation)
-    else
-        print("❌ No '" .. itemName .. "' items found in the world!")
-    end
-    
-    return itemsCollected
 end
 
 -- Function to collect all selected items from a category once
@@ -2671,15 +2728,14 @@ local function CollectCategoryItems(categoryName)
     
     if #selectedItems == 0 then
         print("⚠️ No items selected in '" .. categoryName .. "'")
-        return
+    else
+        print("🚀 Collecting items from category: " .. categoryName)
+        for _, itemName in ipairs(selectedItems) do
+            BringAllItems(itemName)
+            task.wait(0.3)
+        end
+        print("✅ Finished collecting from " .. categoryName)
     end
-    
-    print("🚀 Collecting items from category: " .. categoryName)
-    for _, itemName in ipairs(selectedItems) do
-        BringAllItems(itemName)
-        task.wait(0.3)
-    end
-    print("✅ Finished collecting from " .. categoryName)
 end
 
 -- Setup with BringallTabTab (assuming BringallTabTab is globally accessible or passed)
