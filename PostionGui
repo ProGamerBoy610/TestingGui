@@ -2,12 +2,17 @@ local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
+local GuiService = game:GetService("GuiService")
 
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Remove existing GUIs if they exist
 if PlayerGui:FindFirstChild("FryzerModernHub") then
     PlayerGui:FindFirstChild("FryzerModernHub"):Destroy()
+end
+if PlayerGui:FindFirstChild("FryzerToggleGUI") then
+    PlayerGui:FindFirstChild("FryzerToggleGUI"):Destroy()
 end
 
 local Config = {
@@ -30,6 +35,11 @@ local Config = {
         Normal = TweenInfo.new(0.25, Enum.EasingStyle.Quad),
         Slow = TweenInfo.new(0.4, Enum.EasingStyle.Quad),
         Bounce = TweenInfo.new(0.5, Enum.EasingStyle.Back, Enum.EasingDirection.Out)
+    },
+    CircleSize = 60,
+    CirclePosition = {
+        X = 100,
+        Y = 200
     }
 }
 
@@ -39,6 +49,10 @@ Library.CurrentTab = nil
 Library.TransparencyEnabled = false
 Library.OpenDropdowns = {}
 
+-- ============================
+-- MAIN HUB GUI CREATION
+-- ============================
+
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "FryzerModernHub"
 ScreenGui.Parent = PlayerGui
@@ -47,7 +61,6 @@ ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 ScreenGui.DisplayOrder = 100
 ScreenGui.Enabled = true
 
--- Create invisible full-screen overlay for dropdown closing
 local DropdownOverlay = Instance.new("Frame")
 DropdownOverlay.Name = "DropdownOverlay"
 DropdownOverlay.Parent = ScreenGui
@@ -64,7 +77,6 @@ DropdownOverlay.InputBegan:Connect(function(input)
             local dropdown = Library.OpenDropdowns[i]
             if dropdown and dropdown.Parent then
                 dropdown.Visible = false
-                
                 local valueButton = dropdown.Parent:FindFirstChild("ValueButton")
                 if valueButton then
                     local arrow = valueButton:FindFirstChild("Arrow")
@@ -82,7 +94,6 @@ end)
 spawn(function()
     while ScreenGui.Parent do
         wait(0.5)
-        
         local shouldHideOverlay = true
         for _, dropdown in pairs(Library.OpenDropdowns) do
             if dropdown and dropdown.Parent and dropdown.Visible then
@@ -90,7 +101,6 @@ spawn(function()
                 break
             end
         end
-        
         if shouldHideOverlay and DropdownOverlay.Visible then
             DropdownOverlay.Visible = false
         end
@@ -286,6 +296,7 @@ ContentLayout.Parent = ContentScrollFrame
 ContentLayout.SortOrder = Enum.SortOrder.LayoutOrder
 ContentLayout.Padding = UDim.new(0, 8)
 
+-- Library Functions
 function Library:CreateTab(name, locked)
     local Tab = {}
     Tab.Name = name
@@ -644,635 +655,6 @@ function Library:CreateToggle(tab, config)
     return {Frame = ToggleFrame, SetValue = function(val) isToggled = val Checkmark.Visible = val end}
 end
 
-function Library:CreateDropdown(tab, config)
-    local DropdownFrame = Instance.new("Frame")
-    DropdownFrame.Name = "Dropdown_" .. config.Title
-    DropdownFrame.Parent = tab.Content
-    DropdownFrame.BackgroundColor3 = Config.Colors.Tertiary
-    DropdownFrame.BorderSizePixel = 0
-    DropdownFrame.Size = UDim2.new(1, 0, 0, 60)
-    DropdownFrame.LayoutOrder = #tab.Components + 1
-    
-    local DropdownCorner = Instance.new("UICorner")
-    DropdownCorner.CornerRadius = UDim.new(0, 6)
-    DropdownCorner.Parent = DropdownFrame
-    
-    local DropdownStroke = Instance.new("UIStroke")
-    DropdownStroke.Color = Config.Colors.Border
-    DropdownStroke.Thickness = 1
-    DropdownStroke.Parent = DropdownFrame
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = DropdownFrame
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Size = UDim2.new(1, -30, 0, 18)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 4)
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.Text = config.Title
-    TitleLabel.TextColor3 = Config.Colors.White
-    TitleLabel.TextSize = 11
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local ValueButton = Instance.new("TextButton")
-    ValueButton.Parent = DropdownFrame
-    ValueButton.BackgroundColor3 = Config.Colors.Secondary
-    ValueButton.BorderSizePixel = 0
-    ValueButton.Size = UDim2.new(1, -24, 0, 30)
-    ValueButton.Position = UDim2.new(0, 12, 0, 24)
-    ValueButton.Font = Enum.Font.Gotham
-    ValueButton.Text = config.Value or config.Values[1]
-    ValueButton.TextColor3 = Config.Colors.White
-    ValueButton.TextSize = 10
-    ValueButton.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local ValueCorner = Instance.new("UICorner")
-    ValueCorner.CornerRadius = UDim.new(0, 4)
-    ValueCorner.Parent = ValueButton
-    
-    local ValuePadding = Instance.new("UIPadding")
-    ValuePadding.Parent = ValueButton
-    ValuePadding.PaddingLeft = UDim.new(0, 8)
-    ValuePadding.PaddingRight = UDim.new(0, 24)
-    
-    local Arrow = Instance.new("TextLabel")
-    Arrow.Parent = ValueButton
-    Arrow.BackgroundTransparency = 1
-    Arrow.Size = UDim2.new(0, 20, 1, 0)
-    Arrow.Position = UDim2.new(1, -20, 0, 0)
-    Arrow.Font = Enum.Font.Gotham
-    Arrow.Text = "v"
-    Arrow.TextColor3 = Config.Colors.WhiteDim
-    Arrow.TextSize = 8
-    
-    local OptionsFrame = Instance.new("Frame")
-    OptionsFrame.Name = "Options"
-    OptionsFrame.Parent = ScreenGui
-    OptionsFrame.BackgroundColor3 = Config.Colors.Secondary
-    OptionsFrame.BorderSizePixel = 0
-    OptionsFrame.Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, 0)
-    OptionsFrame.Visible = false
-    OptionsFrame.ZIndex = 200
-    OptionsFrame.ClipsDescendants = true
-    
-    local OptionsCorner = Instance.new("UICorner")
-    OptionsCorner.CornerRadius = UDim.new(0, 6)
-    OptionsCorner.Parent = OptionsFrame
-    
-    local OptionsStroke = Instance.new("UIStroke")
-    OptionsStroke.Color = Config.Colors.Purple
-    OptionsStroke.Thickness = 1
-    OptionsStroke.Parent = OptionsFrame
-    
-    local OptionsScroll = Instance.new("ScrollingFrame")
-    OptionsScroll.Parent = OptionsFrame
-    OptionsScroll.BackgroundTransparency = 1
-    OptionsScroll.Size = UDim2.new(1, -8, 1, -8)
-    OptionsScroll.Position = UDim2.new(0, 4, 0, 4)
-    OptionsScroll.ScrollBarThickness = 3
-    OptionsScroll.ScrollBarImageColor3 = Config.Colors.Purple
-    OptionsScroll.BorderSizePixel = 0
-    OptionsScroll.CanvasSize = UDim2.new(0, 0, 0, #config.Values * 28)
-    
-    local OptionsLayout = Instance.new("UIListLayout")
-    OptionsLayout.Parent = OptionsScroll
-    OptionsLayout.Padding = UDim.new(0, 2)
-    
-    local currentValue = config.Value or config.Values[1]
-    local isOpen = false
-    
-    for _, option in pairs(config.Values) do
-        local OptionButton = Instance.new("TextButton")
-        OptionButton.Parent = OptionsScroll
-        OptionButton.BackgroundColor3 = Config.Colors.Tertiary
-        OptionButton.BorderSizePixel = 0
-        OptionButton.Size = UDim2.new(1, 0, 0, 26)
-        OptionButton.Font = Enum.Font.Gotham
-        OptionButton.Text = option
-        OptionButton.TextColor3 = Config.Colors.White
-        OptionButton.TextSize = 10
-        OptionButton.TextXAlignment = Enum.TextXAlignment.Left
-        
-        local OptCorner = Instance.new("UICorner")
-        OptCorner.CornerRadius = UDim.new(0, 4)
-        OptCorner.Parent = OptionButton
-        
-        local OptPadding = Instance.new("UIPadding")
-        OptPadding.Parent = OptionButton
-        OptPadding.PaddingLeft = UDim.new(0, 8)
-        
-        OptionButton.MouseButton1Click:Connect(function()
-            currentValue = option
-            ValueButton.Text = option
-            OptionsFrame.Visible = false
-            isOpen = false
-            Arrow.Text = "v"
-            
-            for i, dropdown in pairs(Library.OpenDropdowns) do
-                if dropdown == OptionsFrame then
-                    table.remove(Library.OpenDropdowns, i)
-                    break
-                end
-            end
-            
-            if config.Callback then
-                config.Callback(option)
-            end
-        end)
-        
-        OptionButton.MouseEnter:Connect(function()
-            TweenService:Create(OptionButton, Config.Animations.Fast, {
-                BackgroundColor3 = Config.Colors.Secondary
-            }):Play()
-        end)
-        
-        OptionButton.MouseLeave:Connect(function()
-            TweenService:Create(OptionButton, Config.Animations.Fast, {
-                BackgroundColor3 = Config.Colors.Tertiary
-            }):Play()
-        end)
-    end
-    
-    ValueButton.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        
-        if isOpen then
-            for i = #Library.OpenDropdowns, 1, -1 do
-                if Library.OpenDropdowns[i] ~= OptionsFrame then
-                    Library.OpenDropdowns[i].Visible = false
-                    table.remove(Library.OpenDropdowns, i)
-                end
-            end
-            
-            OptionsFrame.Visible = true
-            Arrow.Text = "^"
-            DropdownOverlay.Visible = true
-            DropdownOverlay.ZIndex = 149
-            OptionsFrame.ZIndex = 151
-            
-            local pos = ValueButton.AbsolutePosition
-            local screenSize = ScreenGui.AbsoluteSize.Y
-            local maxHeight = 150
-            local availableSpaceBelow = screenSize - (pos.Y + ValueButton.AbsoluteSize.Y)
-            
-            local yPos
-            if availableSpaceBelow >= maxHeight then
-                yPos = pos.Y + ValueButton.AbsoluteSize.Y + 5
-            else
-                yPos = pos.Y - maxHeight - 5
-            end
-            
-            OptionsFrame.Position = UDim2.new(0, pos.X, 0, yPos)
-            OptionsFrame.Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, 0)
-            TweenService:Create(OptionsFrame, Config.Animations.Normal, {
-                Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, maxHeight)
-            }):Play()
-            table.insert(Library.OpenDropdowns, OptionsFrame)
-        else
-            isOpen = false
-            OptionsFrame.Visible = false
-            Arrow.Text = "v"
-            DropdownOverlay.Visible = false
-            for i, dropdown in pairs(Library.OpenDropdowns) do
-                if dropdown == OptionsFrame then
-                    table.remove(Library.OpenDropdowns, i)
-                    break
-                end
-            end
-        end
-    end)
-    
-    DropdownFrame.InputBegan:Connect(function(input)
-        if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and isOpen then
-            wait(0.1)
-            isOpen = false
-            OptionsFrame.Visible = false
-            Arrow.Text = "v"
-            for i, dropdown in pairs(Library.OpenDropdowns) do
-                if dropdown == OptionsFrame then
-                    table.remove(Library.OpenDropdowns, i)
-                    break
-                end
-            end
-        end
-    end)
-    
-    table.insert(tab.Components, DropdownFrame)
-    return {Frame = DropdownFrame, SetValue = function(val) currentValue = val ValueButton.Text = val end}
-end
-
-function Library:CreateMultiDropdown(tab, config)
-    local DropdownFrame = Instance.new("Frame")
-    DropdownFrame.Name = "MultiDropdown_" .. config.Title
-    DropdownFrame.Parent = tab.Content
-    DropdownFrame.BackgroundColor3 = Config.Colors.Tertiary
-    DropdownFrame.BorderSizePixel = 0
-    DropdownFrame.Size = UDim2.new(1, 0, 0, 60)
-    DropdownFrame.LayoutOrder = #tab.Components + 1
-    
-    local DropdownCorner = Instance.new("UICorner")
-    DropdownCorner.CornerRadius = UDim.new(0, 6)
-    DropdownCorner.Parent = DropdownFrame
-    
-    local DropdownStroke = Instance.new("UIStroke")
-    DropdownStroke.Color = Config.Colors.Border
-    DropdownStroke.Thickness = 1
-    DropdownStroke.Parent = DropdownFrame
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = DropdownFrame
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Size = UDim2.new(1, -30, 0, 18)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 4)
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.Text = config.Title
-    TitleLabel.TextColor3 = Config.Colors.White
-    TitleLabel.TextSize = 11
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local ValueButton = Instance.new("TextButton")
-    ValueButton.Parent = DropdownFrame
-    ValueButton.BackgroundColor3 = Config.Colors.Secondary
-    ValueButton.BorderSizePixel = 0
-    ValueButton.Size = UDim2.new(1, -24, 0, 30)
-    ValueButton.Position = UDim2.new(0, 12, 0, 24)
-    ValueButton.Font = Enum.Font.Gotham
-    ValueButton.Text = "Select items..."
-    ValueButton.TextColor3 = Config.Colors.White
-    ValueButton.TextSize = 10
-    ValueButton.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local ValueCorner = Instance.new("UICorner")
-    ValueCorner.CornerRadius = UDim.new(0, 4)
-    ValueCorner.Parent = ValueButton
-    
-    local ValuePadding = Instance.new("UIPadding")
-    ValuePadding.Parent = ValueButton
-    ValuePadding.PaddingLeft = UDim.new(0, 8)
-    ValuePadding.PaddingRight = UDim.new(0, 24)
-    
-    local Arrow = Instance.new("TextLabel")
-    Arrow.Parent = ValueButton
-    Arrow.BackgroundTransparency = 1
-    Arrow.Size = UDim2.new(0, 20, 1, 0)
-    Arrow.Position = UDim2.new(1, -20, 0, 0)
-    Arrow.Font = Enum.Font.Gotham
-    Arrow.Text = "v"
-    Arrow.TextColor3 = Config.Colors.WhiteDim
-    Arrow.TextSize = 8
-    
-    local OptionsFrame = Instance.new("Frame")
-    OptionsFrame.Name = "Options"
-    OptionsFrame.Parent = ScreenGui
-    OptionsFrame.BackgroundColor3 = Config.Colors.Secondary
-    OptionsFrame.BorderSizePixel = 0
-    OptionsFrame.Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, 0)
-    OptionsFrame.Visible = false
-    OptionsFrame.ZIndex = 200
-    OptionsFrame.ClipsDescendants = true
-    
-    local OptionsCorner = Instance.new("UICorner")
-    OptionsCorner.CornerRadius = UDim.new(0, 6)
-    OptionsCorner.Parent = OptionsFrame
-    
-    local OptionsStroke = Instance.new("UIStroke")
-    OptionsStroke.Color = Config.Colors.Purple
-    OptionsStroke.Thickness = 1
-    OptionsStroke.Parent = OptionsFrame
-    
-    local OptionsScroll = Instance.new("ScrollingFrame")
-    OptionsScroll.Parent = OptionsFrame
-    OptionsScroll.BackgroundTransparency = 1
-    OptionsScroll.Size = UDim2.new(1, -8, 1, -8)
-    OptionsScroll.Position = UDim2.new(0, 4, 0, 4)
-    OptionsScroll.ScrollBarThickness = 3
-    OptionsScroll.ScrollBarImageColor3 = Config.Colors.Purple
-    OptionsScroll.BorderSizePixel = 0
-    OptionsScroll.CanvasSize = UDim2.new(0, 0, 0, #config.Values * 28)
-    
-    local OptionsLayout = Instance.new("UIListLayout")
-    OptionsLayout.Parent = OptionsScroll
-    OptionsLayout.Padding = UDim.new(0, 2)
-    
-    local selectedValues = {}
-    local isOpen = false
-    
-    for _, option in pairs(config.Values) do
-        local OptionButton = Instance.new("TextButton")
-        OptionButton.Parent = OptionsScroll
-        OptionButton.BackgroundColor3 = Config.Colors.Tertiary
-        OptionButton.BorderSizePixel = 0
-        OptionButton.Size = UDim2.new(1, 0, 0, 26)
-        OptionButton.Font = Enum.Font.Gotham
-        OptionButton.Text = option
-        OptionButton.TextColor3 = Config.Colors.White
-        OptionButton.TextSize = 10
-        OptionButton.TextXAlignment = Enum.TextXAlignment.Left
-        
-        local OptCorner = Instance.new("UICorner")
-        OptCorner.CornerRadius = UDim.new(0, 4)
-        OptCorner.Parent = OptionButton
-        
-        local OptPadding = Instance.new("UIPadding")
-        OptPadding.Parent = OptionButton
-        OptPadding.PaddingLeft = UDim.new(0, 8)
-        
-        local isSelected = false
-        
-        OptionButton.MouseButton1Click:Connect(function(inputObject)
-            isSelected = not isSelected
-            
-            if isSelected then
-                table.insert(selectedValues, option)
-                TweenService:Create(OptionButton, Config.Animations.Fast, {
-                    BackgroundColor3 = Config.Colors.Purple
-                }):Play()
-            else
-                for i, val in pairs(selectedValues) do
-                    if val == option then
-                        table.remove(selectedValues, i)
-                        break
-                    end
-                end
-                TweenService:Create(OptionButton, Config.Animations.Fast, {
-                    BackgroundColor3 = Config.Colors.Tertiary
-                }):Play()
-            end
-            
-            local displayText = #selectedValues > 0 and table.concat(selectedValues, ", ") or "Select items..."
-            ValueButton.Text = displayText
-            
-            if config.Callback then
-                config.Callback(selectedValues)
-            end
-        end)
-        
-        OptionButton.MouseEnter:Connect(function()
-            if not isSelected then
-                TweenService:Create(OptionButton, Config.Animations.Fast, {
-                    BackgroundColor3 = Config.Colors.Secondary
-                }):Play()
-            end
-        end)
-        
-        OptionButton.MouseLeave:Connect(function()
-            if not isSelected then
-                TweenService:Create(OptionButton, Config.Animations.Fast, {
-                    BackgroundColor3 = Config.Colors.Tertiary
-                }):Play()
-            end
-        end)
-    end
-    
-    ValueButton.MouseButton1Click:Connect(function()
-        isOpen = not isOpen
-        
-        if isOpen then
-            for i = #Library.OpenDropdowns, 1, -1 do
-                if Library.OpenDropdowns[i] ~= OptionsFrame then
-                    Library.OpenDropdowns[i].Visible = false
-                    table.remove(Library.OpenDropdowns, i)
-                end
-            end
-            
-            OptionsFrame.Visible = true
-            Arrow.Text = "^"
-            DropdownOverlay.Visible = true
-            DropdownOverlay.ZIndex = 149
-            OptionsFrame.ZIndex = 151
-            
-            local pos = ValueButton.AbsolutePosition
-            local screenSize = ScreenGui.AbsoluteSize.Y
-            local maxHeight = 150
-            local availableSpaceBelow = screenSize - (pos.Y + ValueButton.AbsoluteSize.Y)
-            
-            local yPos
-            if availableSpaceBelow >= maxHeight then
-                yPos = pos.Y + ValueButton.AbsoluteSize.Y + 5
-            else
-                yPos = pos.Y - maxHeight - 5
-            end
-            
-            OptionsFrame.Position = UDim2.new(0, pos.X, 0, yPos)
-            OptionsFrame.Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, 0)
-            TweenService:Create(OptionsFrame, Config.Animations.Normal, {
-                Size = UDim2.new(0, ValueButton.AbsoluteSize.X, 0, maxHeight)
-            }):Play()
-            table.insert(Library.OpenDropdowns, OptionsFrame)
-        else
-            isOpen = false
-            OptionsFrame.Visible = false
-            Arrow.Text = "v"
-            DropdownOverlay.Visible = false
-            for i, dropdown in pairs(Library.OpenDropdowns) do
-                if dropdown == OptionsFrame then
-                    table.remove(Library.OpenDropdowns, i)
-                    break
-                end
-            end
-        end
-    end)
-    
-    table.insert(tab.Components, DropdownFrame)
-    return {Frame = DropdownFrame, GetSelected = function() return selectedValues end}
-end
-
-function Library:CreateSlider(tab, config)
-    local SliderFrame = Instance.new("Frame")
-    SliderFrame.Name = "Slider_" .. config.Title
-    SliderFrame.Parent = tab.Content
-    SliderFrame.BackgroundColor3 = Config.Colors.Tertiary
-    SliderFrame.BorderSizePixel = 0
-    SliderFrame.Size = UDim2.new(1, 0, 0, 50)
-    SliderFrame.LayoutOrder = #tab.Components + 1
-    
-    local SliderCorner = Instance.new("UICorner")
-    SliderCorner.CornerRadius = UDim.new(0, 6)
-    SliderCorner.Parent = SliderFrame
-    
-    local SliderStroke = Instance.new("UIStroke")
-    SliderStroke.Color = Config.Colors.Border
-    SliderStroke.Thickness = 1
-    SliderStroke.Parent = SliderFrame
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = SliderFrame
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Size = UDim2.new(1, -50, 0, 18)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 6)
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.Text = config.Title
-    TitleLabel.TextColor3 = Config.Colors.White
-    TitleLabel.TextSize = 11
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    local ValueLabel = Instance.new("TextLabel")
-    ValueLabel.Parent = SliderFrame
-    ValueLabel.BackgroundTransparency = 1
-    ValueLabel.Size = UDim2.new(0, 40, 0, 18)
-    ValueLabel.Position = UDim2.new(1, -50, 0, 6)
-    ValueLabel.Font = Enum.Font.GothamBold
-    ValueLabel.Text = tostring(config.Value.Default)
-    ValueLabel.TextColor3 = Config.Colors.Purple
-    ValueLabel.TextSize = 11
-    
-    local SliderTrack = Instance.new("Frame")
-    SliderTrack.Parent = SliderFrame
-    SliderTrack.BackgroundColor3 = Config.Colors.Secondary
-    SliderTrack.BorderSizePixel = 0
-    SliderTrack.Size = UDim2.new(1, -24, 0, 6)
-    SliderTrack.Position = UDim2.new(0, 12, 1, -14)
-    
-    local TrackCorner = Instance.new("UICorner")
-    TrackCorner.CornerRadius = UDim.new(1, 0)
-    TrackCorner.Parent = SliderTrack
-    
-    local SliderFill = Instance.new("Frame")
-    SliderFill.Parent = SliderTrack
-    SliderFill.BackgroundColor3 = Config.Colors.Purple
-    SliderFill.BorderSizePixel = 0
-    SliderFill.Size = UDim2.new((config.Value.Default - config.Value.Min) / (config.Value.Max - config.Value.Min), 0, 1, 0)
-    
-    local FillCorner = Instance.new("UICorner")
-    FillCorner.CornerRadius = UDim.new(1, 0)
-    FillCorner.Parent = SliderFill
-    
-    local SliderButton = Instance.new("TextButton")
-    SliderButton.Parent = SliderFrame
-    SliderButton.BackgroundTransparency = 1
-    SliderButton.Size = UDim2.new(1, 0, 1, 0)
-    SliderButton.Text = ""
-    
-    local currentValue = config.Value.Default
-    local dragging = false
-    
-    local function UpdateSlider(input)
-        local relativeX = math.clamp((input.Position.X - SliderTrack.AbsolutePosition.X) / SliderTrack.AbsoluteSize.X, 0, 1)
-        currentValue = math.floor(config.Value.Min + (config.Value.Max - config.Value.Min) * relativeX / config.Step) * config.Step
-        
-        ValueLabel.Text = tostring(currentValue)
-        TweenService:Create(SliderFill, Config.Animations.Fast, {
-            Size = UDim2.new(relativeX, 0, 1, 0)
-        }):Play()
-        
-        if config.Callback then
-            config.Callback(currentValue)
-        end
-    end
-    
-    SliderButton.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = true
-            UpdateSlider(input)
-        end
-    end)
-    
-    UserInputService.InputChanged:Connect(function(input)
-        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            UpdateSlider(input)
-        end
-    end)
-    
-    UserInputService.InputEnded:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            dragging = false
-        end
-    end)
-    
-    table.insert(tab.Components, SliderFrame)
-    return {Frame = SliderFrame, SetValue = function(val) currentValue = val ValueLabel.Text = tostring(val) end}
-end
-
-function Library:CreateInput(tab, config)
-    local InputFrame = Instance.new("Frame")
-    InputFrame.Name = "Input_" .. config.Title
-    InputFrame.Parent = tab.Content
-    InputFrame.BackgroundColor3 = Config.Colors.Tertiary
-    InputFrame.BorderSizePixel = 0
-    InputFrame.Size = UDim2.new(1, 0, 0, config.Desc and 70 or 60)
-    InputFrame.LayoutOrder = #tab.Components + 1
-    
-    local InputCorner = Instance.new("UICorner")
-    InputCorner.CornerRadius = UDim.new(0, 6)
-    InputCorner.Parent = InputFrame
-    
-    local InputStroke = Instance.new("UIStroke")
-    InputStroke.Color = Config.Colors.Border
-    InputStroke.Thickness = 1
-    InputStroke.Parent = InputFrame
-    
-    local TitleLabel = Instance.new("TextLabel")
-    TitleLabel.Parent = InputFrame
-    TitleLabel.BackgroundTransparency = 1
-    TitleLabel.Size = UDim2.new(1, -24, 0, 16)
-    TitleLabel.Position = UDim2.new(0, 12, 0, 6)
-    TitleLabel.Font = Enum.Font.GothamBold
-    TitleLabel.Text = config.Title
-    TitleLabel.TextColor3 = Config.Colors.White
-    TitleLabel.TextSize = 11
-    TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
-    
-    if config.Desc then
-        local DescLabel = Instance.new("TextLabel")
-        DescLabel.Parent = InputFrame
-        DescLabel.BackgroundTransparency = 1
-        DescLabel.Size = UDim2.new(1, -24, 0, 12)
-        DescLabel.Position = UDim2.new(0, 12, 0, 22)
-        DescLabel.Font = Enum.Font.Gotham
-        DescLabel.Text = config.Desc
-        DescLabel.TextColor3 = Config.Colors.WhiteDim
-        DescLabel.TextSize = 9
-        DescLabel.TextXAlignment = Enum.TextXAlignment.Left
-    end
-    
-    local TextBox = Instance.new("TextBox")
-    TextBox.Parent = InputFrame
-    TextBox.BackgroundColor3 = Config.Colors.Secondary
-    TextBox.BorderSizePixel = 0
-    TextBox.Size = UDim2.new(1, -24, 0, 22)
-    TextBox.Position = UDim2.new(0, 12, 1, -28)
-    TextBox.Font = Enum.Font.Gotham
-    TextBox.PlaceholderText = config.Placeholder or "Enter text..."
-    TextBox.Text = config.Value or ""
-    TextBox.TextColor3 = Config.Colors.White
-    TextBox.PlaceholderColor3 = Config.Colors.WhiteDim
-    TextBox.TextSize = 10
-    TextBox.TextXAlignment = Enum.TextXAlignment.Left
-    TextBox.ClearTextOnFocus = false
-    
-    local BoxCorner = Instance.new("UICorner")
-    BoxCorner.CornerRadius = UDim.new(0, 4)
-    BoxCorner.Parent = TextBox
-    
-    local BoxPadding = Instance.new("UIPadding")
-    BoxPadding.Parent = TextBox
-    BoxPadding.PaddingLeft = UDim.new(0, 8)
-    BoxPadding.PaddingRight = UDim.new(0, 8)
-    
-    local BoxStroke = Instance.new("UIStroke")
-    BoxStroke.Color = Config.Colors.Border
-    BoxStroke.Thickness = 1
-    BoxStroke.Parent = TextBox
-    
-    TextBox.Focused:Connect(function()
-        TweenService:Create(BoxStroke, Config.Animations.Fast, {
-            Color = Config.Colors.Purple
-        }):Play()
-    end)
-    
-    TextBox.FocusLost:Connect(function(enterPressed)
-        TweenService:Create(BoxStroke, Config.Animations.Fast, {
-            Color = Config.Colors.Border
-        }):Play()
-        
-        if config.Callback and enterPressed then
-            config.Callback(TextBox.Text)
-        end
-    end)
-    
-    table.insert(tab.Components, InputFrame)
-    return {Frame = InputFrame, GetText = function() return TextBox.Text end}
-end
-
 function Library:CreateLabel(tab, text)
     local LabelFrame = Instance.new("Frame")
     LabelFrame.Name = "Label"
@@ -1373,7 +755,6 @@ CloseButton.MouseLeave:Connect(function()
     }):Play()
 end)
 
--- Drag functionality for MainFrame
 local dragging = false
 local dragStart = Vector2.new(0, 0)
 local frameStart = UDim2.new(0, 0, 0, 0)
@@ -1396,45 +777,6 @@ end)
 UserInputService.InputEnded:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
         dragging = false
-    end
-end)
-
--- Close dropdowns when clicking outside
-local function CloseAllDropdowns()
-    for i = #Library.OpenDropdowns, 1, -1 do
-        local dropdown = Library.OpenDropdowns[i]
-        if dropdown and dropdown.Parent then
-            dropdown.Visible = false
-        end
-        table.remove(Library.OpenDropdowns, i)
-    end
-    DropdownOverlay.Visible = false
-end
-
-UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not gameProcessed then
-        local mouse = game:GetService("Mouse")
-        local mousePos = Vector2.new(mouse.X, mouse.Y)
-        
-        if #Library.OpenDropdowns > 0 then
-            local clickedOnDropdown = false
-            for _, dropdown in pairs(Library.OpenDropdowns) do
-                if dropdown and dropdown.Parent and dropdown.Visible then
-                    local dropdownPos = dropdown.AbsolutePosition
-                    local dropdownSize = dropdown.AbsoluteSize
-                    
-                    if mousePos.X >= dropdownPos.X and mousePos.X <= dropdownPos.X + dropdownSize.X and
-                       mousePos.Y >= dropdownPos.Y and mousePos.Y <= dropdownPos.Y + dropdownSize.Y then
-                        clickedOnDropdown = true
-                        break
-                    end
-                end
-            end
-            
-            if not clickedOnDropdown then
-                CloseAllDropdowns()
-            end
-        end
     end
 end)
 
@@ -1536,6 +878,9 @@ local function CreateConfirmDialog()
     ConfirmButton.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
         ConfirmGui:Destroy()
+        if ToggleGui then
+            ToggleGui:Destroy()
+        end
     end)
     
     CancelButton.MouseEnter:Connect(function()
@@ -1565,23 +910,241 @@ TweenService:Create(MainFrame, Config.Animations.Bounce, {
     Position = UDim2.new(0.5, -260, 0.5, -180)
 }):Play()
 
+-- ============================
+-- TOGGLE BUTTON GUI CREATION
+-- ============================
+
+local ToggleGui = Instance.new("ScreenGui")
+ToggleGui.Name = "FryzerToggleGUI"
+ToggleGui.Parent = PlayerGui
+ToggleGui.ResetOnSpawn = false
+ToggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ToggleGui.DisplayOrder = 999
+
+local ShadowFrame = Instance.new("Frame")
+ShadowFrame.Name = "ShadowFrame"
+ShadowFrame.Parent = ToggleGui
+ShadowFrame.BackgroundColor3 = Config.Colors.Shadow
+ShadowFrame.BackgroundTransparency = 0.7
+ShadowFrame.BorderSizePixel = 0
+ShadowFrame.Position = UDim2.new(0, Config.CirclePosition.X + 3, 0, Config.CirclePosition.Y + 3)
+ShadowFrame.Size = UDim2.new(0, Config.CircleSize, 0, Config.CircleSize)
+ShadowFrame.ZIndex = 1
+
+local ShadowCorner = Instance.new("UICorner")
+ShadowCorner.CornerRadius = UDim.new(0.5, 0)
+ShadowCorner.Parent = ShadowFrame
+
+local CircleFrame = Instance.new("Frame")
+CircleFrame.Name = "CircleFrame"
+CircleFrame.Parent = ToggleGui
+CircleFrame.BackgroundColor3 = Config.Colors.Background
+CircleFrame.BorderSizePixel = 2
+CircleFrame.BorderColor3 = Config.Colors.Border
+CircleFrame.Position = UDim2.new(0, Config.CirclePosition.X, 0, Config.CirclePosition.Y)
+CircleFrame.Size = UDim2.new(0, Config.CircleSize, 0, Config.CircleSize)
+CircleFrame.ZIndex = 2
+
+local CircleCorner = Instance.new("UICorner")
+CircleCorner.CornerRadius = UDim.new(0.5, 0)
+CircleCorner.Parent = CircleFrame
+
+local CircleGradient = Instance.new("UIGradient")
+CircleGradient.Color = ColorSequence.new{
+    ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
+    ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
+}
+CircleGradient.Rotation = 45
+CircleGradient.Parent = CircleFrame
+
+local ToggleButtonCircle = Instance.new("TextButton")
+ToggleButtonCircle.Name = "ToggleButton"
+ToggleButtonCircle.Parent = CircleFrame
+ToggleButtonCircle.BackgroundTransparency = 1
+ToggleButtonCircle.Size = UDim2.new(1, 0, 1, 0)
+ToggleButtonCircle.Text = ""
+ToggleButtonCircle.ZIndex = 4
+
+local CircleTextLabel = Instance.new("TextLabel")
+CircleTextLabel.Name = "TextLabel"
+CircleTextLabel.Parent = CircleFrame
+CircleTextLabel.BackgroundTransparency = 1
+CircleTextLabel.Size = UDim2.new(1, 0, 1, 0)
+CircleTextLabel.Font = Enum.Font.GothamBold
+CircleTextLabel.Text = "Fryzer"
+CircleTextLabel.TextColor3 = Config.Colors.Text
+CircleTextLabel.TextSize = 12
+CircleTextLabel.TextScaled = true
+CircleTextLabel.ZIndex = 3
+
+local CircleTextSizeConstraint = Instance.new("UITextSizeConstraint")
+CircleTextSizeConstraint.MaxTextSize = 12
+CircleTextSizeConstraint.MinTextSize = 8
+CircleTextSizeConstraint.Parent = CircleTextLabel
+
+local circleDragging = false
+local circleDragStart = nil
+local circleStartPos = nil
+
+local function CircleInputBegan(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        circleDragging = true
+        circleDragStart = input.Position
+        circleStartPos = CircleFrame.Position
+    end
+end
+
+local function CircleInputChanged(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+        if circleDragging then
+            local delta = input.Position - circleDragStart
+            local newPosition = UDim2.new(circleStartPos.X.Scale, circleStartPos.X.Offset + delta.X, circleStartPos.Y.Scale, circleStartPos.Y.Offset + delta.Y)
+            
+            local screenSize = workspace.CurrentCamera.ViewportSize
+            local x = math.clamp(newPosition.X.Offset, 0, screenSize.X - Config.CircleSize)
+            local y = math.clamp(newPosition.Y.Offset, GuiService:GetGuiInset().Y, screenSize.Y - Config.CircleSize)
+            
+            CircleFrame.Position = UDim2.new(0, x, 0, y)
+            ShadowFrame.Position = UDim2.new(0, x + 3, 0, y + 3)
+        end
+    end
+end
+
+local function CircleInputEnded(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        circleDragging = false
+    end
+end
+
+ToggleButtonCircle.InputBegan:Connect(CircleInputBegan)
+UserInputService.InputChanged:Connect(CircleInputChanged)
+UserInputService.InputEnded:Connect(CircleInputEnded)
+
+ToggleButtonCircle.MouseEnter:Connect(function()
+    TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = UDim2.new(0, Config.CircleSize + 5, 0, Config.CircleSize + 5),
+        BorderColor3 = Color3.fromRGB(88, 101, 242)
+    }):Play()
+    
+    TweenService:Create(ShadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = UDim2.new(0, Config.CircleSize + 5, 0, Config.CircleSize + 5),
+        BackgroundTransparency = 0.5
+    }):Play()
+    
+    TweenService:Create(CircleTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        TextColor3 = Color3.fromRGB(88, 101, 242)
+    }):Play()
+end)
+
+ToggleButtonCircle.MouseLeave:Connect(function()
+    TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = UDim2.new(0, Config.CircleSize, 0, Config.CircleSize),
+        BorderColor3 = Config.Colors.Border
+    }):Play()
+    
+    TweenService:Create(ShadowFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        Size = UDim2.new(0, Config.CircleSize, 0, Config.CircleSize),
+        BackgroundTransparency = 0.7
+    }):Play()
+    
+    TweenService:Create(CircleTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+        TextColor3 = Config.Colors.Text
+    }):Play()
+end)
+
+local isHubVisible = false
+
+local function ToggleModernHub()
+    if ScreenGui then
+        isHubVisible = not isHubVisible
+        ScreenGui.Enabled = isHubVisible
+        
+        if isHubVisible then
+            TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Color3.fromRGB(88, 101, 242),
+                BorderColor3 = Color3.fromRGB(120, 130, 255)
+            }):Play()
+            
+            TweenService:Create(CircleTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                TextColor3 = Color3.fromRGB(255, 255, 255)
+            }):Play()
+            
+            CircleGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
+            }
+        else
+            TweenService:Create(CircleFrame, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                BackgroundColor3 = Config.Colors.Background,
+                BorderColor3 = Config.Colors.Border
+            }):Play()
+            
+            TweenService:Create(CircleTextLabel, TweenInfo.new(0.3, Enum.EasingStyle.Quad), {
+                TextColor3 = Config.Colors.Text
+            }):Play()
+            
+            CircleGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(30, 30, 30)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(15, 15, 15))
+            }
+        end
+        
+        local clickTween = TweenService:Create(CircleFrame, TweenInfo.new(0.1, Enum.EasingStyle.Quad), {
+            Size = UDim2.new(0, Config.CircleSize - 5, 0, Config.CircleSize - 5)
+        })
+        
+        clickTween:Play()
+        clickTween.Completed:Connect(function()
+            TweenService:Create(CircleFrame, TweenInfo.new(0.2, Enum.EasingStyle.Back), {
+                Size = UDim2.new(0, Config.CircleSize, 0, Config.CircleSize)
+            }):Play()
+        end)
+    end
+end
+
+local dragThreshold = 5
+local startDragPos = nil
+
+ToggleButtonCircle.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        startDragPos = input.Position
+    end
+end)
+
+ToggleButtonCircle.MouseButton1Click:Connect(function()
+    if not circleDragging then
+        ToggleModernHub()
+    end
+end)
+
+spawn(function()
+    wait(0.5)
+    if ScreenGui then
+        isHubVisible = ScreenGui.Enabled
+        if isHubVisible then
+            CircleFrame.BackgroundColor3 = Color3.fromRGB(88, 101, 242)
+            CircleFrame.BorderColor3 = Color3.fromRGB(120, 130, 255)
+            CircleTextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+            CircleGradient.Color = ColorSequence.new{
+                ColorSequenceKeypoint.new(0.0, Color3.fromRGB(100, 110, 255)),
+                ColorSequenceKeypoint.new(1.0, Color3.fromRGB(70, 85, 220))
+            }
+        end
+    end
+end)
+
+-- ============================
+-- CREATE TABS AND CONTENT
+-- ============================
+
 local InfoTab = Library:CreateTab("INFO")
 local HomeTab = Library:CreateTab("HOME")
-local SpecialTab = Library:CreateTab("SPECIAL")
-local MainTab = Library:CreateTab("MAIN")
-local SpawnerTab = Library:CreateTab("SPAWNER")
-local DestroyTab = Library:CreateTab("DESTROY")
 local SettingsTab = Library:CreateTab("SETTINGS")
-local ShopTab = Library:CreateTab("SHOP")
-local ItemsTab = Library:CreateTab("ITEMS")
-local TradesTab = Library:CreateTab("TRADES")
 
--- INFO Tab with Player Information
 Library:CreateSection(InfoTab, "Player Information Dashboard")
 Library:CreateLabel(InfoTab, "FRYZER HUB - MODERN EDITION")
 Library:CreateSpace(InfoTab, 4)
 
-local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
 local AccountAge = Player.AccountAge
@@ -1597,7 +1160,6 @@ Library:CreateButton(InfoTab, {
     Callback = function() 
         print("Player Name:", PlayerName)
         print("User ID:", Player.UserId)
-        print("Account Age:", AccountAge, "days")
     end
 })
 
@@ -1608,21 +1170,9 @@ Library:CreateButton(InfoTab, {
 })
 
 Library:CreateButton(InfoTab, {
-    Title = "User ID: " .. Player.UserId,
-    Desc = "Your Roblox User ID",
-    Callback = function() print("User ID:", Player.UserId) end
-})
-
-Library:CreateButton(InfoTab, {
     Title = "Current Game: " .. GameName,
     Desc = "Game you are currently playing",
     Callback = function() print("Game:", GameName) end
-})
-
-Library:CreateButton(InfoTab, {
-    Title = "Server: " .. #Players:GetPlayers() .. "/" .. Players.MaxPlayers .. " players",
-    Desc = "Players in current server",
-    Callback = function() print("Players:", #Players:GetPlayers(), "/", Players.MaxPlayers) end
 })
 
 Library:CreateDivider(InfoTab)
@@ -1635,8 +1185,6 @@ Library:CreateButton(InfoTab, {
         print("Discord link copied to clipboard!")
     end
 })
-
-Library:CreateSpace(InfoTab, 4)
 
 Library:CreateSection(HomeTab, "Welcome Section")
 Library:CreateLabel(HomeTab, "WELCOME TO FRYZER HUB")
@@ -1652,117 +1200,6 @@ Library:CreateToggle(HomeTab, {
     Default = false,
     Callback = function(state) print("Feature enabled:", state) end
 })
-Library:CreateDivider(HomeTab)
-Library:CreateSlider(HomeTab, {
-    Title = "Speed Multiplier",
-    Step = 1,
-    Value = { Min = 1, Max = 100, Default = 50 },
-    Callback = function(value) print("Speed set to:", value) end
-})
-Library:CreateDropdown(HomeTab, {
-    Title = "Movement Mode",
-    Values = {"Walk", "Run", "Fly", "Teleport"},
-    Value = "Walk",
-    Callback = function(option) print("Mode selected:", option) end
-})
-
-Library:CreateSection(SpecialTab, "Special Functions")
-Library:CreateLabel(SpecialTab, "SPECIAL OPERATIONS")
-Library:CreateSpace(SpecialTab, 4)
-Library:CreateButton(SpecialTab, {
-    Title = "Special Function 1",
-    Desc = "Execute special operation",
-    Callback = function() print("Special function 1 executed!") end
-})
-Library:CreateToggle(SpecialTab, {
-    Title = "Special Toggle",
-    Desc = "Enable special mode",
-    Default = true,
-    Callback = function(state) print("Special toggle:", state) end
-})
-
-Library:CreateSection(MainTab, "Main Features")
-Library:CreateLabel(MainTab, "CORE FUNCTIONALITY")
-Library:CreateSpace(MainTab, 4)
-Library:CreateButton(MainTab, {
-    Title = "Main Feature 1",
-    Desc = "Primary function",
-    Callback = function() print("Main feature 1 activated!") end
-})
-Library:CreateToggle(MainTab, {
-    Title = "Auto Execute",
-    Desc = "Automatically execute main functions",
-    Default = false,
-    Callback = function(state) print("Auto execute:", state) end
-})
-Library:CreateSlider(MainTab, {
-    Title = "Execution Delay",
-    Step = 1,
-    Value = { Min = 0, Max = 10, Default = 2 },
-    Callback = function(value) print("Delay set to:", value, "seconds") end
-})
-
-Library:CreateSection(SpawnerTab, "Spawner Scripts")
-Library:CreateLabel(SpawnerTab, "SPAWNER OPERATIONS")
-Library:CreateSpace(SpawnerTab, 4)
-Library:CreateButton(SpawnerTab, {
-    Title = "Dark Spawner",
-    Desc = "Mobile-optimized spawner",
-    Callback = function() print("Dark Spawner executed!") end
-})
-Library:CreateToggle(SpawnerTab, {
-    Title = "ReModified v3.8 Dark Spawner",
-    Desc = "Enhanced spawner with modifications",
-    Default = true,
-    Callback = function(state) print("ReModified:", state) end
-})
-Library:CreateDivider(SpawnerTab)
-Library:CreateLabel(SpawnerTab, "GIFT PET OPTIONS")
-Library:CreateToggle(SpawnerTab, {
-    Title = "Allow Gift Spawned Pets",
-    Desc = "Enable gifting for spawned pets",
-    Default = false,
-    Callback = function(state) print("Allow Gift Pets:", state) end
-})
-Library:CreateDropdown(SpawnerTab, {
-    Title = "Spawn Location",
-    Values = {"Current Position", "Spawn Point", "Custom Location"},
-    Value = "Current Position",
-    Callback = function(option) print("Spawn location:", option) end
-})
-
-Library:CreateSection(DestroyTab, "Destruction Tools")
-Library:CreateLabel(DestroyTab, "CAUTION: DESTRUCTIVE OPERATIONS")
-Library:CreateSpace(DestroyTab, 4)
-Library:CreateButton(DestroyTab, {
-    Title = "Destroy Function 1",
-    Desc = "Execute first destroy operation",
-    Callback = function() print("Destroy function 1 executed!") end
-})
-Library:CreateButton(DestroyTab, {
-    Title = "Destroy Function 2",
-    Desc = "Execute second destroy operation",
-    Callback = function() print("Destroy function 2 executed!") end
-})
-Library:CreateToggle(DestroyTab, {
-    Title = "Auto Destroy",
-    Desc = "Automatically destroy targets",
-    Default = false,
-    Callback = function(state) print("Auto Destroy:", state) end
-})
-Library:CreateDivider(DestroyTab)
-Library:CreateSlider(DestroyTab, {
-    Title = "Destroy Radius",
-    Step = 5,
-    Value = { Min = 10, Max = 100, Default = 25 },
-    Callback = function(value) print("Destroy radius:", value) end
-})
-Library:CreateDropdown(DestroyTab, {
-    Title = "Target Type",
-    Values = {"All", "NPCs", "Objects", "Vehicles"},
-    Value = "All",
-    Callback = function(option) print("Target type:", option) end
-})
 
 Library:CreateSection(SettingsTab, "Window Settings")
 Library:CreateSpace(SettingsTab, 4)
@@ -1775,168 +1212,11 @@ Library:CreateToggle(SettingsTab, {
         print("Transparency:", state)
     end
 })
-Library:CreateToggle(SettingsTab, {
-    Title = "Sound Effects",
-    Desc = "Enable UI sound effects",
-    Default = true,
-    Callback = function(state) print("Sound Effects:", state) end
-})
-Library:CreateDivider(SettingsTab)
-Library:CreateSection(SettingsTab, "Keybind Settings")
-Library:CreateSpace(SettingsTab, 4)
-Library:CreateInput(SettingsTab, {
-    Title = "Toggle UI Keybind",
-    Desc = "Type ONE letter or key (e.g., Q or RightControl)",
-    Value = "RightControl",
-    Placeholder = "Enter key...",
-    Callback = function(input)
-        input = input:gsub("^%s*(.-)%s*$", "%1")
-        
-        local keyCode
-        
-        if #input == 1 then
-            local upperInput = input:upper()
-            keyCode = Enum.KeyCode[upperInput]
-        else
-            local success, result = pcall(function()
-                return Enum.KeyCode[input]
-            end)
-            if success then
-                keyCode = result
-            end
-        end
-        
-        if keyCode then
-            Library:SetToggleKey(keyCode)
-            print("Keybind set to:", input)
-        else
-            print("Invalid key:", input)
-        end
-    end
-})
-Library:CreateDivider(SettingsTab)
-Library:CreateSection(SettingsTab, "Interface Settings")
-Library:CreateSpace(SettingsTab, 4)
-Library:CreateToggle(SettingsTab, {
-    Title = "Auto Save Settings",
-    Desc = "Automatically save configuration",
-    Default = false,
-    Callback = function(state) print("Auto Save:", state) end
-})
-Library:CreateSlider(SettingsTab, {
-    Title = "UI Scale",
-    Step = 5,
-    Value = { Min = 80, Max = 120, Default = 100 },
-    Callback = function(value) print("UI Scale:", value .. "%") end
-})
-Library:CreateDivider(SettingsTab)
-Library:CreateButton(SettingsTab, {
-    Title = "Reset All Settings",
-    Desc = "Restore default configuration",
-    Callback = function() print("Settings reset to defaults!") end
-})
-Library:CreateSpace(SettingsTab, 4)
-Library:CreateLabel(SettingsTab, "VERSION 2.0.0")
-
-Library:CreateSection(ShopTab, "Shop Items")
-Library:CreateLabel(ShopTab, "SHOP CATALOG")
-Library:CreateSpace(ShopTab, 4)
-Library:CreateButton(ShopTab, {
-    Title = "Item 1",
-    Desc = "Price: 100 Coins",
-    Callback = function() print("Item 1 purchased!") end
-})
-Library:CreateButton(ShopTab, {
-    Title = "Item 2",
-    Desc = "Price: 250 Coins",
-    Callback = function() print("Item 2 purchased!") end
-})
-Library:CreateMultiDropdown(ShopTab, {
-    Title = "Select Multiple Items",
-    Values = {"Sword", "Shield", "Armor", "Potion", "Ring", "Boots", "Helmet", "Gloves", "Chest Plate", "Greatsword"},
-    Callback = function(selected)
-        print("Selected:", table.concat(selected, ", "))
-    end
-})
-Library:CreateDivider(ShopTab)
-Library:CreateSlider(ShopTab, {
-    Title = "Discount Amount",
-    Step = 5,
-    Value = { Min = 0, Max = 50, Default = 0 },
-    Callback = function(value) print("Discount:", value .. "%") end
-})
-
-Library:CreateSection(ItemsTab, "Inventory Items")
-Library:CreateLabel(ItemsTab, "YOUR INVENTORY")
-Library:CreateSpace(ItemsTab, 4)
-Library:CreateButton(ItemsTab, {
-    Title = "Item A",
-    Desc = "Quantity: 5",
-    Callback = function() print("Item A selected") end
-})
-Library:CreateButton(ItemsTab, {
-    Title = "Item B",
-    Desc = "Quantity: 12",
-    Callback = function() print("Item B selected") end
-})
-Library:CreateMultiDropdown(ItemsTab, {
-    Title = "Filter Items",
-    Values = {"Weapons", "Armor", "Consumables", "Crafting", "Quest", "Special", "Rare", "Legendary", "Equipment", "Accessories"},
-    Callback = function(selected)
-        print("Filtering by:", table.concat(selected, ", "))
-    end
-})
-Library:CreateToggle(ItemsTab, {
-    Title = "Show Rare Items",
-    Desc = "Display rare items only",
-    Default = false,
-    Callback = function(state) print("Rare items:", state) end
-})
-
-Library:CreateSection(TradesTab, "Trade System")
-Library:CreateLabel(TradesTab, "ACTIVE TRADES")
-Library:CreateSpace(TradesTab, 4)
-Library:CreateButton(TradesTab, {
-    Title = "Trade with Player1",
-    Desc = "Offering: Sword, Wanting: Shield",
-    Callback = function() print("Trade initiated") end
-})
-Library:CreateButton(TradesTab, {
-    Title = "Trade with Player2",
-    Desc = "Offering: Gold x10, Wanting: Potion",
-    Callback = function() print("Trade initiated") end
-})
-Library:CreateDivider(TradesTab)
-Library:CreateSection(TradesTab, "Create New Trade")
-Library:CreateInput(TradesTab, {
-    Title = "Player Username",
-    Desc = "Enter username to trade with",
-    Placeholder = "Enter player name...",
-    Callback = function(text) print("Trading with:", text) end
-})
-Library:CreateMultiDropdown(TradesTab, {
-    Title = "Items to Offer",
-    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions", "Ring", "Boots", "Helmet", "Gloves", "Ancient Relic", "Crystal"},
-    Callback = function(selected)
-        print("Offering:", table.concat(selected, ", "))
-    end
-})
-Library:CreateMultiDropdown(TradesTab, {
-    Title = "Items to Request",
-    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions", "Ring", "Boots", "Helmet", "Gloves", "Ancient Relic", "Crystal"},
-    Callback = function(selected)
-        print("Requesting:", table.concat(selected, ", "))
-    end
-})
-Library:CreateButton(TradesTab, {
-    Title = "Send Trade Request",
-    Desc = "Send your trade proposal",
-    Callback = function() print("Trade request sent!") end
-})
 
 Library:SetToggleKey(Enum.KeyCode.RightControl)
 
-print("FRYZER HUB - Modern Edition loaded successfully!")
-print("Press RightControl to toggle UI")
+print("✅ FRYZER HUB - Combined Script loaded successfully!")
+print("🎯 Press RightControl to toggle UI")
+print("🔘 Use the circle button to toggle visibility")
 
 return Library
