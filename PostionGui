@@ -1,6 +1,4 @@
-Library:SetToggleKey(Enum.KeyCode.RightControl)
-
-return Librarylocal Players = game:GetService("Players")
+local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -1935,6 +1933,8 @@ Library:CreateButton(TradesTab, {
     Desc = "Send your trade proposal",
     Callback = function() print("Trade request sent!") end
 })
+
+Library:SetToggleKey(Enum.KeyCode.RightControl)
 
 print("FRYZER HUB - Modern Edition loaded successfully!")
 print("Press RightControl to toggle UI")
