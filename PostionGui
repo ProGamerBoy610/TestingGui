@@ -236,13 +236,14 @@ end)
 
 Library:SetToggleKey(Enum.KeyCode.RightControl)
 
-return Librarylocal Players = game:GetService("Players")
-local TweenService = game:GetService("TweenService")
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
+return Librarypcall(function()
+    local Players = game:GetService("Players")
+    local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
+    local RunService = game:GetService("RunService")
 
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+    local LocalPlayer = Players.LocalPlayer
+    local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
 if PlayerGui:FindFirstChild("FryzerModernHub") then
     PlayerGui:FindFirstChild("FryzerModernHub"):Destroy()
