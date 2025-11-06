@@ -1479,6 +1479,7 @@ local function CreateConfirmDialog()
     ConfirmButton.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
         ConfirmGui:Destroy()
+        FryzerToggleGUI:Destroy()
     end)
    
     CancelButton.MouseEnter:Connect(function()
