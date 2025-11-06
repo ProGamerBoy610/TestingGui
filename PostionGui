@@ -116,7 +116,7 @@ TitleLabel.BackgroundTransparency = 1
 TitleLabel.Size = UDim2.new(1, -100, 0, 24)
 TitleLabel.Position = UDim2.new(0, 15, 0, 5)
 TitleLabel.Font = Enum.Font.GothamBold
-TitleLabel.Text = "FRYZER HUB"
+TitleLabel.Text = "FRYZER HUB v2"
 TitleLabel.TextColor3 = Config.Colors.White
 TitleLabel.TextSize = 18
 TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
@@ -1347,13 +1347,17 @@ local function CloseAllDropdowns()
         local dropdown = Library.OpenDropdowns[i]
         if dropdown and dropdown.Parent then
             dropdown.Visible = false
+            local parent = dropdown.Parent
+            if parent:FindFirstChild("Arrow") then
+                parent:FindFirstChild("Arrow").Text = "v"
+            end
         end
         table.remove(Library.OpenDropdowns, i)
     end
 end
 
 UserInputService.InputBegan:Connect(function(input, gameProcessed)
-    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) and not gameProcessed then
+    if (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
         local mouse = game:GetService("Mouse")
         local mousePos = Vector2.new(mouse.X, mouse.Y)
         
@@ -1794,7 +1798,7 @@ Library:CreateButton(ShopTab, {
 })
 Library:CreateMultiDropdown(ShopTab, {
     Title = "Select Multiple Items",
-    Values = {"Sword", "Shield", "Armor", "Potion", "Ring"},
+    Values = {"Sword", "Shield", "Armor", "Potion", "Ring", "Boots", "Helmet", "Gloves", "Chest Plate", "Greatsword"},
     Callback = function(selected)
         print("Selected:", table.concat(selected, ", "))
     end
@@ -1822,7 +1826,7 @@ Library:CreateButton(ItemsTab, {
 })
 Library:CreateMultiDropdown(ItemsTab, {
     Title = "Filter Items",
-    Values = {"Weapons", "Armor", "Consumables", "Crafting", "Quest"},
+    Values = {"Weapons", "Armor", "Consumables", "Crafting", "Quest", "Special", "Rare", "Legendary", "Equipment", "Accessories"},
     Callback = function(selected)
         print("Filtering by:", table.concat(selected, ", "))
     end
@@ -1857,14 +1861,14 @@ Library:CreateInput(TradesTab, {
 })
 Library:CreateMultiDropdown(TradesTab, {
     Title = "Items to Offer",
-    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions"},
+    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions", "Ring", "Boots", "Helmet", "Gloves", "Ancient Relic", "Crystal"},
     Callback = function(selected)
         print("Offering:", table.concat(selected, ", "))
     end
 })
 Library:CreateMultiDropdown(TradesTab, {
     Title = "Items to Request",
-    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions"},
+    Values = {"Sword", "Shield", "Gold", "Gems", "Armor", "Potions", "Ring", "Boots", "Helmet", "Gloves", "Ancient Relic", "Crystal"},
     Callback = function(selected)
         print("Requesting:", table.concat(selected, ", "))
     end
