@@ -1,4 +1,4 @@
--- 99 Night Fryzer Hub New 99 nights
+-- wind ui library V2
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
 
 WindUI:SetNotificationLower(true)
@@ -19,8 +19,8 @@ WindUI:AddTheme({
 -- Create Main Window
 local Window = WindUI:CreateWindow({
     Title = "Fryzer Hub",
-    Icon = "door-open",
-    Author = "Version 34.5",
+    Icon = "Join Discord",
+    Author = "",
     Folder = "MySuperHub",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 350),
@@ -43,17 +43,24 @@ local Window = WindUI:CreateWindow({
 
 -- Edit Open Button
 Window:EditOpenButton({
-    Title = "Open Hub",
-    Icon = "user",
-    CornerRadius = UDim.new(0,12),
+    Title = "Open",
+    Icon = "monitor",
+    CornerRadius = UDim.new(0,16),
     StrokeThickness = 2,
     Color = ColorSequence.new(
-        Color3.fromHex("#3b82f6"), 
-        Color3.fromHex("#6366f1")
+        Color3.fromHex("FF0F7B"), 
+        Color3.fromHex("F89B29")
     ),
     OnlyMobile = false,
     Enabled = true,
     Draggable = true,
+})
+
+--Add Version Tag
+Window:Tag({
+    Title = "v35.0",
+    Color = Color3.fromHex("#30ff6a"),
+    Radius = 8,
 })
 
 -- Services
