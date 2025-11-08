@@ -4134,370 +4134,7 @@ VisualTab:Slider({
 VisualTab:Space()
 
 
--- ==================== TAB: BRING ====================
--- Item Teleport Script with Toggle & Dropdown Integration - FIXED VERSION
 
-print("🔄 Loading Item Teleport System...")
-
-local BringallTab = Window:Tab({
-    Title = "Bring",
-    Icon = "Box",
-    Locked = false,
-})
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local player = Players.LocalPlayer
-
--- Remote Events - Load safely
-local RequestStartDraggingItem
-local StopDraggingItem
-
-task.spawn(function()
-    pcall(function()
-        RequestStartDraggingItem = ReplicatedStorage:FindFirstChild("RemoteEvents"):FindFirstChild("RequestStartDraggingItem")
-        StopDraggingItem = ReplicatedStorage:FindFirstChild("RemoteEvents"):FindFirstChild("StopDraggingItem")
-        if RequestStartDraggingItem and StopDraggingItem then
-            print("[BRING] ✅ Remotes loaded")
-        end
-    end)
-end)
-
--- Item Categories with all items
-local itemCategories = {}
-
-itemCategories[1] = {
-    name = "⛽ Fuel",
-    icon = "droplet",
-    items = {
-        "Crossbow Cultist",
-        "Cultist",
-        "Sapling",
-        "Feather",
-        "Alien",
-        "Log",
-        "Chair",
-        "Coal",
-        "Fuel Canister",
-        "Oil Barrel",
-        "Biofuel"
-    }
-}
-
-itemCategories[2] = {
-    name = "🗡️ Guns & Armor",
-    icon = "sword",
-    items = {
-        "Infernal Sword",
-        "Morningstar",
-        "Crossbow",
-        "Infernal Crossbow",
-        "Laser Sword",
-        "Raygun",
-        "Ice Axe",
-        "Ice Sword",
-        "Chainsaw",
-        "Strong Axe",
-        "Axe Trim Kit",
-        "Spear",
-        "Good Axe",
-        "Revolver",
-        "Rifle",
-        "Tactical Shotgun",
-        "Revolver Ammo",
-        "Rifle Ammo",
-        "Alien Armour",
-        "Frog Boots",
-        "Leather Body",
-        "Iron Body",
-        "Thorn Body",
-        "Riot Shield",
-        "Armour Trim Kit",
-        "Obsidiron Boots"
-    }
-}
-
-itemCategories[3] = {
-    name = "⚙️ Gears",
-    icon = "settings",
-    items = {
-        "Bolt",
-        "Tyre",
-        "Sheet Metal",
-        "Old Radio",
-        "Broken Fan",
-        "Broken Microwave",
-        "Washing Machine",
-        "Old Car Engine",
-        "UFO Scrap",
-        "UFO Component",
-        "UFO Junk",
-        "Cultist Gem",
-        "Gem of the Forest"
-    }
-}
-
-itemCategories[4] = {
-    name = "👾 Characters",
-    icon = "user",
-    items = {
-        "FrogKing",
-        "Frog",
-        "Scorpion",
-        "Hellephant",
-        "Ram",
-        "Naill",
-        "FrogBlue",
-        "FrogPurple",
-        "Wolf",
-        "Bear",
-        "Bunny",
-        "Mammoth",
-        "Cultist",
-        "Crossbow Cultist",
-        "Juggernaut Cultist",
-        "Alpha Wolf",
-        "Alien",
-        "Alien Elite",
-        "Cultist King",
-        "Meteor Crab",
-        "Polar Bear",
-        "Arctic Fox"
-    }
-}
-
-itemCategories[5] = {
-    name = "🍎 Food & Healing",
-    icon = "heart",
-    items = {
-        "Carrot",
-        "Mackerel",
-        "Salmon",
-        "Swordfish",
-        "Berry",
-        "Ribs",
-        "Stew",
-        "Steak Dinner",
-        "Morsel",
-        "Steak",
-        "Corn",
-        "Cooked Morsel",
-        "Cooked Steak",
-        "Bandage",
-        "MedKit",
-        "Chilli",
-        "Apple",
-        "Cake"
-    }
-}
-
-itemCategories[6] = {
-    name = "📦 Others",
-    icon = "package",
-    items = {
-        "Frog Key",
-        "Feather",
-        "Wildfire",
-        "Sacrifice Totem",
-        "Old Rod",
-        "Flower",
-        "Coin Stack",
-        "Infernal Sack",
-        "Giant Sack",
-        "Good Sack",
-        "Seed Box",
-        "Old Flashlight",
-        "Strong Flashlight",
-        "Bunny Foot",
-        "Wolf Pelt",
-        "Bear Pelt",
-        "Mammonth Tusk",
-        "Alpha Wolf Pelt",
-        "Bear Corpse",
-        "Meteor Shard",
-        "Gold Shard",
-        "Raw Obsidiron Ore",
-        "Gem of the Forest Fragment",
-        "Diamond",
-        "Defense Blueprint"
-    }
-}
-
--- State tracking
-local categoryToggles = {}
-local categoryDropdowns = {}
-local activeCategories = {}
-
--- Location settings
-local selectedLocation = "Player"
-local locations = {
-    ["Player"] = nil,
-    ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
-    ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
-}
-
--- Function to bring ALL instances of an item to player (without marking)
-local function BringAllItems(itemName)
-    local itemsFolder = workspace:FindFirstChild("Items")
-    if not itemsFolder then
-        warn("❌ Items folder not found in workspace!")
-        return
-    end
-    
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        warn("❌ Character not found!")
-        return
-    end
-    
-    local hrp = character.HumanoidRootPart
-    local itemsCollected = 0
-    
-    -- Determine target position based on selected location
-    local basePosition
-    if selectedLocation == "Player" then
-        basePosition = hrp.CFrame
-    else
-        local locationVector = locations[selectedLocation]
-        if locationVector then
-            basePosition = CFrame.new(locationVector)
-        else
-            basePosition = hrp.CFrame -- Fallback to player
-        end
-    end
-    
-    print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
-    
-    -- Find and collect ALL items without marking (so they can be collected again)
-    for _, item in pairs(itemsFolder:GetChildren()) do
-        if item.Name == itemName then
-            local success, err = pcall(function()
-                -- Use remotes if available, otherwise use simple teleport
-                if RequestStartDraggingItem and StopDraggingItem then
-                    RequestStartDraggingItem:FireServer(item)
-                    task.wait(0.05)
-                else
-                    -- Fallback to simple teleport if remotes not available
-                    if item:IsA("Model") then
-                        local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-                        if primaryPart then
-                            primaryPart.CFrame = basePosition
-                        end
-                    elseif item:IsA("BasePart") then
-                        item.CFrame = basePosition
-                    end
-                    task.wait(0.1)
-                    return
-                end
-                
-                -- Teleport item to the exact same location (no offset)
-                local targetPos = basePosition
-                
-                if item:IsA("Model") then
-                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        primaryPart.CFrame = targetPos
-                    end
-                elseif item:IsA("BasePart") then
-                    item.CFrame = targetPos
-                end
-                
-                task.wait(0.05)
-                if StopDraggingItem then
-                    StopDraggingItem:FireServer(item)
-                end
-            end)
-            
-            if success then
-                itemsCollected = itemsCollected + 1
-                print("✅ Brought " .. itemName .. " #" .. itemsCollected)
-            else
-                print("⚠️ Warning bringing item: " .. tostring(err))
-            end
-            
-            task.wait(0.1)
-        end
-    end
-    
-    if itemsCollected > 0 then
-        print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName .. " to " .. selectedLocation)
-    else
-        print("❌ No '" .. itemName .. "' items found in the world!")
-    end
-end
-
--- Function to collect all selected items from a category once
-local function CollectCategoryItems(categoryName)
-    local selectedItems = categoryDropdowns[categoryName] or {}
-    
-    if #selectedItems == 0 then
-        print("⚠️ No items selected in '" .. categoryName .. "'")
-    else
-        print("🚀 Collecting items from category: " .. categoryName)
-        for _, itemName in ipairs(selectedItems) do
-            BringAllItems(itemName)
-            task.wait(0.3)
-        end
-        print("✅ Finished collecting from " .. categoryName)
-    end
-end
-
--- Location Dropdown at the top
-BringallTab:Divider()
-
-local LocationDropdown = BringallTab:Dropdown({
-    Title = "📍 Item Destination",
-    Values = { "Player", "Workbench", "Campfire" },
-    Value = "Player",
-    Callback = function(option)
-        selectedLocation = option
-        print("📍 Location changed to: " .. option)
-    end
-})
-
-BringallTab:Divider()
-
--- Create sections and controls for each category
-for categoryIndex, category in ipairs(itemCategories) do
-    local Section = BringallTab:Section({
-        Title = category.name,
-        Icon = category.icon,
-        Opened = true,
-    })
-    
-    -- Button to collect all items from this category
-    local Button = BringallTab:Button({
-        Title = "Collect " .. category.name,
-        Desc = "Click to collect all selected items from " .. category.name,
-        Locked = false,
-        Callback = function()
-            print("🔘 Collect button clicked for " .. category.name)
-            CollectCategoryItems(category.name)
-        end
-    })
-    
-    categoryToggles[category.name] = Button
-    
-    -- Multi-select dropdown for item selection
-    local Dropdown = BringallTab:Dropdown({
-        Title = category.name .. " Items",
-        Values = category.items,
-        Value = {},
-        Multi = true,
-        AllowNone = true,
-        Callback = function(options)
-            categoryDropdowns[category.name] = options
-            print(category.name .. " Dropdown: " .. game:GetService("HttpService"):JSONEncode(options))
-        end
-    })
-    
-    BringallTab:Divider()
-end
-
-print("✅ Item Teleporter System loaded!")
-print("📦 Select items from dropdowns and click the collect button!")
-print("🔄 Click button again to collect items again!")
 
 -- ==================== TAB 5: TELEPORT ====================
 local TpTab = Window:Tab({
@@ -5048,8 +4685,348 @@ Player.CharacterRemoving:Connect(cleanupSkyPlatform)
 
 TpTab:Space()
 
+-- ==================== TAB: BRING ====================
+-- Item Teleport Script with Toggle & Dropdown Integration
 
+print("🔄 Loading Item Teleport System...")
 
+local BringallTab = Window:Tab({
+    Title = "Bring",
+    Icon = "Box",
+    Locked = false,
+})
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- Remote Events - Load safely
+local RequestStartDraggingItem
+local StopDraggingItem
+
+task.spawn(function()
+    pcall(function()
+        RequestStartDraggingItem = ReplicatedStorage:FindFirstChild("RemoteEvents"):FindFirstChild("RequestStartDraggingItem")
+        StopDraggingItem = ReplicatedStorage:FindFirstChild("RemoteEvents"):FindFirstChild("StopDraggingItem")
+        if RequestStartDraggingItem and StopDraggingItem then
+            print("[BRING] ✅ Remotes loaded")
+        end
+    end)
+end)
+
+-- State tracking
+local selectedLocation = "Player"
+local selectedFuelItems = {}
+local selectedGunsItems = {}
+local selectedGearsItems = {}
+local selectedCharactersItems = {}
+local selectedFoodItems = {}
+local selectedOthersItems = {}
+
+-- Location settings
+local locations = {
+    ["Player"] = nil,
+    ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
+    ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
+}
+
+-- Function to bring ALL instances of an item
+local function BringAllItems(itemName)
+    local itemsFolder = workspace:FindFirstChild("Items")
+    if not itemsFolder then
+        warn("❌ Items folder not found in workspace!")
+        return
+    end
+    
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        warn("❌ Character not found!")
+        return
+    end
+    
+    local hrp = character.HumanoidRootPart
+    local itemsCollected = 0
+    
+    -- Determine target position based on selected location
+    local basePosition
+    if selectedLocation == "Player" then
+        basePosition = hrp.CFrame
+    else
+        local locationVector = locations[selectedLocation]
+        if locationVector then
+            basePosition = CFrame.new(locationVector)
+        else
+            basePosition = hrp.CFrame
+        end
+    end
+    
+    print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
+    
+    -- Find and collect ALL items
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == itemName then
+            local success, err = pcall(function()
+                -- Use remotes if available, otherwise use simple teleport
+                if RequestStartDraggingItem and StopDraggingItem then
+                    RequestStartDraggingItem:FireServer(item)
+                    task.wait(0.05)
+                end
+                
+                -- Teleport item to location
+                local targetPos = basePosition
+                
+                if item:IsA("Model") then
+                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                    if primaryPart then
+                        primaryPart.CFrame = targetPos
+                    end
+                elseif item:IsA("BasePart") then
+                    item.CFrame = targetPos
+                end
+                
+                task.wait(0.05)
+                if StopDraggingItem then
+                    StopDraggingItem:FireServer(item)
+                end
+            end)
+            
+            if success then
+                itemsCollected = itemsCollected + 1
+                print("✅ Brought " .. itemName .. " #" .. itemsCollected)
+            else
+                print("⚠️ Warning: " .. tostring(err))
+            end
+            
+            task.wait(0.1)
+        end
+    end
+    
+    if itemsCollected > 0 then
+        print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName .. " to " .. selectedLocation)
+    else
+        print("❌ No '" .. itemName .. "' items found in the world!")
+    end
+end
+
+-- Function to collect all selected items from a category
+local function CollectCategoryItems(selectedItems)
+    if #selectedItems == 0 then
+        print("⚠️ No items selected")
+        return
+    end
+    
+    print("🚀 Collecting items...")
+    for _, itemName in ipairs(selectedItems) do
+        BringAllItems(itemName)
+        task.wait(0.3)
+    end
+    print("✅ Finished collecting")
+end
+
+-- Location Dropdown
+BringallTab:Divider()
+
+local LocationDropdown = BringallTab:Dropdown({
+    Title = "📍 Item Destination",
+    Values = { "Player", "Workbench", "Campfire" },
+    Value = "Player",
+    Callback = function(option)
+        selectedLocation = option
+        print("📍 Location changed to: " .. option)
+    end
+})
+
+BringallTab:Divider()
+
+-- ⛽ FUEL SECTION
+local Section1 = BringallTab:Section({
+    Title = "⛽ Fuel",
+    Icon = "droplet",
+    Opened = true,
+})
+
+local FuelDropdown = Section1:Dropdown({
+    Title = "Fuel Items",
+    Values = { "Crossbow Cultist", "Cultist", "Sapling", "Feather", "Alien", "Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel", "Biofuel" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedFuelItems = options
+        print("⛽ Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local FuelButton = Section1:Button({
+    Title = "Collect ⛽ Fuel",
+    Desc = "Click to collect all selected fuel items",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Fuel")
+        CollectCategoryItems(selectedFuelItems)
+    end
+})
+
+BringallTab:Divider()
+
+-- 🗡️ GUNS & ARMOR SECTION
+local Section2 = BringallTab:Section({
+    Title = "🗡️ Guns & Armor",
+    Icon = "sword",
+    Opened = true,
+})
+
+local GunsDropdown = Section2:Dropdown({
+    Title = "Guns & Armor Items",
+    Values = { "Infernal Sword", "Morningstar", "Crossbow", "Infernal Crossbow", "Laser Sword", "Raygun", "Ice Axe", "Ice Sword", "Chainsaw", "Strong Axe", "Axe Trim Kit", "Spear", "Good Axe", "Revolver", "Rifle", "Tactical Shotgun", "Revolver Ammo", "Rifle Ammo", "Alien Armour", "Frog Boots", "Leather Body", "Iron Body", "Thorn Body", "Riot Shield", "Armour Trim Kit", "Obsidiron Boots" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedGunsItems = options
+        print("🗡️ Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local GunsButton = Section2:Button({
+    Title = "Collect 🗡️ Guns & Armor",
+    Desc = "Click to collect all selected weapons and armor",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Guns & Armor")
+        CollectCategoryItems(selectedGunsItems)
+    end
+})
+
+BringallTab:Divider()
+
+-- ⚙️ GEARS SECTION
+local Section3 = BringallTab:Section({
+    Title = "⚙️ Gears",
+    Icon = "settings",
+    Opened = true,
+})
+
+local GearsDropdown = Section3:Dropdown({
+    Title = "Gears Items",
+    Values = { "Bolt", "Tyre", "Sheet Metal", "Old Radio", "Broken Fan", "Broken Microwave", "Washing Machine", "Old Car Engine", "UFO Scrap", "UFO Component", "UFO Junk", "Cultist Gem", "Gem of the Forest" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedGearsItems = options
+        print("⚙️ Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local GearsButton = Section3:Button({
+    Title = "Collect ⚙️ Gears",
+    Desc = "Click to collect all selected gears",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Gears")
+        CollectCategoryItems(selectedGearsItems)
+    end
+})
+
+BringallTab:Divider()
+
+-- 👾 CHARACTERS SECTION
+local Section4 = BringallTab:Section({
+    Title = "👾 Characters",
+    Icon = "user",
+    Opened = true,
+})
+
+local CharactersDropdown = Section4:Dropdown({
+    Title = "Characters Items",
+    Values = { "FrogKing", "Frog", "Scorpion", "Hellephant", "Ram", "Naill", "FrogBlue", "FrogPurple", "Wolf", "Bear", "Bunny", "Mammoth", "Cultist", "Crossbow Cultist", "Juggernaut Cultist", "Alpha Wolf", "Alien", "Alien Elite", "Cultist King", "Meteor Crab", "Polar Bear", "Arctic Fox" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedCharactersItems = options
+        print("👾 Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local CharactersButton = Section4:Button({
+    Title = "Collect 👾 Characters",
+    Desc = "Click to collect all selected characters",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Characters")
+        CollectCategoryItems(selectedCharactersItems)
+    end
+})
+
+BringallTab:Divider()
+
+-- 🍎 FOOD & HEALING SECTION
+local Section5 = BringallTab:Section({
+    Title = "🍎 Food & Healing",
+    Icon = "heart",
+    Opened = true,
+})
+
+local FoodDropdown = Section5:Dropdown({
+    Title = "Food & Healing Items",
+    Values = { "Carrot", "Mackerel", "Salmon", "Swordfish", "Berry", "Ribs", "Stew", "Steak Dinner", "Morsel", "Steak", "Corn", "Cooked Morsel", "Cooked Steak", "Bandage", "MedKit", "Chilli", "Apple", "Cake" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedFoodItems = options
+        print("🍎 Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local FoodButton = Section5:Button({
+    Title = "Collect 🍎 Food & Healing",
+    Desc = "Click to collect all selected food and healing items",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Food & Healing")
+        CollectCategoryItems(selectedFoodItems)
+    end
+})
+
+BringallTab:Divider()
+
+-- 📦 OTHERS SECTION
+local Section6 = BringallTab:Section({
+    Title = "📦 Others",
+    Icon = "package",
+    Opened = true,
+})
+
+local OthersDropdown = Section6:Dropdown({
+    Title = "Other Items",
+    Values = { "Frog Key", "Feather", "Wildfire", "Sacrifice Totem", "Old Rod", "Flower", "Coin Stack", "Infernal Sack", "Giant Sack", "Good Sack", "Seed Box", "Old Flashlight", "Strong Flashlight", "Bunny Foot", "Wolf Pelt", "Bear Pelt", "Mammonth Tusk", "Alpha Wolf Pelt", "Bear Corpse", "Meteor Shard", "Gold Shard", "Raw Obsidiron Ore", "Gem of the Forest Fragment", "Diamond", "Defense Blueprint" },
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedOthersItems = options
+        print("📦 Selected: " .. game:GetService("HttpService"):JSONEncode(options))
+    end
+})
+
+local OthersButton = Section6:Button({
+    Title = "Collect 📦 Others",
+    Desc = "Click to collect all selected other items",
+    Locked = false,
+    Callback = function()
+        print("🔘 Collect button clicked for Others")
+        CollectCategoryItems(selectedOthersItems)
+    end
+})
+
+BringallTab:Divider()
+
+print("✅ Item Teleporter System loaded!")
+print("📦 Select items from dropdowns and click the collect button!")
+print("🔄 Click button again to collect items again!")
 
 local MiscTab = Window:Tab({
     Title = "Misc",
