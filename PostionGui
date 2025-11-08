@@ -2657,8 +2657,18 @@ local function BringAllItems(itemName)
     
     if itemsCollected > 0 then
         print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName)
+        WindUI:Notify({
+            Title = "✅ Success",
+            Content = "Brought " .. itemsCollected .. " x " .. itemName,
+            Duration = 3,
+        })
     else
         print("❌ No '" .. itemName .. "' items found!")
+        WindUI:Notify({
+            Title = "❌ Not Found",
+            Content = "No '" .. itemName .. "' items available",
+            Duration = 3,
+        })
     end
 end
 
@@ -2668,6 +2678,11 @@ local function CollectCategoryItems(categoryName)
     
     if #selectedItems == 0 then
         print("⚠️ No items selected in '" .. categoryName .. "'")
+        WindUI:Notify({
+            Title = "⚠️ Nothing Selected",
+            Content = "Please select items from the dropdown",
+            Duration = 2,
+        })
         return
     end
     
@@ -2679,35 +2694,27 @@ local function CollectCategoryItems(categoryName)
     print("✅ Finished collecting from " .. categoryName)
 end
 
--- Wind UI Library (adjust this path if needed)
-local Wind = require(game:GetService("ReplicatedStorage"):WaitForChild("Wind")) -- Adjust path as needed
-
-local Window = Wind:Create({
-    Title = "Item Teleporter",
-    Icon = "📦",
-    Closable = true
-})
-
-local Tab = Window:Tab({
-    Title = "Items",
-    Icon = "🎯"
-})
-
 -- Location Dropdown
-Tab:Dropdown({
+BringallTab:Dropdown({
     Title = "📍 Item Destination",
     Values = { "Player", "Workbench", "Campfire" },
+    Value = "Player",
     Callback = function(Value)
         selectedLocation = Value
         print("📍 Location changed to: " .. Value)
+        WindUI:Notify({
+            Title = "📍 Location Set",
+            Content = "Items will be brought to: " .. Value,
+            Duration = 2,
+        })
     end
 })
 
-Tab:Divider()
+BringallTab:Divider()
 
 -- Create sections for each category
 for categoryIndex, category in ipairs(itemCategories) do
-    local Section = Tab:Section({
+    local Section = BringallTab:Section({
         Title = category.name,
     })
     
@@ -2715,7 +2722,9 @@ for categoryIndex, category in ipairs(itemCategories) do
     Section:Dropdown({
         Title = category.name .. " Items",
         Values = category.items,
+        Value = {},
         Multi = true,
+        AllowNone = true,
         Callback = function(Value)
             categoryDropdowns[category.name] = Value
             print(category.name .. " selected: " .. game:GetService("HttpService"):JSONEncode(Value))
@@ -2730,6 +2739,8 @@ for categoryIndex, category in ipairs(itemCategories) do
             CollectCategoryItems(category.name)
         end
     })
+    
+    BringallTab:Divider()
 end
 
 print("✅ Item Teleporter System loaded!")
