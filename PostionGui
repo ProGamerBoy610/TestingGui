@@ -2530,221 +2530,7 @@ HitboxTab:Slider({
 
 HitboxTab:Space()
 
--- ==================== TAB 2: BRING ====================
-local BringallTab = Window:Tab({
-    Title = "Bring",
-    Icon = "Box",
-    Locked = false,
-})
 
--- Item Teleport Script with Wind UI Integration
-print("🔄 Loading Item Teleport System...")
-
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-
-local player = Players.LocalPlayer
-
--- Remote Events
-local RequestStartDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
-local StopDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
-
--- Item Categories
-local itemCategories = {
-    {
-        name = "⛽ Fuel",
-        icon = "🛢️",
-        items = {"Crossbow Cultist", "Cultist", "Sapling", "Feather", "Alien", "Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel", "Biofuel"}
-    },
-    {
-        name = "🗡️ Guns & Armor",
-        icon = "⚔️",
-        items = {"Infernal Sword", "Morningstar", "Crossbow", "Infernal Crossbow", "Laser Sword", "Raygun", "Ice Axe", "Ice Sword", "Chainsaw", "Strong Axe", "Axe Trim Kit", "Spear", "Good Axe", "Revolver", "Rifle", "Tactical Shotgun", "Revolver Ammo", "Rifle Ammo", "Alien Armour", "Frog Boots", "Leather Body", "Iron Body", "Thorn Body", "Riot Shield", "Armour Trim Kit", "Obsidiron Boots"}
-    },
-    {
-        name = "⚙️ Gears",
-        icon = "🔧",
-        items = {"Bolt", "Tyre", "Sheet Metal", "Old Radio", "Broken Fan", "Broken Microwave", "Washing Machine", "Old Car Engine", "UFO Scrap", "UFO Component", "UFO Junk", "Cultist Gem", "Gem of the Forest"}
-    },
-    {
-        name = "👾 Characters",
-        icon = "👤",
-        items = {"FrogKing", "Frog", "Scorpion", "Hellephant", "Ram", "Naill", "FrogBlue", "FrogPurple", "Wolf", "Bear", "Bunny", "Mammoth", "Cultist", "Crossbow Cultist", "Juggernaut Cultist", "Alpha Wolf", "Alien", "Alien Elite", "Cultist King", "Meteor Crab", "Polar Bear", "Arctic Fox"}
-    },
-    {
-        name = "🍎 Food & Healing",
-        icon = "🍖",
-        items = {"Carrot", "Mackerel", "Salmon", "Swordfish", "Berry", "Ribs", "Stew", "Steak Dinner", "Morsel", "Steak", "Corn", "Cooked Morsel", "Cooked Steak", "Bandage", "MedKit", "Chilli", "Apple", "Cake"}
-    },
-    {
-        name = "📦 Others",
-        icon = "📮",
-        items = {"Frog Key", "Feather", "Wildfire", "Sacrifice Totem", "Old Rod", "Flower", "Coin Stack", "Infernal Sack", "Giant Sack", "Good Sack", "Seed Box", "Old Flashlight", "Strong Flashlight", "Bunny Foot", "Wolf Pelt", "Bear Pelt", "Mammonth Tusk", "Alpha Wolf Pelt", "Bear Corpse", "Meteor Shard", "Gold Shard", "Raw Obsidiron Ore", "Gem of the Forest Fragment", "Diamond", "Defense Blueprint"}
-    }
-}
-
--- State tracking
-local categoryDropdowns = {}
-local selectedLocation = "Player"
-local locations = {
-    ["Player"] = nil,
-    ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
-    ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
-}
-
--- Function to bring ALL instances of an item
-local function BringAllItems(itemName)
-    local itemsFolder = workspace:FindFirstChild("Items")
-    if not itemsFolder then
-        warn("❌ Items folder not found in workspace!")
-        return
-    end
-    
-    local character = player.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then
-        warn("❌ Character not found!")
-        return
-    end
-    
-    local hrp = character.HumanoidRootPart
-    local itemsCollected = 0
-    
-    local basePosition
-    if selectedLocation == "Player" then
-        basePosition = hrp.CFrame
-    else
-        local locationVector = locations[selectedLocation]
-        if locationVector then
-            basePosition = CFrame.new(locationVector)
-        else
-            basePosition = hrp.CFrame
-        end
-    end
-    
-    print("🔍 Searching for all '" .. itemName .. "' items to bring to " .. selectedLocation .. "...")
-    
-    for _, item in pairs(itemsFolder:GetChildren()) do
-        if item.Name == itemName then
-            local success, err = pcall(function()
-                RequestStartDraggingItem:FireServer(item)
-                task.wait(0.05)
-                
-                local targetPos = basePosition
-                
-                if item:IsA("Model") then
-                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        primaryPart.CFrame = targetPos
-                    end
-                elseif item:IsA("BasePart") then
-                    item.CFrame = targetPos
-                end
-                
-                task.wait(0.05)
-                StopDraggingItem:FireServer(item)
-            end)
-            
-            if success then
-                itemsCollected = itemsCollected + 1
-                print("✅ Brought " .. itemName .. " #" .. itemsCollected)
-            else
-                warn("❌ Failed to bring item:", err)
-            end
-            
-            task.wait(0.1)
-        end
-    end
-    
-    if itemsCollected > 0 then
-        print("🎉 Successfully collected " .. itemsCollected .. " x " .. itemName)
-        WindUI:Notify({
-            Title = "✅ Success",
-            Content = "Brought " .. itemsCollected .. " x " .. itemName,
-            Duration = 3,
-        })
-    else
-        print("❌ No '" .. itemName .. "' items found!")
-        WindUI:Notify({
-            Title = "❌ Not Found",
-            Content = "No '" .. itemName .. "' items available",
-            Duration = 3,
-        })
-    end
-end
-
--- Function to collect all selected items from a category
-local function CollectCategoryItems(categoryName)
-    local selectedItems = categoryDropdowns[categoryName] or {}
-    
-    if #selectedItems == 0 then
-        print("⚠️ No items selected in '" .. categoryName .. "'")
-        WindUI:Notify({
-            Title = "⚠️ Nothing Selected",
-            Content = "Please select items from the dropdown",
-            Duration = 2,
-        })
-        return
-    end
-    
-    print("🚀 Collecting items from category: " .. categoryName)
-    for _, itemName in ipairs(selectedItems) do
-        BringAllItems(itemName)
-        task.wait(0.3)
-    end
-    print("✅ Finished collecting from " .. categoryName)
-end
-
--- Location Dropdown
-BringallTab:Dropdown({
-    Title = "📍 Item Destination",
-    Values = { "Player", "Workbench", "Campfire" },
-    Value = "Player",
-    Callback = function(Value)
-        selectedLocation = Value
-        print("📍 Location changed to: " .. Value)
-        WindUI:Notify({
-            Title = "📍 Location Set",
-            Content = "Items will be brought to: " .. Value,
-            Duration = 2,
-        })
-    end
-})
-
-BringallTab:Divider()
-
--- Create sections for each category
-for categoryIndex, category in ipairs(itemCategories) do
-    local Section = BringallTab:Section({
-        Title = category.name,
-    })
-    
-    -- Multi-select dropdown
-    Section:Dropdown({
-        Title = category.name .. " Items",
-        Values = category.items,
-        Value = {},
-        Multi = true,
-        AllowNone = true,
-        Callback = function(Value)
-            categoryDropdowns[category.name] = Value
-            print(category.name .. " selected: " .. game:GetService("HttpService"):JSONEncode(Value))
-        end
-    })
-    
-    -- Collect button
-    Section:Button({
-        Title = "Collect " .. category.name,
-        Callback = function()
-            print("🔘 Collect button clicked for " .. category.name)
-            CollectCategoryItems(category.name)
-        end
-    })
-    
-    BringallTab:Divider()
-end
-
-print("✅ Item Teleporter System loaded!")
-print("📦 Select items from dropdowns and click collect buttons!")
 
 --- ==================== TAB 4: MAIN ====================
 local MainTab = Window:Tab({
@@ -4347,6 +4133,215 @@ VisualTab:Slider({
 
 VisualTab:Space()
 
+
+-- ADD THIS AFTER THE VISUAL TAB AND BEFORE THE TELEPORT TAB
+-- PLACE THIS IN YOUR FULL SCRIPT RIGHT AFTER THE "VISUAL TAB" SECTION ENDS
+
+-- ==================== TAB: BRING ====================
+local BringallTab = Window:Tab({
+    Title = "Bring",
+    Icon = "Box",
+    Locked = false,
+})
+
+print("[BRING TAB] Starting Bring Tab initialization...")
+
+-- Get services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- Get remote events safely
+local RequestStartDraggingItem
+local StopDraggingItem
+
+local function getRemoteEvents()
+    local success, err = pcall(function()
+        RequestStartDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem", 5)
+        StopDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem", 5)
+    end)
+    
+    if not success then
+        warn("[BRING TAB] Failed to get remote events:", err)
+        return false
+    end
+    
+    if not RequestStartDraggingItem or not StopDraggingItem then
+        warn("[BRING TAB] Remote events not found!")
+        return false
+    end
+    
+    return true
+end
+
+if not getRemoteEvents() then
+    BringallTab:Paragraph({
+        Title = "❌ Error",
+        Desc = "RemoteEvents not found. Script may not work.",
+        Color = "Red",
+    })
+end
+
+-- Item Categories
+local itemCategories = {
+    {
+        name = "⛽ Fuel",
+        items = {"Crossbow Cultist", "Cultist", "Sapling", "Feather", "Alien", "Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel", "Biofuel"}
+    },
+    {
+        name = "🗡️ Guns & Armor",
+        items = {"Infernal Sword", "Morningstar", "Crossbow", "Infernal Crossbow", "Laser Sword", "Raygun", "Ice Axe", "Ice Sword", "Chainsaw", "Strong Axe", "Axe Trim Kit", "Spear", "Good Axe", "Revolver", "Rifle", "Tactical Shotgun", "Revolver Ammo", "Rifle Ammo", "Alien Armour", "Frog Boots", "Leather Body", "Iron Body", "Thorn Body", "Riot Shield", "Armour Trim Kit", "Obsidiron Boots"}
+    },
+    {
+        name = "⚙️ Gears",
+        items = {"Bolt", "Tyre", "Sheet Metal", "Old Radio", "Broken Fan", "Broken Microwave", "Washing Machine", "Old Car Engine", "UFO Scrap", "UFO Component", "UFO Junk", "Cultist Gem", "Gem of the Forest"}
+    },
+    {
+        name = "👾 Characters",
+        items = {"FrogKing", "Frog", "Scorpion", "Hellephant", "Ram", "Naill", "FrogBlue", "FrogPurple", "Wolf", "Bear", "Bunny", "Mammoth", "Cultist", "Crossbow Cultist", "Juggernaut Cultist", "Alpha Wolf", "Alien", "Alien Elite", "Cultist King", "Meteor Crab", "Polar Bear", "Arctic Fox"}
+    },
+    {
+        name = "🍎 Food & Healing",
+        items = {"Carrot", "Mackerel", "Salmon", "Swordfish", "Berry", "Ribs", "Stew", "Steak Dinner", "Morsel", "Steak", "Corn", "Cooked Morsel", "Cooked Steak", "Bandage", "MedKit", "Chilli", "Apple", "Cake"}
+    },
+    {
+        name = "📦 Others",
+        items = {"Frog Key", "Feather", "Wildfire", "Sacrifice Totem", "Old Rod", "Flower", "Coin Stack", "Infernal Sack", "Giant Sack", "Good Sack", "Seed Box", "Old Flashlight", "Strong Flashlight", "Bunny Foot", "Wolf Pelt", "Bear Pelt", "Mammonth Tusk", "Alpha Wolf Pelt", "Bear Corpse", "Meteor Shard", "Gold Shard", "Raw Obsidiron Ore", "Gem of the Forest Fragment", "Diamond", "Defense Blueprint"}
+    }
+}
+
+-- State
+local categoryDropdowns = {}
+local selectedLocation = "Player"
+local locations = {
+    ["Player"] = nil,
+    ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
+    ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
+}
+
+-- Main function to bring items
+local function BringAllItems(itemName)
+    local itemsFolder = workspace:FindFirstChild("Items")
+    if not itemsFolder then
+        warn("❌ Items folder not found!")
+        return
+    end
+    
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        warn("❌ Character not found!")
+        return
+    end
+    
+    local hrp = character.HumanoidRootPart
+    local itemsCollected = 0
+    
+    local basePosition
+    if selectedLocation == "Player" then
+        basePosition = hrp.CFrame
+    else
+        local locationVector = locations[selectedLocation]
+        if locationVector then
+            basePosition = CFrame.new(locationVector)
+        else
+            basePosition = hrp.CFrame
+        end
+    end
+    
+    print("🔍 Bringing '" .. itemName .. "' to " .. selectedLocation)
+    
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == itemName then
+            local success = pcall(function()
+                RequestStartDraggingItem:FireServer(item)
+                task.wait(0.05)
+                
+                if item:IsA("Model") then
+                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                    if primaryPart then
+                        primaryPart.CFrame = basePosition
+                    end
+                elseif item:IsA("BasePart") then
+                    item.CFrame = basePosition
+                end
+                
+                task.wait(0.05)
+                StopDraggingItem:FireServer(item)
+            end)
+            
+            if success then
+                itemsCollected = itemsCollected + 1
+            end
+            task.wait(0.1)
+        end
+    end
+    
+    if itemsCollected > 0 then
+        print("✅ Brought " .. itemsCollected .. " x " .. itemName)
+    end
+end
+
+-- Collect function
+local function CollectCategoryItems(categoryName)
+    local selectedItems = categoryDropdowns[categoryName] or {}
+    
+    if #selectedItems == 0 then
+        WindUI:Notify({
+            Title = "⚠️ Nothing Selected",
+            Content = "Please select items first",
+            Duration = 2,
+        })
+        return
+    end
+    
+    for _, itemName in ipairs(selectedItems) do
+        BringAllItems(itemName)
+        task.wait(0.2)
+    end
+end
+
+-- Location dropdown
+BringallTab:Dropdown({
+    Title = "📍 Bring To",
+    Values = { "Player", "Workbench", "Campfire" },
+    Value = "Player",
+    Callback = function(value)
+        selectedLocation = value
+        print("📍 Location: " .. value)
+    end
+})
+
+BringallTab:Divider()
+
+-- Create categories
+for _, category in ipairs(itemCategories) do
+    local Section = BringallTab:Section({
+        Title = category.name,
+    })
+    
+    Section:Dropdown({
+        Title = category.name .. " Items",
+        Values = category.items,
+        Value = {},
+        Multi = true,
+        AllowNone = true,
+        Callback = function(selected)
+            categoryDropdowns[category.name] = selected
+        end
+    })
+    
+    Section:Button({
+        Title = "Collect " .. category.name,
+        Callback = function()
+            CollectCategoryItems(category.name)
+        end
+    })
+    
+    BringallTab:Divider()
+end
+
+print("[BRING TAB] ✅ Bring Tab loaded successfully!")
+
 -- ==================== TAB 5: TELEPORT ====================
 local TpTab = Window:Tab({
     Title = "Teleport",
@@ -4895,6 +4890,8 @@ end
 Player.CharacterRemoving:Connect(cleanupSkyPlatform)
 
 TpTab:Space()
+
+
 
 
 local MiscTab = Window:Tab({
