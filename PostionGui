@@ -2093,65 +2093,6 @@ end)
 
 _G.Auto = false -- Set to false to match the toggle's default
 
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Event = ReplicatedStorage.RemoteEvents.CarnivalCompleteShootingGallery
-
-local function findTargets(parent, depth)
-    if depth > 3 then return {} end
-   
-    local targets = {}
-   
-    for _, child in ipairs(parent:GetChildren()) do
-        if child:IsA("BasePart") then
-            table.insert(targets, child)
-        end
-       
-        for _, subTarget in ipairs(findTargets(child, depth + 1)) do
-            table.insert(targets, subTarget)
-        end
-    end
-   
-    return targets
-end
-
-spawn(function()
-    while task.wait(3) do
-   
-        local targets = {}
-        local areas = {
-            workspace.Map,
-            workspace.Items,
-            workspace.Characters
-        }
-       
-        for _, area in ipairs(areas) do
-            for _, target in ipairs(findTargets(area, 0)) do
-                table.insert(targets, target)
-            end
-        end
-       
-        for index, target in ipairs(targets) do
-            if not _G.Auto then break end
-           
-            local success = pcall(function()
-                Event:FireServer(target)
-            end)
-            task.wait(0.05)
-        end
-    end
-end)
-
--- Assuming Tab1 is already defined in your UI library setup
-local Togglecandy = AutoTab:Toggle({
-    Title = "Auto Farm Candies",
-    Desc = "",
-    Default = false,
-    Callback = function(state)
-        _G.Auto = state
-        print("Auto Shooting Gallery: " .. tostring(state))
-    end
-})
-
 --Add the new code here
 
 AutoTab:Paragraph({
@@ -2595,6 +2536,7 @@ local BringallTab = Window:Tab({
     Icon = "Box",
     Locked = false,
 })
+
 
 
 --- ==================== TAB 4: MAIN ====================
