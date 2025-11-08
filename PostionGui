@@ -4134,7 +4134,8 @@ VisualTab:Slider({
 VisualTab:Space()
 
 
--- Add this AFTER "local Window = WindUI:CreateWindow({...})" line
+-- ==================== TAB: BRING ====================
+-- ADD THIS AFTER THE VISUAL TAB AND BEFORE THE TELEPORT TAB
 
 local BringallTab = Window:Tab({
     Title = "Bring",
@@ -4142,12 +4143,175 @@ local BringallTab = Window:Tab({
     Locked = false,
 })
 
-BringallTab:Button({
-    Title = "Test Button",
-    Callback = function()
-        print("Bring Tab Works!")
+print("[BRING TAB] Starting initialization...")
+
+-- Setup variables
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+local RequestStartDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
+local StopDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
+
+-- Item Categories
+local itemCategories = {
+    {
+        name = "⛽ Fuel",
+        items = {"Crossbow Cultist", "Cultist", "Sapling", "Feather", "Alien", "Log", "Chair", "Coal", "Fuel Canister", "Oil Barrel", "Biofuel"}
+    },
+    {
+        name = "🗡️ Guns & Armor",
+        items = {"Infernal Sword", "Morningstar", "Crossbow", "Infernal Crossbow", "Laser Sword", "Raygun", "Ice Axe", "Ice Sword", "Chainsaw", "Strong Axe", "Axe Trim Kit", "Spear", "Good Axe", "Revolver", "Rifle", "Tactical Shotgun", "Revolver Ammo", "Rifle Ammo", "Alien Armour", "Frog Boots", "Leather Body", "Iron Body", "Thorn Body", "Riot Shield", "Armour Trim Kit", "Obsidiron Boots"}
+    },
+    {
+        name = "⚙️ Gears",
+        items = {"Bolt", "Tyre", "Sheet Metal", "Old Radio", "Broken Fan", "Broken Microwave", "Washing Machine", "Old Car Engine", "UFO Scrap", "UFO Component", "UFO Junk", "Cultist Gem", "Gem of the Forest"}
+    },
+    {
+        name = "👾 Characters",
+        items = {"FrogKing", "Frog", "Scorpion", "Hellephant", "Ram", "Naill", "FrogBlue", "FrogPurple", "Wolf", "Bear", "Bunny", "Mammoth", "Cultist", "Crossbow Cultist", "Juggernaut Cultist", "Alpha Wolf", "Alien", "Alien Elite", "Cultist King", "Meteor Crab", "Polar Bear", "Arctic Fox"}
+    },
+    {
+        name = "🍎 Food & Healing",
+        items = {"Carrot", "Mackerel", "Salmon", "Swordfish", "Berry", "Ribs", "Stew", "Steak Dinner", "Morsel", "Steak", "Corn", "Cooked Morsel", "Cooked Steak", "Bandage", "MedKit", "Chilli", "Apple", "Cake"}
+    },
+    {
+        name = "📦 Others",
+        items = {"Frog Key", "Feather", "Wildfire", "Sacrifice Totem", "Old Rod", "Flower", "Coin Stack", "Infernal Sack", "Giant Sack", "Good Sack", "Seed Box", "Old Flashlight", "Strong Flashlight", "Bunny Foot", "Wolf Pelt", "Bear Pelt", "Mammonth Tusk", "Alpha Wolf Pelt", "Bear Corpse", "Meteor Shard", "Gold Shard", "Raw Obsidiron Ore", "Gem of the Forest Fragment", "Diamond", "Defense Blueprint"}
+    }
+}
+
+-- State
+local categoryDropdowns = {}
+local selectedLocation = "Player"
+local locations = {
+    ["Player"] = nil,
+    ["Workbench"] = Vector3.new(21.14, 6.25, -5.06),
+    ["Campfire"] = Vector3.new(0.18, 15.05, -0.45)
+}
+
+-- Main bring function
+local function BringAllItems(itemName)
+    local itemsFolder = workspace:FindFirstChild("Items")
+    if not itemsFolder then
+        print("❌ Items folder not found")
+        return
+    end
+    
+    local character = player.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        print("❌ Character not found")
+        return
+    end
+    
+    local hrp = character.HumanoidRootPart
+    local itemsCollected = 0
+    
+    local basePosition
+    if selectedLocation == "Player" then
+        basePosition = hrp.CFrame
+    else
+        local locationVector = locations[selectedLocation]
+        if locationVector then
+            basePosition = CFrame.new(locationVector)
+        else
+            basePosition = hrp.CFrame
+        end
+    end
+    
+    print("🔍 Bringing '" .. itemName .. "' items...")
+    
+    for _, item in pairs(itemsFolder:GetChildren()) do
+        if item.Name == itemName then
+            pcall(function()
+                RequestStartDraggingItem:FireServer(item)
+                task.wait(0.05)
+                
+                if item:IsA("Model") then
+                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                    if primaryPart then
+                        primaryPart.CFrame = basePosition
+                    end
+                elseif item:IsA("BasePart") then
+                    item.CFrame = basePosition
+                end
+                
+                task.wait(0.05)
+                StopDraggingItem:FireServer(item)
+                
+                itemsCollected = itemsCollected + 1
+                print("✅ Collected " .. itemName .. " #" .. itemsCollected)
+            end)
+            
+            task.wait(0.1)
+        end
+    end
+    
+    if itemsCollected > 0 then
+        print("🎉 Total: " .. itemsCollected .. " x " .. itemName)
+    else
+        print("❌ No items found: " .. itemName)
+    end
+end
+
+-- Collect category
+local function CollectCategoryItems(categoryName)
+    local selectedItems = categoryDropdowns[categoryName] or {}
+    
+    if #selectedItems == 0 then
+        print("⚠️ No items selected")
+        return
+    end
+    
+    print("🚀 Collecting from " .. categoryName)
+    for _, itemName in ipairs(selectedItems) do
+        BringAllItems(itemName)
+        task.wait(0.2)
+    end
+end
+
+-- Location dropdown
+BringallTab:Dropdown({
+    Title = "📍 Bring To",
+    Values = { "Player", "Workbench", "Campfire" },
+    Value = "Player",
+    Callback = function(value)
+        selectedLocation = value
+        print("📍 Location set to: " .. value)
     end
 })
+
+BringallTab:Divider()
+
+-- Create all categories
+for _, category in ipairs(itemCategories) do
+    local Section = BringallTab:Section({
+        Title = category.name,
+    })
+    
+    Section:Dropdown({
+        Title = category.name .. " Items",
+        Values = category.items,
+        Value = {},
+        Multi = true,
+        AllowNone = true,
+        Callback = function(selected)
+            categoryDropdowns[category.name] = selected
+            print("Selected " .. #selected .. " items from " .. category.name)
+        end
+    })
+    
+    Section:Button({
+        Title = "Collect " .. category.name,
+        Callback = function()
+            CollectCategoryItems(category.name)
+        end
+    })
+    
+    BringallTab:Divider()
+end
+
+print("[BRING TAB] ✅ Loaded successfully!")
 
 -- ==================== TAB 5: TELEPORT ====================
 local TpTab = Window:Tab({
