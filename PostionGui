@@ -4150,14 +4150,28 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
-local RequestStartDraggingItem
-local StopDraggingItem
+local RequestStartDraggingItem = nil
+local StopDraggingItem = nil
 
+-- Load remotes safely in background
 task.spawn(function()
-    RequestStartDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("RequestStartDraggingItem")
-    StopDraggingItem = ReplicatedStorage:WaitForChild("RemoteEvents"):WaitForChild("StopDraggingItem")
-    print("[BRING TAB] Remotes loaded")
+    pcall(function()
+        local remoteEvents = ReplicatedStorage:FindFirstChild("RemoteEvents")
+        if remoteEvents then
+            RequestStartDraggingItem = remoteEvents:FindFirstChild("RequestStartDraggingItem")
+            StopDraggingItem = remoteEvents:FindFirstChild("StopDraggingItem")
+            if RequestStartDraggingItem and StopDraggingItem then
+                print("[BRING TAB] ✅ Remotes loaded successfully")
+            else
+                print("[BRING TAB] ⚠️ Some remotes not found")
+            end
+        else
+            print("[BRING TAB] ⚠️ RemoteEvents folder not found")
+        end
+    end)
 end)
+
+task.wait(1) -- Give it a moment to load
 
 -- Item Categories
 local itemCategories = {
@@ -4234,25 +4248,29 @@ local function BringAllItems(itemName)
     
     for _, item in pairs(itemsFolder:GetChildren()) do
         if item.Name == itemName then
-            pcall(function()
-                RequestStartDraggingItem:FireServer(item)
-                task.wait(0.05)
-                
-                if item:IsA("Model") then
-                    local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
-                    if primaryPart then
-                        primaryPart.CFrame = basePosition
+            if RequestStartDraggingItem and StopDraggingItem then
+                pcall(function()
+                    RequestStartDraggingItem:FireServer(item)
+                    task.wait(0.05)
+                    
+                    if item:IsA("Model") then
+                        local primaryPart = item.PrimaryPart or item:FindFirstChildWhichIsA("BasePart")
+                        if primaryPart then
+                            primaryPart.CFrame = basePosition
+                        end
+                    elseif item:IsA("BasePart") then
+                        item.CFrame = basePosition
                     end
-                elseif item:IsA("BasePart") then
-                    item.CFrame = basePosition
-                end
-                
-                task.wait(0.05)
-                StopDraggingItem:FireServer(item)
-                
-                itemsCollected = itemsCollected + 1
-                print("✅ Collected " .. itemName .. " #" .. itemsCollected)
-            end)
+                    
+                    task.wait(0.05)
+                    StopDraggingItem:FireServer(item)
+                    
+                    itemsCollected = itemsCollected + 1
+                    print("✅ Collected " .. itemName .. " #" .. itemsCollected)
+                end)
+            else
+                print("⚠️ Remotes not ready yet")
+            end
             
             task.wait(0.1)
         end
