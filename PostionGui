@@ -61,7 +61,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v2.0",
+    Title = "v4.5",
     Color = Color3.fromHex("#3b82f6"),
     Radius = 8,
 })
@@ -982,6 +982,334 @@ task.spawn(function()
     end
 end)
 
+
+
+local v221 = Window:Tab({
+        Title = "Forge",
+        Icon = "anvil"
+    })
+    repeat
+        task.wait()
+    until game:IsLoaded()
+    local v222 = Players.LocalPlayer
+    repeat
+        task.wait()
+    until v222 and v222:FindFirstChild("PlayerGui")
+    local vu223 = v222:WaitForChild("PlayerGui")
+    local function vu230(p224)
+        local v225 = ReplicatedStorage
+        local v226, v227, v228 = ipairs(p224)
+        while true do
+            local v229
+            v228, v229 = v226(v227, v228)
+            if v228 == nil then
+                break
+            end
+            if not v225 then
+                return nil
+            end
+            v225 = v225:FindFirstChild(v229)
+        end
+        return v225
+    end
+    local function vu240(p231)
+        local v232 = ReplicatedStorage:FindFirstChild("Controllers")
+        if v232 and v232:FindFirstChild("ForgeController") then
+            local v233 = v232.ForgeController:FindFirstChild(p231)
+            if v233 and v233:IsA("ModuleScript") then
+                local v234, v235 = pcall(require, v233)
+                if v234 and type(v235) == "table" then
+                    return v235, v233
+                end
+            end
+        end
+        local v236 = ReplicatedStorage:FindFirstChild("Shared")
+        if v236 and v236:FindFirstChild("Controllers") and v236.Controllers:FindFirstChild("ForgeController") then
+            local v237 = v236.Controllers.ForgeController:FindFirstChild(p231)
+            if v237 and v237:IsA("ModuleScript") then
+                local v238, v239 = pcall(require, v237)
+                if v238 and type(v239) == "table" then
+                    return v239, v237
+                end
+            end
+        end
+        return nil, nil
+    end
+    local vu241 = {}
+    local function vu247(pu242, pu243)
+        local vu244, _ = vu240(pu242)
+        if not vu244 then
+            return false, "module_not_found"
+        end
+        if not vu241[pu242] then
+            vu241[pu242] = vu244.Start
+        end
+        function vu244.Start()
+            local v245, v246 = pcall(function()
+                return pu243(vu244)
+            end)
+            if v245 then
+                return v246
+            else
+                warn("Patch override error for", pu242, v246)
+                if vu241[pu242] then
+                    return vu241[pu242]
+                else
+                    return nil
+                end
+            end
+        end
+        return true
+    end
+    local function vu250(p248)
+        local v249, _ = vu240(p248)
+        if not v249 then
+            return false
+        end
+        if not vu241[p248] then
+            return false
+        end
+        v249.Start = vu241[p248]
+        vu241[p248] = nil
+        return true
+    end
+    local function vu254(_, _, p251)
+        local vu252 = vu223:FindFirstChild("Forge")
+        if vu252 and vu252:FindFirstChild("MeltMinigame") then
+            pcall(function()
+                vu252.MeltMinigame.Visible = true
+                local vu253 = not vu252.MeltMinigame:FindFirstChild("Bar", true) and vu252.MeltMinigame.Bar
+                if vu253 then
+                    vu253 = vu252.MeltMinigame.Bar.Area
+                end
+                if vu253 and vu253:IsA("Frame") then
+                    pcall(function()
+                        TweenService:Create(vu253, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                            Size = UDim2.fromScale(1, vu253.Size.Y.Scale)
+                        }):Play()
+                    end)
+                end
+                task.wait(0.28)
+                vu252.MeltMinigame.Visible = false
+            end)
+        else
+            task.wait(0.25)
+        end
+        return p251 and p251.StartTime or workspace:GetServerTimeNow(), true
+    end
+    local function vu258(_, _, p255)
+        local vu256 = vu223:FindFirstChild("Forge")
+        if vu256 and vu256:FindFirstChild("PourMinigame") then
+            pcall(function()
+                vu256.PourMinigame.Visible = true
+                local vu257 = vu256.PourMinigame.Timer
+                if vu257 then
+                    vu257 = vu256.PourMinigame.Timer.Bar
+                end
+                if vu257 and vu257:IsA("Frame") then
+                    pcall(function()
+                        TweenService:Create(vu257, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                            Size = UDim2.fromScale(1, vu257.Size.Y.Scale)
+                        }):Play()
+                    end)
+                end
+                task.wait(0.28)
+                vu256.PourMinigame.Visible = false
+            end)
+        else
+            task.wait(0.25)
+        end
+        return p255 and p255.StartTime or workspace:GetServerTimeNow()
+    end
+    v221:Button({
+        Title = "Open Forge UI",
+        Desc = "Invoke Proximity -> StartForge to open the Forge UI",
+        Callback = function()
+            local vu259 = vu230({
+                "Shared",
+                "Packages",
+                "Knit",
+                "Services",
+                "ProximityService",
+                "RF",
+                "Forge"
+            }) or vu230({
+                "Controllers",
+                "ForgeController",
+                "RF",
+                "Forge"
+            })
+            local vu260 = vu230({
+                "Shared",
+                "Packages",
+                "Knit",
+                "Services",
+                "ForgeService",
+                "RF",
+                "StartForge"
+            }) or vu230({
+                "Controllers",
+                "ForgeController",
+                "RF",
+                "StartForge"
+            })
+            local vu261 = workspace:FindFirstChild("Proximity")
+            if vu261 then
+                vu261 = workspace.Proximity:FindFirstChild("Forge")
+            end
+            if vu261 then
+                if vu259 then
+                    pcall(function()
+                        vu259:InvokeServer(vu261)
+                    end)
+                    task.wait(0.12)
+                end
+                if vu260 then
+                    pcall(function()
+                        vu260:InvokeServer(vu261)
+                    end)
+                end
+                print("[Forge Helper] Opened Forge UI (attempted).")
+            else
+                warn("[Forge Helper] forge object not found in workspace.Proximity")
+            end
+        end
+    })
+    v221:Divider()
+    local vu262 = false
+    local vu263 = false
+    v221:Toggle({
+        Title = "Complete Melt",
+        Desc = "When enabled, Melt minigame will auto-complete visually",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p264)
+            vu262 = p264
+            if vu262 then
+                local v265, v266 = vu247("MeltMinigame", vu254)
+                if v265 then
+                    print("[Forge Helper] Melt auto-complete ENABLED")
+                else
+                    warn("[Forge Helper] Unable to patch MeltMinigame:", v266 or "unknown")
+                end
+            elseif vu250("MeltMinigame") then
+                print("[Forge Helper] Melt auto-complete DISABLED")
+            else
+                print("[Forge Helper] Melt patch not found/restored")
+            end
+        end
+    })
+    v221:Toggle({
+        Title = "Complete Pour",
+        Desc = "When enabled, Pour minigame will auto-complete visually",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p267)
+            vu263 = p267
+            if vu263 then
+                local v268, v269 = vu247("PourMinigame", vu258)
+                if v268 then
+                    print("[Forge Helper] Pour auto-complete ENABLED")
+                else
+                    warn("[Forge Helper] Unable to patch PourMinigame:", v269 or "unknown")
+                end
+            elseif vu250("PourMinigame") then
+                print("[Forge Helper] Pour auto-complete DISABLED")
+            else
+                print("[Forge Helper] Pour patch not found/restored")
+            end
+        end
+    })
+    local vu270 = false
+    v221:Toggle({
+        Title = "Auto Hammer",
+        Desc = "Automatically completes hammer minigame",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p271)
+            vu270 = p271
+        end
+    })
+    task.spawn(function()
+        while true do
+            local vu272 = false
+            local function v273()
+                vu272 = true
+            end
+            task.wait(0.05)
+            if vu270 then
+                local v274 = vu223:FindFirstChild("Forge")
+                if not v274 then
+                    v273()
+                end
+                local v275 = v274:FindFirstChild("HammerMinigame")
+                if not (v275 and v275.Visible) then
+                    v273()
+                end
+                local v276 = workspace:FindFirstChild("Debris")
+                if not v276 then
+                    v273()
+                end
+                local v277, v278, v279 = ipairs(v276:GetChildren())
+                while true do
+                    local vu280
+                    v279, vu280 = v277(v278, v279)
+                    if v279 == nil then
+                        break
+                    end
+                    if vu280:FindFirstChild("ClickDetector") then
+                        pcall(function()
+                            fireclickdetector(vu280.ClickDetector)
+                        end)
+                    end
+                end
+            end
+            if vu272 then
+                return
+            end
+        end
+    end)
+    local vu281 = false
+    local vu282 = nil
+    v221:Toggle({
+        Title = "Auto-Perfect Hammer",
+        Desc = "Automatically \'perfect\' each Hammer note (very simple)",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p283)
+            vu281 = p283
+            local v284, _ = vu240("HammerMinigame")
+            if v284 then
+                if vu281 then
+                    if not vu282 then
+                        vu282 = v284.CreateNote
+                    end
+                    function v284.CreateNote(_, p285)
+                        local v286 = (p285 and p285.Lifetime or 1) * 25 / 44
+                        task.wait(v286)
+                        return true
+                    end
+                    print("[Forge Helper] Hammer auto-perfect ENABLED")
+                elseif vu282 and v284 then
+                    v284.CreateNote = vu282
+                    vu282 = nil
+                    print("[Forge Helper] Hammer auto-perfect DISABLED")
+                else
+                    print("[Forge Helper] Hammer auto-perfect: nothing to restore")
+                end
+            else
+                warn("[Forge Helper] HammerMinigame module not found.")
+            end
+        end
+    })
+    print("Forge Helper loaded.")
+
+
+
+
+
+
+
 local v445 = Window:Tab({
         Title = "Mobs",
         Icon = "sword"
@@ -1647,326 +1975,6 @@ local v445 = Window:Tab({
         end
     end)
 
-local v221 = Window:Tab({
-        Title = "Forge",
-        Icon = "anvil"
-    })
-    repeat
-        task.wait()
-    until game:IsLoaded()
-    local v222 = Players.LocalPlayer
-    repeat
-        task.wait()
-    until v222 and v222:FindFirstChild("PlayerGui")
-    local vu223 = v222:WaitForChild("PlayerGui")
-    local function vu230(p224)
-        local v225 = ReplicatedStorage
-        local v226, v227, v228 = ipairs(p224)
-        while true do
-            local v229
-            v228, v229 = v226(v227, v228)
-            if v228 == nil then
-                break
-            end
-            if not v225 then
-                return nil
-            end
-            v225 = v225:FindFirstChild(v229)
-        end
-        return v225
-    end
-    local function vu240(p231)
-        local v232 = ReplicatedStorage:FindFirstChild("Controllers")
-        if v232 and v232:FindFirstChild("ForgeController") then
-            local v233 = v232.ForgeController:FindFirstChild(p231)
-            if v233 and v233:IsA("ModuleScript") then
-                local v234, v235 = pcall(require, v233)
-                if v234 and type(v235) == "table" then
-                    return v235, v233
-                end
-            end
-        end
-        local v236 = ReplicatedStorage:FindFirstChild("Shared")
-        if v236 and v236:FindFirstChild("Controllers") and v236.Controllers:FindFirstChild("ForgeController") then
-            local v237 = v236.Controllers.ForgeController:FindFirstChild(p231)
-            if v237 and v237:IsA("ModuleScript") then
-                local v238, v239 = pcall(require, v237)
-                if v238 and type(v239) == "table" then
-                    return v239, v237
-                end
-            end
-        end
-        return nil, nil
-    end
-    local vu241 = {}
-    local function vu247(pu242, pu243)
-        local vu244, _ = vu240(pu242)
-        if not vu244 then
-            return false, "module_not_found"
-        end
-        if not vu241[pu242] then
-            vu241[pu242] = vu244.Start
-        end
-        function vu244.Start()
-            local v245, v246 = pcall(function()
-                return pu243(vu244)
-            end)
-            if v245 then
-                return v246
-            else
-                warn("Patch override error for", pu242, v246)
-                if vu241[pu242] then
-                    return vu241[pu242]
-                else
-                    return nil
-                end
-            end
-        end
-        return true
-    end
-    local function vu250(p248)
-        local v249, _ = vu240(p248)
-        if not v249 then
-            return false
-        end
-        if not vu241[p248] then
-            return false
-        end
-        v249.Start = vu241[p248]
-        vu241[p248] = nil
-        return true
-    end
-    local function vu254(_, _, p251)
-        local vu252 = vu223:FindFirstChild("Forge")
-        if vu252 and vu252:FindFirstChild("MeltMinigame") then
-            pcall(function()
-                vu252.MeltMinigame.Visible = true
-                local vu253 = not vu252.MeltMinigame:FindFirstChild("Bar", true) and vu252.MeltMinigame.Bar
-                if vu253 then
-                    vu253 = vu252.MeltMinigame.Bar.Area
-                end
-                if vu253 and vu253:IsA("Frame") then
-                    pcall(function()
-                        TweenService:Create(vu253, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                            Size = UDim2.fromScale(1, vu253.Size.Y.Scale)
-                        }):Play()
-                    end)
-                end
-                task.wait(0.28)
-                vu252.MeltMinigame.Visible = false
-            end)
-        else
-            task.wait(0.25)
-        end
-        return p251 and p251.StartTime or workspace:GetServerTimeNow(), true
-    end
-    local function vu258(_, _, p255)
-        local vu256 = vu223:FindFirstChild("Forge")
-        if vu256 and vu256:FindFirstChild("PourMinigame") then
-            pcall(function()
-                vu256.PourMinigame.Visible = true
-                local vu257 = vu256.PourMinigame.Timer
-                if vu257 then
-                    vu257 = vu256.PourMinigame.Timer.Bar
-                end
-                if vu257 and vu257:IsA("Frame") then
-                    pcall(function()
-                        TweenService:Create(vu257, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
-                            Size = UDim2.fromScale(1, vu257.Size.Y.Scale)
-                        }):Play()
-                    end)
-                end
-                task.wait(0.28)
-                vu256.PourMinigame.Visible = false
-            end)
-        else
-            task.wait(0.25)
-        end
-        return p255 and p255.StartTime or workspace:GetServerTimeNow()
-    end
-    v221:Button({
-        Title = "Open Forge UI",
-        Desc = "Invoke Proximity -> StartForge to open the Forge UI",
-        Callback = function()
-            local vu259 = vu230({
-                "Shared",
-                "Packages",
-                "Knit",
-                "Services",
-                "ProximityService",
-                "RF",
-                "Forge"
-            }) or vu230({
-                "Controllers",
-                "ForgeController",
-                "RF",
-                "Forge"
-            })
-            local vu260 = vu230({
-                "Shared",
-                "Packages",
-                "Knit",
-                "Services",
-                "ForgeService",
-                "RF",
-                "StartForge"
-            }) or vu230({
-                "Controllers",
-                "ForgeController",
-                "RF",
-                "StartForge"
-            })
-            local vu261 = workspace:FindFirstChild("Proximity")
-            if vu261 then
-                vu261 = workspace.Proximity:FindFirstChild("Forge")
-            end
-            if vu261 then
-                if vu259 then
-                    pcall(function()
-                        vu259:InvokeServer(vu261)
-                    end)
-                    task.wait(0.12)
-                end
-                if vu260 then
-                    pcall(function()
-                        vu260:InvokeServer(vu261)
-                    end)
-                end
-                print("[Forge Helper] Opened Forge UI (attempted).")
-            else
-                warn("[Forge Helper] forge object not found in workspace.Proximity")
-            end
-        end
-    })
-    v221:Divider()
-    local vu262 = false
-    local vu263 = false
-    v221:Toggle({
-        Title = "Complete Melt",
-        Desc = "When enabled, Melt minigame will auto-complete visually",
-        Type = "Checkbox",
-        Value = false,
-        Callback = function(p264)
-            vu262 = p264
-            if vu262 then
-                local v265, v266 = vu247("MeltMinigame", vu254)
-                if v265 then
-                    print("[Forge Helper] Melt auto-complete ENABLED")
-                else
-                    warn("[Forge Helper] Unable to patch MeltMinigame:", v266 or "unknown")
-                end
-            elseif vu250("MeltMinigame") then
-                print("[Forge Helper] Melt auto-complete DISABLED")
-            else
-                print("[Forge Helper] Melt patch not found/restored")
-            end
-        end
-    })
-    v221:Toggle({
-        Title = "Complete Pour",
-        Desc = "When enabled, Pour minigame will auto-complete visually",
-        Type = "Checkbox",
-        Value = false,
-        Callback = function(p267)
-            vu263 = p267
-            if vu263 then
-                local v268, v269 = vu247("PourMinigame", vu258)
-                if v268 then
-                    print("[Forge Helper] Pour auto-complete ENABLED")
-                else
-                    warn("[Forge Helper] Unable to patch PourMinigame:", v269 or "unknown")
-                end
-            elseif vu250("PourMinigame") then
-                print("[Forge Helper] Pour auto-complete DISABLED")
-            else
-                print("[Forge Helper] Pour patch not found/restored")
-            end
-        end
-    })
-    local vu270 = false
-    v221:Toggle({
-        Title = "Auto Hammer",
-        Desc = "Automatically completes hammer minigame",
-        Type = "Checkbox",
-        Value = false,
-        Callback = function(p271)
-            vu270 = p271
-        end
-    })
-    task.spawn(function()
-        while true do
-            local vu272 = false
-            local function v273()
-                vu272 = true
-            end
-            task.wait(0.05)
-            if vu270 then
-                local v274 = vu223:FindFirstChild("Forge")
-                if not v274 then
-                    v273()
-                end
-                local v275 = v274:FindFirstChild("HammerMinigame")
-                if not (v275 and v275.Visible) then
-                    v273()
-                end
-                local v276 = workspace:FindFirstChild("Debris")
-                if not v276 then
-                    v273()
-                end
-                local v277, v278, v279 = ipairs(v276:GetChildren())
-                while true do
-                    local vu280
-                    v279, vu280 = v277(v278, v279)
-                    if v279 == nil then
-                        break
-                    end
-                    if vu280:FindFirstChild("ClickDetector") then
-                        pcall(function()
-                            fireclickdetector(vu280.ClickDetector)
-                        end)
-                    end
-                end
-            end
-            if vu272 then
-                return
-            end
-        end
-    end)
-    local vu281 = false
-    local vu282 = nil
-    v221:Toggle({
-        Title = "Auto-Perfect Hammer",
-        Desc = "Automatically \'perfect\' each Hammer note (very simple)",
-        Type = "Checkbox",
-        Value = false,
-        Callback = function(p283)
-            vu281 = p283
-            local v284, _ = vu240("HammerMinigame")
-            if v284 then
-                if vu281 then
-                    if not vu282 then
-                        vu282 = v284.CreateNote
-                    end
-                    function v284.CreateNote(_, p285)
-                        local v286 = (p285 and p285.Lifetime or 1) * 25 / 44
-                        task.wait(v286)
-                        return true
-                    end
-                    print("[Forge Helper] Hammer auto-perfect ENABLED")
-                elseif vu282 and v284 then
-                    v284.CreateNote = vu282
-                    vu282 = nil
-                    print("[Forge Helper] Hammer auto-perfect DISABLED")
-                else
-                    print("[Forge Helper] Hammer auto-perfect: nothing to restore")
-                end
-            else
-                warn("[Forge Helper] HammerMinigame module not found.")
-            end
-        end
-    })
-    print("Forge Helper loaded.")
-
 -- ==================== TAB 6: SETTINGS ====================
 local Tab6 = Window:Tab({
     Title = "Settings",
@@ -2048,3 +2056,54 @@ local KeybindInput = Tab6:Input({
 Window:SetToggleKey(Enum.KeyCode.RightControl)
 
 Tab6:Space()
+
+local MiscTab = Window:Tab({
+    Title = "Misc",
+    Icon = "folder",
+    Locked = false,
+})
+
+local ToggleAntiAFK = MiscTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Prevents automatic idle kick",
+    Icon = "shield-check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local player = game.Players.LocalPlayer
+
+            -- Disconnect existing idle connections if any
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+            end
+
+            -- Connect to Idled event
+            getgenv().AntiAFKConnection = player.Idled:Connect(function()
+                -- simulate click or jump to prevent kick
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+                print("⏱ Anti-AFK triggered!")
+            end)
+
+            print("✅ Anti-AFK enabled")
+        else
+            -- Disconnect Anti-AFK
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+                getgenv().AntiAFKConnection = nil
+            end
+            print("⛔ Anti-AFK disabled")
+        end
+    end
+})
+
+local Buttonpowersave = MiscTab:Button({
+    Title = "Power Save Mode",
+    Desc = "Open Power Save Script",
+    Locked = false,
+    Callback = function()
+        print("Opening Power Save Script...")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/SubScripts/refs/heads/main/screen%20saver"))()
+    end
+})
