@@ -875,7 +875,7 @@ local function ActivateTool()
 end
 
 -- Auto mine toggle
-MainTab:Section({Title = "Master", Icon = "play"}):Toggle({
+MainTab:Window({Title = "Master", Icon = "play"}):Toggle({
     Title = "Auto Mine (Master)",
     Desc = "Enable/disable auto-miner",
     Value = _G.AutoMine,
@@ -890,7 +890,7 @@ MainTab:Section({Title = "Master", Icon = "play"}):Toggle({
 })
 
 -- Mode selection
-MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Mine Type",
     Desc = "Choose what to mine",
     Values = {"Ores", "Rocks"},
@@ -903,7 +903,7 @@ MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
 })
 
 -- Ore/Rock selection
-MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Ore Drops",
     Desc = "Select ores to mine",
     Values = AllOres,
@@ -917,7 +917,7 @@ MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
 })
 
 -- Speed slider
-MainTab:Section({Title = "Options", Icon = "settings"}):Slider({
+MainTab:window({Title = "Options", Icon = "settings"}):Slider({
     Title = "Tween Speed",
     Desc = "Movement speed to rocks",
     Step = 1,
@@ -981,6 +981,671 @@ task.spawn(function()
         currentRock = nil
     end
 end)
+
+local v445 = Window:Tab({
+        Title = "Mobs",
+        Icon = "sword"
+    })
+    local vu446 = Players.LocalPlayer
+    local v447 = game:GetService("UserInputService")
+    local v448 = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Data"):WaitForChild("Enemies")
+    local vu449 = workspace:WaitForChild("Living")
+    local vu450 = nil
+    pcall(function()
+        vu450 = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Mobs")
+    end)
+    local vu451 = nil
+    pcall(function()
+        vu451 = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF
+    end)
+    local v452 = require(v448)
+    local vu453 = {}
+    local vu454 = "Nearest"
+    local vu455 = false
+    local vu456 = 0.14
+    local vu457 = 200
+    local vu458 = true
+    local vu459 = nil
+    local vu460 = false
+    local vu461 = nil
+    local vu462 = nil
+    local vu463 = nil
+    local vu464 = nil
+    local vu465 = nil
+    local vu466 = 0.3
+    local vu467 = 240
+    local vu468 = 14
+    local vu469 = 0.9
+    local vu470 = 1.6
+    local vu471 = 3.5
+    local vu472 = "Behind"
+    local vu473 = 1.3
+    local vu474 = true
+    local vu475 = false
+    local vu476 = {}
+    local vu477 = nil
+    local function vu479()
+        local v478 = vu446
+        if v478 then
+            v478 = vu446.Character
+        end
+        return v478
+    end
+    local function vu481()
+        local v480 = vu479()
+        if v480 then
+            v480 = v480:FindFirstChild("HumanoidRootPart") or v480.PrimaryPart
+        end
+        return v480
+    end
+    local function vu483()
+        local v482 = vu479()
+        if v482 then
+            v482 = v482:FindFirstChildOfClass("Humanoid")
+        end
+        return v482
+    end
+    local function vu484()
+        if vu451 and vu451.ToolActivated then
+            pcall(function()
+                vu451.ToolActivated:InvokeServer("Weapon")
+            end)
+        end
+    end
+    local function vu504()
+        local v485 = vu481()
+        if not v485 then
+            return nil
+        end
+        local v486 = math.huge
+        local v487 = vu449
+        local v488, v489, v490 = pairs(v487:GetChildren())
+        local v491 = nil
+        local v492 = nil
+        while true do
+            local v493
+            v490, v493 = v488(v489, v490)
+            if v490 == nil then
+                v493 = v491
+                break
+            end
+            local vu494 = false
+            local function v495()
+                vu494 = true
+            end
+            local v496, v497
+            if v493 and v493:IsA("Model") then
+                local v498 = next(vu453) == nil
+                if not v498 then
+                    local v499, v500, v501 = pairs(vu453)
+                    while true do
+                        local v502
+                        v501, v502 = v499(v500, v501)
+                        if v501 == nil then
+                            break
+                        end
+                        if v493.Name and v493.Name:lower():find(v501:lower()) then
+                            v495()
+                            v498 = true
+                        end
+                    end
+                end
+                if v498 then
+                    local v503 = v493:FindFirstChild("HumanoidRootPart") or v493.PrimaryPart
+                    v496 = v493:FindFirstChildOfClass("Humanoid")
+                    if v503 and (v496 and (v496.Health and v496.Health > 0)) then
+                        v497 = (v503.Position - v485.Position).Magnitude
+                        if v497 > vu457 then
+                            v497 = v486
+                            v496 = v492
+                            v493 = v491
+                        elseif vu454 ~= "Nearest" then
+                            if v491 and v496.Health >= v492.Health then
+                                v497 = v486
+                                v496 = v492
+                                v493 = v491
+                            else
+                                v497 = v496.Health
+                            end
+                        elseif v497 >= v486 then
+                            v497 = v486
+                            v496 = v492
+                            v493 = v491
+                        end
+                    else
+                        v497 = v486
+                        v496 = v492
+                        v493 = v491
+                    end
+                else
+                    v497 = v486
+                    v496 = v492
+                    v493 = v491
+                end
+            else
+                v497 = v486
+                v496 = v492
+                v493 = v491
+            end
+            if vu494 then
+                break
+            end
+            v486 = v497
+            v492 = v496
+            v491 = v493
+        end
+        return v493
+    end
+    local function vu515()
+        if vu475 then
+            return
+        else
+            local v505 = vu479()
+            if v505 then
+                vu476 = {}
+                local v506, v507, v508 = ipairs(v505:GetDescendants())
+                while true do
+                    local v509
+                    v508, v509 = v506(v507, v508)
+                    if v508 == nil then
+                        break
+                    end
+                    if v509:IsA("BasePart") then
+                        vu476[v509] = v509.CanCollide
+                    end
+                end
+                vu477 = RunService.Heartbeat:Connect(function()
+                    local v510 = vu479()
+                    if v510 then
+                        local v511, v512, v513 = ipairs(v510:GetDescendants())
+                        while true do
+                            local v514
+                            v513, v514 = v511(v512, v513)
+                            if v513 == nil then
+                                break
+                            end
+                            if v514:IsA("BasePart") then
+                                v514.CanCollide = false
+                            end
+                        end
+                    end
+                end)
+                vu475 = true
+            end
+        end
+    end
+    local function vu521()
+        if vu475 then
+            if vu477 then
+                vu477:Disconnect()
+                vu477 = nil
+            end
+            local v516, v517, v518 = pairs(vu476)
+            while true do
+                local vu519, vu520 = v516(v517, v518)
+                if vu519 == nil then
+                    break
+                end
+                v518 = vu519
+                if vu519 and vu519.Parent then
+                    pcall(function()
+                        vu519.CanCollide = vu520
+                    end)
+                end
+            end
+            vu476 = {}
+            vu475 = false
+        end
+    end
+    local function vu530(p522, p523, p524)
+        local v525 = math.max(0, tonumber(p523) or 0)
+        local v526 = p522.CFrame.LookVector
+        if vu472 ~= "Behind" then
+            if vu472 ~= "InFront" then
+                local v527 = p522.Position - v526 * v525 + Vector3.new(0, p524, 0)
+                return CFrame.new(v527, p522.Position)
+            else
+                local v528 = p522.Position + v526 * v525 + Vector3.new(0, p524, 0)
+                return CFrame.new(v528, p522.Position)
+            end
+        else
+            local v529 = p522.Position - v526 * v525 + Vector3.new(0, p524, 0)
+            return CFrame.new(v529, p522.Position)
+        end
+    end
+    local function vu531()
+        if vu462 then
+            pcall(function()
+                if typeof(vu462.Cancel) == "function" then
+                    vu462:Cancel()
+                end
+            end)
+            vu462 = nil
+        end
+        if vu464 then
+            pcall(function()
+                vu464:Disconnect()
+            end)
+            vu464 = nil
+        end
+        vu465 = nil
+    end
+    local function vu536()
+        if vu463 and vu463.Parent then
+            local vu532 = vu481()
+            local v533 = vu463:FindFirstChild("HumanoidRootPart") or vu463.PrimaryPart
+            if vu532 and v533 then
+                local vu534 = vu530(v533, vu471, vu470)
+                if vu467 >= (vu534.Position - vu532.Position).Magnitude then
+                    local vu535 = 0.6
+                    pcall(function()
+                        vu532.CFrame = vu532.CFrame:Lerp(vu534, math.clamp(vu535, 0, 1))
+                    end)
+                    vu465 = vu534
+                end
+            else
+                return
+            end
+        else
+            return
+        end
+    end
+    local function vu537()
+        vu531()
+        vu536()
+    end
+    function startFollow(p538, p539)
+        if p538 and p538.Parent then
+            local vu540 = tonumber(p539) or vu471
+            if vu461 then
+                pcall(function()
+                    task.cancel(vu461)
+                end)
+                vu461 = nil
+            end
+            if vu464 then
+                pcall(function()
+                    vu464:Disconnect()
+                end)
+                vu464 = nil
+            end
+            vu463 = p538
+            vu461 = task.spawn(function()
+                if vu474 then
+                    vu515()
+                end
+                vu465 = nil
+                vu464 = RunService.Heartbeat:Connect(function(p541)
+                    if vu455 and (vu458 and (vu463 and vu463.Parent)) then
+                        local vu542 = vu481()
+                        local v543 = vu463
+                        if v543 then
+                            v543 = vu463:FindFirstChild("HumanoidRootPart") or vu463.PrimaryPart
+                        end
+                        local v544 = vu463
+                        if v544 then
+                            v544 = vu463:FindFirstChildOfClass("Humanoid")
+                        end
+                        if vu542 and (v543 and (v544 and (not v544 or v544.Health > 0))) then
+                            local vu545 = vu530(v543, vu540, vu470)
+                            local v546 = (vu545.Position - vu542.Position).Magnitude
+                            if vu467 >= v546 then
+                                if vu465 then
+                                    if vu466 <= (vu465.Position - vu545.Position).Magnitude then
+                                        vu465 = vu545
+                                    end
+                                else
+                                    vu465 = vu545
+                                end
+                                local v547 = vu468 / math.max(0.05, tonumber(vu473) or 1)
+                                local vu548 = v546 <= 0.001 and 0.45 or math.clamp(v547 * p541 / math.max(v546, 0.01), 0, 0.45)
+                                if v546 > vu469 then
+                                    local v549, _ = pcall(function()
+                                        vu542.CFrame = vu542.CFrame:Lerp(vu545, vu548)
+                                    end)
+                                    if not v549 then
+                                        if vu464 then
+                                            pcall(function()
+                                                vu464:Disconnect()
+                                            end)
+                                        end
+                                        vu464 = nil
+                                    end
+                                else
+                                    pcall(function()
+                                        vu542.CFrame = vu545
+                                    end)
+                                end
+                            else
+                                return
+                            end
+                        else
+                            if vu464 then
+                                pcall(function()
+                                    vu464:Disconnect()
+                                end)
+                            end
+                            vu464 = nil
+                            return
+                        end
+                    else
+                        if vu464 then
+                            pcall(function()
+                                vu464:Disconnect()
+                            end)
+                        end
+                        vu464 = nil
+                        return
+                    end
+                end)
+                while vu455 and (vu458 and (vu463 and vu463.Parent)) and (vu463:FindFirstChildOfClass("Humanoid") and (vu463:FindFirstChildOfClass("Humanoid").Health > 0 and vu464)) do
+                    task.wait(0.12)
+                end
+                if vu474 then
+                    vu521()
+                end
+                vu531()
+                vu461 = nil
+                vu463 = nil
+            end)
+        end
+    end
+    function stopFollow()
+        if vu461 then
+            pcall(function()
+                task.cancel(vu461)
+            end)
+            vu461 = nil
+        end
+        if vu464 then
+            pcall(function()
+                vu464:Disconnect()
+            end)
+            vu464 = nil
+        end
+        if vu474 then
+            vu521()
+        end
+        vu531()
+        vu463 = nil
+    end
+    local function vu557()
+        if not vu459 then
+            vu460 = false
+            vu459 = task.spawn(function()
+                while vu455 and not vu460 do
+                    local vu550 = false
+                    local function v551()
+                        vu550 = true
+                    end
+                    local v552 = vu504()
+                    if v552 then
+                        local v553 = vu481()
+                        local v554 = vu483()
+                        if v553 and v554 then
+                            local v555 = v552:FindFirstChild("HumanoidRootPart") or v552.PrimaryPart
+                            local v556 = v552:FindFirstChildOfClass("Humanoid")
+                            if v555 and v556 then
+                                if vu458 then
+                                    startFollow(v552, vu471)
+                                end
+                                while vu455 and (v556 and (v556.Health > 0 and (v552.Parent and not vu460))) do
+                                    if not (v553 and v554) then
+                                        v551()
+                                    end
+                                    if vu458 and (not vu461 or vu463 ~= v552) then
+                                        startFollow(v552, vu471)
+                                    end
+                                    vu484()
+                                    task.wait(math.max(0.02, tonumber(vu456) or 0.14))
+                                end
+                                stopFollow()
+                                task.wait(0.18)
+                            else
+                                task.wait(0.2)
+                            end
+                        else
+                            task.wait(0.4)
+                        end
+                    else
+                        task.wait(0.28)
+                    end
+                    if vu550 then
+                        break
+                    end
+                end
+                vu459 = nil
+            end)
+        end
+    end
+    local function vu558()
+        vu460 = true
+        if vu459 then
+            pcall(function()
+                task.cancel(vu459)
+            end)
+            vu459 = nil
+        end
+        stopFollow()
+    end
+    local v559, v560, v561 = pairs(v452)
+    local vu562 = vu454
+    local vu563 = vu473
+    local vu564 = vu471
+    local vu565 = vu474
+    local vu566 = vu446
+    local vu567 = vu455
+    local vu568 = vu453
+    local vu569 = vu472
+    local vu570 = vu458
+    local vu571 = vu450
+    local v572 = {}
+    while true do
+        local vu573, v574 = v559(v560, v561)
+        if vu573 == nil then
+            break
+        end
+        v561 = vu573
+        local vu575 = nil
+        pcall(function()
+            if vu571 and vu571:FindFirstChild(vu573) then
+                local v576 = vu571:FindFirstChild(vu573)
+                if v576:FindFirstChild("Icon") and v576.Icon:IsA("StringValue") then
+                    vu575 = v576.Icon.Value
+                elseif v576:FindFirstChild("Icon") and type(v576.Icon.Value) == "string" then
+                    vu575 = v576.Icon.Value
+                end
+            end
+        end)
+        if not vu575 and (type(v574) == "table" and (v574.Slot and v574.Slot.Icon)) then
+            vu575 = v574.Slot.Icon
+        end
+        local v577 = {
+            Title = vu573,
+            Icon = vu575 or "bird"
+        }
+        table.insert(v572, v577)
+    end
+    table.sort(v572, function(p578, p579)
+        return p578.Title < p579.Title
+    end)
+    v445:Dropdown({
+        Title = "Select Mobs",
+        Desc = "Select mobs to farm",
+        Values = v572,
+        Value = {},
+        Multi = true,
+        Callback = function(p580)
+            if type(p580) ~= "table" then
+                local v581 = p580 and p580.Title or tostring(p580)
+                if vu568[v581] then
+                    vu568[v581] = nil
+                    print("Deselected:", v581)
+                else
+                    vu568[v581] = true
+                    print("Selected:", v581)
+                end
+            else
+                vu568 = {}
+                local v582, v583, v584 = ipairs(p580)
+                while true do
+                    local v585
+                    v584, v585 = v582(v583, v584)
+                    if v584 == nil then
+                        break
+                    end
+                    if type(v585) == "table" and v585.Title then
+                        vu568[v585.Title] = true
+                    end
+                end
+                local v586, v587, v588 = pairs(vu568)
+                local v589 = {}
+                while true do
+                    local v590
+                    v588, v590 = v586(v587, v588)
+                    if v588 == nil then
+                        break
+                    end
+                    table.insert(v589, v588)
+                end
+                print("Selected mobs (multi):", # v589 > 0 and table.concat(v589, ", ") or "none")
+            end
+        end
+    })
+    v445:Dropdown({
+        Title = "Target Type",
+        Desc = "Nearest / LowestHealth",
+        Values = {
+            {
+                Title = "Nearest"
+            },
+            {
+                Title = "LowestHealth"
+            }
+        },
+        Value = {
+            Title = "Nearest"
+        },
+        Callback = function(p591)
+            vu562 = p591.Title
+            print("TargetType ->", vu562)
+        end
+    })
+    v445:Divider()
+    v445:Toggle({
+        Title = "Auto Attack",
+        Desc = " automatic attack",
+        Icon = "bird",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p592)
+            if p592 and next(vu568) == nil then
+                vu2:Notify({
+                    Title = "Auto Attack Blocked",
+                    Content = "You must select at least one mob before enabling Auto Attack.",
+                    Duration = 3,
+                    Icon = "bird"
+                })
+                vu567 = false
+                vu558()
+                stopFollow()
+            else
+                vu567 = p592
+                print("AutoAttack:", p592)
+                if p592 then
+                    vu557()
+                else
+                    vu558()
+                    stopFollow()
+                end
+            end
+        end
+    })
+    v445:Toggle({
+        Title = "AutoFollow  Mobs",
+        Desc = "will go to mobs.",
+        Icon = "house",
+        Type = "Checkbox",
+        Value = vu570,
+        Callback = function(p593)
+            vu570 = p593
+            print("AutoKite:", p593)
+        end
+    })
+    v445:Toggle({
+        Title = "NoClip During Follow",
+        Desc = "When ON, temporarily disables collisions while the script is moving you (avoid getting stuck).",
+        Value = vu565,
+        Callback = function(p594)
+            vu565 = p594
+            print("NoClipDuringFollow:", p594)
+        end
+    })
+    v445:Dropdown({
+        Title = "Auto Follow osition",
+        Desc = "Where to position relative to the mob",
+        Values = {
+            {
+                Title = "Behind"
+            },
+            {
+                Title = "InFront"
+            }
+        },
+        Value = {
+            Title = vu569
+        },
+        Callback = function(p595)
+            vu569 = p595 and p595.Title or tostring(p595)
+            vu537()
+            print("AutoKitePosition ->", vu569)
+        end
+    })
+    v445:Slider({
+        Title = "How Far (Distance Offset)",
+        Desc = "0 = no offset, higher = further from mob",
+        Value = {
+            Min = 0,
+            Max = 14,
+            Default = vu564
+        },
+        Step = 0.1,
+        Callback = function(p596)
+            vu564 = tonumber(p596) or 0
+            vu537()
+            print("AUTO_KILL_DISTANCE:", vu564)
+        end
+    })
+    v445:Slider({
+        Title = "Movement Speed",
+        Desc = "Lower = Faster, Higher = Slower (Recommend to set it to 0.20!)",
+        Value = {
+            Min = 0.05,
+            Max = 2.5,
+            Default = 0.2
+        },
+        Step = 0.05,
+        Callback = function(p597)
+            vu563 = tonumber(p597)
+            print("Tween Time =", vu563)
+        end
+    })
+    v447.InputBegan:Connect(function(p598, p599)
+        if not p599 then
+            if p598.KeyCode == Enum.KeyCode.F8 then
+                vu567 = false
+                vu558()
+                stopFollow()
+                warn("Auto routines halted (F8).")
+            end
+        end
+    end)
+    vu566.AncestryChanged:Connect(function()
+        if not vu566:IsDescendantOf(game) then
+            vu558()
+            stopFollow()
+        end
+    end)
 
 local v221 = Window:Tab({
         Title = "Forge",
