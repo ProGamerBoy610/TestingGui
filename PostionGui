@@ -979,7 +979,7 @@ task.spawn(function()
         currentRock = nil
     end
 end)
-
+-- ==================== TAB 3: TELEPORTS ====================
 local TPTab = Window:Tab({
     Title = "Teleports",
     Icon = "map-pin",
@@ -987,9 +987,10 @@ local TPTab = Window:Tab({
 })
 
 -- Variables
-local selectedProximityLocations = {}
-local selectedShopLocations = {}
+local selectedProximityLocation = nil
+local selectedShopLocation = nil
 local isTeleporting = false
+local tweenSpeed = 150 -- Default speed
 
 -- Tween Teleport Function
 local function TweenTP(targetPosition)
@@ -1006,8 +1007,7 @@ local function TweenTP(targetPosition)
     
     local hrp = character.HumanoidRootPart
     local distance = (targetPosition - hrp.Position).Magnitude
-    local speed = 150
-    local duration = distance / speed
+    local duration = distance / tweenSpeed
     
     isTeleporting = true
     print("🚀 Teleporting... Distance:", math.floor(distance))
@@ -1057,54 +1057,64 @@ local ProximitySection = TPTab:Section({
     Opened = true,
 })
 
--- Proximity Dropdown
+-- Tween Speed Slider
+local SpeedSlider = TPTab:Slider({
+    Title = "Teleport Speed",
+    Step = 10,
+    Value = {
+        Min = 50,
+        Max = 500,
+        Default = 150,
+    },
+    Callback = function(value)
+        tweenSpeed = value
+        print("🚀 Tween speed set to:", value)
+    end
+})
+
+-- Proximity Dropdown (Single Select)
 local ProximityDropdown = TPTab:Dropdown({
-    Title = "Select Proximity Locations",
+    Title = "Select Proximity Location",
     Values = proximityLocations,
-    Value = {},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(options)
-        selectedProximityLocations = options
-        print("📍 Selected Proximity:", HttpService:JSONEncode(options))
+    Value = proximityLocations[1] or "None",
+    Callback = function(option)
+        selectedProximityLocation = option
+        print("📍 Selected Proximity:", option)
     end
 })
 
 -- Proximity TP Button
 local ProximityButton = TPTab:Button({
     Title = "Teleport to Proximity",
-    Desc = "Tween to selected proximity locations",
+    Desc = "Tween to selected proximity location",
     Locked = false,
     Callback = function()
-        if #selectedProximityLocations == 0 then
+        if not selectedProximityLocation then
             warn("⚠️ No proximity location selected!")
             return
         end
         
-        for _, locationName in pairs(selectedProximityLocations) do
-            local location = proximityFolder:FindFirstChild(locationName)
-            if location then
-                local targetPos
-                
-                if location:IsA("BasePart") then
-                    targetPos = location.Position
-                elseif location:IsA("Model") and location.PrimaryPart then
-                    targetPos = location.PrimaryPart.Position
-                elseif location:IsA("Model") then
-                    local part = location:FindFirstChildWhichIsA("BasePart")
-                    if part then
-                        targetPos = part.Position
-                    end
+        local location = proximityFolder:FindFirstChild(selectedProximityLocation)
+        if location then
+            local targetPos
+            
+            if location:IsA("BasePart") then
+                targetPos = location.Position
+            elseif location:IsA("Model") and location.PrimaryPart then
+                targetPos = location.PrimaryPart.Position
+            elseif location:IsA("Model") then
+                local part = location:FindFirstChildWhichIsA("BasePart")
+                if part then
+                    targetPos = part.Position
                 end
-                
-                if targetPos then
-                    print("🎯 Teleporting to:", locationName)
-                    TweenTP(targetPos)
-                    wait(0.5)
-                end
-            else
-                warn("❌ Location not found:", locationName)
             end
+            
+            if targetPos then
+                print("🎯 Teleporting to:", selectedProximityLocation)
+                TweenTP(targetPos)
+            end
+        else
+            warn("❌ Location not found:", selectedProximityLocation)
         end
     end
 })
@@ -1118,59 +1128,55 @@ local ShopsSection = TPTab:Section({
     Opened = true,
 })
 
--- Shops Dropdown
+-- Shops Dropdown (Single Select)
 local ShopsDropdown = TPTab:Dropdown({
-    Title = "Select Shop Locations",
+    Title = "Select Shop Location",
     Values = shopLocations,
-    Value = {},
-    Multi = true,
-    AllowNone = true,
-    Callback = function(options)
-        selectedShopLocations = options
-        print("🏪 Selected Shops:", HttpService:JSONEncode(options))
+    Value = shopLocations[1] or "None",
+    Callback = function(option)
+        selectedShopLocation = option
+        print("🏪 Selected Shop:", option)
     end
 })
 
 -- Shops TP Button
 local ShopsButton = TPTab:Button({
-    Title = "Teleport to Shops",
-    Desc = "Tween to selected shop locations",
+    Title = "Teleport to Shop",
+    Desc = "Tween to selected shop location",
     Locked = false,
     Callback = function()
-        if #selectedShopLocations == 0 then
+        if not selectedShopLocation then
             warn("⚠️ No shop location selected!")
             return
         end
         
-        for _, locationName in pairs(selectedShopLocations) do
-            local location = shopsFolder:FindFirstChild(locationName)
-            if location then
-                local targetPos
-                
-                if location:IsA("BasePart") then
-                    targetPos = location.Position
-                elseif location:IsA("Model") and location.PrimaryPart then
-                    targetPos = location.PrimaryPart.Position
-                elseif location:IsA("Model") then
-                    local part = location:FindFirstChildWhichIsA("BasePart")
-                    if part then
-                        targetPos = part.Position
-                    end
+        local location = shopsFolder:FindFirstChild(selectedShopLocation)
+        if location then
+            local targetPos
+            
+            if location:IsA("BasePart") then
+                targetPos = location.Position
+            elseif location:IsA("Model") and location.PrimaryPart then
+                targetPos = location.PrimaryPart.Position
+            elseif location:IsA("Model") then
+                local part = location:FindFirstChildWhichIsA("BasePart")
+                if part then
+                    targetPos = part.Position
                 end
-                
-                if targetPos then
-                    print("🎯 Teleporting to:", locationName)
-                    TweenTP(targetPos)
-                    wait(0.5)
-                end
-            else
-                warn("❌ Location not found:", locationName)
             end
+            
+            if targetPos then
+                print("🎯 Teleporting to:", selectedShopLocation)
+                TweenTP(targetPos)
+            end
+        else
+            warn("❌ Location not found:", selectedShopLocation)
         end
     end
 })
 
 print("✅ Teleport script loaded!")
+
 
 local v221 = Window:Tab({
         Title = "Forge",
