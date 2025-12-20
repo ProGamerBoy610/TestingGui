@@ -58,7 +58,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v4.8",
+    Title = "v4.5",
     Color = Color3.fromHex("#3b82f6"),
     Radius = 8,
 })
@@ -979,6 +979,198 @@ task.spawn(function()
         currentRock = nil
     end
 end)
+
+local TPTab = Window:Tab({
+    Title = "Teleports",
+    Icon = "map-pin",
+    Locked = false,
+})
+
+-- Variables
+local selectedProximityLocations = {}
+local selectedShopLocations = {}
+local isTeleporting = false
+
+-- Tween Teleport Function
+local function TweenTP(targetPosition)
+    if isTeleporting then
+        print("⚠️ Already teleporting!")
+        return
+    end
+    
+    local character = LocalPlayer.Character
+    if not character or not character:FindFirstChild("HumanoidRootPart") then
+        warn("❌ Character not found!")
+        return
+    end
+    
+    local hrp = character.HumanoidRootPart
+    local distance = (targetPosition - hrp.Position).Magnitude
+    local speed = 150
+    local duration = distance / speed
+    
+    isTeleporting = true
+    print("🚀 Teleporting... Distance:", math.floor(distance))
+    
+    local tween = TweenService:Create(hrp, TweenInfo.new(duration, Enum.EasingStyle.Linear), {
+        CFrame = CFrame.new(targetPosition)
+    })
+    
+    tween:Play()
+    tween.Completed:Wait()
+    
+    isTeleporting = false
+    print("✅ Teleport complete!")
+end
+
+-- Get locations from workspace folder
+local function getLocationsFromFolder(folder)
+    local locations = {}
+    
+    if not folder then
+        warn("❌ Folder not found!")
+        return locations
+    end
+    
+    for _, child in pairs(folder:GetChildren()) do
+        if child:IsA("BasePart") or child:IsA("Model") then
+            table.insert(locations, child.Name)
+        end
+    end
+    
+    table.sort(locations)
+    return locations
+end
+
+-- Get Proximity locations
+local proximityFolder = workspace:FindFirstChild("Proximity")
+local proximityLocations = getLocationsFromFolder(proximityFolder)
+
+-- Get Shop locations
+local shopsFolder = workspace:FindFirstChild("Shops")
+local shopLocations = getLocationsFromFolder(shopsFolder)
+
+-- Proximity Section
+local ProximitySection = TPTab:Section({
+    Title = "Proximity Teleports",
+    Icon = "map",
+    Opened = true,
+})
+
+-- Proximity Dropdown
+local ProximityDropdown = TPTab:Dropdown({
+    Title = "Select Proximity Locations",
+    Values = proximityLocations,
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedProximityLocations = options
+        print("📍 Selected Proximity:", HttpService:JSONEncode(options))
+    end
+})
+
+-- Proximity TP Button
+local ProximityButton = TPTab:Button({
+    Title = "Teleport to Proximity",
+    Desc = "Tween to selected proximity locations",
+    Locked = false,
+    Callback = function()
+        if #selectedProximityLocations == 0 then
+            warn("⚠️ No proximity location selected!")
+            return
+        end
+        
+        for _, locationName in pairs(selectedProximityLocations) do
+            local location = proximityFolder:FindFirstChild(locationName)
+            if location then
+                local targetPos
+                
+                if location:IsA("BasePart") then
+                    targetPos = location.Position
+                elseif location:IsA("Model") and location.PrimaryPart then
+                    targetPos = location.PrimaryPart.Position
+                elseif location:IsA("Model") then
+                    local part = location:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        targetPos = part.Position
+                    end
+                end
+                
+                if targetPos then
+                    print("🎯 Teleporting to:", locationName)
+                    TweenTP(targetPos)
+                    wait(0.5)
+                end
+            else
+                warn("❌ Location not found:", locationName)
+            end
+        end
+    end
+})
+
+TPTab:Divider()
+
+-- Shops Section
+local ShopsSection = TPTab:Section({
+    Title = "Shop Teleports",
+    Icon = "shopping-bag",
+    Opened = true,
+})
+
+-- Shops Dropdown
+local ShopsDropdown = TPTab:Dropdown({
+    Title = "Select Shop Locations",
+    Values = shopLocations,
+    Value = {},
+    Multi = true,
+    AllowNone = true,
+    Callback = function(options)
+        selectedShopLocations = options
+        print("🏪 Selected Shops:", HttpService:JSONEncode(options))
+    end
+})
+
+-- Shops TP Button
+local ShopsButton = TPTab:Button({
+    Title = "Teleport to Shops",
+    Desc = "Tween to selected shop locations",
+    Locked = false,
+    Callback = function()
+        if #selectedShopLocations == 0 then
+            warn("⚠️ No shop location selected!")
+            return
+        end
+        
+        for _, locationName in pairs(selectedShopLocations) do
+            local location = shopsFolder:FindFirstChild(locationName)
+            if location then
+                local targetPos
+                
+                if location:IsA("BasePart") then
+                    targetPos = location.Position
+                elseif location:IsA("Model") and location.PrimaryPart then
+                    targetPos = location.PrimaryPart.Position
+                elseif location:IsA("Model") then
+                    local part = location:FindFirstChildWhichIsA("BasePart")
+                    if part then
+                        targetPos = part.Position
+                    end
+                end
+                
+                if targetPos then
+                    print("🎯 Teleporting to:", locationName)
+                    TweenTP(targetPos)
+                    wait(0.5)
+                end
+            else
+                warn("❌ Location not found:", locationName)
+            end
+        end
+    end
+})
+
+print("✅ Teleport script loaded!")
 
 local v221 = Window:Tab({
         Title = "Forge",
