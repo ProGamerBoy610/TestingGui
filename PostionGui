@@ -1,12 +1,15 @@
--- Forge Auto Farm Script with Wind UI - Fully Fixed & Working
+-- Forge Auto Farm Script with Wind UI - Enhanced System
+
 local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- Services
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local HttpService = game:GetService("HttpService")
-local UserInputService = game:GetService("UserInputService")
+
 local LocalPlayer = Players.LocalPlayer
 
 WindUI:SetNotificationLower(true)
@@ -57,19 +60,46 @@ Window:EditOpenButton({
 })
 
 -- Add Version Tag
-Window:Tag({Title = "v4.5", Color = Color3.fromHex("#3b82f6"), Radius = 8})
-Window:Tag({Title = "The Forge", Color = Color3.fromHex("#fa0000"), Radius = 8})
+Window:Tag({
+    Title = "v4.5",
+    Color = Color3.fromHex("#3b82f6"),
+    Radius = 8,
+})
+Window:Tag({
+    Title = "The Forge",
+    Color = Color3.fromHex("#fa0000"),
+    Radius = 8,
+})
 
 -- ==================== PLAYER INFORMATION SECTION ====================
-local InfoTab = Window:Tab({Title = "Info", Icon = "info"})
+
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
+
 InfoTab:Select()
+
+local Sectiontest = InfoTab:Section({
+    Title = "Player Information Dashboard",
+    Icon = "user-check",
+})
 
 InfoTab:Paragraph({
     Title = "Player Information Dashboard",
     Desc = "Complete player details, game information, and community access",
-    Color = "Blue"
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
 })
 
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 local Player = Players.LocalPlayer
 local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
 local AccountAge = Player.AccountAge
@@ -88,261 +118,871 @@ InfoTab:Paragraph({
     ),
     Color = "Blue",
     Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
-    ImageSize = 52
+    ImageSize = 52,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
 })
 
 InfoTab:Divider()
 
--- Discord Section (kept unchanged - it was working fine)
+-- ==================== DISCORD COMMUNITY SECTION ====================
+local DiscordSection = InfoTab:Section({
+    Title = "Join Our Discord Community",
+    Icon = "users",
+})
+
+InfoTab:Paragraph({
+    Title = "🎮 Connect & Engage",
+    Desc = "Join thousands of players in our Discord community for updates, support, and exclusive content!",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+-- Discord API Configuration
 local InviteCode = "UKYHGddQD3"
 local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
 
+-- Universal HTTP Request Handler
 local function HttpRequest(data)
-    if syn and syn.request then return syn.request(data)
-    elseif http and http.request then return http.request(data)
-    elseif http_request then return http_request(data)
-    elseif request then return request(data)
-    else error("Your executor does not support HTTP requests.") end
+    if syn and syn.request then
+        return syn.request(data)
+    elseif http and http.request then
+        return http.request(data)
+    elseif http_request then
+        return http_request(data)
+    elseif request then
+        return request(data)
+    else
+        error("Your executor does not support HTTP requests.")
+    end
 end
 
-local DiscordResponse, DiscordErrorMessage, DiscordInfoParagraph
+local DiscordResponse
+local DiscordErrorMessage = nil
+local DiscordInfoParagraph
 
+-- Fetch Discord Information
 xpcall(function()
-    local req = HttpRequest({Url = DiscordAPI, Method = "GET", Headers = {["Accept"] = "application/json"}})
-    if req and req.Body then DiscordResponse = HttpService:JSONDecode(req.Body) end
+    local req = HttpRequest({
+        Url = DiscordAPI,
+        Method = "GET",
+        Headers = {
+            ["Accept"] = "application/json"
+        }
+    })
+
+    if req and req.Body then
+        DiscordResponse = HttpService:JSONDecode(req.Body)
+    else
+        error("Invalid response from Discord API.")
+    end
 end, function(err)
+    warn("Error fetching Discord info: " .. tostring(err))
     DiscordErrorMessage = tostring(err)
     DiscordResponse = nil
 end)
 
+-- Display Discord Information
 if DiscordResponse and DiscordResponse.guild then
     local guildName = DiscordResponse.guild.name or "Unknown Server"
     local memberCount = DiscordResponse.approximate_member_count or 0
     local onlineCount = DiscordResponse.approximate_presence_count or 0
-
-    local config = {
+    
+    local ParagraphConfig = {
         Title = "🔷 " .. guildName,
-        Desc = '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. memberCount ..
-               '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. onlineCount ..
-               '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. math.floor((onlineCount / math.max(memberCount, 1)) * 100) .. '% active',
+        Desc = 
+            '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(memberCount) ..
+            '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(onlineCount) ..
+            '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. math.floor((onlineCount / math.max(memberCount, 1)) * 100) .. '% active',
         Color = "Red",
         ImageSize = 52,
         Buttons = {
-            {Icon = "link", Title = "Copy Invite", Callback = function()
-                setclipboard("https://discord.gg/" .. InviteCode)
-                WindUI:Notify({Title = "✅ Copied!", Content = "Discord invite copied to clipboard.", Duration = 3})
-            end},
-            {Icon = "refresh-cw", Title = "Update Stats", Callback = function()
-                -- Update logic (same as original)
-                xpcall(function()
-                    local upd = HttpRequest({Url = DiscordAPI, Method = "GET", Headers = {["Accept"] = "application/json"}})
-                    if upd and upd.Body then
-                        local updated = HttpService:JSONDecode(upd.Body)
-                        if updated and updated.guild then
-                            local newM = updated.approximate_member_count or 0
-                            local newO = updated.approximate_presence_count or 0
-                            local act = math.floor((newO / math.max(newM, 1)) * 100)
-                            DiscordInfoParagraph:SetDesc(
-                                '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. newM ..
-                                '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. newO ..
-                                '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. act .. '% active'
-                            )
-                            WindUI:Notify({Title = "🔄 Updated!", Content = "Discord stats refreshed.", Duration = 2})
+            {
+                Icon = "link",
+                Title = "Copy Invite",
+                Callback = function()
+                    pcall(function()
+                        setclipboard("https://discord.gg/" .. InviteCode)
+                        WindUI:Notify({
+                            Title = "✅ Copied!",
+                            Content = "Discord invite copied to clipboard.",
+                            Duration = 3,
+                            Icon = "copy",
+                        })
+                    end)
+                end
+            },
+            {
+                Icon = "refresh-cw",
+                Title = "Update Stats",
+                Callback = function()
+                    xpcall(function()
+                        local upd = HttpRequest({
+                            Url = DiscordAPI,
+                            Method = "GET",
+                            Headers = {
+                                ["Accept"] = "application/json"
+                            }
+                        })
+                        if upd and upd.Body then
+                            local UpdatedResponse = HttpService:JSONDecode(upd.Body)
+                            if UpdatedResponse and UpdatedResponse.guild then
+                                local newMembers = UpdatedResponse.approximate_member_count or 0
+                                local newOnline = UpdatedResponse.approximate_presence_count or 0
+                                local activity = math.floor((newOnline / math.max(newMembers, 1)) * 100)
+                                
+                                DiscordInfoParagraph:SetDesc(
+                                    '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(newMembers) ..
+                                    '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(newOnline) ..
+                                    '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. activity .. '% active'
+                                )
+                                WindUI:Notify({
+                                    Title = "🔄 Updated!",
+                                    Content = "Discord stats refreshed successfully.",
+                                    Duration = 2,
+                                    Icon = "check",
+                                })
+                            end
                         end
-                    end
-                end, function() WindUI:Notify({Title = "⚠️ Failed", Content = "Could not refresh stats.", Duration = 3}) end)
-            end}
+                    end, function(err)
+                        warn("Error updating Discord info: " .. tostring(err))
+                        WindUI:Notify({
+                            Title = "⚠️ Update Failed",
+                            Content = "Could not refresh Discord stats.",
+                            Duration = 3,
+                            Icon = "alert-circle",
+                        })
+                    end)
+                end
+            }
         }
     }
 
+    -- Add guild icon if available
     if DiscordResponse.guild.icon then
-        config.Image = "https://cdn.discordapp.com/icons/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.icon .. ".png?size=256"
-    end
-    if DiscordResponse.guild.banner then
-        config.Thumbnail = "https://cdn.discordapp.com/banners/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.banner .. ".png?size=512"
-        config.ThumbnailSize = 80
+        ParagraphConfig.Image = "https://cdn.discordapp.com/icons/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.icon .. ".png?size=256"
     end
 
-    DiscordInfoParagraph = InfoTab:Paragraph(config)
+    -- Add banner if available
+    if DiscordResponse.guild.banner then
+        ParagraphConfig.Thumbnail = "https://cdn.discordapp.com/banners/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.banner .. ".png?size=512"
+        ParagraphConfig.ThumbnailSize = 80
+    end
+
+    DiscordInfoParagraph = InfoTab:Paragraph(ParagraphConfig)
 else
-    InfoTab:Paragraph({Title = "⚠️ Discord Info Unavailable", Desc = DiscordErrorMessage or "Unable to fetch info.", Color = "Blue"})
+    InfoTab:Paragraph({
+        Title = "⚠️ Discord Info Unavailable",
+        Desc = DiscordErrorMessage or "Unable to fetch Discord server information. Try again later!",
+        Color = "Blue",
+        ImageSize = 26,
+    })
 end
 
+-- Quick Action Button
 InfoTab:Button({
     Title = "📋 Copy Discord Link",
+    Desc = "Copy invite link to clipboard",
+    Locked = false,
     Callback = function()
         setclipboard("https://discord.gg/" .. InviteCode)
-        WindUI:Notify({Title = "✅ Copied!", Content = "Discord invite copied", Duration = 3})
+        WindUI:Notify({
+            Title = "✅ Link Copied!",
+            Content = "Discord invite copied to clipboard",
+            Duration = 3,
+            Icon = "copy",
+        })
     end
 })
 
--- ==================== PLAYER TAB ====================
-local PlayerTab = Window:Tab({Title = "Player", Icon = "user-check"})
+InfoTab:Space()
 
--- (Your full Player tab code with Infinite Jump, Speed, Jump, Fly, etc. remains unchanged - it was working)
--- ... [All the Player tab code you had - infinite jump, speed, jump boost, fly, etc.] ...
+-- ==================== TAB 2: PLAYER ====================
+local PlayerTab = Window:Tab({
+    Title = "Player",
+    Icon = "user-check",
+    Locked = false,
+})
 
--- ==================== MAINFARM (AUTO MINE) - FIXED ====================
-local MainTab = Window:Tab({Title = "MainFarm", Icon = "house"})
+local Section3 = PlayerTab:Section({
+    Title = "Player Controls",
+    Icon = "user-check",
+})
+
+PlayerTab:Paragraph({
+    Title = "Player Controls",
+    Desc = "Use the buttons below to control your player character",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+PlayerTab:Divider()
+
+local Section4 = PlayerTab:Section({
+    Title = "Movement System",
+    Icon = "zap",
+    Opened = true,
+})
+
+-- Infinite Jump Toggle
+local infiniteJumpEnabled = false
+local UserInputService = game:GetService("UserInputService")
+
+PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Press Space to jump infinitely",
+    Icon = "arrow-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+        WindUI:Notify({
+            Title = state and "Infinite Jump Enabled! 🚀" or "Infinite Jump Disabled!",
+            Content = state and "Press Space to jump infinitely" or "Jump mechanics restored to normal",
+            Duration = 3,
+        })
+    end
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled and Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        local humanoid = Player.Character.Humanoid
+        if humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local ActiveSpeedBoost = false
+local ActiveJumpBoost = false
+local ActiveNoclip = false
+local ActiveInstantPrompts = false
+local ValueSpeed = 16
+local ValueJumpHeight = 7.2
+local OldSpeed = 16
+local OldJumpHeight = 7.2
+
+local function getCharacter()
+    return LocalPlayer.Character
+end
+
+local function getHumanoid()
+    local character = getCharacter()
+    return character and character:FindFirstChildOfClass("Humanoid")
+end
+
+local function updateOriginalValues()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
+        OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
+    end
+end
+
+updateOriginalValues()
+LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
+
+
+
+PlayerTab:Divider()
+
+-- Speed Controls
+PlayerTab:Slider({
+    Title = "Walk Speed Setting",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 500,
+        Default = 16,
+    },
+    Callback = function(value)
+        ValueSpeed = value
+        print("🏃 Walk speed set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Speed Boost",
+    Desc = "Boost your walking speed",
+    Icon = "zap",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveSpeedBoost = state
+        
+        task.spawn(function()
+            while ActiveSpeedBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+            end
+        end)
+        
+        print("🏃 Speed Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+-- Jump Controls
+PlayerTab:Slider({
+    Title = "Jump Height Setting",
+    Step = 1,
+    Value = {
+        Min = 7,
+        Max = 200,
+        Default = 50,
+    },
+    Callback = function(value)
+        ValueJumpHeight = value
+        print("🦘 Jump height set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Jump Boost",
+    Desc = "Increase your jump height",
+    Icon = "move-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveJumpBoost = state
+        
+        task.spawn(function()
+            while ActiveJumpBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    local humanoid = LocalPlayer.Character.Humanoid
+                    humanoid.UseJumpPower = false
+                    humanoid.JumpHeight = ValueJumpHeight
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                local humanoid = LocalPlayer.Character.Humanoid
+                humanoid.JumpHeight = 7.2
+            end
+        end)
+        
+        print("🦘 Jump Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+PlayerTab:Space()
+
+-- Fly System
+local IYMouse = Players.LocalPlayer:GetMouse()
+local FLYING = false
+local QEfly = true
+local iyflyspeed = 1
+local vehicleflyspeed = 1
+local ActivateFly = false
+
+local function sFLY(vfly)
+    repeat task.wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat task.wait() until IYMouse
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+
+    local function FLY()
+        FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        task.spawn(function()
+            repeat task.wait()
+                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+            until not FLYING
+            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            SPEED = 0
+            BG:Destroy()
+            BV:Destroy()
+            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            end
+        end)
+    end
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 's' then
+            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'd' then 
+            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif QEfly and KEY:lower() == 'e' then
+            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+        elseif QEfly and KEY:lower() == 'q' then
+            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+        end
+        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = 0
+        elseif KEY:lower() == 's' then
+            CONTROL.B = 0
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = 0
+        elseif KEY:lower() == 'd' then
+            CONTROL.R = 0
+        elseif KEY:lower() == 'e' then
+            CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then
+            CONTROL.E = 0
+        end
+    end)
+    FLY()
+end
+
+local function NOFLY()
+    FLYING = false
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+end
+
+-- Mobile Fly
+local velocityHandlerName = "BodyVelocity"
+local gyroHandlerName = "BodyGyro"
+local mfly1
+local mfly2
+
+local function UnMobileFly()
+    pcall(function()
+        FLYING = false
+        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        root:FindFirstChild(velocityHandlerName):Destroy()
+        root:FindFirstChild(gyroHandlerName):Destroy()
+        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+        mfly1:Disconnect()
+        mfly2:Disconnect()
+    end)
+end
+
+local function MobileFly()
+    UnMobileFly()
+    FLYING = true
+
+    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local camera = workspace.CurrentCamera
+    local v3none = Vector3.new()
+    local v3zero = Vector3.new(0, 0, 0)
+    local v3inf = Vector3.new(9e9, 9e9, 9e9)
+
+    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = v3zero
+    bv.Velocity = v3zero
+
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = v3inf
+    bg.P = 1000
+    bg.D = 50
+
+    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = velocityHandlerName
+        bv.Parent = root
+        bv.MaxForce = v3zero
+        bv.Velocity = v3zero
+
+        local bg = Instance.new("BodyGyro")
+        bg.Name = gyroHandlerName
+        bg.Parent = root
+        bg.MaxTorque = v3inf
+        bg.P = 1000
+        bg.D = 50
+    end)
+
+    mfly2 = RunService.RenderStepped:Connect(function()
+        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        camera = workspace.CurrentCamera
+        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
+            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
+            local GyroHandler = root:FindFirstChild(gyroHandlerName)
+
+            VelocityHandler.MaxForce = v3inf
+            GyroHandler.MaxTorque = v3inf
+            humanoid.PlatformStand = true
+            GyroHandler.CFrame = camera.CoordinateFrame
+            VelocityHandler.Velocity = v3none
+
+            local direction = controlModule:GetMoveVector()
+            if direction.X > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.X < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.Z > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+            if direction.Z < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+        end
+    end)
+end
+
+PlayerTab:Slider({
+    Title = "Fly Speed",
+    Step = 0.1,
+    Value = {
+        Min = 0.1,
+        Max = 10,
+        Default = 1
+    },
+    Callback = function(val)
+        iyflyspeed = val
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Fly",
+    Desc = "Enable flying with WASD controls",
+    Icon = "plane",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActivateFly = state
+        task.spawn(function()
+            if not FLYING and ActivateFly then
+                if UserInputService.TouchEnabled then
+                    MobileFly()
+                else
+                    NOFLY()
+                    task.wait()
+                    sFLY()
+                end
+            elseif FLYING and not ActivateFly then
+                if UserInputService.TouchEnabled then
+                    UnMobileFly()
+                else
+                    NOFLY()
+                end
+            end
+        end)
+    end
+})
+
+PlayerTab:Space()
+
+local MainTab = Window:Tab({
+    Title = "MainFarm",
+    Icon = "house"
+})
+
+local Section = MainTab:Section({
+    Title = "Auto Mine",
+    Icon = "pickaxe"
+})
 
 -- Global settings
 _G.AutoMine = _G.AutoMine or false
 _G.MineTheseOres = _G.MineTheseOres or {}
 _G.TweenSpeed = _G.TweenSpeed or 67
+_G.FilterByArea = _G.FilterByArea or false
+_G.SelectedAreas = _G.SelectedAreas or {}
 _G.MineMode = _G.MineMode or "Ores"
 
+-- Find tool service
 local ToolService
 pcall(function()
     ToolService = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF.ToolActivated
 end)
 
+-- Rock and ore definitions
 local RockOreTypes = {
     Pebble = {"Stone", "Sand Stone", "Copper", "Iron", "Poopite"},
     Rock = {"Sand Stone", "Copper", "Iron", "Tin", "Silver"},
     Boulder = {"Copper", "Iron", "Tin", "Silver", "Gold", "Platinum"}
 }
-local AllOres = {"Stone", "Sand Stone", "Copper", "Iron", "Tin", "Silver", "Gold", "Platinum", "Cobalt", "Titanium", "Diamond", "Ruby", "Emerald"}
+
+local AllOres = {
+    "Stone", "Sand Stone", "Copper", "Iron", "Tin", "Silver", "Gold",
+    "Platinum", "Cobalt", "Titanium", "Diamond", "Ruby", "Emerald"
+}
+
 local AllRocks = {"Pebble", "Rock", "Boulder", "Basalt Rock"}
 
--- Helper functions (unchanged)
-local function GetHRP() local char = LocalPlayer.Character return char and char:FindFirstChild("HumanoidRootPart") end
-local function GetRockType(rock) 
-    if not rock then return nil end
-    local attr = rock:GetAttribute("RockType")
-    if attr then return tostring(attr) end
-    return RockOreTypes[rock.Name] and rock.Name or nil
+-- Helper functions
+local function GetHRP()
+    local char = LocalPlayer.Character
+    return char and char:FindFirstChild("HumanoidRootPart")
 end
+
+local function GetRockType(rock)
+    if not rock then return nil end
+    
+    local rockType = rock:GetAttribute("RockType")
+    if rockType then return tostring(rockType) end
+    
+    if RockOreTypes[rock.Name] then
+        return rock.Name
+    end
+    
+    return nil
+end
+
 local function IsDesiredRock(rock)
-    if not rock or not _G.MineTheseOres or #_G.MineTheseOres == 0 then return true end
-    local rt = GetRockType(rock)
-    if not rt or not RockOreTypes[rt] then return false end
+    if not rock then return false end
+    if not _G.MineTheseOres or #_G.MineTheseOres == 0 then return true end
+    
+    local rockType = GetRockType(rock)
+    if not rockType then return false end
+    
+    local drops = RockOreTypes[rockType]
+    if not drops then return false end
+    
     for _, desired in ipairs(_G.MineTheseOres) do
-        for _, drop in ipairs(RockOreTypes[rt]) do
-            if string.lower(drop) == string.lower(desired) then return true end
+        for _, drop in ipairs(drops) do
+            if string.lower(drop) == string.lower(desired) then
+                return true
+            end
         end
     end
+    
     return false
 end
+
 local function GetRockHealth(rock)
     if not rock then return nil end
-    local h = rock:GetAttribute("Health")
-    if h then return h end
+    
+    local health = rock:GetAttribute("Health")
+    if health then return health end
+    
     local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
-    return part and part:GetAttribute("Health") or nil
+    if part then
+        health = part:GetAttribute("Health")
+        if health then return health end
+    end
+    
+    return nil
 end
+
 local function FindNearestRock()
     local hrp = GetHRP()
     if not hrp then return nil end
-    local folder = Workspace:FindFirstChild("Rocks")
-    if not folder then return nil end
-    local nearest, minDist = nil, math.huge
-    for _, area in ipairs(folder:GetChildren()) do
+    
+    local rocksFolder = Workspace:FindFirstChild("Rocks")
+    if not rocksFolder then return nil end
+    
+    local nearest = nil
+    local minDist = math.huge
+    
+    for _, area in ipairs(rocksFolder:GetChildren()) do
         for _, rock in ipairs(area:GetDescendants()) do
-            if (rock:IsA("Model") or rock:IsA("BasePart")) and IsDesiredRock(rock) then
-                local health = GetRockHealth(rock)
-                if health and health > 0 then
-                    local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
-                    if part then
-                        local dist = (hrp.Position - part.Position).Magnitude
-                        if dist < minDist then nearest, minDist = rock, dist end
+            if rock:IsA("Model") or rock:IsA("BasePart") then
+                if IsDesiredRock(rock) then
+                    local health = GetRockHealth(rock)
+                    if health and health > 0 then
+                        local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local dist = (hrp.Position - part.Position).Magnitude
+                            if dist < minDist then
+                                nearest = rock
+                                minDist = dist
+                            end
+                        end
                     end
                 end
             end
         end
     end
+    
     return nearest
 end
+
 local function TweenToRock(rock)
     local hrp = GetHRP()
     if not hrp or not rock then return end
+    
     local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
     if not part then return end
-    local target = part.Position + Vector3.new(0, 3, 0)
-    local dist = (hrp.Position - target).Magnitude
-    local time = dist / (_G.TweenSpeed or 67)
-    local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {CFrame = CFrame.new(target)})
+    
+    local targetPos = part.Position + Vector3.new(0, 3, 0)
+    local distance = (hrp.Position - targetPos).Magnitude
+    local time = distance / (_G.TweenSpeed or 67)
+    
+    local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {
+        CFrame = CFrame.new(targetPos)
+    })
+    
     tween:Play()
     tween.Completed:Wait()
 end
+
 local function ActivateTool()
-    if ToolService then pcall(function() ToolService:InvokeServer("Pickaxe") end) end
+    if ToolService then
+        pcall(function()
+            ToolService:InvokeServer("Pickaxe")
+        end)
+    end
 end
 
--- FIXED UI SECTION
-local MasterSection = MainTab:Section({Title = "Master Controls", Icon = "play"})
-MasterSection:Toggle({
+-- Auto mine toggle
+MainTab:Window({Title = "Master", Icon = "play"}):Toggle({
     Title = "Auto Mine (Master)",
     Desc = "Enable/disable auto-miner",
-    Default = _G.AutoMine,
-    Callback = function(v)
-        _G.AutoMine = v
-        WindUI:Notify({Title = "Auto Mine", Content = v and "Enabled" or "Disabled", Duration = 3})
+    Value = _G.AutoMine,
+    Callback = function(value)
+        _G.AutoMine = value
+        vu2:Notify({
+            Title = "Auto Mine",
+            Content = value and "Enabled" or "Disabled",
+            Duration = 1.5
+        })
     end
 })
 
-local SelectionSection = MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"})
-SelectionSection:Dropdown({
+-- Mode selection
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Mine Type",
     Desc = "Choose what to mine",
     Values = {"Ores", "Rocks"},
-    Default = _G.MineMode,
+    Value = _G.MineMode,
     Multi = false,
-    Callback = function(v) _G.MineMode = v end
+    Callback = function(value)
+        _G.MineMode = value
+        _G.MineTheseOres = {_G.MineMode == "Ores" and AllOres[1] or AllRocks[1]}
+    end
 })
-SelectionSection:Dropdown({
+
+-- Ore/Rock selection
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Ore Drops",
     Desc = "Select ores to mine",
     Values = AllOres,
-    Default = {},
+    Value = {},
     Multi = true,
-    Callback = function(v)
+    Callback = function(value)
         if _G.MineMode == "Ores" then
-            _G.MineTheseOres = type(v) == "table" and v or {v}
+            _G.MineTheseOres = type(value) == "table" and value or {value}
         end
     end
 })
 
-local OptionsSection = MainTab:Section({Title = "Options", Icon = "settings"})
-OptionsSection:Slider({
+-- Speed slider
+MainTab:window({Title = "Options", Icon = "settings"}):Slider({
     Title = "Tween Speed",
-    Desc = "Movement speed to rocks (higher = faster)",
+    Desc = "Movement speed to rocks",
     Step = 1,
-    Value = {Min = 20, Max = 120, Default = _G.TweenSpeed},
-    Callback = function(v) _G.TweenSpeed = v end
+    Value = {Min = 1, Max = 100, Default = _G.TweenSpeed},
+    Callback = function(value)
+        _G.TweenSpeed = value
+    end
 })
 
--- Mining loop (unchanged)
+-- Main mining loop
 task.spawn(function()
     local currentRock = nil
+    
     while true do
         task.wait(0.12)
-        if not _G.AutoMine then currentRock = nil continue end
+        
+        if not _G.AutoMine then
+            currentRock = nil
+            continue
+        end
+        
         local hrp = GetHRP()
-        if not hrp then task.wait(0.4) continue end
-
+        if not hrp then
+            task.wait(0.4)
+            continue
+        end
+        
+        -- Check current rock
         if currentRock and currentRock.Parent then
             local health = GetRockHealth(currentRock)
             if health and health > 0 and IsDesiredRock(currentRock) then
+                -- Keep mining
                 ActivateTool()
                 task.wait(0.05)
                 continue
             end
         end
-
+        
+        -- Find new rock
         currentRock = FindNearestRock()
-        if not currentRock then task.wait(0.28) continue end
-
+        
+        if not currentRock then
+            task.wait(0.28)
+            continue
+        end
+        
+        -- Move to rock
         TweenToRock(currentRock)
-
+        
+        -- Start mining
         while currentRock and currentRock.Parent and _G.AutoMine do
             local health = GetRockHealth(currentRock)
-            if not health or health <= 0 then break end
+            if not health or health <= 0 then
+                break
+            end
+            
             ActivateTool()
             task.wait(0.05)
         end
+        
         currentRock = nil
     end
 end)
+
+
 
 local v221 = Window:Tab({
         Title = "Forge",
@@ -665,718 +1305,13 @@ local v221 = Window:Tab({
     print("Forge Helper loaded.")
 
 
-
-_G.RaceTab = Window:Tab({
-        Title = "Races",
-        Icon = "list-check"
-    })
-    _G.Section = _G.RaceTab:Section({
-        Title = "Reroll race",
-        Icon = "refresh-ccw"
-    })
-    if not _G.__AUTO_REROLL_LOADED then
-        _G.__AUTO_REROLL_LOADED = true
-        _G.Players = game:GetService("Players")
-        _G.ReplicatedStorage = game:GetService("ReplicatedStorage")
-        _G.RunService = game:GetService("RunService")
-        _G.RACE_OPTIONS = {
-            "Angel",
-            "Demon",
-            "Developer",
-            "Dragonborn",
-            "Elf",
-            "Goblin",
-            "Golem",
-            "Minotaur",
-            "Orc",
-            "Orc Lord",
-            "Shadow",
-            "Undead",
-            "Zombie",
-            "Human",
-            "Dwarf"
-        }
-        _G.RerollTargets = _G.RerollTargets or {
-            "Angel"
-        }
-        _G.RerollDelay = tonumber(_G.RerollDelay) or 0.6
-        _G.RerollDetectTimeout = tonumber(_G.RerollDetectTimeout) or 3
-        _G.RerollMaxAttempts = tonumber(_G.RerollMaxAttempts) or 0
-        _G.RerollNotifyOnSuccess = _G.RerollNotifyOnSuccess == nil and true or _G.RerollNotifyOnSuccess
-        _G.RerollAutoStart = _G.RerollAutoStart or false
-        _G.AutoRerollRaceEnabled = _G.AutoRerollRaceEnabled or false
-        _G._RerollStatus = _G._RerollStatus or "Idle"
-        _G._RerollAttemptCount = _G._RerollAttemptCount or 0
-        _G._RerollLastResult = _G._RerollLastResult or "n/a"
-        _G._RerollLastTime = _G._RerollLastTime or 0
-        _G.__AUTO_REROLL_HANDLES = _G.__AUTO_REROLL_HANDLES or {}
-        _G.handles = _G.__AUTO_REROLL_HANDLES
-        _G.StatsParagraph = _G.StatsParagraph or nil
-        _G.RarityParagraph = _G.RarityParagraph or nil
-        function findRerollRemote()
-            if _G.RaceRerollRemote then
-                return _G.RaceRerollRemote
-            else
-                local v776, v777 = pcall(function()
-                    return _G.ReplicatedStorage.Shared.Packages.Knit.Services.RaceService.RF.Reroll
-                end)
-                if v776 and v777 then
-                    _G.RaceRerollRemote = v777
-                    return v777
-                else
-                    pcall(function()
-                        local v778 = _G.ReplicatedStorage:FindFirstChild("Shared")
-                        if v778 then
-                            local v779 = v778:FindFirstChild("Packages")
-                            if v779 then
-                                local v780 = v779:FindFirstChild("Knit")
-                                if v780 then
-                                    local v781 = v780:FindFirstChild("Services")
-                                    if v781 then
-                                        local v782 = v781:FindFirstChild("RaceService")
-                                        if v782 then
-                                            local v783 = v782:FindFirstChild("RF")
-                                            if v783 then
-                                                local v784 = v783:FindFirstChild("Reroll")
-                                                if v784 then
-                                                    _G.RaceRerollRemote = v784
-                                                end
-                                            end
-                                        else
-                                            return
-                                        end
-                                    else
-                                        return
-                                    end
-                                else
-                                    return
-                                end
-                            else
-                                return
-                            end
-                        else
-                            return
-                        end
-                    end)
-                    return _G.RaceRerollRemote
-                end
-            end
-        end
-        function getPlayerRaceFolder()
-            local v785 = _G.Players.LocalPlayer
-            if not v785 then
-                return nil
-            end
-            local v786 = workspace:FindFirstChild("Living")
-            if not v786 then
-                return nil
-            end
-            local v787 = v786:FindFirstChild(v785.Name)
-            local v788
-            if v787 then
-                v788 = v787
-            else
-                local v789, v790, v791 = ipairs(v786:GetChildren())
-                while true do
-                    v791, v788 = v789(v790, v791)
-                    if v791 == nil then
-                        v788 = v787
-                        break
-                    end
-                    if v788.Name == v785.Name then
-                        break
-                    end
-                end
-            end
-            if v788 then
-                return v788:FindFirstChild("RaceFolder") or v788:FindFirstChild("Race")
-            else
-                return nil
-            end
-        end
-        function getCurrentRace()
-            local v792 = getPlayerRaceFolder()
-            if not v792 then
-                return nil
-            end
-            local v793, v794, v795 = ipairs(v792:GetChildren())
-            while true do
-                local v796
-                v795, v796 = v793(v794, v795)
-                if v795 == nil then
-                    break
-                end
-                if v796:IsA("StringValue") or (v796:IsA("ObjectValue") or v796:IsA("ValueBase")) then
-                    if v796.Value and tostring(v796.Value) ~= "" then
-                        return tostring(v796.Value)
-                    end
-                elseif v796.Name and v796.Name ~= "" then
-                    return v796.Name
-                end
-            end
-            return nil
-        end
-        function isDesiredRace(p797)
-            if not p797 then
-                return false
-            end
-            local v798 = tostring(p797):lower()
-            local v799, v800, v801 = ipairs(_G.RerollTargets or {})
-            while true do
-                local v802
-                v801, v802 = v799(v800, v801)
-                if v801 == nil then
-                    break
-                end
-                if type(v802) == "string" and v798 == tostring(v802):lower() then
-                    return true
-                end
-            end
-            return false
-        end
-        function updateStatsParagraph()
-            if _G.StatsParagraph then
-                local vu803 = ("Current Race: %s\nDesired: %s\nAttempts: %d\nStatus: %s\nLast Result: %s\nLast Time: %s"):format(getCurrentRace() or "Unknown", _G.RerollTargets and (# _G.RerollTargets > 0 and table.concat(_G.RerollTargets, ", ") or "None") or "None", _G._RerollAttemptCount or 0, _G._RerollStatus or "Idle", tostring(_G._RerollLastResult or "n/a"), _G._RerollLastTime == 0 and "n/a" or os.date("%X", _G._RerollLastTime))
-                pcall(function()
-                    _G.StatsParagraph:SetDesc(vu803)
-                end)
-            end
-        end
-        function attemptRerollOnce()
-            local vu804 = findRerollRemote()
-            if vu804 then
-                local v805, v806 = pcall(function()
-                    return vu804:InvokeServer()
-                end)
-                if v805 then
-                    _G._RerollLastResult = "Invoked"
-                    _G._RerollLastTime = os.time()
-                    return true, v806
-                else
-                    _G._RerollLastResult = ("Error: %s"):format(tostring(v806))
-                    _G._RerollLastTime = os.time()
-                    return false, v806
-                end
-            else
-                _G._RerollStatus = "No remote"
-                return false, "no-remote"
-            end
-        end
-        function waitForRaceChange(p807)
-            local v808 = tick() + (p807 or (_G.RerollDetectTimeout or 3))
-            local v809 = getCurrentRace()
-            while tick() < v808 do
-                if _G.handles._RerollStop then
-                    return nil, "stopped"
-                end
-                local v810 = getCurrentRace()
-                if v810 and v810 ~= v809 then
-                    return v810, "changed"
-                end
-                task.wait(0.12)
-            end
-            return nil, "timeout"
-        end
-        _G.handles._RerollThread = _G.handles._RerollThread or nil
-        _G.handles._StatsUpdater = _G.handles._StatsUpdater or nil
-        _G.handles._RerollStop = false
-        function startRerollLoop()
-            if not _G.handles._RerollThread then
-                _G.handles._RerollStop = false
-                _G._RerollAttemptCount = 0
-                _G._RerollStatus = "Running"
-                updateStatsParagraph()
-                if vu2 and _G.RerollNotifyOnSuccess then
-                    pcall(function()
-                        vu2:Notify({
-                            Title = "Reroll",
-                            Content = "Started rerolling for " .. table.concat(_G.RerollTargets, ", "),
-                            Duration = 3,
-                            Icon = "refresh-ccw"
-                        })
-                    end)
-                end
-                _G.handles._RerollThread = task.spawn(function()
-                    while not _G.handles._RerollStop do
-                        if (_G.RerollMaxAttempts or 0) > 0 and (_G._RerollAttemptCount or 0) >= (_G.RerollMaxAttempts or 0) then
-                            _G._RerollStatus = "Max attempts reached"
-                            break
-                        end
-                        _G._RerollAttemptCount = (_G._RerollAttemptCount or 0) + 1
-                        _G._RerollStatus = "Invoking"
-                        updateStatsParagraph()
-                        local _, _ = attemptRerollOnce()
-                        _G._RerollStatus = "Waiting for result"
-                        updateStatsParagraph()
-                        local vu811, v812 = waitForRaceChange(_G.RerollDetectTimeout)
-                        if vu811 then
-                            _G._RerollLastResult = "Got " .. tostring(vu811)
-                            _G._RerollLastTime = os.time()
-                            _G._RerollStatus = "Got " .. tostring(vu811)
-                            updateStatsParagraph()
-                            if isDesiredRace(vu811) then
-                                if vu2 and _G.RerollNotifyOnSuccess then
-                                    pcall(function()
-                                        vu2:Notify({
-                                            Title = "Success",
-                                            Content = "Acquired " .. tostring(vu811) .. " after " .. tostring(_G._RerollAttemptCount) .. " rerolls",
-                                            Duration = 4,
-                                            Icon = "star"
-                                        })
-                                    end)
-                                end
-                                _G.handles._RerollStop = true
-                                _G.AutoRerollRaceEnabled = false
-                                break
-                            end
-                            _G._RerollStatus = "Not desired: " .. tostring(vu811)
-                            updateStatsParagraph()
-                        else
-                            _G._RerollStatus = "No change (" .. tostring(v812) .. ")"
-                            updateStatsParagraph()
-                        end
-                        local v813 = tonumber(_G.RerollDelay) or 0.6
-                        for _ = 1, math.max(1, math.floor(v813 / 0.12)) do
-                            if _G.handles._RerollStop then
-                                break
-                            end
-                            task.wait(0.12)
-                        end
-                    end
-                    _G._RerollStatus = "Stopped"
-                    updateStatsParagraph()
-                    _G.handles._RerollThread = nil
-                    _G.handles._RerollStop = false
-                end)
-            end
-        end
-        function stopRerollLoop()
-            _G.handles._RerollStop = true
-            _G._RerollStatus = "Stopping"
-            updateStatsParagraph()
-        end
-        if _G.RaceTab and not _G._RaceUIBuilt then
-            _G.StatsParagraph = _G.RaceTab:Paragraph({
-                Title = "Reroll Statistics",
-                Desc = "Idle"
-            })
-            _G.RarityParagraph = _G.RaceTab:Paragraph({
-                Title = "Race Rarities",
-                Desc = "Human \226\128\147 25%\nElf \226\128\147 15%\nZombie \226\128\147 14%\nGoblin \226\128\147 10.5%\nUndead \226\128\147 9%\nOrc \226\128\147 8%\nDwarf \226\128\147 7%\nShadow \226\128\147 6%\nMinotaur \226\128\147 1.75%\nDragonborn \226\128\147 1.5%\nGolem \226\128\147 1.25%\nAngel \226\128\147 0.5%\nDemon \226\128\147 0.5%"
-            })
-            function onDropdownChanged(p814)
-                local v815 = {}
-                if type(p814) ~= "table" then
-                    if type(p814) == "string" then
-                        table.insert(v815, p814)
-                    end
-                elseif # p814 <= 0 then
-                    if p814.Title then
-                        table.insert(v815, p814.Title)
-                    end
-                else
-                    local v816, v817, v818 = ipairs(p814)
-                    while true do
-                        local v819
-                        v818, v819 = v816(v817, v818)
-                        if v818 == nil then
-                            break
-                        end
-                        if type(v819) == "table" and v819.Title then
-                            table.insert(v815, v819.Title)
-                        end
-                    end
-                end
-                _G.RerollTargets = v815
-                updateStatsParagraph()
-            end
-            function onToggleAutoReroll(p820)
-                if p820 then
-                    if not _G.RerollTargets or # _G.RerollTargets == 0 then
-                        _G.RerollTargets = {
-                            _G.RACE_OPTIONS[1]
-                        }
-                    end
-                    local vu821 = getCurrentRace()
-                    if vu821 and isDesiredRace(vu821) then
-                        if vu2 then
-                            pcall(function()
-                                vu2:Notify({
-                                    Title = "Reroll",
-                                    Content = "You already have " .. tostring(vu821) .. ". Reroll not started.",
-                                    Duration = 3,
-                                    Icon = "info"
-                                })
-                            end)
-                        end
-                        _G.AutoRerollRaceEnabled = false
-                        updateStatsParagraph()
-                        return
-                    end
-                    _G.AutoRerollRaceEnabled = true
-                    startRerollLoop()
-                else
-                    _G.AutoRerollRaceEnabled = false
-                    stopRerollLoop()
-                end
-                updateStatsParagraph()
-            end
-            function onDelayChanged(p822)
-                local v823 = _G
-                local v824 = tonumber
-                if type(p822) == "table" then
-                    p822 = p822.Default or p822
-                end
-                v823.RerollDelay = v824(p822) or _G.RerollDelay
-            end
-            function onDetectTimeoutChanged(p825)
-                local v826 = _G
-                local v827 = tonumber
-                if type(p825) == "table" then
-                    p825 = p825.Default or p825
-                end
-                v826.RerollDetectTimeout = v827(p825) or _G.RerollDetectTimeout
-            end
-            function onMaxAttemptsChanged(p828)
-                local v829 = _G
-                local v830 = tonumber
-                if type(p828) == "table" then
-                    p828 = p828.Default or p828
-                end
-                v829.RerollMaxAttempts = v830(p828) or _G.RerollMaxAttempts
-            end
-            function onNotifyToggle(p831)
-                _G.RerollNotifyOnSuccess = p831
-            end
-            _G.RaceTab:Dropdown({
-                Title = "Pick Desired Race(s)",
-                Desc = "choose race.",
-                Values = (function()
-                    local v832, v833, v834 = ipairs(_G.RACE_OPTIONS)
-                    local v835 = {}
-                    while true do
-                        local v836
-                        v834, v836 = v832(v833, v834)
-                        if v834 == nil then
-                            break
-                        end
-                        table.insert(v835, {
-                            Title = v836
-                        })
-                    end
-                    return v835
-                end)(),
-                Value = {},
-                Multi = true,
-                Callback = onDropdownChanged
-            })
-            _G.RaceTab:Toggle({
-                Title = "Auto Reroll Race",
-                Desc = "pls pls angel or demon :((",
-                Value = _G.AutoRerollRaceEnabled or false,
-                Callback = onToggleAutoReroll
-            })
-            _G.RaceTab:Slider({
-                Title = "Reroll Delay",
-                Desc = "Delay between reroll attempts",
-                Value = {
-                    Min = 0.2,
-                    Max = 3.5,
-                    Default = _G.RerollDelay
-                },
-                Step = 0.05,
-                Callback = onDelayChanged
-            })
-            _G.RaceTab:Slider({
-                Title = "Detect Timeout (s)",
-                Desc = "how long timeout",
-                Value = {
-                    Min = 0.2,
-                    Max = 6,
-                    Default = _G.RerollDetectTimeout
-                },
-                Step = 0.05,
-                Callback = onDetectTimeoutChanged
-            })
-            _G.RaceTab:Slider({
-                Title = "Max Attempts (0 = unlimited)",
-                Desc = "Maximum number of rerolls before stopping automatically (0 = unlimited).",
-                Value = {
-                    Min = 0,
-                    Max = 500,
-                    Default = _G.RerollMaxAttempts
-                },
-                Step = 1,
-                Callback = onMaxAttemptsChanged
-            })
-            _G.RaceTab:Toggle({
-                Title = "Notify On Success",
-                Desc = "notify when u get the race u want.",
-                Value = _G.RerollNotifyOnSuccess,
-                Callback = onNotifyToggle
-            })
-            _G.RaceTab:Divider()
-            _G._RaceUIBuilt = true
-        end
-        if _G.RerollAutoStart then
-            if not _G.RerollTargets or # _G.RerollTargets == 0 then
-                _G.RerollTargets = {
-                    _G.RACE_OPTIONS[1]
-                }
-            end
-            startRerollLoop()
-        end
-        if _G.handles._StatsUpdater then
-            pcall(function()
-                task.cancel(_G.handles._StatsUpdater)
-            end)
-            _G.handles._StatsUpdater = nil
-        end
-        _G.handles._StatsUpdater = task.spawn(function()
-            while true do
-                updateStatsParagraph()
-                task.wait(0.8)
-            end
-        end)
-        local vu837 = S or {}
-        vu837._moveId = 0
-        vu837.services = {
-            RunService = game:GetService("RunService"),
-            Players = game:GetService("Players")
-        }
-        vu837.TP_SPEED = vu837.TP_SPEED or 70
-        vu837.PROXIMITY_NAMES = vu837.PROXIMITY_NAMES or {
-            "Bard",
-            "BardGuitar",
-            "Enhancer",
-            "FallenAngelCaveDoor",
-            "Greedy Cey",
-            "Injured Miner",
-            "Marbles",
-            "Maria",
-            "Miner Fred",
-            "Nord",
-            "Runemaker",
-            "Sensei Moro",
-            "Suspicous Fisher",
-            "Tomo",
-            "UmutTheBrave",
-            "Undead",
-            "Wizard"
-        }
-        vu837.STRUCTURE_COORDS = vu837.STRUCTURE_COORDS or {
-            ["sell weapons"] = Vector3.new(- 181.0428, 29.55625, 14.16897),
-            sell = Vector3.new(- 112.4639, 38.40104, - 37.16297),
-            pickaxe = Vector3.new(- 89.28602, 29.55625, 93.52742),
-            potions = Vector3.new(- 153.0794, 28.89208, 118.38442),
-            forge = Vector3.new(- 190.9998, 30.3739, 167.4789)
-        }
-        vu837._activeMoveConn = nil
-        vu837._activeMoveCancel = false
-        if not vu837.Notify then
-            function vu837.Notify(pu838, pu839, p840)
-                local vu841 = p840 or 2
-                local vu842 = false
-                pcall(function()
-                    if type(vu2) == "table" and type(vu2.Notify) == "function" then
-                        vu2:Notify({
-                            Title = pu838,
-                            Content = pu839,
-                            Duration = vu841
-                        })
-                        vu842 = true
-                    end
-                end)
-                if not vu842 then
-                    warn(("%s: %s"):format(tostring(pu838), tostring(pu839)))
-                end
-            end
-        end
-        function vu837.ResolveToPart(p843)
-            if not p843 or typeof(p843) ~= "Instance" then
-                return nil
-            end
-            if p843:IsA("BasePart") then
-                return p843
-            end
-            if p843:IsA("Model") then
-                local v844 = p843:FindFirstChild("HumanoidRootPart")
-                if v844 and (typeof(v844) == "Instance" and v844:IsA("BasePart")) then
-                    return v844
-                end
-                if p843.PrimaryPart and typeof(p843.PrimaryPart) == "Instance" and p843.PrimaryPart:IsA("BasePart") then
-                    return p843.PrimaryPart
-                end
-            end
-            local v845, v846, v847 = ipairs(p843:GetDescendants())
-            while true do
-                local v848
-                v847, v848 = v845(v846, v847)
-                if v847 == nil then
-                    break
-                end
-                if typeof(v848) == "Instance" and v848:IsA("BasePart") then
-                    return v848
-                end
-            end
-            return nil
-        end
-        function vu837.GetHRP()
-            local v849 = vu837.services.Players.LocalPlayer
-            if v849 then
-                local v850 = v849.Character
-                if v850 then
-                    local v851 = v850:FindFirstChild("HumanoidRootPart")
-                    if v851 and (typeof(v851) == "Instance" and v851:IsA("BasePart")) then
-                        return v851
-                    elseif v850.PrimaryPart and typeof(v850.PrimaryPart) == "Instance" and v850.PrimaryPart:IsA("BasePart") then
-                        return v850.PrimaryPart
-                    else
-                        return nil
-                    end
-                else
-                    return nil
-                end
-            else
-                return nil
-            end
-        end
-        function vu837.CancelActiveMove()
-            if vu837._activeMoveConn then
-                pcall(function()
-                    vu837._activeMoveConn:Disconnect()
-                end)
-                vu837._activeMoveConn = nil
-                vu837._activeMoveCancel = true
-            end
-        end
-        function vu837.RunServiceMoveTo(pu852, pu853, p854, pu855)
-            vu837._moveId = (vu837._moveId or 0) + 1
-            local vu856 = vu837._moveId
-            if vu837._activeMoveConn then
-                vu837._activeMoveConn:Disconnect()
-                vu837._activeMoveConn = nil
-            end
-            if pu852 and pu852.Parent then
-                local vu857 = math.max(p854 or 0.1, 0.1)
-                local vu858 = pu852.CFrame
-                local vu859 = tick()
-                vu837._activeMoveConn = vu837.services.RunService.Heartbeat:Connect(function()
-                    if vu856 == vu837._moveId then
-                        if pu852.Parent then
-                            local v860 = math.clamp((tick() - vu859) / vu857, 0, 1)
-                            pu852.CFrame = vu858:Lerp(pu853, v860)
-                            if v860 >= 1 then
-                                pu852.CFrame = pu853
-                                vu837._activeMoveConn:Disconnect()
-                                vu837._activeMoveConn = nil
-                                if pu855 then
-                                    pcall(pu855)
-                                end
-                            end
-                        else
-                            vu837._activeMoveConn:Disconnect()
-                            vu837._activeMoveConn = nil
-                        end
-                    else
-                        vu837._activeMoveConn:Disconnect()
-                        vu837._activeMoveConn = nil
-                        return
-                    end
-                end)
-            elseif pu855 then
-                pcall(pu855)
-            end
-        end
-        function vu837.TeleportToName(pu861)
-            if pu861 then
-                local v862 = workspace:FindFirstChild("Proximity")
-                if v862 then
-                    local v863 = v862:FindFirstChild(pu861)
-                    if v863 then
-                        local v864 = vu837.ResolveToPart(v863)
-                        if v864 then
-                            local v865 = vu837.GetHRP()
-                            if v865 then
-                                local v866 = (v865.Position - v864.Position).Magnitude
-                                local v867 = math.max(v866 / math.max(tonumber(vu837.TP_SPEED) or 70, 1), 0.02)
-                                vu837.Notify("Teleporting", "Going to " .. pu861)
-                                local v868 = v864.CFrame + Vector3.new(0, 3, 0)
-                                vu837.RunServiceMoveTo(v865, v868, v867, function()
-                                    vu837.Notify("Arrived", tostring(pu861))
-                                end)
-                            else
-                                vu837.Notify("TP Failed", "Character not ready")
-                            end
-                        else
-                            vu837.Notify("TP Failed", "No usable BasePart for " .. tostring(pu861))
-                            return
-                        end
-                    else
-                        vu837.Notify("TP Failed", pu861 .. " not found")
-                        return
-                    end
-                else
-                    vu837.Notify("TP Failed", "workspace.Proximity not found")
-                    return
-                end
-            else
-                return
-            end
-        end
-        function vu837.TeleportToPosition(p869, pu870)
-            if typeof(p869) == "Vector3" then
-                local v871 = vu837.GetHRP()
-                if v871 then
-                    local v872 = (v871.Position - p869).Magnitude
-                    local v873 = math.max(v872 / math.max(tonumber(vu837.TP_SPEED) or 70, 1), 0.02)
-                    vu837.Notify("Teleporting", "Going to " .. (pu870 or "location"))
-                    local v874 = CFrame.new(p869 + Vector3.new(0, 3, 0), p869)
-                    vu837.RunServiceMoveTo(v871, v874, v873, function()
-                        vu837.Notify("Arrived", pu870 or "location")
-                    end)
-                else
-                    vu837.Notify("TP Failed", "Character not ready")
-                end
-            else
-                return
-            end
-        end
-        local v875 = workspace:FindFirstChild("Proximity")
-        local v876 = {}
-        local v877 = {}
-        local v878 = {}
-        if v875 then
-            local v879, v880, v881 = ipairs(vu837.PROXIMITY_NAMES)
-            while true do
-                local v882
-                v881, v882 = v879(v880, v881)
-                if v881 == nil then
-                    break
-                end
-                local v883 = v875:FindFirstChild(v882)
-                if v883 then
-                    if typeof(v883) == "Instance" and (v883:IsA("Model") and (typeof(v883.FindFirstChildWhichIsA) == "function" and v883:FindFirstChildWhichIsA("Humanoid", true))) and true or false then
-                        table.insert(v876, v882)
-                    else
-                        table.insert(v877, v882)
-                    end
-                else
-                    table.insert(v878, v882)
-                end
-            end
-        end
-        local v884
-        if type(Window) ~= "table" or not Window.Tab then
-            v884 = nil
-        else
-            v884 = Window:Tab({
+local TabTp = Window:Tab({
                 Title = "Teleport",
                 Icon = "circle"
             }) or nil
         end
         if v884 then
-            local v885 = v884:Section({
+            local TabTp = v884:Section({
                 Title = "NPC Teleports"
             })
             local v886, v887, v888 = ipairs(v876)
@@ -1386,7 +1321,7 @@ _G.RaceTab = Window:Tab({
                 if v888 == nil then
                     break
                 end
-                v885:Button({
+                TabTp:Button({
                     Title = vu889,
                     Desc = "Teleport to NPC",
                     Callback = function()
@@ -1458,1261 +1393,6 @@ _G.RaceTab = Window:Tab({
         end
         _G.MyTeleportHelper = vu837
         print("Teleport helper loaded (non-interfering).")
-        CordTab = Window:Tab({
-            Title = "Coordinates",
-            Icon = "compass"
-        })
-        Players = game:GetService("Players")
-        StarterGui = game:GetService("StarterGui")
-        RunService = game:GetService("RunService")
-        HttpService = game:GetService("HttpService")
-        local vu902 = game:GetService("TweenService")
-        vu446 = Players.LocalPlayer
-        SavedPositions = {}
-        SelectedPosition = nil
-        ShowCoordinates = false
-        CurrentCoordinates = Vector3.new(0, 0, 0)
-        TWEEN_SPEED = 70
-        function Notify(pu903, pu904, p905)
-            local vu906 = p905 or 3
-            if vu2 and type(vu2.Notify) == "function" then
-                pcall(function()
-                    vu2:Notify({
-                        Title = pu903,
-                        Content = pu904,
-                        Duration = vu906,
-                        Icon = "rbxassetid://84501312005643"
-                    })
-                end)
-            else
-                StarterGui:SetCore("SendNotification", {
-                    Title = pu903,
-                    Text = pu904,
-                    Duration = vu906
-                })
-            end
-        end
-        coordGui = nil
-        coordLabel = nil
-        coordConnection = nil
-        function ToggleCoordinates(p907)
-            if type(p907) ~= "boolean" then
-                ShowCoordinates = not ShowCoordinates
-            else
-                ShowCoordinates = p907
-            end
-            if ShowCoordinates then
-                if not coordGui then
-                    coordGui = Instance.new("ScreenGui")
-                    coordGui.Name = "CoordsGUI"
-                    coordGui.ResetOnSpawn = false
-                    coordGui.Parent = game.CoreGui
-                    coordLabel = Instance.new("TextLabel")
-                    coordLabel.Size = UDim2.new(0, 220, 0, 36)
-                    coordLabel.Position = UDim2.new(0, 10, 0, 10)
-                    coordLabel.BackgroundTransparency = 0.4
-                    coordLabel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-                    coordLabel.BorderSizePixel = 0
-                    coordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-                    coordLabel.TextScaled = true
-                    coordLabel.Font = Enum.Font.SourceSansSemibold
-                    coordLabel.Text = "X: 0.0  Y: 0.0  Z: 0.0"
-                    coordLabel.Parent = coordGui
-                end
-                if not coordConnection then
-                    coordConnection = RunService.RenderStepped:Connect(function()
-                        char = vu446.Character
-                        local v908 = char
-                        if v908 then
-                            v908 = char:FindFirstChild("HumanoidRootPart")
-                        end
-                        root = v908
-                        if root then
-                            p = root.Position
-                            CurrentCoordinates = p
-                            coordLabel.Text = string.format("X: %.2f  Y: %.2f  Z: %.2f", p.X, p.Y, p.Z)
-                            coordLabel.Visible = true
-                        else
-                            coordLabel.Text = "No character"
-                        end
-                    end)
-                end
-            else
-                if coordConnection then
-                    coordConnection:Disconnect()
-                    coordConnection = nil
-                end
-                if coordGui then
-                    coordGui:Destroy()
-                    coordGui = nil
-                    coordLabel = nil
-                end
-            end
-        end
-        function RefreshDropdownValues(p909)
-            if p909 then
-                keys = {}
-                local v910, v911, v912 = pairs(SavedPositions)
-                while true do
-                    v912 = v910(v911, v912)
-                    if v912 == nil then
-                        break
-                    end
-                    table.insert(keys, v912)
-                end
-                table.sort(keys)
-                p909:Refresh(keys)
-            end
-        end
-        function SavePosition(p913, p914)
-            local v915 = tostring(p913 or ""):gsub("^%s*(.-)%s*$", "%1")
-            if v915 == "" then
-                return Notify("Error", "Please enter a name for the coordinate!", 3)
-            end
-            char = vu446.Character or vu446.CharacterAdded:Wait()
-            local v916 = char
-            if v916 then
-                v916 = char:FindFirstChild("HumanoidRootPart")
-            end
-            root = v916
-            if not root then
-                return Notify("Error", "HumanoidRootPart not found!", 3)
-            end
-            pos = root.Position
-            SavedPositions[v915] = root.CFrame
-            Notify("Saved", string.format("\'%s\' saved at X: %.2f Y: %.2f Z: %.2f", v915, pos.X, pos.Y, pos.Z), 3)
-            RefreshDropdownValues(p914)
-        end
-        function TweenToCFrame(p917, pu918)
-            if p917 then
-                char = vu446.Character or vu446.CharacterAdded:Wait()
-                local v919 = char
-                if v919 then
-                    v919 = char:FindFirstChild("HumanoidRootPart")
-                end
-                root = v919
-                if root then
-                    currentPos = root.Position
-                    targetPos = p917.p or (p917.Position or p917:ToWorldSpace(CFrame.new()).p)
-                    distance = (currentPos - targetPos).Magnitude
-                    if TWEEN_SPEED == nil or TWEEN_SPEED <= 0 then
-                        TWEEN_SPEED = 1
-                    end
-                    duration = distance / TWEEN_SPEED
-                    if duration < 0.02 then
-                        duration = 0.02
-                    end
-                    tweenInfo = TweenInfo.new(duration, Enum.EasingStyle.Linear)
-                    finalCFrame = p917 * CFrame.new(0, 3, 0)
-                    tween = vu902:Create(root, tweenInfo, {
-                        CFrame = finalCFrame
-                    })
-                    BIND_NAME = "TweenToCFrame_" .. tostring(math.random(1, 1000000))
-                    RunService:BindToRenderStep(BIND_NAME, Enum.RenderPriority.Character.Value, function()
-                    end)
-                    Notify("Teleporting", "Going to " .. tostring(pu918 or "position") .. " (speed: " .. tostring(TWEEN_SPEED) .. ")", 2)
-                    tween.Completed:Connect(function()
-                        pcall(function()
-                            RunService:UnbindFromRenderStep(BIND_NAME)
-                        end)
-                        Notify("Arrived", "You have arrived at " .. tostring(pu918 or "position"), 3)
-                    end)
-                    tween:Play()
-                else
-                    Notify("TP Failed", "HumanoidRootPart not found.", 3)
-                end
-            else
-                Notify("TP Failed", "Invalid target CFrame.", 3)
-                return
-            end
-        end
-        function TeleportToSaved()
-            if not (SelectedPosition and SavedPositions[SelectedPosition]) then
-                return Notify("Error", "Select a saved position first!", 3)
-            end
-            TweenToCFrame(SavedPositions[SelectedPosition], SelectedPosition)
-        end
-        function DeleteSaved(p920)
-            if not (SelectedPosition and SavedPositions[SelectedPosition]) then
-                return Notify("Error", "Select a saved position first!", 3)
-            end
-            SavedPositions[SelectedPosition] = nil
-            Notify("Deleted", "Deleted coordinate \'" .. SelectedPosition .. "\'", 2)
-            SelectedPosition = nil
-            RefreshDropdownValues(p920)
-        end
-        function CopyCoordinates()
-            char = vu446.Character or vu446.CharacterAdded:Wait()
-            local v921 = char
-            if v921 then
-                v921 = char:FindFirstChild("HumanoidRootPart")
-            end
-            root = v921
-            if root then
-                pos = root.Position
-                coordText = string.format("X: %.2f, Y: %.2f, Z: %.2f", pos.X, pos.Y, pos.Z)
-                pcall(function()
-                    setclipboard(coordText)
-                end)
-                Notify("Copied", "Copied current coordinates to clipboard: " .. coordText, 3)
-            else
-                Notify("Error", "Couldn\'t find HumanoidRootPart.", 3)
-            end
-        end
-        coordinateName = ""
-        CordTab:Toggle({
-            Title = "Show Coordinates",
-            Desc = "Display your current coordinates on screen",
-            Default = false,
-            Callback = function(p922)
-                ToggleCoordinates(p922)
-            end
-        })
-        CordTab:Space()
-        nameInput = CordTab:Input({
-            Title = "Coordinate Name",
-            Desc = "Enter a name to save your position",
-            Value = "",
-            InputIcon = "bird",
-            Type = "Input",
-            Placeholder = "Enter coordinate name...",
-            Callback = function(p923)
-                coordinateName = tostring(p923 or "")
-            end
-        })
-        CordTab:Button({
-            Title = "Save Current Position",
-            Desc = "Saves your current position with name",
-            Callback = function()
-                SavePosition(coordinateName, vu381)
-            end
-        })
-        CordTab:Space()
-        TweenSpeedSlider = CordTab:Slider({
-            Title = "Tween Speed",
-            Desc = "set your tween speed (recommended to keep it slow)",
-            Step = 1,
-            Value = {
-                Min = 10,
-                Max = 300,
-                Default = TWEEN_SPEED
-            },
-            Callback = function(p924)
-                TWEEN_SPEED = p924
-            end
-        })
-        CordTab:Button({
-            Title = "Copy Current Coordinates",
-            Desc = "Copy your current coordinates",
-            Callback = CopyCoordinates
-        })
-        CordTab:Space()
-        vu381 = CordTab:Dropdown({
-            Title = "Saved Positions",
-            Desc = "Select a saved position",
-            Values = {},
-            Callback = function(p925)
-                SelectedPosition = p925
-            end
-        })
-        CordTab:Space()
-        CordTab:Button({
-            Title = "Tween to Saved Position",
-            Desc = "Tween to the selected saved position",
-            Callback = TeleportToSaved
-        })
-        CordTab:Button({
-            Title = "Delete Selected Position",
-            Desc = "Deletes the selected saved position",
-            Callback = function()
-                DeleteSaved(vu381)
-            end
-        })
-
-local v445 = Window:Tab({
-        Title = "Mobs",
-        Icon = "sword"
-    })
-    local vu446 = Players.LocalPlayer
-    local v447 = game:GetService("UserInputService")
-    local v448 = ReplicatedStorage:WaitForChild("Shared"):WaitForChild("Data"):WaitForChild("Enemies")
-    local vu449 = workspace:WaitForChild("Living")
-    local vu450 = nil
-    pcall(function()
-        vu450 = ReplicatedStorage:WaitForChild("Assets"):WaitForChild("Mobs")
-    end)
-    local vu451 = nil
-    pcall(function()
-        vu451 = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF
-    end)
-    local v452 = require(v448)
-    local vu453 = {}
-    local vu454 = "Nearest"
-    local vu455 = false
-    local vu456 = 0.14
-    local vu457 = 200
-    local vu458 = true
-    local vu459 = nil
-    local vu460 = false
-    local vu461 = nil
-    local vu462 = nil
-    local vu463 = nil
-    local vu464 = nil
-    local vu465 = nil
-    local vu466 = 0.3
-    local vu467 = 240
-    local vu468 = 14
-    local vu469 = 0.9
-    local vu470 = 1.6
-    local vu471 = 3.5
-    local vu472 = "Behind"
-    local vu473 = 1.3
-    local vu474 = true
-    local vu475 = false
-    local vu476 = {}
-    local vu477 = nil
-    local function vu479()
-        local v478 = vu446
-        if v478 then
-            v478 = vu446.Character
-        end
-        return v478
-    end
-    local function vu481()
-        local v480 = vu479()
-        if v480 then
-            v480 = v480:FindFirstChild("HumanoidRootPart") or v480.PrimaryPart
-        end
-        return v480
-    end
-    local function vu483()
-        local v482 = vu479()
-        if v482 then
-            v482 = v482:FindFirstChildOfClass("Humanoid")
-        end
-        return v482
-    end
-    local function vu484()
-        if vu451 and vu451.ToolActivated then
-            pcall(function()
-                vu451.ToolActivated:InvokeServer("Weapon")
-            end)
-        end
-    end
-    local function vu504()
-        local v485 = vu481()
-        if not v485 then
-            return nil
-        end
-        local v486 = math.huge
-        local v487 = vu449
-        local v488, v489, v490 = pairs(v487:GetChildren())
-        local v491 = nil
-        local v492 = nil
-        while true do
-            local v493
-            v490, v493 = v488(v489, v490)
-            if v490 == nil then
-                v493 = v491
-                break
-            end
-            local vu494 = false
-            local function v495()
-                vu494 = true
-            end
-            local v496, v497
-            if v493 and v493:IsA("Model") then
-                local v498 = next(vu453) == nil
-                if not v498 then
-                    local v499, v500, v501 = pairs(vu453)
-                    while true do
-                        local v502
-                        v501, v502 = v499(v500, v501)
-                        if v501 == nil then
-                            break
-                        end
-                        if v493.Name and v493.Name:lower():find(v501:lower()) then
-                            v495()
-                            v498 = true
-                        end
-                    end
-                end
-                if v498 then
-                    local v503 = v493:FindFirstChild("HumanoidRootPart") or v493.PrimaryPart
-                    v496 = v493:FindFirstChildOfClass("Humanoid")
-                    if v503 and (v496 and (v496.Health and v496.Health > 0)) then
-                        v497 = (v503.Position - v485.Position).Magnitude
-                        if v497 > vu457 then
-                            v497 = v486
-                            v496 = v492
-                            v493 = v491
-                        elseif vu454 ~= "Nearest" then
-                            if v491 and v496.Health >= v492.Health then
-                                v497 = v486
-                                v496 = v492
-                                v493 = v491
-                            else
-                                v497 = v496.Health
-                            end
-                        elseif v497 >= v486 then
-                            v497 = v486
-                            v496 = v492
-                            v493 = v491
-                        end
-                    else
-                        v497 = v486
-                        v496 = v492
-                        v493 = v491
-                    end
-                else
-                    v497 = v486
-                    v496 = v492
-                    v493 = v491
-                end
-            else
-                v497 = v486
-                v496 = v492
-                v493 = v491
-            end
-            if vu494 then
-                break
-            end
-            v486 = v497
-            v492 = v496
-            v491 = v493
-        end
-        return v493
-    end
-    local function vu515()
-        if vu475 then
-            return
-        else
-            local v505 = vu479()
-            if v505 then
-                vu476 = {}
-                local v506, v507, v508 = ipairs(v505:GetDescendants())
-                while true do
-                    local v509
-                    v508, v509 = v506(v507, v508)
-                    if v508 == nil then
-                        break
-                    end
-                    if v509:IsA("BasePart") then
-                        vu476[v509] = v509.CanCollide
-                    end
-                end
-                vu477 = RunService.Heartbeat:Connect(function()
-                    local v510 = vu479()
-                    if v510 then
-                        local v511, v512, v513 = ipairs(v510:GetDescendants())
-                        while true do
-                            local v514
-                            v513, v514 = v511(v512, v513)
-                            if v513 == nil then
-                                break
-                            end
-                            if v514:IsA("BasePart") then
-                                v514.CanCollide = false
-                            end
-                        end
-                    end
-                end)
-                vu475 = true
-            end
-        end
-    end
-    local function vu521()
-        if vu475 then
-            if vu477 then
-                vu477:Disconnect()
-                vu477 = nil
-            end
-            local v516, v517, v518 = pairs(vu476)
-            while true do
-                local vu519, vu520 = v516(v517, v518)
-                if vu519 == nil then
-                    break
-                end
-                v518 = vu519
-                if vu519 and vu519.Parent then
-                    pcall(function()
-                        vu519.CanCollide = vu520
-                    end)
-                end
-            end
-            vu476 = {}
-            vu475 = false
-        end
-    end
-    local function vu530(p522, p523, p524)
-        local v525 = math.max(0, tonumber(p523) or 0)
-        local v526 = p522.CFrame.LookVector
-        if vu472 ~= "Behind" then
-            if vu472 ~= "InFront" then
-                local v527 = p522.Position - v526 * v525 + Vector3.new(0, p524, 0)
-                return CFrame.new(v527, p522.Position)
-            else
-                local v528 = p522.Position + v526 * v525 + Vector3.new(0, p524, 0)
-                return CFrame.new(v528, p522.Position)
-            end
-        else
-            local v529 = p522.Position - v526 * v525 + Vector3.new(0, p524, 0)
-            return CFrame.new(v529, p522.Position)
-        end
-    end
-    local function vu531()
-        if vu462 then
-            pcall(function()
-                if typeof(vu462.Cancel) == "function" then
-                    vu462:Cancel()
-                end
-            end)
-            vu462 = nil
-        end
-        if vu464 then
-            pcall(function()
-                vu464:Disconnect()
-            end)
-            vu464 = nil
-        end
-        vu465 = nil
-    end
-    local function vu536()
-        if vu463 and vu463.Parent then
-            local vu532 = vu481()
-            local v533 = vu463:FindFirstChild("HumanoidRootPart") or vu463.PrimaryPart
-            if vu532 and v533 then
-                local vu534 = vu530(v533, vu471, vu470)
-                if vu467 >= (vu534.Position - vu532.Position).Magnitude then
-                    local vu535 = 0.6
-                    pcall(function()
-                        vu532.CFrame = vu532.CFrame:Lerp(vu534, math.clamp(vu535, 0, 1))
-                    end)
-                    vu465 = vu534
-                end
-            else
-                return
-            end
-        else
-            return
-        end
-    end
-    local function vu537()
-        vu531()
-        vu536()
-    end
-    function startFollow(p538, p539)
-        if p538 and p538.Parent then
-            local vu540 = tonumber(p539) or vu471
-            if vu461 then
-                pcall(function()
-                    task.cancel(vu461)
-                end)
-                vu461 = nil
-            end
-            if vu464 then
-                pcall(function()
-                    vu464:Disconnect()
-                end)
-                vu464 = nil
-            end
-            vu463 = p538
-            vu461 = task.spawn(function()
-                if vu474 then
-                    vu515()
-                end
-                vu465 = nil
-                vu464 = RunService.Heartbeat:Connect(function(p541)
-                    if vu455 and (vu458 and (vu463 and vu463.Parent)) then
-                        local vu542 = vu481()
-                        local v543 = vu463
-                        if v543 then
-                            v543 = vu463:FindFirstChild("HumanoidRootPart") or vu463.PrimaryPart
-                        end
-                        local v544 = vu463
-                        if v544 then
-                            v544 = vu463:FindFirstChildOfClass("Humanoid")
-                        end
-                        if vu542 and (v543 and (v544 and (not v544 or v544.Health > 0))) then
-                            local vu545 = vu530(v543, vu540, vu470)
-                            local v546 = (vu545.Position - vu542.Position).Magnitude
-                            if vu467 >= v546 then
-                                if vu465 then
-                                    if vu466 <= (vu465.Position - vu545.Position).Magnitude then
-                                        vu465 = vu545
-                                    end
-                                else
-                                    vu465 = vu545
-                                end
-                                local v547 = vu468 / math.max(0.05, tonumber(vu473) or 1)
-                                local vu548 = v546 <= 0.001 and 0.45 or math.clamp(v547 * p541 / math.max(v546, 0.01), 0, 0.45)
-                                if v546 > vu469 then
-                                    local v549, _ = pcall(function()
-                                        vu542.CFrame = vu542.CFrame:Lerp(vu545, vu548)
-                                    end)
-                                    if not v549 then
-                                        if vu464 then
-                                            pcall(function()
-                                                vu464:Disconnect()
-                                            end)
-                                        end
-                                        vu464 = nil
-                                    end
-                                else
-                                    pcall(function()
-                                        vu542.CFrame = vu545
-                                    end)
-                                end
-                            else
-                                return
-                            end
-                        else
-                            if vu464 then
-                                pcall(function()
-                                    vu464:Disconnect()
-                                end)
-                            end
-                            vu464 = nil
-                            return
-                        end
-                    else
-                        if vu464 then
-                            pcall(function()
-                                vu464:Disconnect()
-                            end)
-                        end
-                        vu464 = nil
-                        return
-                    end
-                end)
-                while vu455 and (vu458 and (vu463 and vu463.Parent)) and (vu463:FindFirstChildOfClass("Humanoid") and (vu463:FindFirstChildOfClass("Humanoid").Health > 0 and vu464)) do
-                    task.wait(0.12)
-                end
-                if vu474 then
-                    vu521()
-                end
-                vu531()
-                vu461 = nil
-                vu463 = nil
-            end)
-        end
-    end
-    function stopFollow()
-        if vu461 then
-            pcall(function()
-                task.cancel(vu461)
-            end)
-            vu461 = nil
-        end
-        if vu464 then
-            pcall(function()
-                vu464:Disconnect()
-            end)
-            vu464 = nil
-        end
-        if vu474 then
-            vu521()
-        end
-        vu531()
-        vu463 = nil
-    end
-    local function vu557()
-        if not vu459 then
-            vu460 = false
-            vu459 = task.spawn(function()
-                while vu455 and not vu460 do
-                    local vu550 = false
-                    local function v551()
-                        vu550 = true
-                    end
-                    local v552 = vu504()
-                    if v552 then
-                        local v553 = vu481()
-                        local v554 = vu483()
-                        if v553 and v554 then
-                            local v555 = v552:FindFirstChild("HumanoidRootPart") or v552.PrimaryPart
-                            local v556 = v552:FindFirstChildOfClass("Humanoid")
-                            if v555 and v556 then
-                                if vu458 then
-                                    startFollow(v552, vu471)
-                                end
-                                while vu455 and (v556 and (v556.Health > 0 and (v552.Parent and not vu460))) do
-                                    if not (v553 and v554) then
-                                        v551()
-                                    end
-                                    if vu458 and (not vu461 or vu463 ~= v552) then
-                                        startFollow(v552, vu471)
-                                    end
-                                    vu484()
-                                    task.wait(math.max(0.02, tonumber(vu456) or 0.14))
-                                end
-                                stopFollow()
-                                task.wait(0.18)
-                            else
-                                task.wait(0.2)
-                            end
-                        else
-                            task.wait(0.4)
-                        end
-                    else
-                        task.wait(0.28)
-                    end
-                    if vu550 then
-                        break
-                    end
-                end
-                vu459 = nil
-            end)
-        end
-    end
-    local function vu558()
-        vu460 = true
-        if vu459 then
-            pcall(function()
-                task.cancel(vu459)
-            end)
-            vu459 = nil
-        end
-        stopFollow()
-    end
-    local v559, v560, v561 = pairs(v452)
-    local vu562 = vu454
-    local vu563 = vu473
-    local vu564 = vu471
-    local vu565 = vu474
-    local vu566 = vu446
-    local vu567 = vu455
-    local vu568 = vu453
-    local vu569 = vu472
-    local vu570 = vu458
-    local vu571 = vu450
-    local v572 = {}
-    while true do
-        local vu573, v574 = v559(v560, v561)
-        if vu573 == nil then
-            break
-        end
-        v561 = vu573
-        local vu575 = nil
-        pcall(function()
-            if vu571 and vu571:FindFirstChild(vu573) then
-                local v576 = vu571:FindFirstChild(vu573)
-                if v576:FindFirstChild("Icon") and v576.Icon:IsA("StringValue") then
-                    vu575 = v576.Icon.Value
-                elseif v576:FindFirstChild("Icon") and type(v576.Icon.Value) == "string" then
-                    vu575 = v576.Icon.Value
-                end
-            end
-        end)
-        if not vu575 and (type(v574) == "table" and (v574.Slot and v574.Slot.Icon)) then
-            vu575 = v574.Slot.Icon
-        end
-        local v577 = {
-            Title = vu573,
-            Icon = vu575 or "bird"
-        }
-        table.insert(v572, v577)
-    end
-    table.sort(v572, function(p578, p579)
-        return p578.Title < p579.Title
-    end)
-    v445:Dropdown({
-        Title = "Select Mobs",
-        Desc = "Select mobs to farm",
-        Values = v572,
-        Value = {},
-        Multi = true,
-        Callback = function(p580)
-            if type(p580) ~= "table" then
-                local v581 = p580 and p580.Title or tostring(p580)
-                if vu568[v581] then
-                    vu568[v581] = nil
-                    print("Deselected:", v581)
-                else
-                    vu568[v581] = true
-                    print("Selected:", v581)
-                end
-            else
-                vu568 = {}
-                local v582, v583, v584 = ipairs(p580)
-                while true do
-                    local v585
-                    v584, v585 = v582(v583, v584)
-                    if v584 == nil then
-                        break
-                    end
-                    if type(v585) == "table" and v585.Title then
-                        vu568[v585.Title] = true
-                    end
-                end
-                local v586, v587, v588 = pairs(vu568)
-                local v589 = {}
-                while true do
-                    local v590
-                    v588, v590 = v586(v587, v588)
-                    if v588 == nil then
-                        break
-                    end
-                    table.insert(v589, v588)
-                end
-                print("Selected mobs (multi):", # v589 > 0 and table.concat(v589, ", ") or "none")
-            end
-        end
-    })
-    v445:Dropdown({
-        Title = "Target Type",
-        Desc = "Nearest / LowestHealth",
-        Values = {
-            {
-                Title = "Nearest"
-            },
-            {
-                Title = "LowestHealth"
-            }
-        },
-        Value = {
-            Title = "Nearest"
-        },
-        Callback = function(p591)
-            vu562 = p591.Title
-            print("TargetType ->", vu562)
-        end
-    })
-    v445:Divider()
-    v445:Toggle({
-        Title = "Auto Attack",
-        Desc = " automatic attack",
-        Icon = "bird",
-        Type = "Checkbox",
-        Value = false,
-        Callback = function(p592)
-            if p592 and next(vu568) == nil then
-                vu2:Notify({
-                    Title = "Auto Attack Blocked",
-                    Content = "You must select at least one mob before enabling Auto Attack.",
-                    Duration = 3,
-                    Icon = "bird"
-                })
-                vu567 = false
-                vu558()
-                stopFollow()
-            else
-                vu567 = p592
-                print("AutoAttack:", p592)
-                if p592 then
-                    vu557()
-                else
-                    vu558()
-                    stopFollow()
-                end
-            end
-        end
-    })
-    v445:Toggle({
-        Title = "AutoFollow  Mobs",
-        Desc = "will go to mobs.",
-        Icon = "house",
-        Type = "Checkbox",
-        Value = vu570,
-        Callback = function(p593)
-            vu570 = p593
-            print("AutoKite:", p593)
-        end
-    })
-    v445:Toggle({
-        Title = "NoClip During Follow",
-        Desc = "When ON, temporarily disables collisions while the script is moving you (avoid getting stuck).",
-        Value = vu565,
-        Callback = function(p594)
-            vu565 = p594
-            print("NoClipDuringFollow:", p594)
-        end
-    })
-    v445:Dropdown({
-        Title = "Auto Follow osition",
-        Desc = "Where to position relative to the mob",
-        Values = {
-            {
-                Title = "Behind"
-            },
-            {
-                Title = "InFront"
-            }
-        },
-        Value = {
-            Title = vu569
-        },
-        Callback = function(p595)
-            vu569 = p595 and p595.Title or tostring(p595)
-            vu537()
-            print("AutoKitePosition ->", vu569)
-        end
-    })
-    v445:Slider({
-        Title = "How Far (Distance Offset)",
-        Desc = "0 = no offset, higher = further from mob",
-        Value = {
-            Min = 0,
-            Max = 14,
-            Default = vu564
-        },
-        Step = 0.1,
-        Callback = function(p596)
-            vu564 = tonumber(p596) or 0
-            vu537()
-            print("AUTO_KILL_DISTANCE:", vu564)
-        end
-    })
-    v445:Slider({
-        Title = "Movement Speed",
-        Desc = "Lower = Faster, Higher = Slower (Recommend to set it to 0.20!)",
-        Value = {
-            Min = 0.05,
-            Max = 2.5,
-            Default = 0.2
-        },
-        Step = 0.05,
-        Callback = function(p597)
-            vu563 = tonumber(p597)
-            print("Tween Time =", vu563)
-        end
-    })
-    v447.InputBegan:Connect(function(p598, p599)
-        if not p599 then
-            if p598.KeyCode == Enum.KeyCode.F8 then
-                vu567 = false
-                vu558()
-                stopFollow()
-                warn("Auto routines halted (F8).")
-            end
-        end
-    end)
-    vu566.AncestryChanged:Connect(function()
-        if not vu566:IsDescendantOf(game) then
-            vu558()
-            stopFollow()
-        end
-    end)
-
-local v717 = Window:Tab({
-        Title = "Pickaxe",
-        Icon = "pickaxe"
-    })
-    Section = v717:Section({
-        Title = "Pickaxe",
-        Icon = "pickaxe"
-    })
-    _G.Players = _G.Players or game:GetService("Players")
-    game:GetService("TweenService")
-    local vu718 = _G.ReplicatedStorage or game:GetService("ReplicatedStorage")
-    local function vu721()
-        if _G.PurchaseRemote then
-            return _G.PurchaseRemote
-        end
-        local v719, v720 = pcall(function()
-            return vu718.Shared.Packages.Knit.Services.ProximityService.RF.Purchase
-        end)
-        if not (v719 and v720) then
-            return nil
-        end
-        _G.PurchaseRemote = v720
-        return v720
-    end
-    _G.PickaxeToBuy = _G.PickaxeToBuy or "Bronze Pickaxe"
-    _G.PickaxeTweenTime = _G.PickaxeTweenTime or 0.9
-    _G.PickaxeBuyDelay = _G.PickaxeBuyDelay or 0.5
-    _G.PickaxeNoClipDuringMove = _G.PickaxeNoClipDuringMove == nil and true or _G.PickaxeNoClipDuringMove
-    _G.PickaxeAutoBuyEnabled = false
-    _G.PickaxeMaxSpeed = _G.PickaxeMaxSpeed or 40
-    _G._PickaxeLoopThread = nil
-    _G._PickaxeStopFlag = false
-    _G._PickaxeNoClipCache = {}
-    local vu722 = Vector3.new(- 77.69940185546875, 28.74167823791504, 82.46420288085938)
-    local vu723 = Vector3.new(- 101.85641479492188, 29.606250762939453, 104.2210693359375)
-    local vu724 = Vector3.new(232.31741333007812, - 6.772843360900879, - 339.8232421875)
-    local vu725 = Vector3.new(- 33.792579650878906, - 0.10066017508506775, - 270.7460021972656)
-    local function vu731()
-        if _G._PickaxeNoClipCache and next(_G._PickaxeNoClipCache) then
-            return
-        else
-            local v726 = _G.Players.LocalPlayer
-            if v726 then
-                v726 = _G.Players.LocalPlayer.Character
-            end
-            if v726 then
-                _G._PickaxeNoClipCache = {}
-                local v727, v728, v729 = ipairs(v726:GetDescendants())
-                while true do
-                    local v730
-                    v729, v730 = v727(v728, v729)
-                    if v729 == nil then
-                        break
-                    end
-                    if v730:IsA("BasePart") then
-                        _G._PickaxeNoClipCache[v730] = v730.CanCollide
-                        v730.CanCollide = false
-                    end
-                end
-            end
-        end
-    end
-    local function vu737()
-        local v732, v733, v734 = pairs(_G._PickaxeNoClipCache or {})
-        while true do
-            local vu735, vu736 = v732(v733, v734)
-            if vu735 == nil then
-                break
-            end
-            v734 = vu735
-            if vu735 and vu735.Parent then
-                pcall(function()
-                    vu735.CanCollide = vu736
-                end)
-            end
-        end
-        _G._PickaxeNoClipCache = {}
-    end
-    local function vu759(p738, p739)
-        local v740 = _G.Players.LocalPlayer
-        if not v740 then
-            return false, "no-player"
-        end
-        local v741 = v740.Character
-        if not v741 then
-            return false, "no-char"
-        end
-        local vu742 = v741:FindFirstChild("HumanoidRootPart") or v741.PrimaryPart
-        if not vu742 then
-            return false, "no-hrp"
-        end
-        local vu743 = math.max(0.02, tonumber(p739) or (_G.PickaxeTweenTime or 0.8))
-        local vu744 = vu742.Position
-        local vu745 = p738
-        local v746 = (vu745 - vu744).Magnitude
-        if v746 <= 0.9 then
-            pcall(function()
-                vu742.CFrame = CFrame.new(vu745)
-            end)
-            return true, "snap"
-        end
-        local v747 = tonumber(_G.PickaxeMaxSpeed) or 40
-        if v747 < v746 / vu743 then
-            vu743 = v746 / v747
-        end
-        local vu748 = 0
-        local _ = vu742.CFrame
-        tick()
-        if _G.PickaxeNoClipDuringMove then
-            vu731()
-        end
-        local vu749 = nil
-        local vu750 = true
-        vu749 = RunService.Heartbeat:Connect(function(p751)
-            if _G._PickaxeStopFlag or not _G.PickaxeAutoBuyEnabled then
-                vu750 = false
-            else
-                vu748 = vu748 + p751
-                local v752 = math.clamp(vu748 / vu743, 0, 1)
-                local v753 = vu744:Lerp(vu745, v752)
-                local v754 = (vu745 - vu744).Unit
-                if v754.Magnitude == 0 then
-                    v754 = Vector3.new(0, 0, 1)
-                end
-                local vu755 = CFrame.new(v753, v753 + v754)
-                pcall(function()
-                    vu742.CFrame = vu755
-                end)
-                if v752 >= 1 then
-                    local v756 = vu750
-                    vu750 = v756 and true or v756
-                    pcall(function()
-                        vu749:Disconnect()
-                    end)
-                end
-            end
-        end)
-        local vu757 = vu749
-        local v758 = 0
-        while v758 < vu743 + 0.5 do
-            if not _G.PickaxeAutoBuyEnabled or _G._PickaxeStopFlag then
-                if vu757 and vu757.Connected then
-                    pcall(function()
-                        vu757:Disconnect()
-                    end)
-                end
-                vu737()
-                return false, "cancelled"
-            end
-            if (vu742.Position - vu745).Magnitude <= 1 then
-                break
-            end
-            task.wait(0.02)
-            v758 = v758 + 0.02
-        end
-        if vu757 and vu757.Connected then
-            pcall(function()
-                vu757:Disconnect()
-            end)
-        end
-        if _G.PickaxeNoClipDuringMove then
-            vu737()
-        end
-        pcall(function()
-            vu742.CFrame = CFrame.new(vu745)
-        end)
-        return true, "arrived"
-    end
-    local function vu764(pu760)
-        local vu761 = vu721()
-        if vu761 then
-            local v762, v763 = pcall(function()
-                return vu761:InvokeServer(pu760, 1)
-            end)
-            return v762, v763
-        else
-            warn("Pickaxe purchase remote not found")
-            return false
-        end
-    end
-    local function vu769()
-        if not _G._PickaxeLoopThread then
-            _G._PickaxeStopFlag = false
-            _G._PickaxeLoopThread = task.spawn(function()
-                while _G.PickaxeAutoBuyEnabled and not _G._PickaxeStopFlag do
-                    local v765 = tostring(_G.PickaxeToBuy or "Bronze Pickaxe")
-                    local v766 = v765:lower()
-                    if v766:find("arcane") then
-                        local v767, _ = vu759(vu724, _G.PickaxeTweenTime)
-                        if v767 then
-                            pcall(vu764, v765)
-                        end
-                        task.wait(_G.PickaxeBuyDelay)
-                    elseif v766:find("stonewake") then
-                        local v768, _ = vu759(vu725, _G.PickaxeTweenTime)
-                        if v768 then
-                            pcall(vu764, v765)
-                        end
-                        task.wait(_G.PickaxeBuyDelay)
-                    else
-                        if vu759(vu722, _G.PickaxeTweenTime) then
-                            pcall(vu764, v765)
-                        end
-                        task.wait(_G.PickaxeBuyDelay)
-                        if not _G.PickaxeAutoBuyEnabled or _G._PickaxeStopFlag then
-                            break
-                        end
-                        if vu759(vu723, _G.PickaxeTweenTime) then
-                            pcall(vu764, v765)
-                        end
-                        task.wait(_G.PickaxeBuyDelay)
-                    end
-                    task.wait(0.12)
-                end
-                _G._PickaxeLoopThread = nil
-                _G._PickaxeStopFlag = false
-            end)
-        end
-    end
-    local function vu770()
-        _G._PickaxeStopFlag = true
-        _G.PickaxeAutoBuyEnabled = false
-        local _ = _G._PickaxeLoopThread
-    end
-    if v717 then
-        v717:Dropdown({
-            Title = "Pickaxe",
-            Desc = "Choose which pickaxe to auto buy",
-            Values = {
-                {
-                    Title = "Bronze Pickaxe"
-                },
-                {
-                    Title = "Iron Pickaxe"
-                },
-                {
-                    Title = "Gold Pickaxe"
-                },
-                {
-                    Title = "Platinum Pickaxe"
-                },
-                {
-                    Title = "Arcane Pickaxe"
-                },
-                {
-                    Title = "Stonewake\'s Pickaxe"
-                }
-            },
-            Value = {
-                Title = _G.PickaxeToBuy
-            },
-            Callback = function(p771)
-                if type(p771) ~= "table" or not p771.Title then
-                    _G.PickaxeToBuy = tostring(p771)
-                else
-                    _G.PickaxeToBuy = p771.Title
-                end
-                print("PickaxeToBuy ->", _G.PickaxeToBuy)
-            end
-        })
-        v717:Toggle({
-            Title = "Auto Buy Pickaxe",
-            Desc = "MINECRAFTTTTT!!!!",
-            Value = _G.PickaxeAutoBuyEnabled,
-            Callback = function(p772)
-                _G.PickaxeAutoBuyEnabled = p772
-                if p772 then
-                    vu769()
-                else
-                    vu770()
-                end
-                print("PickaxeAutoBuyEnabled ->", p772)
-            end
-        })
-        v717:Divider()
-        v717:Slider({
-            Title = "Tween Speed",
-            Desc = "How fast to move (higher = slower)",
-            Value = {
-                Min = 0.08,
-                Max = 4,
-                Default = _G.PickaxeTweenTime
-            },
-            Step = 0.02,
-            Callback = function(p773)
-                if type(p773) == "table" then
-                    p773 = p773.Default or p773
-                end
-                _G.PickaxeTweenTime = tonumber(p773) or _G.PickaxeTweenTime
-                print("PickaxeTweenTime ->", _G.PickaxeTweenTime)
-            end
-        })
-        v717:Slider({
-            Title = "Pickaxe Buy Delay ",
-            Desc = "Wait after moving",
-            Value = {
-                Min = 0.05,
-                Max = 3,
-                Default = _G.PickaxeBuyDelay
-            },
-            Step = 0.02,
-            Callback = function(p774)
-                if type(p774) == "table" then
-                    p774 = p774.Default or p774
-                end
-                _G.PickaxeBuyDelay = tonumber(p774) or _G.PickaxeBuyDelay
-                print("PickaxeBuyDelay ->", _G.PickaxeBuyDelay)
-            end
-        })
-        v717:Toggle({
-            Title = "NoClip During Move",
-            Desc = "Recommended!",
-            Value = _G.PickaxeNoClipDuringMove,
-            Callback = function(p775)
-                _G.PickaxeNoClipDuringMove = p775
-                print("PickaxeNoClipDuringMove ->", p775)
-            end
-        })
-    end
 -- ==================== TAB 6: SETTINGS ====================
 local Tab6 = Window:Tab({
     Title = "Settings",
