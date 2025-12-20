@@ -58,7 +58,7 @@ Window:EditOpenButton({
 
 -- Add Version Tag
 Window:Tag({
-    Title = "v4.5",
+    Title = "v4.8",
     Color = Color3.fromHex("#3b82f6"),
     Radius = 8,
 })
@@ -718,6 +718,7 @@ PlayerTab:Toggle({
 
 PlayerTab:Space()
 
+-- ==================== AUTO MINE TAB ====================
 local MainTab = Window:Tab({
     Title = "MainFarm",
     Icon = "house"
@@ -872,7 +873,7 @@ local function ActivateTool()
 end
 
 -- Auto mine toggle
-MainTab:Window({Title = "Master", Icon = "play"}):Toggle({
+MainTab:Section({Title = "Master", Icon = "play"}):Toggle({
     Title = "Auto Mine (Master)",
     Desc = "Enable/disable auto-miner",
     Value = _G.AutoMine,
@@ -887,7 +888,7 @@ MainTab:Window({Title = "Master", Icon = "play"}):Toggle({
 })
 
 -- Mode selection
-MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Mine Type",
     Desc = "Choose what to mine",
     Values = {"Ores", "Rocks"},
@@ -900,7 +901,7 @@ MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
 })
 
 -- Ore/Rock selection
-MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+MainTab:Section({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
     Title = "Ore Drops",
     Desc = "Select ores to mine",
     Values = AllOres,
@@ -914,7 +915,7 @@ MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
 })
 
 -- Speed slider
-MainTab:window({Title = "Options", Icon = "settings"}):Slider({
+MainTab:Section({Title = "Options", Icon = "settings"}):Slider({
     Title = "Tween Speed",
     Desc = "Movement speed to rocks",
     Step = 1,
