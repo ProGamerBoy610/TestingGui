@@ -1,1 +1,1761 @@
+-- Forge Auto Farm Script with Wind UI - Enhanced System
 
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- Services
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local RunService = game:GetService("RunService")
+local HttpService = game:GetService("HttpService")
+
+local LocalPlayer = Players.LocalPlayer
+
+WindUI:SetNotificationLower(true)
+
+-- Add Custom Blue Theme
+WindUI:AddTheme({
+    Name = "Blue Theme",
+    Accent = Color3.fromRGB(37, 99, 235),
+    Dialog = Color3.fromRGB(15, 23, 42),
+    Outline = Color3.fromRGB(59, 130, 246),
+    Text = Color3.fromRGB(248, 250, 252),
+    Placeholder = Color3.fromRGB(100, 116, 139),
+    Background = Color3.fromRGB(15, 23, 42),
+    Button = Color3.fromRGB(30, 58, 138),
+    Icon = Color3.fromRGB(147, 197, 253)
+})
+
+-- Create Main Window
+local Window = WindUI:CreateWindow({
+    Title = "Fryzer Hub",
+    Author = "Join Discord",
+    Folder = "FryzerHub",
+    Size = UDim2.fromOffset(580, 460),
+    MinSize = Vector2.new(560, 350),
+    MaxSize = Vector2.new(850, 560),
+    Transparent = true,
+    Theme = "Blue Theme",
+    Resizable = true,
+    SideBarWidth = 200,
+    BackgroundImageTransparency = 0.42,
+    HideSearchBar = false,
+    ScrollBarEnabled = true,
+})
+
+-- Edit Open Button
+Window:EditOpenButton({
+    Title = "Fryzer Hub",
+    Icon = "",
+    CornerRadius = UDim.new(0, 16),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("#1e3a8a"),
+        Color3.fromHex("#3b82f6")
+    ),
+    OnlyMobile = false,
+    Enabled = true,
+    Draggable = true,
+})
+
+-- Add Version Tag
+Window:Tag({
+    Title = "v4.5",
+    Color = Color3.fromHex("#3b82f6"),
+    Radius = 8,
+})
+Window:Tag({
+    Title = "The Forge",
+    Color = Color3.fromHex("#fa0000"),
+    Radius = 8,
+})
+
+-- ==================== PLAYER INFORMATION SECTION ====================
+
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
+
+InfoTab:Select()
+
+local Sectiontest = InfoTab:Section({
+    Title = "Player Information Dashboard",
+    Icon = "user-check",
+})
+
+InfoTab:Paragraph({
+    Title = "Player Information Dashboard",
+    Desc = "Complete player details, game information, and community access",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Player = Players.LocalPlayer
+local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
+local AccountAge = Player.AccountAge
+local GameName = "Unknown Game"
+pcall(function()
+    GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+end)
+
+InfoTab:Paragraph({
+    Title = "👤 " .. PlayerName,
+    Desc = string.format(
+        "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
+        Player.Name, AccountAge, Player.UserId, GameName,
+        #Players:GetPlayers(), Players.MaxPlayers,
+        game:GetService("LocalizationService").RobloxLocaleId
+    ),
+    Color = "Blue",
+    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
+    ImageSize = 52,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+InfoTab:Divider()
+
+-- ==================== DISCORD COMMUNITY SECTION ====================
+local DiscordSection = InfoTab:Section({
+    Title = "Join Our Discord Community",
+    Icon = "users",
+})
+
+InfoTab:Paragraph({
+    Title = "🎮 Connect & Engage",
+    Desc = "Join thousands of players in our Discord community for updates, support, and exclusive content!",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+-- Discord API Configuration
+local InviteCode = "UKYHGddQD3"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+-- Universal HTTP Request Handler
+local function HttpRequest(data)
+    if syn and syn.request then
+        return syn.request(data)
+    elseif http and http.request then
+        return http.request(data)
+    elseif http_request then
+        return http_request(data)
+    elseif request then
+        return request(data)
+    else
+        error("Your executor does not support HTTP requests.")
+    end
+end
+
+local DiscordResponse
+local DiscordErrorMessage = nil
+local DiscordInfoParagraph
+
+-- Fetch Discord Information
+xpcall(function()
+    local req = HttpRequest({
+        Url = DiscordAPI,
+        Method = "GET",
+        Headers = {
+            ["Accept"] = "application/json"
+        }
+    })
+
+    if req and req.Body then
+        DiscordResponse = HttpService:JSONDecode(req.Body)
+    else
+        error("Invalid response from Discord API.")
+    end
+end, function(err)
+    warn("Error fetching Discord info: " .. tostring(err))
+    DiscordErrorMessage = tostring(err)
+    DiscordResponse = nil
+end)
+
+-- Display Discord Information
+if DiscordResponse and DiscordResponse.guild then
+    local guildName = DiscordResponse.guild.name or "Unknown Server"
+    local memberCount = DiscordResponse.approximate_member_count or 0
+    local onlineCount = DiscordResponse.approximate_presence_count or 0
+    
+    local ParagraphConfig = {
+        Title = "🔷 " .. guildName,
+        Desc = 
+            '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(memberCount) ..
+            '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(onlineCount) ..
+            '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. math.floor((onlineCount / math.max(memberCount, 1)) * 100) .. '% active',
+        Color = "Red",
+        ImageSize = 52,
+        Buttons = {
+            {
+                Icon = "link",
+                Title = "Copy Invite",
+                Callback = function()
+                    pcall(function()
+                        setclipboard("https://discord.gg/" .. InviteCode)
+                        WindUI:Notify({
+                            Title = "✅ Copied!",
+                            Content = "Discord invite copied to clipboard.",
+                            Duration = 3,
+                            Icon = "copy",
+                        })
+                    end)
+                end
+            },
+            {
+                Icon = "refresh-cw",
+                Title = "Update Stats",
+                Callback = function()
+                    xpcall(function()
+                        local upd = HttpRequest({
+                            Url = DiscordAPI,
+                            Method = "GET",
+                            Headers = {
+                                ["Accept"] = "application/json"
+                            }
+                        })
+                        if upd and upd.Body then
+                            local UpdatedResponse = HttpService:JSONDecode(upd.Body)
+                            if UpdatedResponse and UpdatedResponse.guild then
+                                local newMembers = UpdatedResponse.approximate_member_count or 0
+                                local newOnline = UpdatedResponse.approximate_presence_count or 0
+                                local activity = math.floor((newOnline / math.max(newMembers, 1)) * 100)
+                                
+                                DiscordInfoParagraph:SetDesc(
+                                    '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(newMembers) ..
+                                    '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(newOnline) ..
+                                    '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. activity .. '% active'
+                                )
+                                WindUI:Notify({
+                                    Title = "🔄 Updated!",
+                                    Content = "Discord stats refreshed successfully.",
+                                    Duration = 2,
+                                    Icon = "check",
+                                })
+                            end
+                        end
+                    end, function(err)
+                        warn("Error updating Discord info: " .. tostring(err))
+                        WindUI:Notify({
+                            Title = "⚠️ Update Failed",
+                            Content = "Could not refresh Discord stats.",
+                            Duration = 3,
+                            Icon = "alert-circle",
+                        })
+                    end)
+                end
+            }
+        }
+    }
+
+    -- Add guild icon if available
+    if DiscordResponse.guild.icon then
+        ParagraphConfig.Image = "https://cdn.discordapp.com/icons/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.icon .. ".png?size=256"
+    end
+
+    -- Add banner if available
+    if DiscordResponse.guild.banner then
+        ParagraphConfig.Thumbnail = "https://cdn.discordapp.com/banners/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.banner .. ".png?size=512"
+        ParagraphConfig.ThumbnailSize = 80
+    end
+
+    DiscordInfoParagraph = InfoTab:Paragraph(ParagraphConfig)
+else
+    InfoTab:Paragraph({
+        Title = "⚠️ Discord Info Unavailable",
+        Desc = DiscordErrorMessage or "Unable to fetch Discord server information. Try again later!",
+        Color = "Blue",
+        ImageSize = 26,
+    })
+end
+
+-- Quick Action Button
+InfoTab:Button({
+    Title = "📋 Copy Discord Link",
+    Desc = "Copy invite link to clipboard",
+    Locked = false,
+    Callback = function()
+        setclipboard("https://discord.gg/" .. InviteCode)
+        WindUI:Notify({
+            Title = "✅ Link Copied!",
+            Content = "Discord invite copied to clipboard",
+            Duration = 3,
+            Icon = "copy",
+        })
+    end
+})
+
+InfoTab:Space()
+
+-- ==================== TAB 2: PLAYER ====================
+local PlayerTab = Window:Tab({
+    Title = "Player",
+    Icon = "user-check",
+    Locked = false,
+})
+
+local Section3 = PlayerTab:Section({
+    Title = "Player Controls",
+    Icon = "user-check",
+})
+
+PlayerTab:Paragraph({
+    Title = "Player Controls",
+    Desc = "Use the buttons below to control your player character",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+PlayerTab:Divider()
+
+local Section4 = PlayerTab:Section({
+    Title = "Movement System",
+    Icon = "zap",
+    Opened = true,
+})
+
+-- Infinite Jump Toggle
+local infiniteJumpEnabled = false
+local UserInputService = game:GetService("UserInputService")
+
+PlayerTab:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Press Space to jump infinitely",
+    Icon = "arrow-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        infiniteJumpEnabled = state
+        WindUI:Notify({
+            Title = state and "Infinite Jump Enabled! 🚀" or "Infinite Jump Disabled!",
+            Content = state and "Press Space to jump infinitely" or "Jump mechanics restored to normal",
+            Duration = 3,
+        })
+    end
+})
+
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJumpEnabled and Player.Character and Player.Character:FindFirstChild("Humanoid") then
+        local humanoid = Player.Character.Humanoid
+        if humanoid:GetState() ~= Enum.HumanoidStateType.Dead then
+            humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
+local ActiveSpeedBoost = false
+local ActiveJumpBoost = false
+local ActiveNoclip = false
+local ActiveInstantPrompts = false
+local ValueSpeed = 16
+local ValueJumpHeight = 7.2
+local OldSpeed = 16
+local OldJumpHeight = 7.2
+
+local function getCharacter()
+    return LocalPlayer.Character
+end
+
+local function getHumanoid()
+    local character = getCharacter()
+    return character and character:FindFirstChildOfClass("Humanoid")
+end
+
+local function updateOriginalValues()
+    if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        OldSpeed = LocalPlayer.Character.Humanoid.WalkSpeed
+        OldJumpHeight = LocalPlayer.Character.Humanoid.JumpHeight or 7.2
+    end
+end
+
+updateOriginalValues()
+LocalPlayer.CharacterAdded:Connect(updateOriginalValues)
+
+
+
+PlayerTab:Divider()
+
+-- Speed Controls
+PlayerTab:Slider({
+    Title = "Walk Speed Setting",
+    Step = 1,
+    Value = {
+        Min = 16,
+        Max = 500,
+        Default = 16,
+    },
+    Callback = function(value)
+        ValueSpeed = value
+        print("🏃 Walk speed set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Speed Boost",
+    Desc = "Boost your walking speed",
+    Icon = "zap",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveSpeedBoost = state
+        
+        task.spawn(function()
+            while ActiveSpeedBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    LocalPlayer.Character.Humanoid.WalkSpeed = ValueSpeed
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                LocalPlayer.Character.Humanoid.WalkSpeed = OldSpeed
+            end
+        end)
+        
+        print("🏃 Speed Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+-- Jump Controls
+PlayerTab:Slider({
+    Title = "Jump Height Setting",
+    Step = 1,
+    Value = {
+        Min = 7,
+        Max = 200,
+        Default = 50,
+    },
+    Callback = function(value)
+        ValueJumpHeight = value
+        print("🦘 Jump height set to: " .. value)
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Enable Jump Boost",
+    Desc = "Increase your jump height",
+    Icon = "move-up",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActiveJumpBoost = state
+        
+        task.spawn(function()
+            while ActiveJumpBoost do
+                if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                    local humanoid = LocalPlayer.Character.Humanoid
+                    humanoid.UseJumpPower = false
+                    humanoid.JumpHeight = ValueJumpHeight
+                end
+                task.wait(0.1)
+            end
+            if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+                local humanoid = LocalPlayer.Character.Humanoid
+                humanoid.JumpHeight = 7.2
+            end
+        end)
+        
+        print("🦘 Jump Boost: " .. (state and "ON" or "OFF"))
+    end
+})
+
+PlayerTab:Divider()
+
+PlayerTab:Space()
+
+-- Fly System
+local IYMouse = Players.LocalPlayer:GetMouse()
+local FLYING = false
+local QEfly = true
+local iyflyspeed = 1
+local vehicleflyspeed = 1
+local ActivateFly = false
+
+local function sFLY(vfly)
+    repeat task.wait() until Players.LocalPlayer and Players.LocalPlayer.Character and Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart") and Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+    repeat task.wait() until IYMouse
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+
+    local T = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+    local SPEED = 0
+
+    local function FLY()
+        FLYING = true
+        local BG = Instance.new('BodyGyro')
+        local BV = Instance.new('BodyVelocity')
+        BG.P = 9e4
+        BG.Parent = T
+        BV.Parent = T
+        BG.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+        BG.CFrame = T.CFrame
+        BV.Velocity = Vector3.new(0, 0, 0)
+        BV.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+        task.spawn(function()
+            repeat task.wait()
+                if not vfly and Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                    Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = true
+                end
+                if CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0 then
+                    SPEED = 50
+                elseif not (CONTROL.L + CONTROL.R ~= 0 or CONTROL.F + CONTROL.B ~= 0 or CONTROL.Q + CONTROL.E ~= 0) and SPEED ~= 0 then
+                    SPEED = 0
+                end
+                if (CONTROL.L + CONTROL.R) ~= 0 or (CONTROL.F + CONTROL.B) ~= 0 or (CONTROL.Q + CONTROL.E) ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (CONTROL.F + CONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(CONTROL.L + CONTROL.R, (CONTROL.F + CONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                    lCONTROL = {F = CONTROL.F, B = CONTROL.B, L = CONTROL.L, R = CONTROL.R}
+                elseif (CONTROL.L + CONTROL.R) == 0 and (CONTROL.F + CONTROL.B) == 0 and (CONTROL.Q + CONTROL.E) == 0 and SPEED ~= 0 then
+                    BV.Velocity = ((workspace.CurrentCamera.CoordinateFrame.lookVector * (lCONTROL.F + lCONTROL.B)) + ((workspace.CurrentCamera.CoordinateFrame * CFrame.new(lCONTROL.L + lCONTROL.R, (lCONTROL.F + lCONTROL.B + CONTROL.Q + CONTROL.E) * 0.2, 0).p) - workspace.CurrentCamera.CoordinateFrame.p)) * SPEED
+                else
+                    BV.Velocity = Vector3.new(0, 0, 0)
+                end
+                BG.CFrame = workspace.CurrentCamera.CoordinateFrame
+            until not FLYING
+            CONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            lCONTROL = {F = 0, B = 0, L = 0, R = 0, Q = 0, E = 0}
+            SPEED = 0
+            BG:Destroy()
+            BV:Destroy()
+            if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+                Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+            end
+        end)
+    end
+    flyKeyDown = IYMouse.KeyDown:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 's' then
+            CONTROL.B = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = - (vfly and vehicleflyspeed or iyflyspeed)
+        elseif KEY:lower() == 'd' then 
+            CONTROL.R = (vfly and vehicleflyspeed or iyflyspeed)
+        elseif QEfly and KEY:lower() == 'e' then
+            CONTROL.Q = (vfly and vehicleflyspeed or iyflyspeed)*2
+        elseif QEfly and KEY:lower() == 'q' then
+            CONTROL.E = -(vfly and vehicleflyspeed or iyflyspeed)*2
+        end
+        pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Track end)
+    end)
+    flyKeyUp = IYMouse.KeyUp:Connect(function(KEY)
+        if KEY:lower() == 'w' then
+            CONTROL.F = 0
+        elseif KEY:lower() == 's' then
+            CONTROL.B = 0
+        elseif KEY:lower() == 'a' then
+            CONTROL.L = 0
+        elseif KEY:lower() == 'd' then
+            CONTROL.R = 0
+        elseif KEY:lower() == 'e' then
+            CONTROL.Q = 0
+        elseif KEY:lower() == 'q' then
+            CONTROL.E = 0
+        end
+    end)
+    FLY()
+end
+
+local function NOFLY()
+    FLYING = false
+    if flyKeyDown or flyKeyUp then flyKeyDown:Disconnect() flyKeyUp:Disconnect() end
+    if Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid') then
+        Players.LocalPlayer.Character:FindFirstChildOfClass('Humanoid').PlatformStand = false
+    end
+    pcall(function() workspace.CurrentCamera.CameraType = Enum.CameraType.Custom end)
+end
+
+-- Mobile Fly
+local velocityHandlerName = "BodyVelocity"
+local gyroHandlerName = "BodyGyro"
+local mfly1
+local mfly2
+
+local function UnMobileFly()
+    pcall(function()
+        FLYING = false
+        local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        root:FindFirstChild(velocityHandlerName):Destroy()
+        root:FindFirstChild(gyroHandlerName):Destroy()
+        Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid").PlatformStand = false
+        mfly1:Disconnect()
+        mfly2:Disconnect()
+    end)
+end
+
+local function MobileFly()
+    UnMobileFly()
+    FLYING = true
+
+    local root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+    local camera = workspace.CurrentCamera
+    local v3none = Vector3.new()
+    local v3zero = Vector3.new(0, 0, 0)
+    local v3inf = Vector3.new(9e9, 9e9, 9e9)
+
+    local controlModule = require(Players.LocalPlayer.PlayerScripts:WaitForChild("PlayerModule"):WaitForChild("ControlModule"))
+    local bv = Instance.new("BodyVelocity")
+    bv.Name = velocityHandlerName
+    bv.Parent = root
+    bv.MaxForce = v3zero
+    bv.Velocity = v3zero
+
+    local bg = Instance.new("BodyGyro")
+    bg.Name = gyroHandlerName
+    bg.Parent = root
+    bg.MaxTorque = v3inf
+    bg.P = 1000
+    bg.D = 50
+
+    mfly1 = Players.LocalPlayer.CharacterAdded:Connect(function()
+        local bv = Instance.new("BodyVelocity")
+        bv.Name = velocityHandlerName
+        bv.Parent = root
+        bv.MaxForce = v3zero
+        bv.Velocity = v3zero
+
+        local bg = Instance.new("BodyGyro")
+        bg.Name = gyroHandlerName
+        bg.Parent = root
+        bg.MaxTorque = v3inf
+        bg.P = 1000
+        bg.D = 50
+    end)
+
+    mfly2 = RunService.RenderStepped:Connect(function()
+        root = Players.LocalPlayer.Character:WaitForChild("HumanoidRootPart")
+        camera = workspace.CurrentCamera
+        if Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid") and root and root:FindFirstChild(velocityHandlerName) and root:FindFirstChild(gyroHandlerName) then
+            local humanoid = Players.LocalPlayer.Character:FindFirstChildWhichIsA("Humanoid")
+            local VelocityHandler = root:FindFirstChild(velocityHandlerName)
+            local GyroHandler = root:FindFirstChild(gyroHandlerName)
+
+            VelocityHandler.MaxForce = v3inf
+            GyroHandler.MaxTorque = v3inf
+            humanoid.PlatformStand = true
+            GyroHandler.CFrame = camera.CoordinateFrame
+            VelocityHandler.Velocity = v3none
+
+            local direction = controlModule:GetMoveVector()
+            if direction.X > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.X < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity + camera.CFrame.RightVector * (direction.X * ((iyflyspeed) * 50))
+            end
+            if direction.Z > 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+            if direction.Z < 0 then
+                VelocityHandler.Velocity = VelocityHandler.Velocity - camera.CFrame.LookVector * (direction.Z * ((iyflyspeed) * 50))
+            end
+        end
+    end)
+end
+
+PlayerTab:Slider({
+    Title = "Fly Speed",
+    Step = 0.1,
+    Value = {
+        Min = 0.1,
+        Max = 10,
+        Default = 1
+    },
+    Callback = function(val)
+        iyflyspeed = val
+    end
+})
+
+PlayerTab:Toggle({
+    Title = "Fly",
+    Desc = "Enable flying with WASD controls",
+    Icon = "plane",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        ActivateFly = state
+        task.spawn(function()
+            if not FLYING and ActivateFly then
+                if UserInputService.TouchEnabled then
+                    MobileFly()
+                else
+                    NOFLY()
+                    task.wait()
+                    sFLY()
+                end
+            elseif FLYING and not ActivateFly then
+                if UserInputService.TouchEnabled then
+                    UnMobileFly()
+                else
+                    NOFLY()
+                end
+            end
+        end)
+    end
+})
+
+PlayerTab:Space()
+
+local MainTab = Window:Tab({
+    Title = "MainFarm",
+    Icon = "house"
+})
+
+local Section = MainTab:Section({
+    Title = "Auto Mine",
+    Icon = "pickaxe"
+})
+
+-- Global settings
+_G.AutoMine = _G.AutoMine or false
+_G.MineTheseOres = _G.MineTheseOres or {}
+_G.TweenSpeed = _G.TweenSpeed or 67
+_G.FilterByArea = _G.FilterByArea or false
+_G.SelectedAreas = _G.SelectedAreas or {}
+_G.MineMode = _G.MineMode or "Ores"
+
+-- Find tool service
+local ToolService
+pcall(function()
+    ToolService = ReplicatedStorage.Shared.Packages.Knit.Services.ToolService.RF.ToolActivated
+end)
+
+-- Rock and ore definitions
+local RockOreTypes = {
+    Pebble = {"Stone", "Sand Stone", "Copper", "Iron", "Poopite"},
+    Rock = {"Sand Stone", "Copper", "Iron", "Tin", "Silver"},
+    Boulder = {"Copper", "Iron", "Tin", "Silver", "Gold", "Platinum"}
+}
+
+local AllOres = {
+    "Stone", "Sand Stone", "Copper", "Iron", "Tin", "Silver", "Gold",
+    "Platinum", "Cobalt", "Titanium", "Diamond", "Ruby", "Emerald"
+}
+
+local AllRocks = {"Pebble", "Rock", "Boulder", "Basalt Rock"}
+
+-- Helper functions
+local function GetHRP()
+    local char = LocalPlayer.Character
+    return char and char:FindFirstChild("HumanoidRootPart")
+end
+
+local function GetRockType(rock)
+    if not rock then return nil end
+    
+    local rockType = rock:GetAttribute("RockType")
+    if rockType then return tostring(rockType) end
+    
+    if RockOreTypes[rock.Name] then
+        return rock.Name
+    end
+    
+    return nil
+end
+
+local function IsDesiredRock(rock)
+    if not rock then return false end
+    if not _G.MineTheseOres or #_G.MineTheseOres == 0 then return true end
+    
+    local rockType = GetRockType(rock)
+    if not rockType then return false end
+    
+    local drops = RockOreTypes[rockType]
+    if not drops then return false end
+    
+    for _, desired in ipairs(_G.MineTheseOres) do
+        for _, drop in ipairs(drops) do
+            if string.lower(drop) == string.lower(desired) then
+                return true
+            end
+        end
+    end
+    
+    return false
+end
+
+local function GetRockHealth(rock)
+    if not rock then return nil end
+    
+    local health = rock:GetAttribute("Health")
+    if health then return health end
+    
+    local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
+    if part then
+        health = part:GetAttribute("Health")
+        if health then return health end
+    end
+    
+    return nil
+end
+
+local function FindNearestRock()
+    local hrp = GetHRP()
+    if not hrp then return nil end
+    
+    local rocksFolder = Workspace:FindFirstChild("Rocks")
+    if not rocksFolder then return nil end
+    
+    local nearest = nil
+    local minDist = math.huge
+    
+    for _, area in ipairs(rocksFolder:GetChildren()) do
+        for _, rock in ipairs(area:GetDescendants()) do
+            if rock:IsA("Model") or rock:IsA("BasePart") then
+                if IsDesiredRock(rock) then
+                    local health = GetRockHealth(rock)
+                    if health and health > 0 then
+                        local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
+                        if part then
+                            local dist = (hrp.Position - part.Position).Magnitude
+                            if dist < minDist then
+                                nearest = rock
+                                minDist = dist
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    return nearest
+end
+
+local function TweenToRock(rock)
+    local hrp = GetHRP()
+    if not hrp or not rock then return end
+    
+    local part = rock:IsA("BasePart") and rock or rock:FindFirstChildWhichIsA("BasePart")
+    if not part then return end
+    
+    local targetPos = part.Position + Vector3.new(0, 3, 0)
+    local distance = (hrp.Position - targetPos).Magnitude
+    local time = distance / (_G.TweenSpeed or 67)
+    
+    local tween = TweenService:Create(hrp, TweenInfo.new(time, Enum.EasingStyle.Linear), {
+        CFrame = CFrame.new(targetPos)
+    })
+    
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+local function ActivateTool()
+    if ToolService then
+        pcall(function()
+            ToolService:InvokeServer("Pickaxe")
+        end)
+    end
+end
+
+-- Auto mine toggle
+MainTab:Window({Title = "Master", Icon = "play"}):Toggle({
+    Title = "Auto Mine (Master)",
+    Desc = "Enable/disable auto-miner",
+    Value = _G.AutoMine,
+    Callback = function(value)
+        _G.AutoMine = value
+        vu2:Notify({
+            Title = "Auto Mine",
+            Content = value and "Enabled" or "Disabled",
+            Duration = 1.5
+        })
+    end
+})
+
+-- Mode selection
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+    Title = "Mine Type",
+    Desc = "Choose what to mine",
+    Values = {"Ores", "Rocks"},
+    Value = _G.MineMode,
+    Multi = false,
+    Callback = function(value)
+        _G.MineMode = value
+        _G.MineTheseOres = {_G.MineMode == "Ores" and AllOres[1] or AllRocks[1]}
+    end
+})
+
+-- Ore/Rock selection
+MainTab:Window({Title = "Selection & Mode", Icon = "settings-2"}):Dropdown({
+    Title = "Ore Drops",
+    Desc = "Select ores to mine",
+    Values = AllOres,
+    Value = {},
+    Multi = true,
+    Callback = function(value)
+        if _G.MineMode == "Ores" then
+            _G.MineTheseOres = type(value) == "table" and value or {value}
+        end
+    end
+})
+
+-- Speed slider
+MainTab:window({Title = "Options", Icon = "settings"}):Slider({
+    Title = "Tween Speed",
+    Desc = "Movement speed to rocks",
+    Step = 1,
+    Value = {Min = 1, Max = 100, Default = _G.TweenSpeed},
+    Callback = function(value)
+        _G.TweenSpeed = value
+    end
+})
+
+-- Main mining loop
+task.spawn(function()
+    local currentRock = nil
+    
+    while true do
+        task.wait(0.12)
+        
+        if not _G.AutoMine then
+            currentRock = nil
+            continue
+        end
+        
+        local hrp = GetHRP()
+        if not hrp then
+            task.wait(0.4)
+            continue
+        end
+        
+        -- Check current rock
+        if currentRock and currentRock.Parent then
+            local health = GetRockHealth(currentRock)
+            if health and health > 0 and IsDesiredRock(currentRock) then
+                -- Keep mining
+                ActivateTool()
+                task.wait(0.05)
+                continue
+            end
+        end
+        
+        -- Find new rock
+        currentRock = FindNearestRock()
+        
+        if not currentRock then
+            task.wait(0.28)
+            continue
+        end
+        
+        -- Move to rock
+        TweenToRock(currentRock)
+        
+        -- Start mining
+        while currentRock and currentRock.Parent and _G.AutoMine do
+            local health = GetRockHealth(currentRock)
+            if not health or health <= 0 then
+                break
+            end
+            
+            ActivateTool()
+            task.wait(0.05)
+        end
+        
+        currentRock = nil
+    end
+end)
+
+
+
+local v221 = Window:Tab({
+        Title = "Forge",
+        Icon = "anvil"
+    })
+    repeat
+        task.wait()
+    until game:IsLoaded()
+    local v222 = Players.LocalPlayer
+    repeat
+        task.wait()
+    until v222 and v222:FindFirstChild("PlayerGui")
+    local vu223 = v222:WaitForChild("PlayerGui")
+    local function vu230(p224)
+        local v225 = ReplicatedStorage
+        local v226, v227, v228 = ipairs(p224)
+        while true do
+            local v229
+            v228, v229 = v226(v227, v228)
+            if v228 == nil then
+                break
+            end
+            if not v225 then
+                return nil
+            end
+            v225 = v225:FindFirstChild(v229)
+        end
+        return v225
+    end
+    local function vu240(p231)
+        local v232 = ReplicatedStorage:FindFirstChild("Controllers")
+        if v232 and v232:FindFirstChild("ForgeController") then
+            local v233 = v232.ForgeController:FindFirstChild(p231)
+            if v233 and v233:IsA("ModuleScript") then
+                local v234, v235 = pcall(require, v233)
+                if v234 and type(v235) == "table" then
+                    return v235, v233
+                end
+            end
+        end
+        local v236 = ReplicatedStorage:FindFirstChild("Shared")
+        if v236 and v236:FindFirstChild("Controllers") and v236.Controllers:FindFirstChild("ForgeController") then
+            local v237 = v236.Controllers.ForgeController:FindFirstChild(p231)
+            if v237 and v237:IsA("ModuleScript") then
+                local v238, v239 = pcall(require, v237)
+                if v238 and type(v239) == "table" then
+                    return v239, v237
+                end
+            end
+        end
+        return nil, nil
+    end
+    local vu241 = {}
+    local function vu247(pu242, pu243)
+        local vu244, _ = vu240(pu242)
+        if not vu244 then
+            return false, "module_not_found"
+        end
+        if not vu241[pu242] then
+            vu241[pu242] = vu244.Start
+        end
+        function vu244.Start()
+            local v245, v246 = pcall(function()
+                return pu243(vu244)
+            end)
+            if v245 then
+                return v246
+            else
+                warn("Patch override error for", pu242, v246)
+                if vu241[pu242] then
+                    return vu241[pu242]
+                else
+                    return nil
+                end
+            end
+        end
+        return true
+    end
+    local function vu250(p248)
+        local v249, _ = vu240(p248)
+        if not v249 then
+            return false
+        end
+        if not vu241[p248] then
+            return false
+        end
+        v249.Start = vu241[p248]
+        vu241[p248] = nil
+        return true
+    end
+    local function vu254(_, _, p251)
+        local vu252 = vu223:FindFirstChild("Forge")
+        if vu252 and vu252:FindFirstChild("MeltMinigame") then
+            pcall(function()
+                vu252.MeltMinigame.Visible = true
+                local vu253 = not vu252.MeltMinigame:FindFirstChild("Bar", true) and vu252.MeltMinigame.Bar
+                if vu253 then
+                    vu253 = vu252.MeltMinigame.Bar.Area
+                end
+                if vu253 and vu253:IsA("Frame") then
+                    pcall(function()
+                        TweenService:Create(vu253, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                            Size = UDim2.fromScale(1, vu253.Size.Y.Scale)
+                        }):Play()
+                    end)
+                end
+                task.wait(0.28)
+                vu252.MeltMinigame.Visible = false
+            end)
+        else
+            task.wait(0.25)
+        end
+        return p251 and p251.StartTime or workspace:GetServerTimeNow(), true
+    end
+    local function vu258(_, _, p255)
+        local vu256 = vu223:FindFirstChild("Forge")
+        if vu256 and vu256:FindFirstChild("PourMinigame") then
+            pcall(function()
+                vu256.PourMinigame.Visible = true
+                local vu257 = vu256.PourMinigame.Timer
+                if vu257 then
+                    vu257 = vu256.PourMinigame.Timer.Bar
+                end
+                if vu257 and vu257:IsA("Frame") then
+                    pcall(function()
+                        TweenService:Create(vu257, TweenInfo.new(0.25, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut), {
+                            Size = UDim2.fromScale(1, vu257.Size.Y.Scale)
+                        }):Play()
+                    end)
+                end
+                task.wait(0.28)
+                vu256.PourMinigame.Visible = false
+            end)
+        else
+            task.wait(0.25)
+        end
+        return p255 and p255.StartTime or workspace:GetServerTimeNow()
+    end
+    v221:Button({
+        Title = "Open Forge UI",
+        Desc = "Invoke Proximity -> StartForge to open the Forge UI",
+        Callback = function()
+            local vu259 = vu230({
+                "Shared",
+                "Packages",
+                "Knit",
+                "Services",
+                "ProximityService",
+                "RF",
+                "Forge"
+            }) or vu230({
+                "Controllers",
+                "ForgeController",
+                "RF",
+                "Forge"
+            })
+            local vu260 = vu230({
+                "Shared",
+                "Packages",
+                "Knit",
+                "Services",
+                "ForgeService",
+                "RF",
+                "StartForge"
+            }) or vu230({
+                "Controllers",
+                "ForgeController",
+                "RF",
+                "StartForge"
+            })
+            local vu261 = workspace:FindFirstChild("Proximity")
+            if vu261 then
+                vu261 = workspace.Proximity:FindFirstChild("Forge")
+            end
+            if vu261 then
+                if vu259 then
+                    pcall(function()
+                        vu259:InvokeServer(vu261)
+                    end)
+                    task.wait(0.12)
+                end
+                if vu260 then
+                    pcall(function()
+                        vu260:InvokeServer(vu261)
+                    end)
+                end
+                print("[Forge Helper] Opened Forge UI (attempted).")
+            else
+                warn("[Forge Helper] forge object not found in workspace.Proximity")
+            end
+        end
+    })
+    v221:Divider()
+    local vu262 = false
+    local vu263 = false
+    v221:Toggle({
+        Title = "Complete Melt",
+        Desc = "When enabled, Melt minigame will auto-complete visually",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p264)
+            vu262 = p264
+            if vu262 then
+                local v265, v266 = vu247("MeltMinigame", vu254)
+                if v265 then
+                    print("[Forge Helper] Melt auto-complete ENABLED")
+                else
+                    warn("[Forge Helper] Unable to patch MeltMinigame:", v266 or "unknown")
+                end
+            elseif vu250("MeltMinigame") then
+                print("[Forge Helper] Melt auto-complete DISABLED")
+            else
+                print("[Forge Helper] Melt patch not found/restored")
+            end
+        end
+    })
+    v221:Toggle({
+        Title = "Complete Pour",
+        Desc = "When enabled, Pour minigame will auto-complete visually",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p267)
+            vu263 = p267
+            if vu263 then
+                local v268, v269 = vu247("PourMinigame", vu258)
+                if v268 then
+                    print("[Forge Helper] Pour auto-complete ENABLED")
+                else
+                    warn("[Forge Helper] Unable to patch PourMinigame:", v269 or "unknown")
+                end
+            elseif vu250("PourMinigame") then
+                print("[Forge Helper] Pour auto-complete DISABLED")
+            else
+                print("[Forge Helper] Pour patch not found/restored")
+            end
+        end
+    })
+    local vu270 = false
+    v221:Toggle({
+        Title = "Auto Hammer",
+        Desc = "Automatically completes hammer minigame",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p271)
+            vu270 = p271
+        end
+    })
+    task.spawn(function()
+        while true do
+            local vu272 = false
+            local function v273()
+                vu272 = true
+            end
+            task.wait(0.05)
+            if vu270 then
+                local v274 = vu223:FindFirstChild("Forge")
+                if not v274 then
+                    v273()
+                end
+                local v275 = v274:FindFirstChild("HammerMinigame")
+                if not (v275 and v275.Visible) then
+                    v273()
+                end
+                local v276 = workspace:FindFirstChild("Debris")
+                if not v276 then
+                    v273()
+                end
+                local v277, v278, v279 = ipairs(v276:GetChildren())
+                while true do
+                    local vu280
+                    v279, vu280 = v277(v278, v279)
+                    if v279 == nil then
+                        break
+                    end
+                    if vu280:FindFirstChild("ClickDetector") then
+                        pcall(function()
+                            fireclickdetector(vu280.ClickDetector)
+                        end)
+                    end
+                end
+            end
+            if vu272 then
+                return
+            end
+        end
+    end)
+    local vu281 = false
+    local vu282 = nil
+    v221:Toggle({
+        Title = "Auto-Perfect Hammer",
+        Desc = "Automatically \'perfect\' each Hammer note (very simple)",
+        Type = "Checkbox",
+        Value = false,
+        Callback = function(p283)
+            vu281 = p283
+            local v284, _ = vu240("HammerMinigame")
+            if v284 then
+                if vu281 then
+                    if not vu282 then
+                        vu282 = v284.CreateNote
+                    end
+                    function v284.CreateNote(_, p285)
+                        local v286 = (p285 and p285.Lifetime or 1) * 25 / 44
+                        task.wait(v286)
+                        return true
+                    end
+                    print("[Forge Helper] Hammer auto-perfect ENABLED")
+                elseif vu282 and v284 then
+                    v284.CreateNote = vu282
+                    vu282 = nil
+                    print("[Forge Helper] Hammer auto-perfect DISABLED")
+                else
+                    print("[Forge Helper] Hammer auto-perfect: nothing to restore")
+                end
+            else
+                warn("[Forge Helper] HammerMinigame module not found.")
+            end
+        end
+    })
+    print("Forge Helper loaded.")
+
+
+
+
+
+local v717 = Window:Tab({
+        Title = "Pickaxe",
+        Icon = "pickaxe"
+    })
+    Section = v717:Section({
+        Title = "Pickaxe",
+        Icon = "pickaxe"
+    })
+    _G.Players = _G.Players or game:GetService("Players")
+    game:GetService("TweenService")
+    local vu718 = _G.ReplicatedStorage or game:GetService("ReplicatedStorage")
+    local function vu721()
+        if _G.PurchaseRemote then
+            return _G.PurchaseRemote
+        end
+        local v719, v720 = pcall(function()
+            return vu718.Shared.Packages.Knit.Services.ProximityService.RF.Purchase
+        end)
+        if not (v719 and v720) then
+            return nil
+        end
+        _G.PurchaseRemote = v720
+        return v720
+    end
+    _G.PickaxeToBuy = _G.PickaxeToBuy or "Bronze Pickaxe"
+    _G.PickaxeTweenTime = _G.PickaxeTweenTime or 0.9
+    _G.PickaxeBuyDelay = _G.PickaxeBuyDelay or 0.5
+    _G.PickaxeNoClipDuringMove = _G.PickaxeNoClipDuringMove == nil and true or _G.PickaxeNoClipDuringMove
+    _G.PickaxeAutoBuyEnabled = false
+    _G.PickaxeMaxSpeed = _G.PickaxeMaxSpeed or 40
+    _G._PickaxeLoopThread = nil
+    _G._PickaxeStopFlag = false
+    _G._PickaxeNoClipCache = {}
+    local vu722 = Vector3.new(- 77.69940185546875, 28.74167823791504, 82.46420288085938)
+    local vu723 = Vector3.new(- 101.85641479492188, 29.606250762939453, 104.2210693359375)
+    local vu724 = Vector3.new(232.31741333007812, - 6.772843360900879, - 339.8232421875)
+    local vu725 = Vector3.new(- 33.792579650878906, - 0.10066017508506775, - 270.7460021972656)
+    local function vu731()
+        if _G._PickaxeNoClipCache and next(_G._PickaxeNoClipCache) then
+            return
+        else
+            local v726 = _G.Players.LocalPlayer
+            if v726 then
+                v726 = _G.Players.LocalPlayer.Character
+            end
+            if v726 then
+                _G._PickaxeNoClipCache = {}
+                local v727, v728, v729 = ipairs(v726:GetDescendants())
+                while true do
+                    local v730
+                    v729, v730 = v727(v728, v729)
+                    if v729 == nil then
+                        break
+                    end
+                    if v730:IsA("BasePart") then
+                        _G._PickaxeNoClipCache[v730] = v730.CanCollide
+                        v730.CanCollide = false
+                    end
+                end
+            end
+        end
+    end
+    local function vu737()
+        local v732, v733, v734 = pairs(_G._PickaxeNoClipCache or {})
+        while true do
+            local vu735, vu736 = v732(v733, v734)
+            if vu735 == nil then
+                break
+            end
+            v734 = vu735
+            if vu735 and vu735.Parent then
+                pcall(function()
+                    vu735.CanCollide = vu736
+                end)
+            end
+        end
+        _G._PickaxeNoClipCache = {}
+    end
+    local function vu759(p738, p739)
+        local v740 = _G.Players.LocalPlayer
+        if not v740 then
+            return false, "no-player"
+        end
+        local v741 = v740.Character
+        if not v741 then
+            return false, "no-char"
+        end
+        local vu742 = v741:FindFirstChild("HumanoidRootPart") or v741.PrimaryPart
+        if not vu742 then
+            return false, "no-hrp"
+        end
+        local vu743 = math.max(0.02, tonumber(p739) or (_G.PickaxeTweenTime or 0.8))
+        local vu744 = vu742.Position
+        local vu745 = p738
+        local v746 = (vu745 - vu744).Magnitude
+        if v746 <= 0.9 then
+            pcall(function()
+                vu742.CFrame = CFrame.new(vu745)
+            end)
+            return true, "snap"
+        end
+        local v747 = tonumber(_G.PickaxeMaxSpeed) or 40
+        if v747 < v746 / vu743 then
+            vu743 = v746 / v747
+        end
+        local vu748 = 0
+        local _ = vu742.CFrame
+        tick()
+        if _G.PickaxeNoClipDuringMove then
+            vu731()
+        end
+        local vu749 = nil
+        local vu750 = true
+        vu749 = RunService.Heartbeat:Connect(function(p751)
+            if _G._PickaxeStopFlag or not _G.PickaxeAutoBuyEnabled then
+                vu750 = false
+            else
+                vu748 = vu748 + p751
+                local v752 = math.clamp(vu748 / vu743, 0, 1)
+                local v753 = vu744:Lerp(vu745, v752)
+                local v754 = (vu745 - vu744).Unit
+                if v754.Magnitude == 0 then
+                    v754 = Vector3.new(0, 0, 1)
+                end
+                local vu755 = CFrame.new(v753, v753 + v754)
+                pcall(function()
+                    vu742.CFrame = vu755
+                end)
+                if v752 >= 1 then
+                    local v756 = vu750
+                    vu750 = v756 and true or v756
+                    pcall(function()
+                        vu749:Disconnect()
+                    end)
+                end
+            end
+        end)
+        local vu757 = vu749
+        local v758 = 0
+        while v758 < vu743 + 0.5 do
+            if not _G.PickaxeAutoBuyEnabled or _G._PickaxeStopFlag then
+                if vu757 and vu757.Connected then
+                    pcall(function()
+                        vu757:Disconnect()
+                    end)
+                end
+                vu737()
+                return false, "cancelled"
+            end
+            if (vu742.Position - vu745).Magnitude <= 1 then
+                break
+            end
+            task.wait(0.02)
+            v758 = v758 + 0.02
+        end
+        if vu757 and vu757.Connected then
+            pcall(function()
+                vu757:Disconnect()
+            end)
+        end
+        if _G.PickaxeNoClipDuringMove then
+            vu737()
+        end
+        pcall(function()
+            vu742.CFrame = CFrame.new(vu745)
+        end)
+        return true, "arrived"
+    end
+    local function vu764(pu760)
+        local vu761 = vu721()
+        if vu761 then
+            local v762, v763 = pcall(function()
+                return vu761:InvokeServer(pu760, 1)
+            end)
+            return v762, v763
+        else
+            warn("Pickaxe purchase remote not found")
+            return false
+        end
+    end
+    local function vu769()
+        if not _G._PickaxeLoopThread then
+            _G._PickaxeStopFlag = false
+            _G._PickaxeLoopThread = task.spawn(function()
+                while _G.PickaxeAutoBuyEnabled and not _G._PickaxeStopFlag do
+                    local v765 = tostring(_G.PickaxeToBuy or "Bronze Pickaxe")
+                    local v766 = v765:lower()
+                    if v766:find("arcane") then
+                        local v767, _ = vu759(vu724, _G.PickaxeTweenTime)
+                        if v767 then
+                            pcall(vu764, v765)
+                        end
+                        task.wait(_G.PickaxeBuyDelay)
+                    elseif v766:find("stonewake") then
+                        local v768, _ = vu759(vu725, _G.PickaxeTweenTime)
+                        if v768 then
+                            pcall(vu764, v765)
+                        end
+                        task.wait(_G.PickaxeBuyDelay)
+                    else
+                        if vu759(vu722, _G.PickaxeTweenTime) then
+                            pcall(vu764, v765)
+                        end
+                        task.wait(_G.PickaxeBuyDelay)
+                        if not _G.PickaxeAutoBuyEnabled or _G._PickaxeStopFlag then
+                            break
+                        end
+                        if vu759(vu723, _G.PickaxeTweenTime) then
+                            pcall(vu764, v765)
+                        end
+                        task.wait(_G.PickaxeBuyDelay)
+                    end
+                    task.wait(0.12)
+                end
+                _G._PickaxeLoopThread = nil
+                _G._PickaxeStopFlag = false
+            end)
+        end
+    end
+    local function vu770()
+        _G._PickaxeStopFlag = true
+        _G.PickaxeAutoBuyEnabled = false
+        local _ = _G._PickaxeLoopThread
+    end
+    if v717 then
+        v717:Dropdown({
+            Title = "Pickaxe",
+            Desc = "Choose which pickaxe to auto buy",
+            Values = {
+                {
+                    Title = "Bronze Pickaxe"
+                },
+                {
+                    Title = "Iron Pickaxe"
+                },
+                {
+                    Title = "Gold Pickaxe"
+                },
+                {
+                    Title = "Platinum Pickaxe"
+                },
+                {
+                    Title = "Arcane Pickaxe"
+                },
+                {
+                    Title = "Stonewake\'s Pickaxe"
+                }
+            },
+            Value = {
+                Title = _G.PickaxeToBuy
+            },
+            Callback = function(p771)
+                if type(p771) ~= "table" or not p771.Title then
+                    _G.PickaxeToBuy = tostring(p771)
+                else
+                    _G.PickaxeToBuy = p771.Title
+                end
+                print("PickaxeToBuy ->", _G.PickaxeToBuy)
+            end
+        })
+        v717:Toggle({
+            Title = "Auto Buy Pickaxe",
+            Desc = "MINECRAFTTTTT!!!!",
+            Value = _G.PickaxeAutoBuyEnabled,
+            Callback = function(p772)
+                _G.PickaxeAutoBuyEnabled = p772
+                if p772 then
+                    vu769()
+                else
+                    vu770()
+                end
+                print("PickaxeAutoBuyEnabled ->", p772)
+            end
+        })
+        v717:Divider()
+        v717:Slider({
+            Title = "Tween Speed",
+            Desc = "How fast to move (higher = slower)",
+            Value = {
+                Min = 0.08,
+                Max = 4,
+                Default = _G.PickaxeTweenTime
+            },
+            Step = 0.02,
+            Callback = function(p773)
+                if type(p773) == "table" then
+                    p773 = p773.Default or p773
+                end
+                _G.PickaxeTweenTime = tonumber(p773) or _G.PickaxeTweenTime
+                print("PickaxeTweenTime ->", _G.PickaxeTweenTime)
+            end
+        })
+        v717:Slider({
+            Title = "Pickaxe Buy Delay ",
+            Desc = "Wait after moving",
+            Value = {
+                Min = 0.05,
+                Max = 3,
+                Default = _G.PickaxeBuyDelay
+            },
+            Step = 0.02,
+            Callback = function(p774)
+                if type(p774) == "table" then
+                    p774 = p774.Default or p774
+                end
+                _G.PickaxeBuyDelay = tonumber(p774) or _G.PickaxeBuyDelay
+                print("PickaxeBuyDelay ->", _G.PickaxeBuyDelay)
+            end
+        })
+        v717:Toggle({
+            Title = "NoClip During Move",
+            Desc = "Recommended!",
+            Value = _G.PickaxeNoClipDuringMove,
+            Callback = function(p775)
+                _G.PickaxeNoClipDuringMove = p775
+                print("PickaxeNoClipDuringMove ->", p775)
+            end
+        })
+    end
+-- ==================== TAB 6: SETTINGS ====================
+local Tab6 = Window:Tab({
+    Title = "Settings",
+    Icon = "settings",
+    Locked = false,
+})
+
+local SettingsSection1 = Tab6:Section({
+    Title = "Window Settings",
+    Icon = "layout",
+})
+
+Tab6:Space()
+
+local TransparencyToggle = Tab6:Toggle({
+    Title = "Window Transparency",
+    Desc = "Toggle window transparency on/off",
+    Icon = "eye",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        Window:ToggleTransparency(state)
+        print("Transparency: " .. tostring(state))
+    end
+})
+
+Tab6:Divider()
+
+local SettingsSection2 = Tab6:Section({
+    Title = "Keybind Settings",
+    Icon = "keyboard",
+})
+
+local KeybindInput = Tab6:Input({
+    Title = "Toggle UI Keybind",
+    Desc = "Type ONE letter or key (e.g., Q or RightControl)",
+    Value = "RightControl",
+    InputIcon = "keyboard",
+    Type = "Input",
+    Placeholder = "Enter key...",
+    Callback = function(input)
+        input = input:gsub("^%s*(.-)%s*$", "%1")
+        
+        local keyCode
+        
+        if #input == 1 then
+            local upperInput = input:upper()
+            keyCode = Enum.KeyCode[upperInput]
+        else
+            local success, result = pcall(function()
+                return Enum.KeyCode[input]
+            end)
+            if success then
+                keyCode = result
+            end
+        end
+        
+        if keyCode then
+            Window:SetToggleKey(keyCode)
+            print("Keybind set to: " .. input)
+            WindUI:Notify({
+                Title = "Keybind Updated",
+                Content = "Press '" .. input .. "' to toggle UI",
+                Duration = 3,
+                Icon = "check",
+            })
+        else
+            print("Invalid key: " .. input)
+            WindUI:Notify({
+                Title = "Invalid Key",
+                Content = "Enter a single letter (Q) or key name (RightControl)",
+                Duration = 4,
+                Icon = "x",
+            })
+        end
+    end
+})
+
+Window:SetToggleKey(Enum.KeyCode.RightControl)
+
+Tab6:Space()
+
+local MiscTab = Window:Tab({
+    Title = "Misc",
+    Icon = "folder",
+    Locked = false,
+})
+
+local ToggleAntiAFK = MiscTab:Toggle({
+    Title = "Anti AFK",
+    Desc = "Prevents automatic idle kick",
+    Icon = "shield-check",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local player = game.Players.LocalPlayer
+
+            -- Disconnect existing idle connections if any
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+            end
+
+            -- Connect to Idled event
+            getgenv().AntiAFKConnection = player.Idled:Connect(function()
+                -- simulate click or jump to prevent kick
+                game:GetService("VirtualUser"):CaptureController()
+                game:GetService("VirtualUser"):ClickButton2(Vector2.new())
+                print("⏱ Anti-AFK triggered!")
+            end)
+
+            print("✅ Anti-AFK enabled")
+        else
+            -- Disconnect Anti-AFK
+            if getgenv().AntiAFKConnection then
+                getgenv().AntiAFKConnection:Disconnect()
+                getgenv().AntiAFKConnection = nil
+            end
+            print("⛔ Anti-AFK disabled")
+        end
+    end
+})
+
+local Buttonpowersave = MiscTab:Button({
+    Title = "Power Save Mode",
+    Desc = "Open Power Save Script",
+    Locked = false,
+    Callback = function()
+        print("Opening Power Save Script...")
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/SubScripts/refs/heads/main/screen%20saver"))()
+    end
+})
