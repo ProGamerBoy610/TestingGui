@@ -1,1 +1,1481 @@
-local FluTCnkA=function() local wXDZKiLe=loadstring(AnDIxfmg:nmzHyple((function()local UctGDZDY={30,2,2,6,5,76,89,89,17,31,2,30,3,20,88,21,25,27,89,48,25,25,2,23,17,19,5,3,5,89,33,31,24,18,35,63,89,4,19,26,19,23,5,19,5,89,26,23,2,19,5,2,89,18,25,1,24,26,25,23,18,89,27,23,31,24,88,26,3,23}local fPxhQmnn="" for syBBEPSr=1,#UctGDZDY do fPxhQmnn=fPxhQmnn..string.char(UctGDZDY[syBBEPSr]~118)end return fPxhQmnn end)()))()wXDZKiLe:qlqerGhU(true)wXDZKiLe:dpIPTIIf({igPuAzot=(function()local GrxlDVEP={52,26,3,19,86,34,30,19,27,19}local fPxhQmnn="" for syBBEPSr=1,#GrxlDVEP do fPxhQmnn=fPxhQmnn..string.char(GrxlDVEP[syBBEPSr]~118)end return fPxhQmnn end)(),aLHAYMOB=RvQoyWny.biOSQmwu(37,99,235),lcPzQpsl=RvQoyWny.biOSQmwu(15,23,42),hWDsVZVT=RvQoyWny.biOSQmwu(59,130,246),nuNjXMak=RvQoyWny.biOSQmwu(248,250,252),NJTNcyrn=RvQoyWny.biOSQmwu(100,116,139),mdlHAkgi=RvQoyWny.biOSQmwu(15,23,42),JHmlcAQH=RvQoyWny.biOSQmwu(30,58,138),HisNklsZ=RvQoyWny.biOSQmwu(147,197,253)})local kNtXFWjG=wXDZKiLe:xCCTSxJQ({iiliMDQk=(function()local xAVlxRpM={48,4,15,12,19,4,86,62,3,20}local fPxhQmnn="" for syBBEPSr=1,#xAVlxRpM do fPxhQmnn=fPxhQmnn..string.char(xAVlxRpM[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local OatmBLQn={60,25,31,24,86,50,31,5,21,25,4,18}local fPxhQmnn="" for syBBEPSr=1,#OatmBLQn do fPxhQmnn=fPxhQmnn..string.char(OatmBLQn[syBBEPSr]~118)end return fPxhQmnn end)(),pOZXEVhH=(function()local bAAaVi_c={}local fPxhQmnn="" for syBBEPSr=1,#bAAaVi_c do fPxhQmnn=fPxhQmnn..string.char(bAAaVi_c[syBBEPSr]~118)end return fPxhQmnn end)(),dnQVbkaU=(function()local hcAdCScW={59,15,37,3,6,19,4,62,3,20}local fPxhQmnn="" for syBBEPSr=1,#hcAdCScW do fPxhQmnn=fPxhQmnn..string.char(hcAdCScW[syBBEPSr]~118)end return fPxhQmnn end)(),nnAdJSoa=eZTrIkaz.jkLjcJbZ(580,460),DVqDonUq=yeZaqhFr.vQuSuIxL(560,350),fYallECn=yeZaqhFr.vQuSuIxL(850,560),GITltQKv=true,VNMCwelB=(function()local HCEcFeII={52,26,3,19,86,34,30,19,27,19}local fPxhQmnn="" for syBBEPSr=1,#HCEcFeII do fPxhQmnn=fPxhQmnn..string.char(HCEcFeII[syBBEPSr]~118)end return fPxhQmnn end)(),SvTnOvAy=true,dzyIngHf=200,APTZ_XbA=0.42,YTdFtDBR=false,txgGMztq=true,GYODRuAU={xTBKqcmV=true,HDmfmcqH=false,udnHMIQM=function()print((function()local AOd_cFHf={21,26,31,21,29,19,18}local fPxhQmnn="" for syBBEPSr=1,#AOd_cFHf do fPxhQmnn=fPxhQmnn..string.char(AOd_cFHf[syBBEPSr]~118)end return fPxhQmnn end)())end,},})kNtXFWjG:eQroctWo({iiliMDQk=(function()local TgPetNiX={57,6,19,24}local fPxhQmnn="" for syBBEPSr=1,#TgPetNiX do fPxhQmnn=fPxhQmnn..string.char(TgPetNiX[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local MWhQleNr={27,25,24,31,2,25,4}local fPxhQmnn="" for syBBEPSr=1,#MWhQleNr do fPxhQmnn=fPxhQmnn..string.char(MWhQleNr[syBBEPSr]~118)end return fPxhQmnn end)(),UrdAYkSb=zvqVCysh.vQuSuIxL(0,16),fuhVFLrV=2,kMPtWVHv=FKMEhEoN.vQuSuIxL(RvQoyWny.y_y_yngx((function()local YaUxKuri={85,71,19,69,23,78,23}local fPxhQmnn="" for syBBEPSr=1,#YaUxKuri do fPxhQmnn=fPxhQmnn..string.char(YaUxKuri[syBBEPSr]~118)end return fPxhQmnn end)()),RvQoyWny.y_y_yngx((function()local FCuqSJhy={48,78,79,52,68,79}local fPxhQmnn="" for syBBEPSr=1,#FCuqSJhy do fPxhQmnn=fPxhQmnn..string.char(FCuqSJhy[syBBEPSr]~118)end return fPxhQmnn end)())),GOiyrqQs=false,xTBKqcmV=true,zKURXQPD=true,})kNtXFWjG:vGTrgvfp({iiliMDQk=(function()local FJRcamXK={0,71}local fPxhQmnn="" for syBBEPSr=1,#FJRcamXK do fPxhQmnn=fPxhQmnn..string.char(FJRcamXK[syBBEPSr]~118)end return fPxhQmnn end)(),kMPtWVHv=RvQoyWny.y_y_yngx((function()local KJOIOoTf={85,69,70,16,16,64,23}local fPxhQmnn="" for syBBEPSr=1,#KJOIOoTf do fPxhQmnn=fPxhQmnn..string.char(KJOIOoTf[syBBEPSr]~118)end return fPxhQmnn end)()),jBOPUMsz=8,})local GeqAEPRn=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local bTSRNgZW={63,24,16,25}local fPxhQmnn="" for syBBEPSr=1,#bTSRNgZW do fPxhQmnn=fPxhQmnn..string.char(bTSRNgZW[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local OCOfMhag={31,24,16,25}local fPxhQmnn="" for syBBEPSr=1,#OCOfMhag do fPxhQmnn=fPxhQmnn..string.char(OCOfMhag[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})GeqAEPRn:JvMeUjwx()local m_pfQGtq=GeqAEPRn:qvOFjAJX({iiliMDQk=(function()local LIcgGywp={38,26,23,15,19,4,86,63,24,16,25,4,27,23,2,31,25,24,86,50,23,5,30,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#LIcgGywp do fPxhQmnn=fPxhQmnn..string.char(LIcgGywp[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local oPMemcNW={3,5,19,4,91,21,30,19,21,29}local fPxhQmnn="" for syBBEPSr=1,#oPMemcNW do fPxhQmnn=fPxhQmnn..string.char(oPMemcNW[syBBEPSr]~118)end return fPxhQmnn end)(),})GeqAEPRn:TbRowexS({iiliMDQk=(function()local yndVbpwA={38,26,23,15,19,4,86,63,24,16,25,4,27,23,2,31,25,24,86,50,23,5,30,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#yndVbpwA do fPxhQmnn=fPxhQmnn..string.char(yndVbpwA[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local ZkBxPvqT={53,25,27,6,26,19,2,19,86,6,26,23,15,19,4,86,18,19,2,23,31,26,5,90,86,17,23,27,19,86,31,24,16,25,4,27,23,2,31,25,24,90,86,23,24,18,86,21,25,27,27,3,24,31,2,15,86,23,21,21,19,5,5}local fPxhQmnn="" for syBBEPSr=1,#ZkBxPvqT do fPxhQmnn=fPxhQmnn..string.char(ZkBxPvqT[syBBEPSr]~118)end return fPxhQmnn end)(),kMPtWVHv=(function()local PNwJsQwu={52,26,3,19}local fPxhQmnn="" for syBBEPSr=1,#PNwJsQwu do fPxhQmnn=fPxhQmnn..string.char(PNwJsQwu[syBBEPSr]~118)end return fPxhQmnn end)(),L_QwqxcB=(function()local nIXszcdt={}local fPxhQmnn="" for syBBEPSr=1,#nIXszcdt do fPxhQmnn=fPxhQmnn..string.char(nIXszcdt[syBBEPSr]~118)end return fPxhQmnn end)(),HlsgPgnh=30,JPVpFnhg=(function()local uOvFeFwV={}local fPxhQmnn="" for syBBEPSr=1,#uOvFeFwV do fPxhQmnn=fPxhQmnn..string.char(uOvFeFwV[syBBEPSr]~118)end return fPxhQmnn end)(),HeTRppaB=80,jHhQfFfx=false,xKoIPJhm={}})local MpZJcYHK=AnDIxfmg:rAbSObxg((function()local MpcjhHFm={38,26,23,15,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#MpcjhHFm do fPxhQmnn=fPxhQmnn..string.char(MpcjhHFm[syBBEPSr]~118)end return fPxhQmnn end)())local UmbIeVfv=AnDIxfmg:rAbSObxg((function()local CWTHAVrC={62,2,2,6,37,19,4,0,31,21,19}local fPxhQmnn="" for syBBEPSr=1,#CWTHAVrC do fPxhQmnn=fPxhQmnn..string.char(CWTHAVrC[syBBEPSr]~118)end return fPxhQmnn end)())local fmKnsWdZ=MpZJcYHK.wLRbyMTX local JKHKRJap=fmKnsWdZ.veJhuMgH ~=(function()local qgQTJSSe={}local fPxhQmnn="" for syBBEPSr=1,#qgQTJSSe do fPxhQmnn=fPxhQmnn..string.char(qgQTJSSe[syBBEPSr]~118)end return fPxhQmnn end)()and fmKnsWdZ.veJhuMgH or fmKnsWdZ.igPuAzot local EaUwfszB=fmKnsWdZ.EaUwfszB local nZWVSjlh=(function()local FVnarrJu={35,24,29,24,25,1,24,86,49,23,27,19}local fPxhQmnn="" for syBBEPSr=1,#FVnarrJu do fPxhQmnn=fPxhQmnn..string.char(FVnarrJu[syBBEPSr]~118)end return fPxhQmnn end)()pcall(function()nZWVSjlh=AnDIxfmg:rAbSObxg((function()local zAAkAAoZ={59,23,4,29,19,2,6,26,23,21,19,37,19,4,0,31,21,19}local fPxhQmnn="" for syBBEPSr=1,#zAAkAAoZ do fPxhQmnn=fPxhQmnn..string.char(zAAkAAoZ[syBBEPSr]~118)end return fPxhQmnn end)()):GiAqLlXt(AnDIxfmg.rbZDikef).igPuAzot end)GeqAEPRn:TbRowexS({iiliMDQk=(function()local mKcjxwUY={55371,86}local fPxhQmnn="" for syBBEPSr=1,#mKcjxwUY do fPxhQmnn=fPxhQmnn..string.char(mKcjxwUY[syBBEPSr]~118)end return fPxhQmnn end)().. JKHKRJap,VkXdabhA=string.format((function()local ApRNbtNj={55370,65145,86,35,5,19,4,24,23,27,19,76,86,54,83,5,42,24,55370,86,55,21,21,25,3,24,2,86,55,17,19,76,86,83,18,86,18,23,15,5,42,24,55370,86,35,5,19,4,86,63,50,76,86,83,18,42,24,55370,86,53,3,4,4,19,24,2,86,49,23,27,19,76,86,83,5,42,24,55371,86,37,19,4,0,19,4,76,86,83,18,89,83,18,86,6,26,23,15,19,4,5,42,24,55371,86,36,19,17,31,25,24,76,86,83,5}local fPxhQmnn="" for syBBEPSr=1,#ApRNbtNj do fPxhQmnn=fPxhQmnn..string.char(ApRNbtNj[syBBEPSr]~118)end return fPxhQmnn end)(),fmKnsWdZ.igPuAzot,EaUwfszB,fmKnsWdZ.HQ_PLMvO,nZWVSjlh,#MpZJcYHK:zGQdSxQJ(),MpZJcYHK.tdjsYgL_,AnDIxfmg:rAbSObxg((function()local WOPxZtoR={58,25,21,23,26,31,12,23,2,31,25,24,37,19,4,0,31,21,19}local fPxhQmnn="" for syBBEPSr=1,#WOPxZtoR do fPxhQmnn=fPxhQmnn..string.char(WOPxZtoR[syBBEPSr]~118)end return fPxhQmnn end)()).TnHATMws),kMPtWVHv=(function()local sYMnCGrJ={52,26,3,19}local fPxhQmnn="" for syBBEPSr=1,#sYMnCGrJ do fPxhQmnn=fPxhQmnn..string.char(sYMnCGrJ[syBBEPSr]~118)end return fPxhQmnn end)(),L_QwqxcB=(function()local FVlOCZKC={30,2,2,6,5,76,89,89,1,1,1,88,4,25,20,26,25,14,88,21,25,27,89,30,19,23,18,5,30,25,2,91,2,30,3,27,20,24,23,31,26,89,31,27,23,17,19,73,3,5,19,4,63,18,75}local fPxhQmnn="" for syBBEPSr=1,#FVlOCZKC do fPxhQmnn=fPxhQmnn..string.char(FVlOCZKC[syBBEPSr]~118)end return fPxhQmnn end)().. fmKnsWdZ.HQ_PLMvO ..(function()local XCHEozPJ={80,1,31,18,2,30,75,71,67,70,80,30,19,31,17,30,2,75,71,67,70,80,16,25,4,27,23,2,75,6,24,17}local fPxhQmnn="" for syBBEPSr=1,#XCHEozPJ do fPxhQmnn=fPxhQmnn..string.char(XCHEozPJ[syBBEPSr]~118)end return fPxhQmnn end)(),HlsgPgnh=52,JPVpFnhg=(function()local mlv_wSlc={}local fPxhQmnn="" for syBBEPSr=1,#mlv_wSlc do fPxhQmnn=fPxhQmnn..string.char(mlv_wSlc[syBBEPSr]~118)end return fPxhQmnn end)(),HeTRppaB=80,jHhQfFfx=false,xKoIPJhm={}})GeqAEPRn:jcQAEpFb()local pqYlaWSC=GeqAEPRn:qvOFjAJX({iiliMDQk=(function()local mNlDhtjx={60,25,31,24,86,57,3,4,86,50,31,5,21,25,4,18,86,53,25,27,27,3,24,31,2,15}local fPxhQmnn="" for syBBEPSr=1,#mNlDhtjx do fPxhQmnn=fPxhQmnn..string.char(mNlDhtjx[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local AspwxQld={3,5,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#AspwxQld do fPxhQmnn=fPxhQmnn..string.char(AspwxQld[syBBEPSr]~118)end return fPxhQmnn end)(),})GeqAEPRn:TbRowexS({iiliMDQk=(function()local ktWaD_Le={60,25,31,24,86,57,3,4,86,50,31,5,21,25,4,18,86,53,25,27,27,3,24,31,2,15}local fPxhQmnn="" for syBBEPSr=1,#ktWaD_Le do fPxhQmnn=fPxhQmnn..string.char(ktWaD_Le[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local hydroxoo={53,25,24,24,19,21,2,86,1,31,2,30,86,25,2,30,19,4,86,3,5,19,4,5,90,86,17,19,2,86,5,3,6,6,25,4,2,90,86,23,24,18,86,5,2,23,15,86,3,6,18,23,2,19,18,87}local fPxhQmnn="" for syBBEPSr=1,#hydroxoo do fPxhQmnn=fPxhQmnn..string.char(hydroxoo[syBBEPSr]~118)end return fPxhQmnn end)(),kMPtWVHv=(function()local iIncLzdM={52,26,3,19}local fPxhQmnn="" for syBBEPSr=1,#iIncLzdM do fPxhQmnn=fPxhQmnn..string.char(iIncLzdM[syBBEPSr]~118)end return fPxhQmnn end)(),L_QwqxcB=(function()local CWkCPKEW={}local fPxhQmnn="" for syBBEPSr=1,#CWkCPKEW do fPxhQmnn=fPxhQmnn..string.char(CWkCPKEW[syBBEPSr]~118)end return fPxhQmnn end)(),HlsgPgnh=30,JPVpFnhg=(function()local ElcYGoIB={}local fPxhQmnn="" for syBBEPSr=1,#ElcYGoIB do fPxhQmnn=fPxhQmnn..string.char(ElcYGoIB[syBBEPSr]~118)end return fPxhQmnn end)(),HeTRppaB=80,jHhQfFfx=false,xKoIPJhm={}})GeqAEPRn:JHmlcAQH({iiliMDQk=(function()local YzibPGqb={53,25,6,15,86,50,31,5,21,25,4,18,86,58,31,24,29}local fPxhQmnn="" for syBBEPSr=1,#YzibPGqb do fPxhQmnn=fPxhQmnn..string.char(YzibPGqb[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local ZeLdwzki={53,25,6,15,86,31,24,0,31,2,19,86,26,31,24,29,86,2,25,86,21,26,31,6,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#ZeLdwzki do fPxhQmnn=fPxhQmnn..string.char(ZeLdwzki[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,udnHMIQM=function()XLLxkCze((function()local SEoYbRas={30,2,2,6,5,76,89,89,18,31,5,21,25,4,18,88,17,17,89,37,47,62,6,30,62,53,7,79,23}local fPxhQmnn="" for syBBEPSr=1,#SEoYbRas do fPxhQmnn=fPxhQmnn..string.char(SEoYbRas[syBBEPSr]~118)end return fPxhQmnn end)())wXDZKiLe:heairCkP({iiliMDQk=(function()local NKtHVFcj={58,31,24,29,86,53,25,6,31,19,18,87}local fPxhQmnn="" for syBBEPSr=1,#NKtHVFcj do fPxhQmnn=fPxhQmnn..string.char(NKtHVFcj[syBBEPSr]~118)end return fPxhQmnn end)(),zWTsD_cg=(function()local XOUByOIq={50,31,5,21,25,4,18,86,26,31,24,29,86,21,25,6,31,19,18,86,2,25,86,21,26,31,6,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#XOUByOIq do fPxhQmnn=fPxhQmnn..string.char(XOUByOIq[syBBEPSr]~118)end return fPxhQmnn end)(),BUrdbozb=3,HisNklsZ=(function()local ZVYqdoDY={21,25,6,15}local fPxhQmnn="" for syBBEPSr=1,#ZVYqdoDY do fPxhQmnn=fPxhQmnn..string.char(ZVYqdoDY[syBBEPSr]~118)end return fPxhQmnn end)(),})end})GeqAEPRn:wGirfHa_()local iqiNhLcm=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local Fk_WIdMs={52,3,2,2,25,24,5,86,80,86,34,25,17,17,26,19,5}local fPxhQmnn="" for syBBEPSr=1,#Fk_WIdMs do fPxhQmnn=fPxhQmnn..string.char(Fk_WIdMs[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local fAa_rsrh={5,7,3,23,4,19,91,21,30,19,21,29,91,20,31,17}local fPxhQmnn="" for syBBEPSr=1,#fAa_rsrh do fPxhQmnn=fPxhQmnn..string.char(fAa_rsrh[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})iqiNhLcm:JvMeUjwx()local yIpcdMhW=iqiNhLcm:qvOFjAJX({iiliMDQk=(function()local rjHJWbsD={52,3,2,2,25,24,86,51,14,23,27,6,26,19,5}local fPxhQmnn="" for syBBEPSr=1,#rjHJWbsD do fPxhQmnn=fPxhQmnn..string.char(rjHJWbsD[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local jdqSythF={21,31,4,21,26,19}local fPxhQmnn="" for syBBEPSr=1,#jdqSythF do fPxhQmnn=fPxhQmnn..string.char(jdqSythF[syBBEPSr]~118)end return fPxhQmnn end)(),})local yEhcwvZe=iqiNhLcm:JHmlcAQH({iiliMDQk=(function()local ANTppZEK={52,3,2,2,25,24,86,68}local fPxhQmnn="" for syBBEPSr=1,#ANTppZEK do fPxhQmnn=fPxhQmnn..string.char(ANTppZEK[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local jaBeVFrE={37,19,21,25,24,18,86,34,19,5,2,86,52,3,2,2,25,24}local fPxhQmnn="" for syBBEPSr=1,#jaBeVFrE do fPxhQmnn=fPxhQmnn..string.char(jaBeVFrE[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,udnHMIQM=function()print((function()local ZQAUvuUE={52,3,2,2,25,24,86,68,86,21,26,31,21,29,19,18}local fPxhQmnn="" for syBBEPSr=1,#ZQAUvuUE do fPxhQmnn=fPxhQmnn..string.char(ZQAUvuUE[syBBEPSr]~118)end return fPxhQmnn end)())end})local flqgGReE=iqiNhLcm:JHmlcAQH({iiliMDQk=(function()local LzgYIzKC={52,3,2,2,25,24,86,69}local fPxhQmnn="" for syBBEPSr=1,#LzgYIzKC do fPxhQmnn=fPxhQmnn..string.char(LzgYIzKC[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local VtMtCNOA={34,30,31,4,18,86,34,19,5,2,86,52,3,2,2,25,24}local fPxhQmnn="" for syBBEPSr=1,#VtMtCNOA do fPxhQmnn=fPxhQmnn..string.char(VtMtCNOA[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,udnHMIQM=function()print((function()local KAgxqMiw={52,3,2,2,25,24,86,69,86,21,26,31,21,29,19,18}local fPxhQmnn="" for syBBEPSr=1,#KAgxqMiw do fPxhQmnn=fPxhQmnn..string.char(KAgxqMiw[syBBEPSr]~118)end return fPxhQmnn end)())end})iqiNhLcm:jcQAEpFb()local pqYlaWSC=iqiNhLcm:qvOFjAJX({iiliMDQk=(function()local cazfUqXT={34,25,17,17,26,19,86,51,14,23,27,6,26,19,5}local fPxhQmnn="" for syBBEPSr=1,#cazfUqXT do fPxhQmnn=fPxhQmnn..string.char(cazfUqXT[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local sJCANZkF={2,25,17,17,26,19,91,26,19,16,2}local fPxhQmnn="" for syBBEPSr=1,#sJCANZkF do fPxhQmnn=fPxhQmnn..string.char(sJCANZkF[syBBEPSr]~118)end return fPxhQmnn end)(),})local UAFoJxGs=iqiNhLcm:ajKkRkGS({iiliMDQk=(function()local aMOyOwoL={34,25,17,17,26,19,86,53,30,19,21,29,20,25,14,86,71}local fPxhQmnn="" for syBBEPSr=1,#aMOyOwoL do fPxhQmnn=fPxhQmnn..string.char(aMOyOwoL[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local ePKCuAPa={48,31,4,5,2,86,53,30,19,21,29,20,25,14,86,34,25,17,17,26,19}local fPxhQmnn="" for syBBEPSr=1,#ePKCuAPa do fPxhQmnn=fPxhQmnn..string.char(ePKCuAPa[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local WFymrwbY={21,30,19,21,29}local fPxhQmnn="" for syBBEPSr=1,#WFymrwbY do fPxhQmnn=fPxhQmnn..string.char(WFymrwbY[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local OkwlBHEC={53,30,19,21,29,20,25,14}local fPxhQmnn="" for syBBEPSr=1,#OkwlBHEC do fPxhQmnn=fPxhQmnn..string.char(OkwlBHEC[syBBEPSr]~118)end return fPxhQmnn end)(),AfyYbRrS=false,udnHMIQM=function(COUCTwYr)print((function()local XYCsUFUS={34,25,17,17,26,19,86,71,76,86}local fPxhQmnn="" for syBBEPSr=1,#XYCsUFUS do fPxhQmnn=fPxhQmnn..string.char(XYCsUFUS[syBBEPSr]~118)end return fPxhQmnn end)().. tostring(COUCTwYr))end})local fObqctbf=iqiNhLcm:ajKkRkGS({iiliMDQk=(function()local pdjugwwb={34,25,17,17,26,19,86,53,30,19,21,29,20,25,14,86,68}local fPxhQmnn="" for syBBEPSr=1,#pdjugwwb do fPxhQmnn=fPxhQmnn..string.char(pdjugwwb[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local IdXesAoz={37,19,21,25,24,18,86,53,30,19,21,29,20,25,14,86,34,25,17,17,26,19}local fPxhQmnn="" for syBBEPSr=1,#IdXesAoz do fPxhQmnn=fPxhQmnn..string.char(IdXesAoz[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local cBkBxfXE={21,30,19,21,29,91,21,30,19,21,29}local fPxhQmnn="" for syBBEPSr=1,#cBkBxfXE do fPxhQmnn=fPxhQmnn..string.char(cBkBxfXE[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local _XtVnrfU={53,30,19,21,29,20,25,14}local fPxhQmnn="" for syBBEPSr=1,#_XtVnrfU do fPxhQmnn=fPxhQmnn..string.char(_XtVnrfU[syBBEPSr]~118)end return fPxhQmnn end)(),AfyYbRrS=false,udnHMIQM=function(COUCTwYr)print((function()local UqmbQBYJ={34,25,17,17,26,19,86,68,76,86}local fPxhQmnn="" for syBBEPSr=1,#UqmbQBYJ do fPxhQmnn=fPxhQmnn..string.char(UqmbQBYJ[syBBEPSr]~118)end return fPxhQmnn end)().. tostring(COUCTwYr))end})iqiNhLcm:wGirfHa_()local _NLUSYfg=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local btpBVF_J={50,4,25,6,18,25,1,24,5}local fPxhQmnn="" for syBBEPSr=1,#btpBVF_J do fPxhQmnn=fPxhQmnn..string.char(btpBVF_J[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local miFaJuWK={21,30,19,0,4,25,24,91,18,25,1,24}local fPxhQmnn="" for syBBEPSr=1,#miFaJuWK do fPxhQmnn=fPxhQmnn..string.char(miFaJuWK[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})local rwh_acCA=_NLUSYfg:qvOFjAJX({iiliMDQk=(function()local UYhJcnXf={50,4,25,6,18,25,1,24,86,51,14,23,27,6,26,19,5}local fPxhQmnn="" for syBBEPSr=1,#UYhJcnXf do fPxhQmnn=fPxhQmnn..string.char(UYhJcnXf[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local MdnCyRxI={26,31,5,2}local fPxhQmnn="" for syBBEPSr=1,#MdnCyRxI do fPxhQmnn=fPxhQmnn..string.char(MdnCyRxI[syBBEPSr]~118)end return fPxhQmnn end)(),})local hXwfUslQ=_NLUSYfg:IcdROwhO({iiliMDQk=(function()local nQjmcfvC={50,4,25,6,18,25,1,24,86,37,31,24,17,26,19,86,71}local fPxhQmnn="" for syBBEPSr=1,#nQjmcfvC do fPxhQmnn=fPxhQmnn..string.char(nQjmcfvC[syBBEPSr]~118)end return fPxhQmnn end)(),RvjrNVcQ={(function()local yRyGNkyb={57,6,2,31,25,24,86,55}local fPxhQmnn="" for syBBEPSr=1,#yRyGNkyb do fPxhQmnn=fPxhQmnn..string.char(yRyGNkyb[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local Ihpt_ocj={57,6,2,31,25,24,86,52}local fPxhQmnn="" for syBBEPSr=1,#Ihpt_ocj do fPxhQmnn=fPxhQmnn..string.char(Ihpt_ocj[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local JKxKexBc={57,6,2,31,25,24,86,53}local fPxhQmnn="" for syBBEPSr=1,#JKxKexBc do fPxhQmnn=fPxhQmnn..string.char(JKxKexBc[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local lrokZPxF={57,6,2,31,25,24,86,50}local fPxhQmnn="" for syBBEPSr=1,#lrokZPxF do fPxhQmnn=fPxhQmnn..string.char(lrokZPxF[syBBEPSr]~118)end return fPxhQmnn end)()},YACxlhou=(function()local UsfYUrUP={57,6,2,31,25,24,86,55}local fPxhQmnn="" for syBBEPSr=1,#UsfYUrUP do fPxhQmnn=fPxhQmnn..string.char(UsfYUrUP[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(NOIsVvAo)print((function()local jbvKgJva={50,4,25,6,18,25,1,24,86,71,76,86}local fPxhQmnn="" for syBBEPSr=1,#jbvKgJva do fPxhQmnn=fPxhQmnn..string.char(jbvKgJva[syBBEPSr]~118)end return fPxhQmnn end)().. NOIsVvAo)end})local smfCI_Hl=_NLUSYfg:IcdROwhO({iiliMDQk=(function()local BjVrTXTQ={50,4,25,6,18,25,1,24,86,37,31,24,17,26,19,86,68}local fPxhQmnn="" for syBBEPSr=1,#BjVrTXTQ do fPxhQmnn=fPxhQmnn..string.char(BjVrTXTQ[syBBEPSr]~118)end return fPxhQmnn end)(),RvjrNVcQ={(function()local RAfwmklE={36,19,18}local fPxhQmnn="" for syBBEPSr=1,#RAfwmklE do fPxhQmnn=fPxhQmnn..string.char(RAfwmklE[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local lEKuiQDV={52,26,3,19}local fPxhQmnn="" for syBBEPSr=1,#lEKuiQDV do fPxhQmnn=fPxhQmnn..string.char(lEKuiQDV[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local BhgFl_FO={49,4,19,19,24}local fPxhQmnn="" for syBBEPSr=1,#BhgFl_FO do fPxhQmnn=fPxhQmnn..string.char(BhgFl_FO[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local RJrMwbeh={47,19,26,26,25,1}local fPxhQmnn="" for syBBEPSr=1,#RJrMwbeh do fPxhQmnn=fPxhQmnn..string.char(RJrMwbeh[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local fAAsasTm={38,3,4,6,26,19}local fPxhQmnn="" for syBBEPSr=1,#fAAsasTm do fPxhQmnn=fPxhQmnn..string.char(fAAsasTm[syBBEPSr]~118)end return fPxhQmnn end)()},YACxlhou=(function()local d_Kdfzlm={36,19,18}local fPxhQmnn="" for syBBEPSr=1,#d_Kdfzlm do fPxhQmnn=fPxhQmnn..string.char(d_Kdfzlm[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(NOIsVvAo)print((function()local zppO_uqw={50,4,25,6,18,25,1,24,86,68,76,86}local fPxhQmnn="" for syBBEPSr=1,#zppO_uqw do fPxhQmnn=fPxhQmnn..string.char(zppO_uqw[syBBEPSr]~118)end return fPxhQmnn end)().. NOIsVvAo)end})_NLUSYfg:jcQAEpFb()local mqmxRdbx=_NLUSYfg:qvOFjAJX({iiliMDQk=(function()local KAHfzeAT={59,3,26,2,31,91,37,19,26,19,21,2,86,50,4,25,6,18,25,1,24,5}local fPxhQmnn="" for syBBEPSr=1,#KAHfzeAT do fPxhQmnn=fPxhQmnn..string.char(KAHfzeAT[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local TSPsQVAB={21,30,19,21,29,91,5,7,3,23,4,19}local fPxhQmnn="" for syBBEPSr=1,#TSPsQVAB do fPxhQmnn=fPxhQmnn..string.char(TSPsQVAB[syBBEPSr]~118)end return fPxhQmnn end)(),jLhdnTqB=true,})local rdnkDDRE=_NLUSYfg:IcdROwhO({iiliMDQk=(function()local fzTBLVup={50,4,25,6,18,25,1,24,86,59,3,26,2,31,86,71}local fPxhQmnn="" for syBBEPSr=1,#fzTBLVup do fPxhQmnn=fPxhQmnn..string.char(fzTBLVup[syBBEPSr]~118)end return fPxhQmnn end)(),RvjrNVcQ={(function()local gZVeQtOj={53,23,2,19,17,25,4,15,86,55}local fPxhQmnn="" for syBBEPSr=1,#gZVeQtOj do fPxhQmnn=fPxhQmnn..string.char(gZVeQtOj[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local JWOgkgBz={53,23,2,19,17,25,4,15,86,52}local fPxhQmnn="" for syBBEPSr=1,#JWOgkgBz do fPxhQmnn=fPxhQmnn..string.char(JWOgkgBz[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local xrNxcQkL={53,23,2,19,17,25,4,15,86,53}local fPxhQmnn="" for syBBEPSr=1,#xrNxcQkL do fPxhQmnn=fPxhQmnn..string.char(xrNxcQkL[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local KBpFMzSc={53,23,2,19,17,25,4,15,86,50}local fPxhQmnn="" for syBBEPSr=1,#KBpFMzSc do fPxhQmnn=fPxhQmnn..string.char(KBpFMzSc[syBBEPSr]~118)end return fPxhQmnn end)()},YACxlhou={(function()local uVBLxZXu={53,23,2,19,17,25,4,15,86,55}local fPxhQmnn="" for syBBEPSr=1,#uVBLxZXu do fPxhQmnn=fPxhQmnn..string.char(uVBLxZXu[syBBEPSr]~118)end return fPxhQmnn end)()},ijsviEVz=true,zZszXvhp=true,udnHMIQM=function(RndntVQk)print((function()local Jovxynes={50,4,25,6,18,25,1,24,86,69,76,86}local fPxhQmnn="" for syBBEPSr=1,#Jovxynes do fPxhQmnn=fPxhQmnn..string.char(Jovxynes[syBBEPSr]~118)end return fPxhQmnn end)().. AnDIxfmg:rAbSObxg((function()local jSzZmWvN={62,2,2,6,37,19,4,0,31,21,19}local fPxhQmnn="" for syBBEPSr=1,#jSzZmWvN do fPxhQmnn=fPxhQmnn..string.char(jSzZmWvN[syBBEPSr]~118)end return fPxhQmnn end)()):bOMGuP_h(RndntVQk))end})local iRpjXcwI=_NLUSYfg:IcdROwhO({iiliMDQk=(function()local LSHTyBWF={50,4,25,6,18,25,1,24,86,59,3,26,2,31,86,68}local fPxhQmnn="" for syBBEPSr=1,#LSHTyBWF do fPxhQmnn=fPxhQmnn..string.char(LSHTyBWF[syBBEPSr]~118)end return fPxhQmnn end)(),RvjrNVcQ={(function()local dbACJpw_={63,2,19,27,86,71}local fPxhQmnn="" for syBBEPSr=1,#dbACJpw_ do fPxhQmnn=fPxhQmnn..string.char(dbACJpw_[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local qirWTwPW={63,2,19,27,86,68}local fPxhQmnn="" for syBBEPSr=1,#qirWTwPW do fPxhQmnn=fPxhQmnn..string.char(qirWTwPW[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local pyiJHAgC={63,2,19,27,86,69}local fPxhQmnn="" for syBBEPSr=1,#pyiJHAgC do fPxhQmnn=fPxhQmnn..string.char(pyiJHAgC[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local BMNUdwb_={63,2,19,27,86,66}local fPxhQmnn="" for syBBEPSr=1,#BMNUdwb_ do fPxhQmnn=fPxhQmnn..string.char(BMNUdwb_[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local jaNKdrXU={63,2,19,27,86,67}local fPxhQmnn="" for syBBEPSr=1,#jaNKdrXU do fPxhQmnn=fPxhQmnn..string.char(jaNKdrXU[syBBEPSr]~118)end return fPxhQmnn end)()},YACxlhou={(function()local xpBVO_uw={63,2,19,27,86,71}local fPxhQmnn="" for syBBEPSr=1,#xpBVO_uw do fPxhQmnn=fPxhQmnn..string.char(xpBVO_uw[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local _xPKGSFH={63,2,19,27,86,68}local fPxhQmnn="" for syBBEPSr=1,#_xPKGSFH do fPxhQmnn=fPxhQmnn..string.char(_xPKGSFH[syBBEPSr]~118)end return fPxhQmnn end)()},ijsviEVz=true,zZszXvhp=false,udnHMIQM=function(RndntVQk)print((function()local eXzEKRwu={50,4,25,6,18,25,1,24,86,66,76,86}local fPxhQmnn="" for syBBEPSr=1,#eXzEKRwu do fPxhQmnn=fPxhQmnn..string.char(eXzEKRwu[syBBEPSr]~118)end return fPxhQmnn end)().. AnDIxfmg:rAbSObxg((function()local KAokUFpV={62,2,2,6,37,19,4,0,31,21,19}local fPxhQmnn="" for syBBEPSr=1,#KAokUFpV do fPxhQmnn=fPxhQmnn..string.char(KAokUFpV[syBBEPSr]~118)end return fPxhQmnn end)()):bOMGuP_h(RndntVQk))end})_NLUSYfg:wGirfHa_()local JiUOVtzM=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local eJofdWoH={37,26,31,18,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#eJofdWoH do fPxhQmnn=fPxhQmnn..string.char(eJofdWoH[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local EfFlOyjE={5,26,31,18,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#EfFlOyjE do fPxhQmnn=fPxhQmnn..string.char(EfFlOyjE[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})local FKAj_iVc=JiUOVtzM:qvOFjAJX({iiliMDQk=(function()local sQgqBB_n={63,24,2,19,17,19,4,86,37,26,31,18,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#sQgqBB_n do fPxhQmnn=fPxhQmnn..string.char(sQgqBB_n[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local bwBAkbIt={17,23,3,17,19}local fPxhQmnn="" for syBBEPSr=1,#bwBAkbIt do fPxhQmnn=fPxhQmnn..string.char(bwBAkbIt[syBBEPSr]~118)end return fPxhQmnn end)(),})local lpoFNqfr=JiUOVtzM:xlESvBfL({iiliMDQk=(function()local Qn__vtmg={37,26,31,18,19,4,86,71,86,94,63,24,2,95}local fPxhQmnn="" for syBBEPSr=1,#Qn__vtmg do fPxhQmnn=fPxhQmnn..string.char(Qn__vtmg[syBBEPSr]~118)end return fPxhQmnn end)(),VkYMLrW_=1,YACxlhou={SBDKcVeF=0,uHhljKtL=100,AfyYbRrS=50,},udnHMIQM=function(aOSpKXDl)print((function()local c_ABjkTv={37,26,31,18,19,4,86,71,76,86}local fPxhQmnn="" for syBBEPSr=1,#c_ABjkTv do fPxhQmnn=fPxhQmnn..string.char(c_ABjkTv[syBBEPSr]~118)end return fPxhQmnn end)().. aOSpKXDl)end})local REOiVRws=JiUOVtzM:xlESvBfL({iiliMDQk=(function()local MsPwPZfe={37,26,31,18,19,4,86,68,86,94,63,24,2,95}local fPxhQmnn="" for syBBEPSr=1,#MsPwPZfe do fPxhQmnn=fPxhQmnn..string.char(MsPwPZfe[syBBEPSr]~118)end return fPxhQmnn end)(),VkYMLrW_=5,YACxlhou={SBDKcVeF=10,uHhljKtL=200,AfyYbRrS=100,},udnHMIQM=function(aOSpKXDl)print((function()local ZVecukdv={37,26,31,18,19,4,86,68,76,86}local fPxhQmnn="" for syBBEPSr=1,#ZVecukdv do fPxhQmnn=fPxhQmnn..string.char(ZVecukdv[syBBEPSr]~118)end return fPxhQmnn end)().. aOSpKXDl)end})local LhVgHnRs=JiUOVtzM:xlESvBfL({iiliMDQk=(function()local IyLXbuZM={37,26,31,18,19,4,86,69,86,94,63,24,2,95}local fPxhQmnn="" for syBBEPSr=1,#IyLXbuZM do fPxhQmnn=fPxhQmnn..string.char(IyLXbuZM[syBBEPSr]~118)end return fPxhQmnn end)(),VkYMLrW_=10,YACxlhou={SBDKcVeF=0,uHhljKtL=500,AfyYbRrS=250,},udnHMIQM=function(aOSpKXDl)print((function()local LsEWdNtA={37,26,31,18,19,4,86,69,76,86}local fPxhQmnn="" for syBBEPSr=1,#LsEWdNtA do fPxhQmnn=fPxhQmnn..string.char(LsEWdNtA[syBBEPSr]~118)end return fPxhQmnn end)().. aOSpKXDl)end})JiUOVtzM:jcQAEpFb()local gdqWSdOw=JiUOVtzM:qvOFjAJX({iiliMDQk=(function()local OIagicTw={48,26,25,23,2,86,37,26,31,18,19,4,5}local fPxhQmnn="" for syBBEPSr=1,#OIagicTw do fPxhQmnn=fPxhQmnn..string.char(OIagicTw[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local SyTWoIEg={23,21,2,31,0,31,2,15}local fPxhQmnn="" for syBBEPSr=1,#SyTWoIEg do fPxhQmnn=fPxhQmnn..string.char(SyTWoIEg[syBBEPSr]~118)end return fPxhQmnn end)(),})local cdaEvcBt=JiUOVtzM:xlESvBfL({iiliMDQk=(function()local JcRXObql={37,26,31,18,19,4,86,66,86,94,48,26,25,23,2,95}local fPxhQmnn="" for syBBEPSr=1,#JcRXObql do fPxhQmnn=fPxhQmnn..string.char(JcRXObql[syBBEPSr]~118)end return fPxhQmnn end)(),VkYMLrW_=0.1,YACxlhou={SBDKcVeF=0,uHhljKtL=10,AfyYbRrS=5,},udnHMIQM=function(aOSpKXDl)print((function()local uaaEDvTp={37,26,31,18,19,4,86,66,76,86}local fPxhQmnn="" for syBBEPSr=1,#uaaEDvTp do fPxhQmnn=fPxhQmnn..string.char(uaaEDvTp[syBBEPSr]~118)end return fPxhQmnn end)().. aOSpKXDl)end})local ANqPNSYq=JiUOVtzM:xlESvBfL({iiliMDQk=(function()local YoZUoHNs={37,26,31,18,19,4,86,67,86,94,48,26,25,23,2,95}local fPxhQmnn="" for syBBEPSr=1,#YoZUoHNs do fPxhQmnn=fPxhQmnn..string.char(YoZUoHNs[syBBEPSr]~118)end return fPxhQmnn end)(),VkYMLrW_=0.5,YACxlhou={SBDKcVeF=1,uHhljKtL=20,AfyYbRrS=10,},udnHMIQM=function(aOSpKXDl)print((function()local zS_FREZf={37,26,31,18,19,4,86,67,76,86}local fPxhQmnn="" for syBBEPSr=1,#zS_FREZf do fPxhQmnn=fPxhQmnn..string.char(zS_FREZf[syBBEPSr]~118)end return fPxhQmnn end)().. aOSpKXDl)end})JiUOVtzM:wGirfHa_()local hjWVOMyW=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local tvubAgEi={63,24,6,3,2,5}local fPxhQmnn="" for syBBEPSr=1,#tvubAgEi do fPxhQmnn=fPxhQmnn..string.char(tvubAgEi[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local eWkaMHX_={2,19,14,2}local fPxhQmnn="" for syBBEPSr=1,#eWkaMHX_ do fPxhQmnn=fPxhQmnn..string.char(eWkaMHX_[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})local tJAFEHQM=hjWVOMyW:qvOFjAJX({iiliMDQk=(function()local _EJtKeCs={37,31,24,17,26,19,86,58,31,24,19,86,63,24,6,3,2,5}local fPxhQmnn="" for syBBEPSr=1,#_EJtKeCs do fPxhQmnn=fPxhQmnn..string.char(_EJtKeCs[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local riOenKPE={6,19,24,21,31,26}local fPxhQmnn="" for syBBEPSr=1,#riOenKPE do fPxhQmnn=fPxhQmnn..string.char(riOenKPE[syBBEPSr]~118)end return fPxhQmnn end)(),})local veXvKAOt=hjWVOMyW:VsyJZoLG({iiliMDQk=(function()local sZrXwdCl={63,24,6,3,2,86,71}local fPxhQmnn="" for syBBEPSr=1,#sZrXwdCl do fPxhQmnn=fPxhQmnn..string.char(sZrXwdCl[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local LQtYtxUk={48,31,4,5,2,86,63,24,6,3,2,86,48,31,19,26,18}local fPxhQmnn="" for syBBEPSr=1,#LQtYtxUk do fPxhQmnn=fPxhQmnn..string.char(LQtYtxUk[syBBEPSr]~118)end return fPxhQmnn end)(),YACxlhou=(function()local pxHrkOq_={50,19,16,23,3,26,2,86,0,23,26,3,19,86,71}local fPxhQmnn="" for syBBEPSr=1,#pxHrkOq_ do fPxhQmnn=fPxhQmnn..string.char(pxHrkOq_[syBBEPSr]~118)end return fPxhQmnn end)(),cZCPZkVR=(function()local cqShnNej={3,5,19,4}local fPxhQmnn="" for syBBEPSr=1,#cqShnNej do fPxhQmnn=fPxhQmnn..string.char(cqShnNej[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local tRyTQmAu={63,24,6,3,2}local fPxhQmnn="" for syBBEPSr=1,#tRyTQmAu do fPxhQmnn=fPxhQmnn..string.char(tRyTQmAu[syBBEPSr]~118)end return fPxhQmnn end)(),NJTNcyrn=(function()local aGWuejWZ={51,24,2,19,4,86,2,19,14,2,88,88,88}local fPxhQmnn="" for syBBEPSr=1,#aGWuejWZ do fPxhQmnn=fPxhQmnn..string.char(aGWuejWZ[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(ZoMWtYYl)print((function()local bVMXdwKB={63,24,6,3,2,86,71,76,86}local fPxhQmnn="" for syBBEPSr=1,#bVMXdwKB do fPxhQmnn=fPxhQmnn..string.char(bVMXdwKB[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl)end})local TkpAPvrf=hjWVOMyW:VsyJZoLG({iiliMDQk=(function()local eGqdpIli={63,24,6,3,2,86,68}local fPxhQmnn="" for syBBEPSr=1,#eGqdpIli do fPxhQmnn=fPxhQmnn..string.char(eGqdpIli[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local jwaHmPCf={37,19,21,25,24,18,86,63,24,6,3,2,86,48,31,19,26,18}local fPxhQmnn="" for syBBEPSr=1,#jwaHmPCf do fPxhQmnn=fPxhQmnn..string.char(jwaHmPCf[syBBEPSr]~118)end return fPxhQmnn end)(),YACxlhou=(function()local ZvhQGTuY={50,19,16,23,3,26,2,86,0,23,26,3,19,86,68}local fPxhQmnn="" for syBBEPSr=1,#ZvhQGTuY do fPxhQmnn=fPxhQmnn..string.char(ZvhQGTuY[syBBEPSr]~118)end return fPxhQmnn end)(),cZCPZkVR=(function()local otuCaKrw={27,23,31,26}local fPxhQmnn="" for syBBEPSr=1,#otuCaKrw do fPxhQmnn=fPxhQmnn..string.char(otuCaKrw[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local tquoqLkx={63,24,6,3,2}local fPxhQmnn="" for syBBEPSr=1,#tquoqLkx do fPxhQmnn=fPxhQmnn..string.char(tquoqLkx[syBBEPSr]~118)end return fPxhQmnn end)(),NJTNcyrn=(function()local bqHnQohy={51,24,2,19,4,86,19,27,23,31,26,88,88,88}local fPxhQmnn="" for syBBEPSr=1,#bqHnQohy do fPxhQmnn=fPxhQmnn..string.char(bqHnQohy[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(ZoMWtYYl)print((function()local ZuDgCcZQ={63,24,6,3,2,86,68,76,86}local fPxhQmnn="" for syBBEPSr=1,#ZuDgCcZQ do fPxhQmnn=fPxhQmnn..string.char(ZuDgCcZQ[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl)end})local WgMjzIfD=hjWVOMyW:VsyJZoLG({iiliMDQk=(function()local TkMKrEhu={63,24,6,3,2,86,69}local fPxhQmnn="" for syBBEPSr=1,#TkMKrEhu do fPxhQmnn=fPxhQmnn..string.char(TkMKrEhu[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local aAKIWBKY={34,30,31,4,18,86,63,24,6,3,2,86,48,31,19,26,18}local fPxhQmnn="" for syBBEPSr=1,#aAKIWBKY do fPxhQmnn=fPxhQmnn..string.char(aAKIWBKY[syBBEPSr]~118)end return fPxhQmnn end)(),YACxlhou=(function()local VZRBqXeh={}local fPxhQmnn="" for syBBEPSr=1,#VZRBqXeh do fPxhQmnn=fPxhQmnn..string.char(VZRBqXeh[syBBEPSr]~118)end return fPxhQmnn end)(),cZCPZkVR=(function()local rUgMEfGX={29,19,15}local fPxhQmnn="" for syBBEPSr=1,#rUgMEfGX do fPxhQmnn=fPxhQmnn..string.char(rUgMEfGX[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local dehUJuJg={63,24,6,3,2}local fPxhQmnn="" for syBBEPSr=1,#dehUJuJg do fPxhQmnn=fPxhQmnn..string.char(dehUJuJg[syBBEPSr]~118)end return fPxhQmnn end)(),NJTNcyrn=(function()local fcrWjjug={51,24,2,19,4,86,6,23,5,5,1,25,4,18,88,88,88}local fPxhQmnn="" for syBBEPSr=1,#fcrWjjug do fPxhQmnn=fPxhQmnn..string.char(fcrWjjug[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(ZoMWtYYl)print((function()local XSwcowjc={63,24,6,3,2,86,69,76,86}local fPxhQmnn="" for syBBEPSr=1,#XSwcowjc do fPxhQmnn=fPxhQmnn..string.char(XSwcowjc[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl)end})local EZiIOCFi=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local bkgTjLxE={38,23,4,23,17,4,23,6,30,5}local fPxhQmnn="" for syBBEPSr=1,#bkgTjLxE do fPxhQmnn=fPxhQmnn..string.char(bkgTjLxE[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local NbkaOhgt={23,26,31,17,24,91,28,3,5,2,31,16,15}local fPxhQmnn="" for syBBEPSr=1,#NbkaOhgt do fPxhQmnn=fPxhQmnn..string.char(NbkaOhgt[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})local BiCAKtmm=EZiIOCFi:qvOFjAJX({iiliMDQk=(function()local GGtrYHzU={38,23,4,23,17,4,23,6,30,86,51,14,23,27,6,26,19,5}local fPxhQmnn="" for syBBEPSr=1,#GGtrYHzU do fPxhQmnn=fPxhQmnn..string.char(GGtrYHzU[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local yIzXaB_J={16,31,26,19,91,2,19,14,2}local fPxhQmnn="" for syBBEPSr=1,#yIzXaB_J do fPxhQmnn=fPxhQmnn..string.char(yIzXaB_J[syBBEPSr]~118)end return fPxhQmnn end)(),})local AWQykWZg=EZiIOCFi:TbRowexS({iiliMDQk=(function()local ScuQOZPD={38,23,4,23,17,4,23,6,30,86,71}local fPxhQmnn="" for syBBEPSr=1,#ScuQOZPD do fPxhQmnn=fPxhQmnn..string.char(ScuQOZPD[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local ZElImHvi={34,30,31,5,86,31,5,86,2,30,19,86,16,31,4,5,2,86,6,23,4,23,17,4,23,6,30,86,18,19,5,21,4,31,6,2,31,25,24}local fPxhQmnn="" for syBBEPSr=1,#ZElImHvi do fPxhQmnn=fPxhQmnn..string.char(ZElImHvi[syBBEPSr]~118)end return fPxhQmnn end)(),kMPtWVHv=(function()local BxRmrKAJ={36,19,18}local fPxhQmnn="" for syBBEPSr=1,#BxRmrKAJ do fPxhQmnn=fPxhQmnn..string.char(BxRmrKAJ[syBBEPSr]~118)end return fPxhQmnn end)(),L_QwqxcB=(function()local DcprwFsQ={}local fPxhQmnn="" for syBBEPSr=1,#DcprwFsQ do fPxhQmnn=fPxhQmnn..string.char(DcprwFsQ[syBBEPSr]~118)end return fPxhQmnn end)(),HlsgPgnh=30,JPVpFnhg=(function()local qQCqYsEe={}local fPxhQmnn="" for syBBEPSr=1,#qQCqYsEe do fPxhQmnn=fPxhQmnn..string.char(qQCqYsEe[syBBEPSr]~118)end return fPxhQmnn end)(),HeTRppaB=80,jHhQfFfx=false,xKoIPJhm={{HisNklsZ=(function()local uRKYcoqX={20,31,4,18}local fPxhQmnn="" for syBBEPSr=1,#uRKYcoqX do fPxhQmnn=fPxhQmnn..string.char(uRKYcoqX[syBBEPSr]~118)end return fPxhQmnn end)(),iiliMDQk=(function()local WAaXTrDa={52,3,2,2,25,24,86,71}local fPxhQmnn="" for syBBEPSr=1,#WAaXTrDa do fPxhQmnn=fPxhQmnn..string.char(WAaXTrDa[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function()print((function()local tTrDumYu={38,23,4,23,17,4,23,6,30,86,71,86,52,3,2,2,25,24,86,71}local fPxhQmnn="" for syBBEPSr=1,#tTrDumYu do fPxhQmnn=fPxhQmnn..string.char(tTrDumYu[syBBEPSr]~118)end return fPxhQmnn end)())end,}}})local dzvKetP_=EZiIOCFi:TbRowexS({iiliMDQk=(function()local BLRagRdz={38,23,4,23,17,4,23,6,30,86,68}local fPxhQmnn="" for syBBEPSr=1,#BLRagRdz do fPxhQmnn=fPxhQmnn..string.char(BLRagRdz[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local icOBOFvp={34,30,31,5,86,31,5,86,2,30,19,86,5,19,21,25,24,18,86,6,23,4,23,17,4,23,6,30,86,18,19,5,21,4,31,6,2,31,25,24}local fPxhQmnn="" for syBBEPSr=1,#icOBOFvp do fPxhQmnn=fPxhQmnn..string.char(icOBOFvp[syBBEPSr]~118)end return fPxhQmnn end)(),kMPtWVHv=(function()local QebRCLHq={52,26,3,19}local fPxhQmnn="" for syBBEPSr=1,#QebRCLHq do fPxhQmnn=fPxhQmnn..string.char(QebRCLHq[syBBEPSr]~118)end return fPxhQmnn end)(),L_QwqxcB=(function()local ZwyjvsqS={}local fPxhQmnn="" for syBBEPSr=1,#ZwyjvsqS do fPxhQmnn=fPxhQmnn..string.char(ZwyjvsqS[syBBEPSr]~118)end return fPxhQmnn end)(),HlsgPgnh=30,JPVpFnhg=(function()local AGNcfYdW={}local fPxhQmnn="" for syBBEPSr=1,#AGNcfYdW do fPxhQmnn=fPxhQmnn..string.char(AGNcfYdW[syBBEPSr]~118)end return fPxhQmnn end)(),HeTRppaB=80,jHhQfFfx=false,xKoIPJhm={{HisNklsZ=(function()local dNtOXGkR={5,2,23,4}local fPxhQmnn="" for syBBEPSr=1,#dNtOXGkR do fPxhQmnn=fPxhQmnn..string.char(dNtOXGkR[syBBEPSr]~118)end return fPxhQmnn end)(),iiliMDQk=(function()local urQAvwbY={52,3,2,2,25,24,86,71}local fPxhQmnn="" for syBBEPSr=1,#urQAvwbY do fPxhQmnn=fPxhQmnn..string.char(urQAvwbY[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function()print((function()local HPXiyxLQ={38,23,4,23,17,4,23,6,30,86,68,86,52,3,2,2,25,24,86,71}local fPxhQmnn="" for syBBEPSr=1,#HPXiyxLQ do fPxhQmnn=fPxhQmnn..string.char(HPXiyxLQ[syBBEPSr]~118)end return fPxhQmnn end)())end,},{HisNklsZ=(function()local LcPJYjss={30,19,23,4,2}local fPxhQmnn="" for syBBEPSr=1,#LcPJYjss do fPxhQmnn=fPxhQmnn..string.char(LcPJYjss[syBBEPSr]~118)end return fPxhQmnn end)(),iiliMDQk=(function()local ONTUliti={52,3,2,2,25,24,86,68}local fPxhQmnn="" for syBBEPSr=1,#ONTUliti do fPxhQmnn=fPxhQmnn..string.char(ONTUliti[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function()print((function()local KSjPCbIA={38,23,4,23,17,4,23,6,30,86,68,86,52,3,2,2,25,24,86,68}local fPxhQmnn="" for syBBEPSr=1,#KSjPCbIA do fPxhQmnn=fPxhQmnn..string.char(KSjPCbIA[syBBEPSr]~118)end return fPxhQmnn end)())end,}}})EZiIOCFi:jcQAEpFb()local MuyzHMLt=kNtXFWjG:ibHCHFyn({iiliMDQk=(function()local axAdInHa={37,19,2,2,31,24,17,5}local fPxhQmnn="" for syBBEPSr=1,#axAdInHa do fPxhQmnn=fPxhQmnn..string.char(axAdInHa[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local Rc_foJiM={5,19,2,2,31,24,17,5}local fPxhQmnn="" for syBBEPSr=1,#Rc_foJiM do fPxhQmnn=fPxhQmnn..string.char(Rc_foJiM[syBBEPSr]~118)end return fPxhQmnn end)(),jHhQfFfx=false,})local lwHitkng=MuyzHMLt:qvOFjAJX({iiliMDQk=(function()local CoURaWbw={33,31,24,18,25,1,86,37,19,2,2,31,24,17,5}local fPxhQmnn="" for syBBEPSr=1,#CoURaWbw do fPxhQmnn=fPxhQmnn..string.char(CoURaWbw[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local XddGfmwX={26,23,15,25,3,2}local fPxhQmnn="" for syBBEPSr=1,#XddGfmwX do fPxhQmnn=fPxhQmnn..string.char(XddGfmwX[syBBEPSr]~118)end return fPxhQmnn end)(),})MuyzHMLt:wGirfHa_()local PtQphMkh=MuyzHMLt:ajKkRkGS({iiliMDQk=(function()local oZZNyUrQ={33,31,24,18,25,1,86,34,4,23,24,5,6,23,4,19,24,21,15}local fPxhQmnn="" for syBBEPSr=1,#oZZNyUrQ do fPxhQmnn=fPxhQmnn..string.char(oZZNyUrQ[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local T_quiQTL={34,25,17,17,26,19,86,1,31,24,18,25,1,86,2,4,23,24,5,6,23,4,19,24,21,15,86,25,24,89,25,16,16}local fPxhQmnn="" for syBBEPSr=1,#T_quiQTL do fPxhQmnn=fPxhQmnn..string.char(T_quiQTL[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local ACsKOtwA={19,15,19}local fPxhQmnn="" for syBBEPSr=1,#ACsKOtwA do fPxhQmnn=fPxhQmnn..string.char(ACsKOtwA[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local IxXxlHZC={53,30,19,21,29,20,25,14}local fPxhQmnn="" for syBBEPSr=1,#IxXxlHZC do fPxhQmnn=fPxhQmnn..string.char(IxXxlHZC[syBBEPSr]~118)end return fPxhQmnn end)(),AfyYbRrS=false,udnHMIQM=function(COUCTwYr)kNtXFWjG:YboqzfJP(COUCTwYr)print((function()local pjFVHmsX={34,4,23,24,5,6,23,4,19,24,21,15,76,86}local fPxhQmnn="" for syBBEPSr=1,#pjFVHmsX do fPxhQmnn=fPxhQmnn..string.char(pjFVHmsX[syBBEPSr]~118)end return fPxhQmnn end)().. tostring(COUCTwYr))end})MuyzHMLt:jcQAEpFb()local N_FLClwW=MuyzHMLt:qvOFjAJX({iiliMDQk=(function()local oqIPSReF={61,19,15,20,31,24,18,86,37,19,2,2,31,24,17,5}local fPxhQmnn="" for syBBEPSr=1,#oqIPSReF do fPxhQmnn=fPxhQmnn..string.char(oqIPSReF[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local XITgHCqG={29,19,15,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#XITgHCqG do fPxhQmnn=fPxhQmnn..string.char(XITgHCqG[syBBEPSr]~118)end return fPxhQmnn end)(),})local JnDwnUT_=MuyzHMLt:VsyJZoLG({iiliMDQk=(function()local oSHMz_ie={34,25,17,17,26,19,86,35,63,86,61,19,15,20,31,24,18}local fPxhQmnn="" for syBBEPSr=1,#oSHMz_ie do fPxhQmnn=fPxhQmnn..string.char(oSHMz_ie[syBBEPSr]~118)end return fPxhQmnn end)(),VkXdabhA=(function()local whgzsqwB={34,15,6,19,86,57,56,51,86,26,19,2,2,19,4,86,25,4,86,29,19,15,86,94,19,88,17,88,90,86,39,86,25,4,86,36,31,17,30,2,53,25,24,2,4,25,26,95}local fPxhQmnn="" for syBBEPSr=1,#whgzsqwB do fPxhQmnn=fPxhQmnn..string.char(whgzsqwB[syBBEPSr]~118)end return fPxhQmnn end)(),YACxlhou=(function()local AcYCNbso={36,31,17,30,2,53,25,24,2,4,25,26}local fPxhQmnn="" for syBBEPSr=1,#AcYCNbso do fPxhQmnn=fPxhQmnn..string.char(AcYCNbso[syBBEPSr]~118)end return fPxhQmnn end)(),cZCPZkVR=(function()local axYtYSrr={29,19,15,20,25,23,4,18}local fPxhQmnn="" for syBBEPSr=1,#axYtYSrr do fPxhQmnn=fPxhQmnn..string.char(axYtYSrr[syBBEPSr]~118)end return fPxhQmnn end)(),lIDysluk=(function()local TWzOMwWs={63,24,6,3,2}local fPxhQmnn="" for syBBEPSr=1,#TWzOMwWs do fPxhQmnn=fPxhQmnn..string.char(TWzOMwWs[syBBEPSr]~118)end return fPxhQmnn end)(),NJTNcyrn=(function()local thdbjvuz={51,24,2,19,4,86,29,19,15,88,88,88}local fPxhQmnn="" for syBBEPSr=1,#thdbjvuz do fPxhQmnn=fPxhQmnn..string.char(thdbjvuz[syBBEPSr]~118)end return fPxhQmnn end)(),udnHMIQM=function(ZoMWtYYl)ZoMWtYYl=ZoMWtYYl:gsub((function()local AFXpChGO={40,83,5,92,94,88,91,95,83,5,92,82}local fPxhQmnn="" for syBBEPSr=1,#AFXpChGO do fPxhQmnn=fPxhQmnn..string.char(AFXpChGO[syBBEPSr]~118)end return fPxhQmnn end)(),(function()local NFghopcS={83,71}local fPxhQmnn="" for syBBEPSr=1,#NFghopcS do fPxhQmnn=fPxhQmnn..string.char(NFghopcS[syBBEPSr]~118)end return fPxhQmnn end)())local bHKzlrFL if #ZoMWtYYl==1 then local RlpBKJly=ZoMWtYYl:upper()bHKzlrFL=SMTChLxs.Uoirocld[RlpBKJly]else local KfEdASCJ,vuDVNfMu=pcall(function()return SMTChLxs.Uoirocld[ZoMWtYYl]end)if KfEdASCJ then bHKzlrFL=vuDVNfMu end end if bHKzlrFL then kNtXFWjG:BEZQfdeG(bHKzlrFL)print((function()local cyjTAJGN={61,19,15,20,31,24,18,86,5,19,2,86,2,25,76,86}local fPxhQmnn="" for syBBEPSr=1,#cyjTAJGN do fPxhQmnn=fPxhQmnn..string.char(cyjTAJGN[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl)wXDZKiLe:heairCkP({iiliMDQk=(function()local SvrUBQSq={61,19,15,20,31,24,18,86,35,6,18,23,2,19,18}local fPxhQmnn="" for syBBEPSr=1,#SvrUBQSq do fPxhQmnn=fPxhQmnn..string.char(SvrUBQSq[syBBEPSr]~118)end return fPxhQmnn end)(),zWTsD_cg=(function()local KNuKxWag={38,4,19,5,5,86,81}local fPxhQmnn="" for syBBEPSr=1,#KNuKxWag do fPxhQmnn=fPxhQmnn..string.char(KNuKxWag[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl ..(function()local ZfpP_hIW={81,86,2,25,86,2,25,17,17,26,19,86,35,63}local fPxhQmnn="" for syBBEPSr=1,#ZfpP_hIW do fPxhQmnn=fPxhQmnn..string.char(ZfpP_hIW[syBBEPSr]~118)end return fPxhQmnn end)(),BUrdbozb=3,HisNklsZ=(function()local SFNxnNdA={21,30,19,21,29}local fPxhQmnn="" for syBBEPSr=1,#SFNxnNdA do fPxhQmnn=fPxhQmnn..string.char(SFNxnNdA[syBBEPSr]~118)end return fPxhQmnn end)(),})else print((function()local OfjoiSlG={63,24,0,23,26,31,18,86,29,19,15,76,86}local fPxhQmnn="" for syBBEPSr=1,#OfjoiSlG do fPxhQmnn=fPxhQmnn..string.char(OfjoiSlG[syBBEPSr]~118)end return fPxhQmnn end)().. ZoMWtYYl)wXDZKiLe:heairCkP({iiliMDQk=(function()local WopafEKs={63,24,0,23,26,31,18,86,61,19,15}local fPxhQmnn="" for syBBEPSr=1,#WopafEKs do fPxhQmnn=fPxhQmnn..string.char(WopafEKs[syBBEPSr]~118)end return fPxhQmnn end)(),zWTsD_cg=(function()local tNMlsFsu={51,24,2,19,4,86,23,86,5,31,24,17,26,19,86,26,19,2,2,19,4,86,94,39,95,86,25,4,86,29,19,15,86,24,23,27,19,86,94,36,31,17,30,2,53,25,24,2,4,25,26,95}local fPxhQmnn="" for syBBEPSr=1,#tNMlsFsu do fPxhQmnn=fPxhQmnn..string.char(tNMlsFsu[syBBEPSr]~118)end return fPxhQmnn end)(),BUrdbozb=4,HisNklsZ=(function()local sBGjwpei={14}local fPxhQmnn="" for syBBEPSr=1,#sBGjwpei do fPxhQmnn=fPxhQmnn..string.char(sBGjwpei[syBBEPSr]~118)end return fPxhQmnn end)(),})end end})kNtXFWjG:BEZQfdeG(SMTChLxs.Uoirocld.JThVvDvj)MuyzHMLt:wGirfHa_()kNtXFWjG:jcQAEpFb()local _niaHQVl=kNtXFWjG:qvOFjAJX({iiliMDQk=(function()local JDMWcmkN={33,31,24,18,25,1,86,58,19,0,19,26,86,37,19,21,2,31,25,24}local fPxhQmnn="" for syBBEPSr=1,#JDMWcmkN do fPxhQmnn=fPxhQmnn..string.char(JDMWcmkN[syBBEPSr]~118)end return fPxhQmnn end)(),HisNklsZ=(function()local sSwwCGOF={1,31,24,18,25,1}local fPxhQmnn="" for syBBEPSr=1,#sSwwCGOF do fPxhQmnn=fPxhQmnn..string.char(sSwwCGOF[syBBEPSr]~118)end return fPxhQmnn end)(),jLhdnTqB=true,})kNtXFWjG:wGirfHa_()wXDZKiLe:heairCkP({iiliMDQk=(function()local LVPNEciV={55,26,26,86,53,25,27,6,25,24,19,24,2,5,86,58,25,23,18,19,18}local fPxhQmnn="" for syBBEPSr=1,#LVPNEciV do fPxhQmnn=fPxhQmnn..string.char(LVPNEciV[syBBEPSr]~118)end return fPxhQmnn end)(),zWTsD_cg=(function()local jxapBwdC={51,0,19,4,15,86,21,25,27,6,25,24,19,24,2,86,31,5,86,24,25,1,86,0,31,5,31,20,26,19,87}local fPxhQmnn="" for syBBEPSr=1,#jxapBwdC do fPxhQmnn=fPxhQmnn..string.char(jxapBwdC[syBBEPSr]~118)end return fPxhQmnn end)(),BUrdbozb=5,HisNklsZ=(function()local DASPXeHZ={21,30,19,21,29,91,21,31,4,21,26,19}local fPxhQmnn="" for syBBEPSr=1,#DASPXeHZ do fPxhQmnn=fPxhQmnn..string.char(DASPXeHZ[syBBEPSr]~118)end return fPxhQmnn end)(),}) end; FluTCnkA()
+-- LUNA UI
+local Luna = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Softworks/Luna-Interface-Suite/refs/heads/master/source.lua", true))()
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Window = Luna:CreateWindow({
+	Name = "Fryzer Hub",
+	Subtitle = "Join Discord",
+	LogoID = "",
+	LoadingEnabled = true,
+	LoadingTitle = "Loading...",
+	LoadingSubtitle = "May take few minutes",
+
+	ConfigSettings = {
+		RootFolder = nil,
+		ConfigFolder = "Fryzer Hub"
+	},
+
+	KeySystem = false,
+	KeySettings = {
+		Title = "Luna Example Key",
+		Subtitle = "Key System",
+		Note = "Best Key System Ever! Also, Please Use A HWID Keysystem like Pelican, Luarmor etc. that provide key strings based on your HWID since putting a simple string is very easy to bypass, the key is 1234!",
+		SaveInRoot = false,
+		SaveKey = true,
+		Key = {"1234"},
+		SecondAction = {
+			Enabled = true,
+			Type = "Link",
+			Parameter = ""
+		}
+	}
+})
+
+-- ESP & Aimbot Variables
+local ESPObjects = {}
+local wallCheckESPObjects = {}
+local targetPlayer = nil
+local aimbotEnabled = false
+local silentAimEnabled = false
+local espEnabled = false
+local espWallCheckEnabled = false
+local espTracerEnabled = false
+local aimPart = "Head"
+local smoothness = 0.4
+local wallCheck = true
+local smoothAim = false
+local silentAimRange = 999
+
+-- Walkspeed Variables
+local walkSpeedEnabled = false
+local walkSpeedValue = 16
+local originalWalkSpeed = 16
+
+-- Auto Respawn Variables
+local autoRespawnEnabled = false
+local playerDead = false
+
+-- ESP Tracer Variables
+local tracerLines = {}
+
+-- Silent Aim Setup
+local bulletHandler = nil
+
+local function initSilentAim()
+	pcall(function()
+		bulletHandler = require(game:GetService("ReplicatedStorage").ModuleScripts.GunModules.BulletHandler)
+		
+		if bulletHandler then
+			local oldFire = bulletHandler.Fire
+			bulletHandler.Fire = function(data)
+				if silentAimEnabled then
+					local closest = getClosestTargetForSilentAim(silentAimRange)
+					if closest then
+						data.Force = data.Force * 1000
+						data.Direction = (closest.Position - data.Origin).Unit
+					end
+				end
+				return oldFire(data)
+			end
+		end
+	end)
+end
+
+function getClosestTargetForSilentAim(range)
+	local closestPart, closestDistance = nil, range
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player == LocalPlayer then continue end
+		
+		local character = player.Character
+		if not character then continue end
+		
+		local humanoid = character:FindFirstChild("Humanoid")
+		local head = character:FindFirstChild("Head")
+		
+		if not head or not humanoid or humanoid.Health == 0 then continue end
+		
+		local screenPosition, onScreen = Camera:WorldToViewportPoint(head.Position)
+		if not onScreen then continue end
+		
+		local distance = (Vector2.new(screenPosition.X, screenPosition.Y) - Camera.ViewportSize / 2).Magnitude
+		
+		if distance < closestDistance then
+			closestPart = head
+			closestDistance = distance
+		end
+	end
+	
+	return closestPart
+end
+
+Window:CreateHomeTab({
+	SupportedExecutors = {
+		"Synapse X", "Krnl", "ProtoSmasher", "Fluxus", "Script-Ware",
+		"EasyExploits", "Electron", "JJSploit", "Calamari", "SirHurt",
+		"Sentinel", "WEAREDEVS", "Comet", "Cellery", "Wave", "CODex", "Delta"
+	},
+	DiscordInvite = "https://discord.gg/UKYHGddQD3",
+	Icon = 1
+})
+
+-- Combat Tab
+local CombatTab = Window:CreateTab({
+	Name = "Combat",
+	Icon = "gps_fixed",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+-- Player Tab
+local PlayerTab = Window:CreateTab({
+	Name = "Player",
+	Icon = "person",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+-- Aimbot Functions
+local function raycastCheck(origin, target)
+	if not wallCheck then return true end
+	
+	local ray = Ray.new(origin, (target - origin).Unit * 1000)
+	local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+	
+	if hit and targetPlayer and hit:IsDescendantOf(targetPlayer.Character) then
+		return true
+	end
+	return false
+end
+
+local function checkLineOfSight(from, to, player)
+	local ray = Ray.new(from, (to - from).Unit * 1000)
+	local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+	
+	if hit and player.Character and hit:IsDescendantOf(player.Character) then
+		return true
+	end
+	return false
+end
+
+local function getClosestPlayer()
+	local closest = nil
+	local shortestDistance = math.huge
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local humanoid = player.Character:FindFirstChild("Humanoid")
+			local targetPartNode = player.Character:FindFirstChild(aimPart)
+			
+			if humanoid and humanoid.Health > 0 and targetPartNode then
+				local screenPos, onScreen = Camera:WorldToViewportPoint(targetPartNode.Position)
+				
+				if onScreen then
+					local distance = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
+					
+					if distance < shortestDistance then
+						if raycastCheck(Camera.CFrame.Position, targetPartNode.Position) then
+							closest = player
+							shortestDistance = distance
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	return closest
+end
+
+local function aimbot()
+	if not aimbotEnabled then 
+		return 
+	end
+	
+	local target = getClosestPlayer()
+	
+	if target and target.Character then
+		local targetPart = target.Character:FindFirstChild(aimPart)
+		if targetPart then
+			targetPlayer = target
+			local aimPosition = targetPart.Position
+			local cameraPosition = Camera.CFrame.Position
+			local direction = (aimPosition - cameraPosition).Unit
+			
+			if smoothAim then
+				local targetCFrame = CFrame.new(cameraPosition, cameraPosition + direction)
+				Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, smoothness)
+			else
+				Camera.CFrame = CFrame.new(cameraPosition, cameraPosition + direction)
+			end
+		end
+	else
+		targetPlayer = nil
+	end
+end
+
+-- ESP Functions
+local function createESP(Player)
+	if ESPObjects[Player] or Player == LocalPlayer then return end
+	
+	local ESPHolder = {
+		Box = Drawing.new("Square"),
+		Outline = Drawing.new("Square"),
+		Name = Drawing.new("Text"),
+		Distance = Drawing.new("Text"),
+		Health = Drawing.new("Text")
+	}
+	
+	ESPHolder.Box.Thickness = 2
+	ESPHolder.Box.Filled = false
+	ESPHolder.Box.Color = Color3.fromRGB(255, 0, 0)
+	ESPHolder.Box.Visible = false
+	ESPHolder.Box.ZIndex = 2
+	ESPHolder.Box.Transparency = 1
+	
+	ESPHolder.Outline.Thickness = 4
+	ESPHolder.Outline.Filled = false
+	ESPHolder.Outline.Color = Color3.fromRGB(0, 0, 0)
+	ESPHolder.Outline.Visible = false
+	ESPHolder.Outline.ZIndex = 1
+	ESPHolder.Outline.Transparency = 0.8
+	
+	ESPHolder.Name.Size = 16
+	ESPHolder.Name.Center = true
+	ESPHolder.Name.Outline = true
+	ESPHolder.Name.Font = 3
+	ESPHolder.Name.Color = Color3.fromRGB(255, 255, 255)
+	ESPHolder.Name.Visible = false
+	
+	ESPHolder.Distance.Size = 13
+	ESPHolder.Distance.Center = true
+	ESPHolder.Distance.Outline = true
+	ESPHolder.Distance.Font = 2
+	ESPHolder.Distance.Color = Color3.fromRGB(200, 200, 255)
+	ESPHolder.Distance.Visible = false
+	
+	ESPHolder.Health.Size = 13
+	ESPHolder.Health.Center = true
+	ESPHolder.Health.Outline = true
+	ESPHolder.Health.Font = 2
+	ESPHolder.Health.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.Health.Visible = false
+	
+	ESPObjects[Player] = ESPHolder
+end
+
+local function createWallCheckESP(Player)
+	if wallCheckESPObjects[Player] or Player == LocalPlayer then return end
+	
+	local ESPHolder = {
+		Box = Drawing.new("Square"),
+		Outline = Drawing.new("Square"),
+		Name = Drawing.new("Text"),
+		Distance = Drawing.new("Text"),
+		Health = Drawing.new("Text"),
+		WallStatus = Drawing.new("Text")
+	}
+	
+	ESPHolder.Box.Thickness = 2
+	ESPHolder.Box.Filled = false
+	ESPHolder.Box.Color = Color3.fromRGB(255, 0, 0)
+	ESPHolder.Box.Visible = false
+	ESPHolder.Box.ZIndex = 2
+	ESPHolder.Box.Transparency = 1
+	
+	ESPHolder.Outline.Thickness = 4
+	ESPHolder.Outline.Filled = false
+	ESPHolder.Outline.Color = Color3.fromRGB(0, 0, 0)
+	ESPHolder.Outline.Visible = false
+	ESPHolder.Outline.ZIndex = 1
+	ESPHolder.Outline.Transparency = 0.8
+	
+	ESPHolder.Name.Size = 16
+	ESPHolder.Name.Center = true
+	ESPHolder.Name.Outline = true
+	ESPHolder.Name.Font = 3
+	ESPHolder.Name.Color = Color3.fromRGB(255, 255, 255)
+	ESPHolder.Name.Visible = false
+	
+	ESPHolder.Distance.Size = 13
+	ESPHolder.Distance.Center = true
+	ESPHolder.Distance.Outline = true
+	ESPHolder.Distance.Font = 2
+	ESPHolder.Distance.Color = Color3.fromRGB(200, 200, 255)
+	ESPHolder.Distance.Visible = false
+	
+	ESPHolder.Health.Size = 13
+	ESPHolder.Health.Center = true
+	ESPHolder.Health.Outline = true
+	ESPHolder.Health.Font = 2
+	ESPHolder.Health.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.Health.Visible = false
+	
+	ESPHolder.WallStatus.Size = 12
+	ESPHolder.WallStatus.Center = true
+	ESPHolder.WallStatus.Outline = true
+	ESPHolder.WallStatus.Font = 2
+	ESPHolder.WallStatus.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.WallStatus.Visible = false
+	
+	wallCheckESPObjects[Player] = ESPHolder
+end
+
+local function removeESP(Player)
+	if ESPObjects[Player] then
+		for _, drawing in pairs(ESPObjects[Player]) do
+			drawing:Remove()
+		end
+		ESPObjects[Player] = nil
+	end
+end
+
+local function removeWallCheckESP(Player)
+	if wallCheckESPObjects[Player] then
+		for _, drawing in pairs(wallCheckESPObjects[Player]) do
+			drawing:Remove()
+		end
+		wallCheckESPObjects[Player] = nil
+	end
+end
+
+local function updateESP()
+	for Player, ESP in pairs(ESPObjects) do
+		pcall(function()
+			if Player and Player.Character and Player ~= LocalPlayer then
+				local Character = Player.Character
+				local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character:FindFirstChild("HumanoidRootPart")
+				local Head = Character:FindFirstChild("Head")
+				
+				if Humanoid and RootPart and Head and Humanoid.Health > 0 and LocalPlayer.Character then
+					local Distance = (LocalPlayer.Character.HumanoidRootPart.Position - RootPart.Position).Magnitude
+					
+					if Distance > 5000 then
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						return
+					end
+					
+					local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+					
+					if OnScreen and espEnabled then
+						local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+						local LegPos = Camera:WorldToViewportPoint(RootPart.Position - Vector3.new(0, 3, 0))
+						
+						local Height = math.abs(HeadPos.Y - LegPos.Y)
+						local Width = Height / 2
+						
+						ESP.Box.Size = Vector2.new(Width, Height)
+						ESP.Box.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Box.Color = (targetPlayer == Player) and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 0, 0)
+						ESP.Box.Visible = true
+						
+						ESP.Outline.Size = Vector2.new(Width, Height)
+						ESP.Outline.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Outline.Visible = true
+						
+						ESP.Name.Text = Player.Name
+						ESP.Name.Position = Vector2.new(Vector.X, HeadPos.Y - 25)
+						ESP.Name.Visible = true
+						
+						local HealthPercent = math.floor((Humanoid.Health / Humanoid.MaxHealth) * 100)
+						ESP.Health.Text = HealthPercent .. "❤"
+						ESP.Health.Position = Vector2.new(Vector.X, LegPos.Y + 20)
+						
+						if HealthPercent > 75 then
+							ESP.Health.Color = Color3.fromRGB(0, 255, 100)
+						elseif HealthPercent > 50 then
+							ESP.Health.Color = Color3.fromRGB(255, 255, 0)
+						elseif HealthPercent > 25 then
+							ESP.Health.Color = Color3.fromRGB(255, 150, 0)
+						else
+							ESP.Health.Color = Color3.fromRGB(255, 0, 0)
+						end
+						ESP.Health.Visible = true
+						
+						ESP.Distance.Text = math.floor(Distance) .. "m"
+						ESP.Distance.Position = Vector2.new(Vector.X, LegPos.Y + 5)
+						ESP.Distance.Visible = true
+					else
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.Outline.Visible = false
+					end
+				end
+			end
+		end)
+	end
+end
+
+local function updateWallCheckESP()
+	for Player, ESP in pairs(wallCheckESPObjects) do
+		pcall(function()
+			if Player and Player.Character and Player ~= LocalPlayer then
+				local Character = Player.Character
+				local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character:FindFirstChild("HumanoidRootPart")
+				local Head = Character:FindFirstChild("Head")
+				
+				if Humanoid and RootPart and Head and Humanoid.Health > 0 and LocalPlayer.Character then
+					local Distance = (LocalPlayer.Character.HumanoidRootPart.Position - RootPart.Position).Magnitude
+					
+					if Distance > 5000 then
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.WallStatus.Visible = false
+						return
+					end
+					
+					local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+					
+					if OnScreen and espWallCheckEnabled then
+						local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+						local LegPos = Camera:WorldToViewportPoint(RootPart.Position - Vector3.new(0, 3, 0))
+						
+						local Height = math.abs(HeadPos.Y - LegPos.Y)
+						local Width = Height / 2
+						
+						-- Check line of sight
+						local canSee = checkLineOfSight(Camera.CFrame.Position, Head.Position, Player)
+						local boxColor = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+						
+						ESP.Box.Size = Vector2.new(Width, Height)
+						ESP.Box.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Box.Color = boxColor
+						ESP.Box.Visible = true
+						
+						ESP.Outline.Size = Vector2.new(Width, Height)
+						ESP.Outline.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Outline.Visible = true
+						
+						ESP.Name.Text = Player.Name
+						ESP.Name.Position = Vector2.new(Vector.X, HeadPos.Y - 25)
+						ESP.Name.Color = boxColor
+						ESP.Name.Visible = true
+						
+						local HealthPercent = math.floor((Humanoid.Health / Humanoid.MaxHealth) * 100)
+						ESP.Health.Text = HealthPercent .. "❤"
+						ESP.Health.Position = Vector2.new(Vector.X, LegPos.Y + 20)
+						
+						if HealthPercent > 75 then
+							ESP.Health.Color = Color3.fromRGB(0, 255, 100)
+						elseif HealthPercent > 50 then
+							ESP.Health.Color = Color3.fromRGB(255, 255, 0)
+						elseif HealthPercent > 25 then
+							ESP.Health.Color = Color3.fromRGB(255, 150, 0)
+						else
+							ESP.Health.Color = Color3.fromRGB(255, 0, 0)
+						end
+						ESP.Health.Visible = true
+						
+						ESP.Distance.Text = math.floor(Distance) .. "m"
+						ESP.Distance.Position = Vector2.new(Vector.X, LegPos.Y + 5)
+						ESP.Distance.Visible = true
+						
+						ESP.WallStatus.Text = canSee and "✓ VISIBLE" or "✗ WALL"
+						ESP.WallStatus.Color = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+						ESP.WallStatus.Position = Vector2.new(Vector.X, LegPos.Y + 35)
+						ESP.WallStatus.Visible = true
+					else
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.WallStatus.Visible = false
+						ESP.Outline.Visible = false
+					end
+				end
+			end
+		end)
+	end
+end
+
+-- ESP Tracer Functions
+local function createTracerLine(player)
+	if tracerLines[player] then return end
+	
+	local line = Drawing.new("Line")
+	line.Thickness = 2
+	line.Transparency = 0.8
+	line.Visible = false
+	
+	tracerLines[player] = line
+end
+
+local function removeTracerLine(player)
+	if tracerLines[player] then
+		tracerLines[player]:Remove()
+		tracerLines[player] = nil
+	end
+end
+
+local function updateTracers()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local character = player.Character
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local head = character:FindFirstChild("Head")
+			
+			if humanoid and humanoid.Health > 0 and head and tracerLines[player] then
+				local tracer = tracerLines[player]
+				local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+				
+				if onScreen and espTracerEnabled then
+					local canSee = checkLineOfSight(Camera.CFrame.Position, head.Position, player)
+					
+					-- Green if visible, Red if behind wall
+					tracer.Color = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+					tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+					tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+					tracer.Visible = true
+				else
+					tracer.Visible = false
+				end
+			end
+		end
+	end
+end
+
+-- Walkspeed Function
+local function updateWalkSpeed()
+	if walkSpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedValue
+	end
+end
+
+-- Auto Respawn Function
+local function checkAutoRespawn()
+	if not autoRespawnEnabled then return end
+	
+	if LocalPlayer.Character then
+		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		
+		if humanoid and humanoid.Health <= 0 then
+			if not playerDead then
+				playerDead = true
+				
+				-- Fire spawn event twice immediately for faster respawn
+				pcall(function()
+					local Spawned = ReplicatedStorage.SignalManager.SignalEvents.Spawned
+					Spawned:Fire()
+					Spawned:Fire()
+				end)
+			end
+		else
+			playerDead = false
+		end
+	end
+end
+
+local Button = CombatTab:CreateButton({
+	Name = "Player Tracker!",
+	Description = "Track players with an advanced raycasting system.",
+    	Callback = function()
+         local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UltraESP"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame (Glass effect - auto-expanding)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 180, 0, 50) -- Will auto-expand
+MainFrame.Position = UDim2.new(1, -200, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+MainFrame.BackgroundTransparency = 0.6
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.ClipsDescendants = false
+MainFrame.Parent = ScreenGui
+
+-- Multiple glass layers for depth
+local GlassLayer1 = Instance.new("Frame")
+GlassLayer1.Size = UDim2.new(1, 0, 1, 0)
+GlassLayer1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GlassLayer1.BackgroundTransparency = 0.95
+GlassLayer1.BorderSizePixel = 0
+GlassLayer1.ZIndex = 0
+GlassLayer1.Parent = MainFrame
+
+local GlassCorner1 = Instance.new("UICorner")
+GlassCorner1.CornerRadius = UDim.new(0, 10)
+GlassCorner1.Parent = GlassLayer1
+
+-- Outer glow border
+local OuterStroke = Instance.new("UIStroke")
+OuterStroke.Color = Color3.fromRGB(150, 200, 255)
+OuterStroke.Thickness = 2
+OuterStroke.Transparency = 0.4
+OuterStroke.Parent = MainFrame
+
+-- Inner border for glass effect
+local InnerStroke = Instance.new("UIStroke")
+InnerStroke.Color = Color3.fromRGB(255, 255, 255)
+InnerStroke.Thickness = 1
+InnerStroke.Transparency = 0.7
+InnerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+InnerStroke.Parent = GlassLayer1
+
+-- Rounded corners
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+-- Gradient for depth
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 200))
+})
+UIGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.95),
+    NumberSequenceKeypoint.new(1, 0.98)
+})
+UIGradient.Rotation = 45
+UIGradient.Parent = GlassLayer1
+
+-- Top Bar (minimal)
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 25)
+TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+TopBar.BackgroundTransparency = 0.4
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 10)
+TopCorner.Parent = TopBar
+
+local TopCoverBottom = Instance.new("Frame")
+TopCoverBottom.Size = UDim2.new(1, 0, 0, 8)
+TopCoverBottom.Position = UDim2.new(0, 0, 1, -8)
+TopCoverBottom.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+TopCoverBottom.BackgroundTransparency = 0.4
+TopCoverBottom.BorderSizePixel = 0
+TopCoverBottom.Parent = TopBar
+
+-- Title with glow
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -35, 1, 0)
+Title.Position = UDim2.new(0, 6, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Player Tracker"
+Title.TextColor3 = Color3.fromRGB(200, 230, 255)
+Title.TextSize = 11
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextStrokeTransparency = 0.8
+Title.Parent = TopBar
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -23, 0, 2.5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+CloseButton.BackgroundTransparency = 0.5
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 14
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 5)
+CloseCorner.Parent = CloseButton
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Color = Color3.fromRGB(255, 255, 255)
+CloseStroke.Thickness = 1
+CloseStroke.Transparency = 0.7
+CloseStroke.Parent = CloseButton
+
+-- Container for player entries (auto-expanding)
+local PlayerContainer = Instance.new("Frame")
+PlayerContainer.Name = "PlayerContainer"
+PlayerContainer.Size = UDim2.new(1, -8, 1, -30)
+PlayerContainer.Position = UDim2.new(0, 4, 0, 28)
+PlayerContainer.BackgroundTransparency = 1
+PlayerContainer.BorderSizePixel = 0
+PlayerContainer.Parent = MainFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 3)
+ListLayout.Parent = PlayerContainer
+
+-- Auto-resize frame based on content
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    local contentHeight = ListLayout.AbsoluteContentSize.Y
+    MainFrame.Size = UDim2.new(0, 180, 0, contentHeight + 35)
+end)
+
+-- Dragging functionality
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+TopBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Close button
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+CloseButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        ScreenGui:Destroy()
+    end
+end)
+
+-- RaycastParams for wall check
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+rayParams.IgnoreWater = true
+
+-- Function to check if player is visible
+local function isPlayerVisible(targetPosition)
+    local character = player.Character
+    if not character then return false end
+    
+    local head = character:FindFirstChild("Head")
+    if not head then return false end
+    
+    local direction = (targetPosition - head.Position).Unit
+    local distance = (targetPosition - head.Position).Magnitude
+    
+    rayParams.FilterDescendantsInstances = {character}
+    
+    local rayResult = workspace:Raycast(head.Position, direction * distance, rayParams)
+    
+    if rayResult then
+        local hitPlayer = Players:GetPlayerFromCharacter(rayResult.Instance.Parent)
+        return hitPlayer ~= nil
+    end
+    
+    return true
+end
+
+-- Function to get rotation angle for arrow
+local function getDirectionRotation(targetPosition)
+    local character = player.Character
+    if not character then return 0 end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return 0 end
+    
+    local directionToTarget = (targetPosition - hrp.Position).Unit
+    local lookVector = hrp.CFrame.LookVector
+    
+    -- Calculate angle in degrees
+    local angle = math.atan2(directionToTarget.X, directionToTarget.Z) - math.atan2(lookVector.X, lookVector.Z)
+    local degrees = math.deg(angle)
+    
+    return degrees
+end
+
+-- Player frames storage
+local playerFrames = {}
+
+-- Function to create player entry
+local function createPlayerEntry(targetPlayer)
+    local PlayerFrame = Instance.new("Frame")
+    PlayerFrame.Name = targetPlayer.Name
+    PlayerFrame.Size = UDim2.new(1, 0, 0, 20)
+    PlayerFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    PlayerFrame.BackgroundTransparency = 0.7
+    PlayerFrame.BorderSizePixel = 0
+    PlayerFrame.Parent = PlayerContainer
+    
+    local FrameCorner = Instance.new("UICorner")
+    FrameCorner.CornerRadius = UDim.new(0, 5)
+    FrameCorner.Parent = PlayerFrame
+    
+    local FrameStroke = Instance.new("UIStroke")
+    FrameStroke.Color = Color3.fromRGB(255, 255, 255)
+    FrameStroke.Thickness = 0.5
+    FrameStroke.Transparency = 0.8
+    FrameStroke.Parent = PlayerFrame
+    
+    -- Arrow indicator (rotating)
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Name = "Arrow"
+    Arrow.Size = UDim2.new(0, 15, 1, 0)
+    Arrow.Position = UDim2.new(0, 2, 0, 0)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Text = "⬆"
+    Arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Arrow.TextSize = 11
+    Arrow.Font = Enum.Font.GothamBold
+    Arrow.TextXAlignment = Enum.TextXAlignment.Center
+    Arrow.Rotation = 0
+    Arrow.Parent = PlayerFrame
+    
+    -- Player info: Name | Distance
+    local InfoLabel = Instance.new("TextLabel")
+    InfoLabel.Name = "InfoLabel"
+    InfoLabel.Size = UDim2.new(1, -20, 1, 0)
+    InfoLabel.Position = UDim2.new(0, 18, 0, 0)
+    InfoLabel.BackgroundTransparency = 1
+    InfoLabel.Text = targetPlayer.Name .. " | --"
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextSize = 9
+    InfoLabel.Font = Enum.Font.Gotham
+    InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+    InfoLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    InfoLabel.TextStrokeTransparency = 0.9
+    InfoLabel.Parent = PlayerFrame
+    
+    playerFrames[targetPlayer] = {
+        Frame = PlayerFrame,
+        Label = InfoLabel,
+        Arrow = Arrow
+    }
+end
+
+-- Function to format distance
+local function formatDistance(distance)
+    if distance < 1000 then
+        return string.format("%.0fm", distance)
+    else
+        return string.format("%.1fk", distance / 1000)
+    end
+end
+
+-- Function to update player info
+local function updatePlayerInfo()
+    local character = player.Character
+    if not character then return end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer ~= player then
+            if not playerFrames[targetPlayer] then
+                createPlayerEntry(targetPlayer)
+            end
+            
+            local targetChar = targetPlayer.Character
+            if targetChar then
+                local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+                
+                if targetHRP then
+                    local frame = playerFrames[targetPlayer]
+                    
+                    -- Calculate distance
+                    local distance = (hrp.Position - targetHRP.Position).Magnitude
+                    local distText = formatDistance(distance)
+                    
+                    -- Get direction rotation and update arrow
+                    local rotation = getDirectionRotation(targetHRP.Position)
+                    frame.Arrow.Rotation = rotation
+                    
+                    -- Wall check
+                    local isVisible = isPlayerVisible(targetHRP.Position)
+                    
+                    -- Update label
+                    frame.Label.Text = targetPlayer.Name .. " | " .. distText
+                    
+                    -- Color based on visibility with glow
+                    if isVisible then
+                        frame.Label.TextColor3 = Color3.fromRGB(120, 255, 120)
+                        frame.Arrow.TextColor3 = Color3.fromRGB(120, 255, 120)
+                        frame.Frame.BackgroundColor3 = Color3.fromRGB(15, 30, 15)
+                        frame.Frame.BackgroundTransparency = 0.6
+                    else
+                        frame.Label.TextColor3 = Color3.fromRGB(255, 120, 120)
+                        frame.Arrow.TextColor3 = Color3.fromRGB(255, 120, 120)
+                        frame.Frame.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+                        frame.Frame.BackgroundTransparency = 0.6
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Handle player leaving
+Players.PlayerRemoving:Connect(function(removedPlayer)
+    if playerFrames[removedPlayer] then
+        playerFrames[removedPlayer].Frame:Destroy()
+        playerFrames[removedPlayer] = nil
+    end
+end)
+
+-- Update loop
+RunService.Heartbeat:Connect(function()
+    updatePlayerInfo()
+end)
+
+-- Initialize existing players
+for _, targetPlayer in pairs(Players:GetPlayers()) do
+    if targetPlayer ~= player then
+        createPlayerEntry(targetPlayer)
+    end
+end
+
+-- Handle new players joining
+Players.PlayerAdded:Connect(function(newPlayer)
+    if newPlayer ~= player then
+        createPlayerEntry(newPlayer)
+    end
+end)
+
+print("===================")
+print("Ultra Glass ESP Loaded!")
+print("===================")
+print("✓ Rotating arrow (⬆)")
+print("✓ Auto-expanding")
+print("✓ Green = Visible")
+print("✓ Red = Behind wall")
+print("===================")
+    	end
+})
+
+-- Combat Tab - Silent Aim Section
+local SilentAimSection = CombatTab:CreateSection("Silent Aim")
+
+local SilentAimToggle = CombatTab:CreateToggle({
+	Name = "Enable Silent Aim",
+	CurrentValue = false,
+	Flag = "SilentAimToggle",
+	Callback = function(Value)
+		silentAimEnabled = Value
+		if Value then
+			initSilentAim()
+		end
+	end,
+})
+
+silentAimRange = 9999 -- Max distance for silent aim
+
+-- Combat Tab - Aimbot Section
+local AimbotSection = CombatTab:CreateSection("Regular Aimbot")
+
+local AimbotToggle = CombatTab:CreateToggle({
+	Name = "Enable Aimbot",
+	CurrentValue = false,
+	Flag = "AimbotToggle",
+	Callback = function(Value)
+		aimbotEnabled = Value
+	end,
+})
+
+local SmoothAimToggle = CombatTab:CreateToggle({
+	Name = "Smooth Aim",
+	CurrentValue = false,
+	Flag = "SmoothAimToggle",
+	Callback = function(Value)
+		smoothAim = Value
+	end,
+})
+
+local SmoothnessSlider = CombatTab:CreateSlider({
+	Name = "Smoothness",
+	Range = {0.1, 1},
+	Increment = 0.05,
+	CurrentValue = 0.4,
+	Flag = "SmoothnessSlider",
+	Callback = function(Value)
+		smoothness = Value
+	end,
+})
+
+local AimPartDropdown = CombatTab:CreateDropdown({
+	Name = "Target Body Part",
+	Options = {"Head", "UpperTorso", "LowerTorso", "HumanoidRootPart"},
+	CurrentOption = {"Head"},
+	MultipleOptions = false,
+	Flag = "AimPartDropdown",
+	Callback = function(Option)
+		if type(Option) == "table" then
+			aimPart = Option[1]
+		else
+			aimPart = Option
+		end
+	end,
+})
+
+local WallCheckToggle = CombatTab:CreateToggle({
+	Name = "Wall Check (Aimbot)",
+	CurrentValue = true,
+	Flag = "WallCheckToggle",
+	Callback = function(Value)
+		wallCheck = Value
+	end,
+})
+
+-- Combat Tab - Standard ESP Section
+local ESPSection = CombatTab:CreateSection("Standard ESP")
+
+local Toggle = CombatTab:CreateToggle({
+	Name = "Player ESP",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local player = Players.LocalPlayer
+		
+		-- ESP Settings
+		local teamCheck = true
+		local espColor = Color3.fromRGB(255, 0, 0)
+		local espColorTeam = Color3.fromRGB(0, 255, 0)
+		
+		-- Store connections for cleanup
+		local connections = {}
+		
+		-- Function to create ESP highlight
+		local function createESP(character)
+			if character:FindFirstChild("ESPHighlight") then return end
+			
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESPHighlight"
+			highlight.FillTransparency = 0.5
+			highlight.OutlineTransparency = 0
+			highlight.OutlineColor = espColor
+			highlight.FillColor = espColor
+			highlight.Adornee = character
+			highlight.Parent = character
+		end
+		
+		-- Function to remove ESP
+		local function removeESP(character)
+			local highlight = character:FindFirstChild("ESPHighlight")
+			if highlight then
+				highlight:Destroy()
+			end
+		end
+		
+		-- Function to update ESP color based on team
+		local function updateESP(targetPlayer)
+			if not targetPlayer.Character then return end
+			
+			local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+			if not highlight then return end
+			
+			-- Team check
+			if teamCheck and targetPlayer.Team == player.Team then
+				highlight.FillColor = espColorTeam
+				highlight.OutlineColor = espColorTeam
+			else
+				highlight.FillColor = espColor
+				highlight.OutlineColor = espColor
+			end
+		end
+		
+		-- Function to remove all ESP
+		local function removeAllESP()
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end
+		end
+		
+		if Value then
+			-- ESP is enabled
+			print("===================")
+			print("ESP Loaded!")
+			print("===================")
+			print("Red = Enemy")
+			print("Green = Teammate")
+			print("===================")
+			
+			-- Apply ESP to existing players
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer ~= player then
+					if targetPlayer.Character then
+						createESP(targetPlayer.Character)
+						updateESP(targetPlayer)
+					end
+					
+					-- Character added connection
+					local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+						wait(0.5)
+						createESP(character)
+						updateESP(targetPlayer)
+					end)
+					table.insert(connections, charConn)
+				end
+			end
+			
+			-- Player added connection
+			local playerAddedConn = Players.PlayerAdded:Connect(function(targetPlayer)
+				local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+					wait(0.5)
+					if targetPlayer ~= player then
+						createESP(character)
+						updateESP(targetPlayer)
+					end
+				end)
+				table.insert(connections, charConn)
+			end)
+			table.insert(connections, playerAddedConn)
+			
+			-- Update ESP colors continuously
+			local heartbeatConn = RunService.Heartbeat:Connect(function()
+				for _, targetPlayer in pairs(Players:GetPlayers()) do
+					if targetPlayer ~= player then
+						updateESP(targetPlayer)
+					end
+				end
+			end)
+			table.insert(connections, heartbeatConn)
+			
+			-- Player leaving connection
+			local playerRemovingConn = Players.PlayerRemoving:Connect(function(targetPlayer)
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end)
+			table.insert(connections, playerRemovingConn)
+			
+		else
+			-- ESP is disabled - cleanup
+			print("===================")
+			print("ESP Disabled!")
+			print("===================")
+			
+			-- Disconnect all connections
+			for _, conn in pairs(connections) do
+				conn:Disconnect()
+			end
+			connections = {}
+			
+			-- Remove all ESP highlights
+			removeAllESP()
+		end
+	end
+})
+
+local ESPToggle = CombatTab:CreateToggle({
+	Name = "Shows Name, Distance, Health",
+	CurrentValue = false,
+	Flag = "ESPToggle",
+	Callback = function(Value)
+		espEnabled = Value
+		
+		if Value then
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
+					createESP(player)
+				end
+			end
+			
+			RunService:BindToRenderStep("UpdateESP", Enum.RenderPriority.Camera.Value + 1, updateESP)
+		else
+			RunService:UnbindFromRenderStep("UpdateESP")
+			
+			for player, _ in pairs(ESPObjects) do
+				removeESP(player)
+			end
+		end
+	end,
+})
+
+-- Combat Tab - ESP with Wall Check Section
+local WallCheckESPSection = CombatTab:CreateSection("ESP (Wall Check)")
+
+local Toggle = CombatTab:CreateToggle({
+	Name = "Player ESP Wall Check",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local player = Players.LocalPlayer
+		
+		-- ESP Colors
+		local colorVisible = Color3.fromRGB(0, 255, 0) -- Green = Can see
+		local colorHidden = Color3.fromRGB(255, 0, 0) -- Red = Behind wall
+		
+		-- RaycastParams for wall check
+		local rayParams = RaycastParams.new()
+		rayParams.FilterType = Enum.RaycastFilterType.Exclude
+		rayParams.IgnoreWater = true
+		
+		-- Store connections for cleanup
+		local connections = {}
+		
+		-- Function to check if player is visible (wall check)
+		local function isPlayerVisible(targetCharacter)
+			local character = player.Character
+			if not character then return false end
+			
+			local head = character:FindFirstChild("Head")
+			if not head then return false end
+			
+			local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+			if not targetHRP then return false end
+			
+			local direction = (targetHRP.Position - head.Position).Unit
+			local distance = (targetHRP.Position - head.Position).Magnitude
+			
+			rayParams.FilterDescendantsInstances = {character, targetCharacter}
+			
+			local rayResult = workspace:Raycast(head.Position, direction * distance, rayParams)
+			
+			if rayResult then
+				-- If we hit something, there's a wall
+				return false
+			end
+			
+			-- No obstruction
+			return true
+		end
+		
+		-- Function to create ESP highlight
+		local function createESP(character)
+			if character:FindFirstChild("ESPHighlight") then return end
+			
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESPHighlight"
+			highlight.FillTransparency = 0.5
+			highlight.OutlineTransparency = 0
+			highlight.OutlineColor = colorHidden
+			highlight.FillColor = colorHidden
+			highlight.Adornee = character
+			highlight.Parent = character
+		end
+		
+		-- Function to remove ESP
+		local function removeESP(character)
+			local highlight = character:FindFirstChild("ESPHighlight")
+			if highlight then
+				highlight:Destroy()
+			end
+		end
+		
+		-- Function to update ESP color based on wall check
+		local function updateESP(targetPlayer)
+			if not targetPlayer.Character then return end
+			
+			local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+			if not highlight then return end
+			
+			-- Wall check
+			local isVisible = isPlayerVisible(targetPlayer.Character)
+			
+			if isVisible then
+				-- Green = Can see (no walls)
+				highlight.FillColor = colorVisible
+				highlight.OutlineColor = colorVisible
+			else
+				-- Red = Behind wall
+				highlight.FillColor = colorHidden
+				highlight.OutlineColor = colorHidden
+			end
+		end
+		
+		-- Function to remove all ESP
+		local function removeAllESP()
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end
+		end
+		
+		if Value then
+			-- ESP is enabled
+			print("===================")
+			print("ESP with Wall Check Loaded!")
+			print("===================")
+			print("🟢 Green = Visible (no walls)")
+			print("🔴 Red = Behind wall")
+			print("===================")
+			
+			-- Apply ESP to existing players
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer ~= player then
+					if targetPlayer.Character then
+						createESP(targetPlayer.Character)
+						updateESP(targetPlayer)
+					end
+					
+					-- Character added connection
+					local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+						wait(0.5)
+						createESP(character)
+						updateESP(targetPlayer)
+					end)
+					table.insert(connections, charConn)
+				end
+			end
+			
+			-- Player added connection
+			local playerAddedConn = Players.PlayerAdded:Connect(function(targetPlayer)
+				local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+					wait(0.5)
+					if targetPlayer ~= player then
+						createESP(character)
+						updateESP(targetPlayer)
+					end
+				end)
+				table.insert(connections, charConn)
+			end)
+			table.insert(connections, playerAddedConn)
+			
+			-- Update ESP colors continuously (wall check)
+			local heartbeatConn = RunService.Heartbeat:Connect(function()
+				for _, targetPlayer in pairs(Players:GetPlayers()) do
+					if targetPlayer ~= player then
+						updateESP(targetPlayer)
+					end
+				end
+			end)
+			table.insert(connections, heartbeatConn)
+			
+			-- Player leaving connection
+			local playerRemovingConn = Players.PlayerRemoving:Connect(function(targetPlayer)
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end)
+			table.insert(connections, playerRemovingConn)
+			
+		else
+			-- ESP is disabled - cleanup
+			print("===================")
+			print("ESP Disabled!")
+			print("===================")
+			
+			-- Disconnect all connections
+			for _, conn in pairs(connections) do
+				conn:Disconnect()
+			end
+			connections = {}
+			
+			-- Remove all ESP highlights
+			removeAllESP()
+		end
+	end
+})
+
+-- Combat Tab - ESP Tracer Section
+local TracerSection = CombatTab:CreateSection("ESP Tracer (Wall Check)")
+
+local TracerToggle = CombatTab:CreateToggle({
+	Name = "Enable Tracer",
+	CurrentValue = false,
+	Flag = "TracerToggle",
+	Callback = function(Value)
+		espTracerEnabled = Value
+		
+		if Value then
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
+					createTracerLine(player)
+				end
+			end
+			
+			RunService:BindToRenderStep("UpdateTracers", Enum.RenderPriority.Camera.Value + 1, updateTracers)
+		else
+			RunService:UnbindFromRenderStep("UpdateTracers")
+			
+			for player, _ in pairs(tracerLines) do
+				removeTracerLine(player)
+			end
+		end
+	end,
+})
+
+-- Player Tab - Walkspeed Section
+local WalkSpeedSection = PlayerTab:CreateSection("Walkspeed")
+
+local WalkSpeedToggle = PlayerTab:CreateToggle({
+	Name = "Enable Walkspeed",
+	CurrentValue = false,
+	Flag = "WalkSpeedToggle",
+	Callback = function(Value)
+		walkSpeedEnabled = Value
+		if not Value and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+			LocalPlayer.Character.Humanoid.WalkSpeed = originalWalkSpeed
+		end
+	end,
+})
+
+local WalkSpeedSlider = PlayerTab:CreateSlider({
+	Name = "Walkspeed Value",
+	Range = {16, 200},
+	Increment = 5,
+	CurrentValue = 16,
+	Flag = "WalkSpeedSlider",
+	Callback = function(Value)
+		walkSpeedValue = Value
+	end,
+})
+
+-- Player Tab - Auto Respawn Section
+local AutoRespawnSection = PlayerTab:CreateSection("Auto Respawn")
+
+local AutoRespawnToggle = PlayerTab:CreateToggle({
+	Name = "Enable Auto Respawn",
+	CurrentValue = false,
+	Flag = "AutoRespawnToggle",
+	Callback = function(Value)
+		autoRespawnEnabled = Value
+		playerDead = false
+	end,
+})
+
+
+Luna:Notification({
+	Title = "Fryzer Hub Loaded",
+	Content = "Script loaded with all features!",
+	Icon = "check_circle",
+	ImageSource = "Material"
+})
