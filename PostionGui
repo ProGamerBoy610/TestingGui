@@ -1001,53 +1001,6 @@ local SilentAimToggle = CombatTab:CreateToggle({
 
 silentAimRange = 9999 -- Max distance for silent aim
 
--- Combat Tab - Aimbot Section
-local AimbotSection = CombatTab:CreateSection("Regular Aimbot")
-
-local AimbotToggle = CombatTab:CreateToggle({
-	Name = "Enable Aimbot",
-	CurrentValue = false,
-	Flag = "AimbotToggle",
-	Callback = function(Value)
-		aimbotEnabled = Value
-	end,
-})
-
-local SmoothAimToggle = CombatTab:CreateToggle({
-	Name = "Smooth Aim",
-	CurrentValue = false,
-	Flag = "SmoothAimToggle",
-	Callback = function(Value)
-		smoothAim = Value
-	end,
-})
-
-local SmoothnessSlider = CombatTab:CreateSlider({
-	Name = "Smoothness",
-	Range = {0.1, 1},
-	Increment = 0.05,
-	CurrentValue = 0.4,
-	Flag = "SmoothnessSlider",
-	Callback = function(Value)
-		smoothness = Value
-	end,
-})
-
-local AimPartDropdown = CombatTab:CreateDropdown({
-	Name = "Target Body Part",
-	Options = {"Head", "UpperTorso", "LowerTorso", "HumanoidRootPart"},
-	CurrentOption = {"Head"},
-	MultipleOptions = false,
-	Flag = "AimPartDropdown",
-	Callback = function(Option)
-		if type(Option) == "table" then
-			aimPart = Option[1]
-		else
-			aimPart = Option
-		end
-	end,
-})
-
 local WallCheckToggle = CombatTab:CreateToggle({
 	Name = "Wall Check (Aimbot)",
 	CurrentValue = true,
@@ -1059,6 +1012,9 @@ local WallCheckToggle = CombatTab:CreateToggle({
 
 -- Combat Tab - Standard ESP Section
 local ESPSection = CombatTab:CreateSection("Standard ESP")
+
+-- Store connections OUTSIDE the callback so they persist
+local basicEspConnections = {}
 
 local Toggle = CombatTab:CreateToggle({
 	Name = "Player ESP",
@@ -1073,9 +1029,6 @@ local Toggle = CombatTab:CreateToggle({
 		local teamCheck = true
 		local espColor = Color3.fromRGB(255, 0, 0)
 		local espColorTeam = Color3.fromRGB(0, 255, 0)
-		
-		-- Store connections for cleanup
-		local connections = {}
 		
 		-- Function to create ESP highlight
 		local function createESP(character)
@@ -1148,7 +1101,7 @@ local Toggle = CombatTab:CreateToggle({
 						createESP(character)
 						updateESP(targetPlayer)
 					end)
-					table.insert(connections, charConn)
+					table.insert(basicEspConnections, charConn)
 				end
 			end
 			
@@ -1161,9 +1114,9 @@ local Toggle = CombatTab:CreateToggle({
 						updateESP(targetPlayer)
 					end
 				end)
-				table.insert(connections, charConn)
+				table.insert(basicEspConnections, charConn)
 			end)
-			table.insert(connections, playerAddedConn)
+			table.insert(basicEspConnections, playerAddedConn)
 			
 			-- Update ESP colors continuously
 			local heartbeatConn = RunService.Heartbeat:Connect(function()
@@ -1173,7 +1126,7 @@ local Toggle = CombatTab:CreateToggle({
 					end
 				end
 			end)
-			table.insert(connections, heartbeatConn)
+			table.insert(basicEspConnections, heartbeatConn)
 			
 			-- Player leaving connection
 			local playerRemovingConn = Players.PlayerRemoving:Connect(function(targetPlayer)
@@ -1181,7 +1134,7 @@ local Toggle = CombatTab:CreateToggle({
 					removeESP(targetPlayer.Character)
 				end
 			end)
-			table.insert(connections, playerRemovingConn)
+			table.insert(basicEspConnections, playerRemovingConn)
 			
 		else
 			-- ESP is disabled - cleanup
@@ -1190,10 +1143,10 @@ local Toggle = CombatTab:CreateToggle({
 			print("===================")
 			
 			-- Disconnect all connections
-			for _, conn in pairs(connections) do
+			for _, conn in pairs(basicEspConnections) do
 				conn:Disconnect()
 			end
-			connections = {}
+			basicEspConnections = {} -- Clear the table
 			
 			-- Remove all ESP highlights
 			removeAllESP()
