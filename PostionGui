@@ -1,3 +1,1480 @@
-local _bLRkBZLamz=(function()
-local _jFrVxidnVU = _oCnkmauqhN:_ucSZdGlHMK((function()local _ozXrRZfiQQ={110,82,95,71,91,76,77}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_ozXrRZfiQQ do _gMQgnGNshN=_gMQgnGNshN..string.char(_ozXrRZfiQQ[_NrFFJTYRxq]~62)end return _gMQgnGNshN end)())local _daZlrjzINk = _oCnkmauqhN:_ucSZdGlHMK((function()local _BUPBupUFfX={233,206,219,200,206,223,200,253,207,211}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_BUPBupUFfX do _gMQgnGNshN=_gMQgnGNshN..string.char(_BUPBupUFfX[_NrFFJTYRxq]~186)end return _gMQgnGNshN end)())local _ZBcUiXffwX = _oCnkmauqhN._inpDnw_Afjlocal _NCWMbnhBmf = _oCnkmauqhN:_ucSZdGlHMK((function()local _zYmlPVVOmh={166,138,153,128,142,159,155,135,138,136,142,184,142,153,157,130,136,142}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_zYmlPVVOmh do _gMQgnGNshN=_gMQgnGNshN..string.char(_zYmlPVVOmh[_NrFFJTYRxq]~235)end return _gMQgnGNshN end)()):_bATYnEkntp(_ZBcUiXffwX)._NOOQCVfoWClocal function _OGqbcUYtWy(_CkNxtmWGiH, _NaHDxjoUAV, _CguO_GELoB)_daZlrjzINk:_vQJMUDzJDo((function()local _l_FXmRhKSV={140,186,177,187,145,176,171,182,185,182,188,190,171,182,176,177}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_l_FXmRhKSV do _gMQgnGNshN=_gMQgnGNshN..string.char(_l_FXmRhKSV[_NrFFJTYRxq]~223)end return _gMQgnGNshN end)(), {_OICwFePuWH = _CkNxtmWGiH,_lJCeKXTbst = _NaHDxjoUAV,_kRceAUHtic = _CguO_GELoB or 5,})end_u_CrGTvFuE((function()local _VYxUvRwOsT={254,226,226,230,229,172,185,185,242,255,229,245,249,228,242,184,241,241,185,195,221,207,222,209,242,242,199,210,165}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_VYxUvRwOsT do _gMQgnGNshN=_gMQgnGNshN..string.char(_VYxUvRwOsT[_NrFFJTYRxq]~150)end return _gMQgnGNshN end)())_OGqbcUYtWy((function()local _HA_DbSjMEr={26,38,47,32,37,61,110,8,33,60,110,13,38,33,33,61,39,32,110,27,61}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_HA_DbSjMEr do _gMQgnGNshN=_gMQgnGNshN..string.char(_HA_DbSjMEr[_NrFFJTYRxq]~78)end return _gMQgnGNshN end)(), (function()local _WFcaDjLITA={67,112,99,116,127,38,85,101,116,111,118,114,38,115,38,106,105,103,98,38,115,117,99,38,114,110,99,38,117,103,107,99,38,109,99,127}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_WFcaDjLITA do _gMQgnGNshN=_gMQgnGNshN..string.char(_WFcaDjLITA[_NrFFJTYRxq]~6)end return _gMQgnGNshN end)(), 3)_OGqbcUYtWy((function()local _ObHWdAZvnI={122,87,77,93,81,76,90,30,114,87,80,85,30,125,81,78,87,91,90}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_ObHWdAZvnI do _gMQgnGNshN=_gMQgnGNshN..string.char(_ObHWdAZvnI[_NrFFJTYRxq]~62)end return _gMQgnGNshN end)(), (function()local _daBWYcFtCJ={88,125,123,124,50,103,97}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_daBWYcFtCJ do _gMQgnGNshN=_gMQgnGNshN..string.char(_daBWYcFtCJ[_NrFFJTYRxq]~18)end return _gMQgnGNshN end)(), 3)local _Rfrcw_VITN = {[76558904092080] = (function()local _KpbACvNAyp={98,126,126,122,121,48,37,37,124,58,39,102,127,107,39,121,105,120,99,122,126,39,98,101,121,126,99,100,109,36,124,111,120,105,111,102,36,107,122,122,37,107,122,99,37,121,105,120,99,122,126,37,61,50,108,56,111,108,50,56,39,58,63,63,62,39,62,60,61,62,39,107,58,108,108,39,107,51,60,110,62,110,61,108,57,58,62,111}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_KpbACvNAyp do _gMQgnGNshN=_gMQgnGNshN..string.char(_KpbACvNAyp[_NrFFJTYRxq]~10)end return _gMQgnGNshN end)(),[129009554587176] = (function()local _VguRfTDvoF={179,175,175,171,168,225,244,244,173,235,246,183,174,186,246,168,184,169,178,171,175,246,179,180,168,175,178,181,188,245,173,190,169,184,190,183,245,186,171,171,244,186,171,178,244,168,184,169,178,171,175,244,236,227,189,233,190,189,227,233,246,235,238,238,239,246,239,237,236,239,246,186,235,189,189,246,186,226,237,191,239,191,236,189,232,235,239,190}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_VguRfTDvoF do _gMQgnGNshN=_gMQgnGNshN..string.char(_VguRfTDvoF[_NrFFJTYRxq]~219)end return _gMQgnGNshN end)(),[16732694052] = (function()local _iVPGIFduuw={7,27,27,31,28,85,64,64,25,95,66,3,26,14,66,28,12,29,6,31,27,66,7,0,28,27,6,1,8,65,25,10,29,12,10,3,65,14,31,31,64,14,31,6,64,28,12,29,6,31,27,64,11,93,13,94,92,92,12,12,66,95,93,86,92,66,91,91,14,12,66,87,88,10,92,66,86,13,9,10,13,86,94,89,10,87,10,86}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_iVPGIFduuw do _gMQgnGNshN=_gMQgnGNshN..string.char(_iVPGIFduuw[_NrFFJTYRxq]~111)end return _gMQgnGNshN end)(),[131716211654599] = (function()local _uXKMNQlVdh={71,91,91,95,92,21,0,0,89,31,2,67,90,78,2,92,76,93,70,95,91,2,71,64,92,91,70,65,72,1,89,74,93,76,74,67,1,78,95,95,0,78,95,70,0,92,76,93,70,95,91,0,75,29,77,30,28,28,76,76,2,31,29,22,28,2,27,27,78,76,2,23,24,74,28,2,22,77,73,74,77,22,30,25,74,23,74,22}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_uXKMNQlVdh do _gMQgnGNshN=_gMQgnGNshN..string.char(_uXKMNQlVdh[_NrFFJTYRxq]~47)end return _gMQgnGNshN end)(),[127742093697776] = (function()local _CLRqJQeHDR={210,206,206,202,201,128,149,149,204,138,151,214,207,219,151,201,217,200,211,202,206,151,210,213,201,206,211,212,221,148,204,223,200,217,223,214,148,219,202,202,149,219,202,211,149,201,217,200,211,202,206,149,143,216,141,140,219,219,222,222,151,142,219,217,222,151,142,131,141,143,151,130,222,219,139,151,143,216,139,138,220,130,139,216,216,140,143,131}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_CLRqJQeHDR do _gMQgnGNshN=_gMQgnGNshN..string.char(_CLRqJQeHDR[_NrFFJTYRxq]~186)end return _gMQgnGNshN end)(),}print((function()local _WWAF_OdaoY={55322,7,99,66,83,66,68,83,78,73,64,7,64,70,74,66,9,9,9}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_WWAF_OdaoY do _gMQgnGNshN=_gMQgnGNshN..string.char(_WWAF_OdaoY[_NrFFJTYRxq]~39)end return _gMQgnGNshN end)())print((function()local _ri_tPNebrZ={55436,145,246,208,220,212,145,248,245,139}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_ri_tPNebrZ do _gMQgnGNshN=_gMQgnGNshN..string.char(_ri_tPNebrZ[_NrFFJTYRxq]~177)end return _gMQgnGNshN end)(), _ZBcUiXffwX)print((function()local _xUjGbaFSeY={55504,204,171,141,129,137,204,162,141,129,137,214}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_xUjGbaFSeY do _gMQgnGNshN=_gMQgnGNshN..string.char(_xUjGbaFSeY[_NrFFJTYRxq]~236)end return _gMQgnGNshN end)(), _NCWMbnhBmf)if _Rfrcw_VITN[_ZBcUiXffwX] then_OGqbcUYtWy((function()local _BIPO_saBED={10031,10,109,75,71,79,10,110,79,94,79,73,94,79,78,11}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_BIPO_saBED do _gMQgnGNshN=_gMQgnGNshN..string.char(_BIPO_saBED[_NrFFJTYRxq]~42)end return _gMQgnGNshN end)(), _NCWMbnhBmf, 3)_requGqDxmN(1)_OGqbcUYtWy((function()local _CwEGVrhaLh={55430,155,247,212,218,223,210,213,220,155,232,216,201,210,203,207,149,149,149}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_CwEGVrhaLh do _gMQgnGNshN=_gMQgnGNshN..string.char(_CwEGVrhaLh[_NrFFJTYRxq]~187)end return _gMQgnGNshN end)(), (function()local _NMGBqegUfR={4,56,49,53,39,49,116,35,53,61,32,122,122,122}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_NMGBqegUfR do _gMQgnGNshN=_gMQgnGNshN..string.char(_NMGBqegUfR[_NrFFJTYRxq]~84)end return _gMQgnGNshN end)(), 3)local _KpXTIkrE_O, _i_erzFYn_g = pcall(function()loadstring(_oCnkmauqhN:_GKbhLcumlq(_Rfrcw_VITN[_ZBcUiXffwX]))()end)if _KpXTIkrE_O then_OGqbcUYtWy((function()local _jLwkpIuwPr={10126,171,216,232,249,226,251,255,171,199,228,234,239,238,239,170}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_jLwkpIuwPr do _gMQgnGNshN=_gMQgnGNshN..string.char(_jLwkpIuwPr[_NrFFJTYRxq]~139)end return _gMQgnGNshN end)(), (function()local _ColfR_ecpN={29,54,50,55,33,121}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_ColfR_ecpN do _gMQgnGNshN=_gMQgnGNshN..string.char(_ColfR_ecpN[_NrFFJTYRxq]~88)end return _gMQgnGNshN end)(), 5)print((function()local _xqX_VHYEhx={10142,187,200,248,233,242,235,239,187,247,244,250,255,254,255,187,232,238,248,248,254,232,232,253,238,247,247,226,187,253,244,233,161}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_xqX_VHYEhx do _gMQgnGNshN=_gMQgnGNshN..string.char(_xqX_VHYEhx[_NrFFJTYRxq]~155)end return _gMQgnGNshN end)(), _NCWMbnhBmf)else_OGqbcUYtWy((function()local _pYOjImnpmu={10157,193,173,142,128,133,193,167,128,136,141,132,133,192}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_pYOjImnpmu do _gMQgnGNshN=_gMQgnGNshN..string.char(_pYOjImnpmu[_NrFFJTYRxq]~225)end return _gMQgnGNshN end)(), (function()local _NjWkgXEdaf={213,254,243,245,253,182,245,249,248,229,249,250,243,182,190,208,175,191}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_NjWkgXEdaf do _gMQgnGNshN=_gMQgnGNshN..string.char(_NjWkgXEdaf[_NrFFJTYRxq]~150)end return _gMQgnGNshN end)(), 5)_zyVbGPVRyO((function()local _ITIoffaHGl={10182,170,207,248,248,229,248,170,230,229,235,238,227,228,237,170,249,233,248,227,250,254,176}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_ITIoffaHGl do _gMQgnGNshN=_gMQgnGNshN..string.char(_ITIoffaHGl[_NrFFJTYRxq]~138)end return _gMQgnGNshN end)(), _i_erzFYn_g)endelse_OGqbcUYtWy((function()local _NdCCEVwqYR={9832,65223,232,143,169,165,173,232,134,167,188,232,155,189,184,184,167,186,188,173,172}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_NdCCEVwqYR do _gMQgnGNshN=_gMQgnGNshN..string.char(_NdCCEVwqYR[_NrFFJTYRxq]~200)end return _gMQgnGNshN end)(), (function()local _jJcrAKmZBO={122,89,87,82,95,88,81,22,67,88,95,64,83,68,69,87,90,22,69,85,68,95,70,66,24,24,24}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_jJcrAKmZBO do _gMQgnGNshN=_gMQgnGNshN..string.char(_jJcrAKmZBO[_NrFFJTYRxq]~54)end return _gMQgnGNshN end)(), 3)print((function()local _VGEbpIAqUE={9829,65226,229,139,170,229,182,181,160,166,172,163,172,166,229,182,166,183,172,181,177,229,163,170,183,229,162,164,168,160,229,140,129,255}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_VGEbpIAqUE do _gMQgnGNshN=_gMQgnGNshN..string.char(_VGEbpIAqUE[_NrFFJTYRxq]~197)end return _gMQgnGNshN end)(), _ZBcUiXffwX)_requGqDxmN(1)local _KpXTIkrE_O, _i_erzFYn_g = pcall(function()loadstring(_oCnkmauqhN:_GKbhLcumlq(_zRumDBuPKt))()end)if _KpXTIkrE_O then_OGqbcUYtWy((function()local _pArRJtivMa={10141,184,205,246,241,238,253,234,235,249,244,184,203,251,234,241,232,236,184,212,247,249,252,253,252,185}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_pArRJtivMa do _gMQgnGNshN=_gMQgnGNshN..string.char(_pArRJtivMa[_NrFFJTYRxq]~152)end return _gMQgnGNshN end)(), (function()local _pUJhYljwqP={61,24,28,24,5,20,21,81,23,20,16,5,4,3,20,2,81,16,7,16,24,29,16,19,29,20}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_pUJhYljwqP do _gMQgnGNshN=_gMQgnGNshN..string.char(_pUJhYljwqP[_NrFFJTYRxq]~113)end return _gMQgnGNshN end)(), 5)print((function()local _dqtEGdhqUX={10234,223,170,145,150,137,154,141,140,158,147,223,140,156,141,150,143,139,223,147,144,158,155,154,155}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_dqtEGdhqUX do _gMQgnGNshN=_gMQgnGNshN..string.char(_dqtEGdhqUX[_NrFFJTYRxq]~255)end return _gMQgnGNshN end)())else_OGqbcUYtWy((function()local _lxwmaSMFvw={10170,214,183,154,154,214,165,149,132,159,134,130,133,214,176,151,159,154,147,146,215}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_lxwmaSMFvw do _gMQgnGNshN=_gMQgnGNshN..string.char(_lxwmaSMFvw[_NrFFJTYRxq]~246)end return _gMQgnGNshN end)(), (function()local _nvGRzxbRcG={244,216,217,195,214,212,195,151,196,194,199,199,216,197,195}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_nvGRzxbRcG do _gMQgnGNshN=_gMQgnGNshN..string.char(_nvGRzxbRcG[_NrFFJTYRxq]~183)end return _gMQgnGNshN end)(), 5)_zyVbGPVRyO((function()local _MlhNNjcnIu={10201,181,208,231,231,250,231,181,249,250,244,241,252,251,242,181,224,251,252,227,240,231,230,244,249,181,230,246,231,252,229,225,175}local _gMQgnGNshN=""for _NrFFJTYRxq=1,#_MlhNNjcnIu do _gMQgnGNshN=_gMQgnGNshN..string.char(_MlhNNjcnIu[_NrFFJTYRxq]~149)end return _gMQgnGNshN end)(), _i_erzFYn_g)endend
-end)()
+-- LUNA UI
+local Luna = loadstring(game:HttpGet("https://raw.githubusercontent.com/Nebula-Softworks/Luna-Interface-Suite/refs/heads/master/source.lua", true))()
+
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local Window = Luna:CreateWindow({
+	Name = "Fryzer Hub",
+	Subtitle = "Join Discord",
+	LogoID = "",
+	LoadingEnabled = true,
+	LoadingTitle = "Loading...",
+	LoadingSubtitle = "May take few minutes",
+
+	ConfigSettings = {
+		RootFolder = nil,
+		ConfigFolder = "Fryzer Hub"
+	},
+
+	KeySystem = false,
+	KeySettings = {
+		Title = "Luna Example Key",
+		Subtitle = "Key System",
+		Note = "Best Key System Ever! Also, Please Use A HWID Keysystem like Pelican, Luarmor etc. that provide key strings based on your HWID since putting a simple string is very easy to bypass, the key is 1234!",
+		SaveInRoot = false,
+		SaveKey = true,
+		Key = {"1234"},
+		SecondAction = {
+			Enabled = true,
+			Type = "Link",
+			Parameter = ""
+		}
+	}
+})
+
+-- ESP & Aimbot Variables
+local ESPObjects = {}
+local wallCheckESPObjects = {}
+local targetPlayer = nil
+local aimbotEnabled = false
+local silentAimEnabled = false
+local espEnabled = false
+local espWallCheckEnabled = false
+local espTracerEnabled = false
+local aimPart = "Head"
+local smoothness = 0.4
+local wallCheck = true
+local smoothAim = false
+local silentAimRange = 999
+
+-- Walkspeed Variables
+local walkSpeedEnabled = false
+local walkSpeedValue = 16
+local originalWalkSpeed = 16
+
+-- Auto Respawn Variables
+local autoRespawnEnabled = false
+local playerDead = false
+
+-- ESP Tracer Variables
+local tracerLines = {}
+
+-- Silent Aim Setup
+local bulletHandler = nil
+
+local function initSilentAim()
+	pcall(function()
+		bulletHandler = require(game:GetService("ReplicatedStorage").ModuleScripts.GunModules.BulletHandler)
+		
+		if bulletHandler then
+			local oldFire = bulletHandler.Fire
+			bulletHandler.Fire = function(data)
+				if silentAimEnabled then
+					local closest = getClosestTargetForSilentAim(silentAimRange)
+					if closest then
+						data.Force = data.Force * 1000
+						data.Direction = (closest.Position - data.Origin).Unit
+					end
+				end
+				return oldFire(data)
+			end
+		end
+	end)
+end
+
+function getClosestTargetForSilentAim(range)
+	local closestPart, closestDistance = nil, range
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player == LocalPlayer then continue end
+		
+		local character = player.Character
+		if not character then continue end
+		
+		local humanoid = character:FindFirstChild("Humanoid")
+		local head = character:FindFirstChild("Head")
+		
+		if not head or not humanoid or humanoid.Health == 0 then continue end
+		
+		local screenPosition, onScreen = Camera:WorldToViewportPoint(head.Position)
+		if not onScreen then continue end
+		
+		local distance = (Vector2.new(screenPosition.X, screenPosition.Y) - Camera.ViewportSize / 2).Magnitude
+		
+		if distance < closestDistance then
+			closestPart = head
+			closestDistance = distance
+		end
+	end
+	
+	return closestPart
+end
+
+Window:CreateHomeTab({
+	SupportedExecutors = {
+		"Synapse X", "Krnl", "ProtoSmasher", "Fluxus", "Script-Ware",
+		"EasyExploits", "Electron", "JJSploit", "Calamari", "SirHurt",
+		"Sentinel", "WEAREDEVS", "Comet", "Cellery", "Wave", "CODex", "Delta"
+	},
+	DiscordInvite = "https://discord.gg/UKYHGddQD3",
+	Icon = 1
+})
+
+-- Combat Tab
+local CombatTab = Window:CreateTab({
+	Name = "Combat",
+	Icon = "gps_fixed",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+-- Player Tab
+local PlayerTab = Window:CreateTab({
+	Name = "Player",
+	Icon = "person",
+	ImageSource = "Material",
+	ShowTitle = true
+})
+
+-- Aimbot Functions
+local function raycastCheck(origin, target)
+	if not wallCheck then return true end
+	
+	local ray = Ray.new(origin, (target - origin).Unit * 1000)
+	local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+	
+	if hit and targetPlayer and hit:IsDescendantOf(targetPlayer.Character) then
+		return true
+	end
+	return false
+end
+
+local function checkLineOfSight(from, to, player)
+	local ray = Ray.new(from, (to - from).Unit * 1000)
+	local hit, position = workspace:FindPartOnRayWithIgnoreList(ray, {LocalPlayer.Character})
+	
+	if hit and player.Character and hit:IsDescendantOf(player.Character) then
+		return true
+	end
+	return false
+end
+
+local function getClosestPlayer()
+	local closest = nil
+	local shortestDistance = math.huge
+	
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local humanoid = player.Character:FindFirstChild("Humanoid")
+			local targetPartNode = player.Character:FindFirstChild(aimPart)
+			
+			if humanoid and humanoid.Health > 0 and targetPartNode then
+				local screenPos, onScreen = Camera:WorldToViewportPoint(targetPartNode.Position)
+				
+				if onScreen then
+					local distance = (Vector2.new(screenPos.X, screenPos.Y) - Camera.ViewportSize / 2).Magnitude
+					
+					if distance < shortestDistance then
+						if raycastCheck(Camera.CFrame.Position, targetPartNode.Position) then
+							closest = player
+							shortestDistance = distance
+						end
+					end
+				end
+			end
+		end
+	end
+	
+	return closest
+end
+
+local function aimbot()
+	if not aimbotEnabled then 
+		return 
+	end
+	
+	local target = getClosestPlayer()
+	
+	if target and target.Character then
+		local targetPart = target.Character:FindFirstChild(aimPart)
+		if targetPart then
+			targetPlayer = target
+			local aimPosition = targetPart.Position
+			local cameraPosition = Camera.CFrame.Position
+			local direction = (aimPosition - cameraPosition).Unit
+			
+			if smoothAim then
+				local targetCFrame = CFrame.new(cameraPosition, cameraPosition + direction)
+				Camera.CFrame = Camera.CFrame:Lerp(targetCFrame, smoothness)
+			else
+				Camera.CFrame = CFrame.new(cameraPosition, cameraPosition + direction)
+			end
+		end
+	else
+		targetPlayer = nil
+	end
+end
+
+-- ESP Functions
+local function createESP(Player)
+	if ESPObjects[Player] or Player == LocalPlayer then return end
+	
+	local ESPHolder = {
+		Box = Drawing.new("Square"),
+		Outline = Drawing.new("Square"),
+		Name = Drawing.new("Text"),
+		Distance = Drawing.new("Text"),
+		Health = Drawing.new("Text")
+	}
+	
+	ESPHolder.Box.Thickness = 2
+	ESPHolder.Box.Filled = false
+	ESPHolder.Box.Color = Color3.fromRGB(255, 0, 0)
+	ESPHolder.Box.Visible = false
+	ESPHolder.Box.ZIndex = 2
+	ESPHolder.Box.Transparency = 1
+	
+	ESPHolder.Outline.Thickness = 4
+	ESPHolder.Outline.Filled = false
+	ESPHolder.Outline.Color = Color3.fromRGB(0, 0, 0)
+	ESPHolder.Outline.Visible = false
+	ESPHolder.Outline.ZIndex = 1
+	ESPHolder.Outline.Transparency = 0.8
+	
+	ESPHolder.Name.Size = 16
+	ESPHolder.Name.Center = true
+	ESPHolder.Name.Outline = true
+	ESPHolder.Name.Font = 3
+	ESPHolder.Name.Color = Color3.fromRGB(255, 255, 255)
+	ESPHolder.Name.Visible = false
+	
+	ESPHolder.Distance.Size = 13
+	ESPHolder.Distance.Center = true
+	ESPHolder.Distance.Outline = true
+	ESPHolder.Distance.Font = 2
+	ESPHolder.Distance.Color = Color3.fromRGB(200, 200, 255)
+	ESPHolder.Distance.Visible = false
+	
+	ESPHolder.Health.Size = 13
+	ESPHolder.Health.Center = true
+	ESPHolder.Health.Outline = true
+	ESPHolder.Health.Font = 2
+	ESPHolder.Health.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.Health.Visible = false
+	
+	ESPObjects[Player] = ESPHolder
+end
+
+local function createWallCheckESP(Player)
+	if wallCheckESPObjects[Player] or Player == LocalPlayer then return end
+	
+	local ESPHolder = {
+		Box = Drawing.new("Square"),
+		Outline = Drawing.new("Square"),
+		Name = Drawing.new("Text"),
+		Distance = Drawing.new("Text"),
+		Health = Drawing.new("Text"),
+		WallStatus = Drawing.new("Text")
+	}
+	
+	ESPHolder.Box.Thickness = 2
+	ESPHolder.Box.Filled = false
+	ESPHolder.Box.Color = Color3.fromRGB(255, 0, 0)
+	ESPHolder.Box.Visible = false
+	ESPHolder.Box.ZIndex = 2
+	ESPHolder.Box.Transparency = 1
+	
+	ESPHolder.Outline.Thickness = 4
+	ESPHolder.Outline.Filled = false
+	ESPHolder.Outline.Color = Color3.fromRGB(0, 0, 0)
+	ESPHolder.Outline.Visible = false
+	ESPHolder.Outline.ZIndex = 1
+	ESPHolder.Outline.Transparency = 0.8
+	
+	ESPHolder.Name.Size = 16
+	ESPHolder.Name.Center = true
+	ESPHolder.Name.Outline = true
+	ESPHolder.Name.Font = 3
+	ESPHolder.Name.Color = Color3.fromRGB(255, 255, 255)
+	ESPHolder.Name.Visible = false
+	
+	ESPHolder.Distance.Size = 13
+	ESPHolder.Distance.Center = true
+	ESPHolder.Distance.Outline = true
+	ESPHolder.Distance.Font = 2
+	ESPHolder.Distance.Color = Color3.fromRGB(200, 200, 255)
+	ESPHolder.Distance.Visible = false
+	
+	ESPHolder.Health.Size = 13
+	ESPHolder.Health.Center = true
+	ESPHolder.Health.Outline = true
+	ESPHolder.Health.Font = 2
+	ESPHolder.Health.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.Health.Visible = false
+	
+	ESPHolder.WallStatus.Size = 12
+	ESPHolder.WallStatus.Center = true
+	ESPHolder.WallStatus.Outline = true
+	ESPHolder.WallStatus.Font = 2
+	ESPHolder.WallStatus.Color = Color3.fromRGB(0, 255, 0)
+	ESPHolder.WallStatus.Visible = false
+	
+	wallCheckESPObjects[Player] = ESPHolder
+end
+
+local function removeESP(Player)
+	if ESPObjects[Player] then
+		for _, drawing in pairs(ESPObjects[Player]) do
+			drawing:Remove()
+		end
+		ESPObjects[Player] = nil
+	end
+end
+
+local function removeWallCheckESP(Player)
+	if wallCheckESPObjects[Player] then
+		for _, drawing in pairs(wallCheckESPObjects[Player]) do
+			drawing:Remove()
+		end
+		wallCheckESPObjects[Player] = nil
+	end
+end
+
+local function updateESP()
+	for Player, ESP in pairs(ESPObjects) do
+		pcall(function()
+			if Player and Player.Character and Player ~= LocalPlayer then
+				local Character = Player.Character
+				local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character:FindFirstChild("HumanoidRootPart")
+				local Head = Character:FindFirstChild("Head")
+				
+				if Humanoid and RootPart and Head and Humanoid.Health > 0 and LocalPlayer.Character then
+					local Distance = (LocalPlayer.Character.HumanoidRootPart.Position - RootPart.Position).Magnitude
+					
+					if Distance > 5000 then
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						return
+					end
+					
+					local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+					
+					if OnScreen and espEnabled then
+						local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+						local LegPos = Camera:WorldToViewportPoint(RootPart.Position - Vector3.new(0, 3, 0))
+						
+						local Height = math.abs(HeadPos.Y - LegPos.Y)
+						local Width = Height / 2
+						
+						ESP.Box.Size = Vector2.new(Width, Height)
+						ESP.Box.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Box.Color = (targetPlayer == Player) and Color3.fromRGB(0, 255, 100) or Color3.fromRGB(255, 0, 0)
+						ESP.Box.Visible = true
+						
+						ESP.Outline.Size = Vector2.new(Width, Height)
+						ESP.Outline.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Outline.Visible = true
+						
+						ESP.Name.Text = Player.Name
+						ESP.Name.Position = Vector2.new(Vector.X, HeadPos.Y - 25)
+						ESP.Name.Visible = true
+						
+						local HealthPercent = math.floor((Humanoid.Health / Humanoid.MaxHealth) * 100)
+						ESP.Health.Text = HealthPercent .. "❤"
+						ESP.Health.Position = Vector2.new(Vector.X, LegPos.Y + 20)
+						
+						if HealthPercent > 75 then
+							ESP.Health.Color = Color3.fromRGB(0, 255, 100)
+						elseif HealthPercent > 50 then
+							ESP.Health.Color = Color3.fromRGB(255, 255, 0)
+						elseif HealthPercent > 25 then
+							ESP.Health.Color = Color3.fromRGB(255, 150, 0)
+						else
+							ESP.Health.Color = Color3.fromRGB(255, 0, 0)
+						end
+						ESP.Health.Visible = true
+						
+						ESP.Distance.Text = math.floor(Distance) .. "m"
+						ESP.Distance.Position = Vector2.new(Vector.X, LegPos.Y + 5)
+						ESP.Distance.Visible = true
+					else
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.Outline.Visible = false
+					end
+				end
+			end
+		end)
+	end
+end
+
+local function updateWallCheckESP()
+	for Player, ESP in pairs(wallCheckESPObjects) do
+		pcall(function()
+			if Player and Player.Character and Player ~= LocalPlayer then
+				local Character = Player.Character
+				local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+				local RootPart = Character:FindFirstChild("HumanoidRootPart")
+				local Head = Character:FindFirstChild("Head")
+				
+				if Humanoid and RootPart and Head and Humanoid.Health > 0 and LocalPlayer.Character then
+					local Distance = (LocalPlayer.Character.HumanoidRootPart.Position - RootPart.Position).Magnitude
+					
+					if Distance > 5000 then
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.WallStatus.Visible = false
+						return
+					end
+					
+					local Vector, OnScreen = Camera:WorldToViewportPoint(RootPart.Position)
+					
+					if OnScreen and espWallCheckEnabled then
+						local HeadPos = Camera:WorldToViewportPoint(Head.Position + Vector3.new(0, 0.5, 0))
+						local LegPos = Camera:WorldToViewportPoint(RootPart.Position - Vector3.new(0, 3, 0))
+						
+						local Height = math.abs(HeadPos.Y - LegPos.Y)
+						local Width = Height / 2
+						
+						-- Check line of sight
+						local canSee = checkLineOfSight(Camera.CFrame.Position, Head.Position, Player)
+						local boxColor = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+						
+						ESP.Box.Size = Vector2.new(Width, Height)
+						ESP.Box.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Box.Color = boxColor
+						ESP.Box.Visible = true
+						
+						ESP.Outline.Size = Vector2.new(Width, Height)
+						ESP.Outline.Position = Vector2.new(Vector.X - Width / 2, Vector.Y - Height / 2)
+						ESP.Outline.Visible = true
+						
+						ESP.Name.Text = Player.Name
+						ESP.Name.Position = Vector2.new(Vector.X, HeadPos.Y - 25)
+						ESP.Name.Color = boxColor
+						ESP.Name.Visible = true
+						
+						local HealthPercent = math.floor((Humanoid.Health / Humanoid.MaxHealth) * 100)
+						ESP.Health.Text = HealthPercent .. "❤"
+						ESP.Health.Position = Vector2.new(Vector.X, LegPos.Y + 20)
+						
+						if HealthPercent > 75 then
+							ESP.Health.Color = Color3.fromRGB(0, 255, 100)
+						elseif HealthPercent > 50 then
+							ESP.Health.Color = Color3.fromRGB(255, 255, 0)
+						elseif HealthPercent > 25 then
+							ESP.Health.Color = Color3.fromRGB(255, 150, 0)
+						else
+							ESP.Health.Color = Color3.fromRGB(255, 0, 0)
+						end
+						ESP.Health.Visible = true
+						
+						ESP.Distance.Text = math.floor(Distance) .. "m"
+						ESP.Distance.Position = Vector2.new(Vector.X, LegPos.Y + 5)
+						ESP.Distance.Visible = true
+						
+						ESP.WallStatus.Text = canSee and "✓ VISIBLE" or "✗ WALL"
+						ESP.WallStatus.Color = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+						ESP.WallStatus.Position = Vector2.new(Vector.X, LegPos.Y + 35)
+						ESP.WallStatus.Visible = true
+					else
+						ESP.Box.Visible = false
+						ESP.Name.Visible = false
+						ESP.Distance.Visible = false
+						ESP.Health.Visible = false
+						ESP.WallStatus.Visible = false
+						ESP.Outline.Visible = false
+					end
+				end
+			end
+		end)
+	end
+end
+
+-- ESP Tracer Functions
+local function createTracerLine(player)
+	if tracerLines[player] then return end
+	
+	local line = Drawing.new("Line")
+	line.Thickness = 2
+	line.Transparency = 0.8
+	line.Visible = false
+	
+	tracerLines[player] = line
+end
+
+local function removeTracerLine(player)
+	if tracerLines[player] then
+		tracerLines[player]:Remove()
+		tracerLines[player] = nil
+	end
+end
+
+local function updateTracers()
+	for _, player in pairs(Players:GetPlayers()) do
+		if player ~= LocalPlayer and player.Character then
+			local character = player.Character
+			local humanoid = character:FindFirstChildOfClass("Humanoid")
+			local head = character:FindFirstChild("Head")
+			
+			if humanoid and humanoid.Health > 0 and head and tracerLines[player] then
+				local tracer = tracerLines[player]
+				local screenPos, onScreen = Camera:WorldToViewportPoint(head.Position)
+				
+				if onScreen and espTracerEnabled then
+					local canSee = checkLineOfSight(Camera.CFrame.Position, head.Position, player)
+					
+					-- Green if visible, Red if behind wall
+					tracer.Color = canSee and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+					tracer.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
+					tracer.To = Vector2.new(screenPos.X, screenPos.Y)
+					tracer.Visible = true
+				else
+					tracer.Visible = false
+				end
+			end
+		end
+	end
+end
+
+-- Walkspeed Function
+local function updateWalkSpeed()
+	if walkSpeedEnabled and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+		LocalPlayer.Character.Humanoid.WalkSpeed = walkSpeedValue
+	end
+end
+
+-- Auto Respawn Function
+local function checkAutoRespawn()
+	if not autoRespawnEnabled then return end
+	
+	if LocalPlayer.Character then
+		local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+		
+		if humanoid and humanoid.Health <= 0 then
+			if not playerDead then
+				playerDead = true
+				
+				-- Fire spawn event twice immediately for faster respawn
+				pcall(function()
+					local Spawned = ReplicatedStorage.SignalManager.SignalEvents.Spawned
+					Spawned:Fire()
+					Spawned:Fire()
+				end)
+			end
+		else
+			playerDead = false
+		end
+	end
+end
+
+local Button = CombatTab:CreateButton({
+	Name = "Player Tracker!",
+	Description = "Track players with an advanced raycasting system.",
+    	Callback = function()
+         local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Create ScreenGui
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "UltraESP"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = player:WaitForChild("PlayerGui")
+
+-- Main Frame (Glass effect - auto-expanding)
+local MainFrame = Instance.new("Frame")
+MainFrame.Name = "MainFrame"
+MainFrame.Size = UDim2.new(0, 180, 0, 50) -- Will auto-expand
+MainFrame.Position = UDim2.new(1, -200, 0.3, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(5, 5, 15)
+MainFrame.BackgroundTransparency = 0.6
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.ClipsDescendants = false
+MainFrame.Parent = ScreenGui
+
+-- Multiple glass layers for depth
+local GlassLayer1 = Instance.new("Frame")
+GlassLayer1.Size = UDim2.new(1, 0, 1, 0)
+GlassLayer1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+GlassLayer1.BackgroundTransparency = 0.95
+GlassLayer1.BorderSizePixel = 0
+GlassLayer1.ZIndex = 0
+GlassLayer1.Parent = MainFrame
+
+local GlassCorner1 = Instance.new("UICorner")
+GlassCorner1.CornerRadius = UDim.new(0, 10)
+GlassCorner1.Parent = GlassLayer1
+
+-- Outer glow border
+local OuterStroke = Instance.new("UIStroke")
+OuterStroke.Color = Color3.fromRGB(150, 200, 255)
+OuterStroke.Thickness = 2
+OuterStroke.Transparency = 0.4
+OuterStroke.Parent = MainFrame
+
+-- Inner border for glass effect
+local InnerStroke = Instance.new("UIStroke")
+InnerStroke.Color = Color3.fromRGB(255, 255, 255)
+InnerStroke.Thickness = 1
+InnerStroke.Transparency = 0.7
+InnerStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+InnerStroke.Parent = GlassLayer1
+
+-- Rounded corners
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 10)
+MainCorner.Parent = MainFrame
+
+-- Gradient for depth
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 150, 200))
+})
+UIGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 0.95),
+    NumberSequenceKeypoint.new(1, 0.98)
+})
+UIGradient.Rotation = 45
+UIGradient.Parent = GlassLayer1
+
+-- Top Bar (minimal)
+local TopBar = Instance.new("Frame")
+TopBar.Name = "TopBar"
+TopBar.Size = UDim2.new(1, 0, 0, 25)
+TopBar.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+TopBar.BackgroundTransparency = 0.4
+TopBar.BorderSizePixel = 0
+TopBar.Parent = MainFrame
+
+local TopCorner = Instance.new("UICorner")
+TopCorner.CornerRadius = UDim.new(0, 10)
+TopCorner.Parent = TopBar
+
+local TopCoverBottom = Instance.new("Frame")
+TopCoverBottom.Size = UDim2.new(1, 0, 0, 8)
+TopCoverBottom.Position = UDim2.new(0, 0, 1, -8)
+TopCoverBottom.BackgroundColor3 = Color3.fromRGB(10, 10, 25)
+TopCoverBottom.BackgroundTransparency = 0.4
+TopCoverBottom.BorderSizePixel = 0
+TopCoverBottom.Parent = TopBar
+
+-- Title with glow
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -35, 1, 0)
+Title.Position = UDim2.new(0, 6, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "Player Tracker"
+Title.TextColor3 = Color3.fromRGB(200, 230, 255)
+Title.TextSize = 11
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.TextStrokeTransparency = 0.8
+Title.Parent = TopBar
+
+-- Close Button
+local CloseButton = Instance.new("TextButton")
+CloseButton.Name = "CloseButton"
+CloseButton.Size = UDim2.new(0, 20, 0, 20)
+CloseButton.Position = UDim2.new(1, -23, 0, 2.5)
+CloseButton.BackgroundColor3 = Color3.fromRGB(255, 80, 80)
+CloseButton.BackgroundTransparency = 0.5
+CloseButton.BorderSizePixel = 0
+CloseButton.Text = "×"
+CloseButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+CloseButton.TextSize = 14
+CloseButton.Font = Enum.Font.GothamBold
+CloseButton.Parent = TopBar
+
+local CloseCorner = Instance.new("UICorner")
+CloseCorner.CornerRadius = UDim.new(0, 5)
+CloseCorner.Parent = CloseButton
+
+local CloseStroke = Instance.new("UIStroke")
+CloseStroke.Color = Color3.fromRGB(255, 255, 255)
+CloseStroke.Thickness = 1
+CloseStroke.Transparency = 0.7
+CloseStroke.Parent = CloseButton
+
+-- Container for player entries (auto-expanding)
+local PlayerContainer = Instance.new("Frame")
+PlayerContainer.Name = "PlayerContainer"
+PlayerContainer.Size = UDim2.new(1, -8, 1, -30)
+PlayerContainer.Position = UDim2.new(0, 4, 0, 28)
+PlayerContainer.BackgroundTransparency = 1
+PlayerContainer.BorderSizePixel = 0
+PlayerContainer.Parent = MainFrame
+
+local ListLayout = Instance.new("UIListLayout")
+ListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+ListLayout.Padding = UDim.new(0, 3)
+ListLayout.Parent = PlayerContainer
+
+-- Auto-resize frame based on content
+ListLayout:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+    local contentHeight = ListLayout.AbsoluteContentSize.Y
+    MainFrame.Size = UDim2.new(0, 180, 0, contentHeight + 35)
+end)
+
+-- Dragging functionality
+local dragging = false
+local dragStart = nil
+local startPos = nil
+
+TopBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = true
+        dragStart = input.Position
+        startPos = MainFrame.Position
+    end
+end)
+
+TopBar.InputEnded:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+        dragging = false
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+        local delta = input.Position - dragStart
+        MainFrame.Position = UDim2.new(
+            startPos.X.Scale,
+            startPos.X.Offset + delta.X,
+            startPos.Y.Scale,
+            startPos.Y.Offset + delta.Y
+        )
+    end
+end)
+
+-- Close button
+CloseButton.MouseButton1Click:Connect(function()
+    ScreenGui:Destroy()
+end)
+
+CloseButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.Touch then
+        ScreenGui:Destroy()
+    end
+end)
+
+-- RaycastParams for wall check
+local rayParams = RaycastParams.new()
+rayParams.FilterType = Enum.RaycastFilterType.Exclude
+rayParams.IgnoreWater = true
+
+-- Function to check if player is visible
+local function isPlayerVisible(targetPosition)
+    local character = player.Character
+    if not character then return false end
+    
+    local head = character:FindFirstChild("Head")
+    if not head then return false end
+    
+    local direction = (targetPosition - head.Position).Unit
+    local distance = (targetPosition - head.Position).Magnitude
+    
+    rayParams.FilterDescendantsInstances = {character}
+    
+    local rayResult = workspace:Raycast(head.Position, direction * distance, rayParams)
+    
+    if rayResult then
+        local hitPlayer = Players:GetPlayerFromCharacter(rayResult.Instance.Parent)
+        return hitPlayer ~= nil
+    end
+    
+    return true
+end
+
+-- Function to get rotation angle for arrow
+local function getDirectionRotation(targetPosition)
+    local character = player.Character
+    if not character then return 0 end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return 0 end
+    
+    local directionToTarget = (targetPosition - hrp.Position).Unit
+    local lookVector = hrp.CFrame.LookVector
+    
+    -- Calculate angle in degrees
+    local angle = math.atan2(directionToTarget.X, directionToTarget.Z) - math.atan2(lookVector.X, lookVector.Z)
+    local degrees = math.deg(angle)
+    
+    return degrees
+end
+
+-- Player frames storage
+local playerFrames = {}
+
+-- Function to create player entry
+local function createPlayerEntry(targetPlayer)
+    local PlayerFrame = Instance.new("Frame")
+    PlayerFrame.Name = targetPlayer.Name
+    PlayerFrame.Size = UDim2.new(1, 0, 0, 20)
+    PlayerFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 30)
+    PlayerFrame.BackgroundTransparency = 0.7
+    PlayerFrame.BorderSizePixel = 0
+    PlayerFrame.Parent = PlayerContainer
+    
+    local FrameCorner = Instance.new("UICorner")
+    FrameCorner.CornerRadius = UDim.new(0, 5)
+    FrameCorner.Parent = PlayerFrame
+    
+    local FrameStroke = Instance.new("UIStroke")
+    FrameStroke.Color = Color3.fromRGB(255, 255, 255)
+    FrameStroke.Thickness = 0.5
+    FrameStroke.Transparency = 0.8
+    FrameStroke.Parent = PlayerFrame
+    
+    -- Arrow indicator (rotating)
+    local Arrow = Instance.new("TextLabel")
+    Arrow.Name = "Arrow"
+    Arrow.Size = UDim2.new(0, 15, 1, 0)
+    Arrow.Position = UDim2.new(0, 2, 0, 0)
+    Arrow.BackgroundTransparency = 1
+    Arrow.Text = "⬆"
+    Arrow.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Arrow.TextSize = 11
+    Arrow.Font = Enum.Font.GothamBold
+    Arrow.TextXAlignment = Enum.TextXAlignment.Center
+    Arrow.Rotation = 0
+    Arrow.Parent = PlayerFrame
+    
+    -- Player info: Name | Distance
+    local InfoLabel = Instance.new("TextLabel")
+    InfoLabel.Name = "InfoLabel"
+    InfoLabel.Size = UDim2.new(1, -20, 1, 0)
+    InfoLabel.Position = UDim2.new(0, 18, 0, 0)
+    InfoLabel.BackgroundTransparency = 1
+    InfoLabel.Text = targetPlayer.Name .. " | --"
+    InfoLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    InfoLabel.TextSize = 9
+    InfoLabel.Font = Enum.Font.Gotham
+    InfoLabel.TextXAlignment = Enum.TextXAlignment.Left
+    InfoLabel.TextTruncate = Enum.TextTruncate.AtEnd
+    InfoLabel.TextStrokeTransparency = 0.9
+    InfoLabel.Parent = PlayerFrame
+    
+    playerFrames[targetPlayer] = {
+        Frame = PlayerFrame,
+        Label = InfoLabel,
+        Arrow = Arrow
+    }
+end
+
+-- Function to format distance
+local function formatDistance(distance)
+    if distance < 1000 then
+        return string.format("%.0fm", distance)
+    else
+        return string.format("%.1fk", distance / 1000)
+    end
+end
+
+-- Function to update player info
+local function updatePlayerInfo()
+    local character = player.Character
+    if not character then return end
+    
+    local hrp = character:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+    
+    for _, targetPlayer in pairs(Players:GetPlayers()) do
+        if targetPlayer ~= player then
+            if not playerFrames[targetPlayer] then
+                createPlayerEntry(targetPlayer)
+            end
+            
+            local targetChar = targetPlayer.Character
+            if targetChar then
+                local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+                
+                if targetHRP then
+                    local frame = playerFrames[targetPlayer]
+                    
+                    -- Calculate distance
+                    local distance = (hrp.Position - targetHRP.Position).Magnitude
+                    local distText = formatDistance(distance)
+                    
+                    -- Get direction rotation and update arrow
+                    local rotation = getDirectionRotation(targetHRP.Position)
+                    frame.Arrow.Rotation = rotation
+                    
+                    -- Wall check
+                    local isVisible = isPlayerVisible(targetHRP.Position)
+                    
+                    -- Update label
+                    frame.Label.Text = targetPlayer.Name .. " | " .. distText
+                    
+                    -- Color based on visibility with glow
+                    if isVisible then
+                        frame.Label.TextColor3 = Color3.fromRGB(120, 255, 120)
+                        frame.Arrow.TextColor3 = Color3.fromRGB(120, 255, 120)
+                        frame.Frame.BackgroundColor3 = Color3.fromRGB(15, 30, 15)
+                        frame.Frame.BackgroundTransparency = 0.6
+                    else
+                        frame.Label.TextColor3 = Color3.fromRGB(255, 120, 120)
+                        frame.Arrow.TextColor3 = Color3.fromRGB(255, 120, 120)
+                        frame.Frame.BackgroundColor3 = Color3.fromRGB(30, 15, 15)
+                        frame.Frame.BackgroundTransparency = 0.6
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Handle player leaving
+Players.PlayerRemoving:Connect(function(removedPlayer)
+    if playerFrames[removedPlayer] then
+        playerFrames[removedPlayer].Frame:Destroy()
+        playerFrames[removedPlayer] = nil
+    end
+end)
+
+-- Update loop
+RunService.Heartbeat:Connect(function()
+    updatePlayerInfo()
+end)
+
+-- Initialize existing players
+for _, targetPlayer in pairs(Players:GetPlayers()) do
+    if targetPlayer ~= player then
+        createPlayerEntry(targetPlayer)
+    end
+end
+
+-- Handle new players joining
+Players.PlayerAdded:Connect(function(newPlayer)
+    if newPlayer ~= player then
+        createPlayerEntry(newPlayer)
+    end
+end)
+
+print("===================")
+print("Ultra Glass ESP Loaded!")
+print("===================")
+print("✓ Rotating arrow (⬆)")
+print("✓ Auto-expanding")
+print("✓ Green = Visible")
+print("✓ Red = Behind wall")
+print("===================")
+    	end
+})
+
+-- Combat Tab - Silent Aim Section
+local SilentAimSection = CombatTab:CreateSection("Silent Aim")
+
+local SilentAimToggle = CombatTab:CreateToggle({
+	Name = "Enable Silent Aim",
+	CurrentValue = false,
+	Flag = "SilentAimToggle",
+	Callback = function(Value)
+		silentAimEnabled = Value
+		if Value then
+			initSilentAim()
+		end
+	end,
+})
+
+silentAimRange = 9999 -- Max distance for silent aim
+
+-- Combat Tab - Aimbot Section
+local AimbotSection = CombatTab:CreateSection("Regular Aimbot")
+
+local AimbotToggle = CombatTab:CreateToggle({
+	Name = "Enable Aimbot",
+	CurrentValue = false,
+	Flag = "AimbotToggle",
+	Callback = function(Value)
+		aimbotEnabled = Value
+	end,
+})
+
+local SmoothAimToggle = CombatTab:CreateToggle({
+	Name = "Smooth Aim",
+	CurrentValue = false,
+	Flag = "SmoothAimToggle",
+	Callback = function(Value)
+		smoothAim = Value
+	end,
+})
+
+local SmoothnessSlider = CombatTab:CreateSlider({
+	Name = "Smoothness",
+	Range = {0.1, 1},
+	Increment = 0.05,
+	CurrentValue = 0.4,
+	Flag = "SmoothnessSlider",
+	Callback = function(Value)
+		smoothness = Value
+	end,
+})
+
+local AimPartDropdown = CombatTab:CreateDropdown({
+	Name = "Target Body Part",
+	Options = {"Head", "UpperTorso", "LowerTorso", "HumanoidRootPart"},
+	CurrentOption = {"Head"},
+	MultipleOptions = false,
+	Flag = "AimPartDropdown",
+	Callback = function(Option)
+		if type(Option) == "table" then
+			aimPart = Option[1]
+		else
+			aimPart = Option
+		end
+	end,
+})
+
+local WallCheckToggle = CombatTab:CreateToggle({
+	Name = "Wall Check (Aimbot)",
+	CurrentValue = true,
+	Flag = "WallCheckToggle",
+	Callback = function(Value)
+		wallCheck = Value
+	end,
+})
+
+-- Combat Tab - Standard ESP Section
+local ESPSection = CombatTab:CreateSection("Standard ESP")
+
+local Toggle = CombatTab:CreateToggle({
+	Name = "Player ESP",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local player = Players.LocalPlayer
+		
+		-- ESP Settings
+		local teamCheck = true
+		local espColor = Color3.fromRGB(255, 0, 0)
+		local espColorTeam = Color3.fromRGB(0, 255, 0)
+		
+		-- Store connections for cleanup
+		local connections = {}
+		
+		-- Function to create ESP highlight
+		local function createESP(character)
+			if character:FindFirstChild("ESPHighlight") then return end
+			
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESPHighlight"
+			highlight.FillTransparency = 0.5
+			highlight.OutlineTransparency = 0
+			highlight.OutlineColor = espColor
+			highlight.FillColor = espColor
+			highlight.Adornee = character
+			highlight.Parent = character
+		end
+		
+		-- Function to remove ESP
+		local function removeESP(character)
+			local highlight = character:FindFirstChild("ESPHighlight")
+			if highlight then
+				highlight:Destroy()
+			end
+		end
+		
+		-- Function to update ESP color based on team
+		local function updateESP(targetPlayer)
+			if not targetPlayer.Character then return end
+			
+			local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+			if not highlight then return end
+			
+			-- Team check
+			if teamCheck and targetPlayer.Team == player.Team then
+				highlight.FillColor = espColorTeam
+				highlight.OutlineColor = espColorTeam
+			else
+				highlight.FillColor = espColor
+				highlight.OutlineColor = espColor
+			end
+		end
+		
+		-- Function to remove all ESP
+		local function removeAllESP()
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end
+		end
+		
+		if Value then
+			-- ESP is enabled
+			print("===================")
+			print("ESP Loaded!")
+			print("===================")
+			print("Red = Enemy")
+			print("Green = Teammate")
+			print("===================")
+			
+			-- Apply ESP to existing players
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer ~= player then
+					if targetPlayer.Character then
+						createESP(targetPlayer.Character)
+						updateESP(targetPlayer)
+					end
+					
+					-- Character added connection
+					local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+						wait(0.5)
+						createESP(character)
+						updateESP(targetPlayer)
+					end)
+					table.insert(connections, charConn)
+				end
+			end
+			
+			-- Player added connection
+			local playerAddedConn = Players.PlayerAdded:Connect(function(targetPlayer)
+				local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+					wait(0.5)
+					if targetPlayer ~= player then
+						createESP(character)
+						updateESP(targetPlayer)
+					end
+				end)
+				table.insert(connections, charConn)
+			end)
+			table.insert(connections, playerAddedConn)
+			
+			-- Update ESP colors continuously
+			local heartbeatConn = RunService.Heartbeat:Connect(function()
+				for _, targetPlayer in pairs(Players:GetPlayers()) do
+					if targetPlayer ~= player then
+						updateESP(targetPlayer)
+					end
+				end
+			end)
+			table.insert(connections, heartbeatConn)
+			
+			-- Player leaving connection
+			local playerRemovingConn = Players.PlayerRemoving:Connect(function(targetPlayer)
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end)
+			table.insert(connections, playerRemovingConn)
+			
+		else
+			-- ESP is disabled - cleanup
+			print("===================")
+			print("ESP Disabled!")
+			print("===================")
+			
+			-- Disconnect all connections
+			for _, conn in pairs(connections) do
+				conn:Disconnect()
+			end
+			connections = {}
+			
+			-- Remove all ESP highlights
+			removeAllESP()
+		end
+	end
+})
+
+local ESPToggle = CombatTab:CreateToggle({
+	Name = "Shows Name, Distance, Health",
+	CurrentValue = false,
+	Flag = "ESPToggle",
+	Callback = function(Value)
+		espEnabled = Value
+		
+		if Value then
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
+					createESP(player)
+				end
+			end
+			
+			RunService:BindToRenderStep("UpdateESP", Enum.RenderPriority.Camera.Value + 1, updateESP)
+		else
+			RunService:UnbindFromRenderStep("UpdateESP")
+			
+			for player, _ in pairs(ESPObjects) do
+				removeESP(player)
+			end
+		end
+	end,
+})
+
+-- Combat Tab - ESP with Wall Check Section
+local WallCheckESPSection = CombatTab:CreateSection("ESP (Wall Check)")
+
+-- Store connections OUTSIDE the callback so they persist
+local espConnections = {}
+
+local Toggle = CombatTab:CreateToggle({
+	Name = "Player ESP Wall Check",
+	Description = nil,
+	CurrentValue = false,
+	Callback = function(Value)
+		local Players = game:GetService("Players")
+		local RunService = game:GetService("RunService")
+		local player = Players.LocalPlayer
+		
+		-- ESP Colors
+		local colorVisible = Color3.fromRGB(0, 255, 0) -- Green = Can see
+		local colorHidden = Color3.fromRGB(255, 0, 0) -- Red = Behind wall
+		
+		-- RaycastParams for wall check
+		local rayParams = RaycastParams.new()
+		rayParams.FilterType = Enum.RaycastFilterType.Exclude
+		rayParams.IgnoreWater = true
+		
+		-- Function to check if player is visible (wall check)
+		local function isPlayerVisible(targetCharacter)
+			local character = player.Character
+			if not character then return false end
+			
+			local head = character:FindFirstChild("Head")
+			if not head then return false end
+			
+			local targetHRP = targetCharacter:FindFirstChild("HumanoidRootPart")
+			if not targetHRP then return false end
+			
+			local direction = (targetHRP.Position - head.Position).Unit
+			local distance = (targetHRP.Position - head.Position).Magnitude
+			
+			rayParams.FilterDescendantsInstances = {character, targetCharacter}
+			
+			local rayResult = workspace:Raycast(head.Position, direction * distance, rayParams)
+			
+			if rayResult then
+				-- If we hit something, there's a wall
+				return false
+			end
+			
+			-- No obstruction
+			return true
+		end
+		
+		-- Function to create ESP highlight
+		local function createESP(character)
+			if character:FindFirstChild("ESPHighlight") then return end
+			
+			local highlight = Instance.new("Highlight")
+			highlight.Name = "ESPHighlight"
+			highlight.FillTransparency = 0.5
+			highlight.OutlineTransparency = 0
+			highlight.OutlineColor = colorHidden
+			highlight.FillColor = colorHidden
+			highlight.Adornee = character
+			highlight.Parent = character
+		end
+		
+		-- Function to remove ESP
+		local function removeESP(character)
+			local highlight = character:FindFirstChild("ESPHighlight")
+			if highlight then
+				highlight:Destroy()
+			end
+		end
+		
+		-- Function to update ESP color based on wall check
+		local function updateESP(targetPlayer)
+			if not targetPlayer.Character then return end
+			
+			local highlight = targetPlayer.Character:FindFirstChild("ESPHighlight")
+			if not highlight then return end
+			
+			-- Wall check
+			local isVisible = isPlayerVisible(targetPlayer.Character)
+			
+			if isVisible then
+				-- Green = Can see (no walls)
+				highlight.FillColor = colorVisible
+				highlight.OutlineColor = colorVisible
+			else
+				-- Red = Behind wall
+				highlight.FillColor = colorHidden
+				highlight.OutlineColor = colorHidden
+			end
+		end
+		
+		-- Function to remove all ESP
+		local function removeAllESP()
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end
+		end
+		
+		if Value then
+			-- ESP is enabled
+			print("===================")
+			print("ESP with Wall Check Loaded!")
+			print("===================")
+			print("🟢 Green = Visible (no walls)")
+			print("🔴 Red = Behind wall")
+			print("===================")
+			
+			-- Apply ESP to existing players
+			for _, targetPlayer in pairs(Players:GetPlayers()) do
+				if targetPlayer ~= player then
+					if targetPlayer.Character then
+						createESP(targetPlayer.Character)
+						updateESP(targetPlayer)
+					end
+					
+					-- Character added connection
+					local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+						wait(0.5)
+						createESP(character)
+						updateESP(targetPlayer)
+					end)
+					table.insert(espConnections, charConn)
+				end
+			end
+			
+			-- Player added connection
+			local playerAddedConn = Players.PlayerAdded:Connect(function(targetPlayer)
+				local charConn = targetPlayer.CharacterAdded:Connect(function(character)
+					wait(0.5)
+					if targetPlayer ~= player then
+						createESP(character)
+						updateESP(targetPlayer)
+					end
+				end)
+				table.insert(espConnections, charConn)
+			end)
+			table.insert(espConnections, playerAddedConn)
+			
+			-- Update ESP colors continuously (wall check)
+			local heartbeatConn = RunService.Heartbeat:Connect(function()
+				for _, targetPlayer in pairs(Players:GetPlayers()) do
+					if targetPlayer ~= player then
+						updateESP(targetPlayer)
+					end
+				end
+			end)
+			table.insert(espConnections, heartbeatConn)
+			
+			-- Player leaving connection
+			local playerRemovingConn = Players.PlayerRemoving:Connect(function(targetPlayer)
+				if targetPlayer.Character then
+					removeESP(targetPlayer.Character)
+				end
+			end)
+			table.insert(espConnections, playerRemovingConn)
+			
+		else
+			-- ESP is disabled - cleanup
+			print("===================")
+			print("ESP Disabled!")
+			print("===================")
+			
+			-- Disconnect all connections
+			for _, conn in pairs(espConnections) do
+				conn:Disconnect()
+			end
+			espConnections = {} -- Clear the table
+			
+			-- Remove all ESP highlights
+			removeAllESP()
+		end
+	end
+})
+-- Combat Tab - ESP Tracer Section
+local TracerSection = CombatTab:CreateSection("ESP Tracer (Wall Check)")
+
+local TracerToggle = CombatTab:CreateToggle({
+	Name = "Enable Tracer",
+	CurrentValue = false,
+	Flag = "TracerToggle",
+	Callback = function(Value)
+		espTracerEnabled = Value
+		
+		if Value then
+			for _, player in pairs(Players:GetPlayers()) do
+				if player ~= LocalPlayer then
+					createTracerLine(player)
+				end
+			end
+			
+			RunService:BindToRenderStep("UpdateTracers", Enum.RenderPriority.Camera.Value + 1, updateTracers)
+		else
+			RunService:UnbindFromRenderStep("UpdateTracers")
+			
+			for player, _ in pairs(tracerLines) do
+				removeTracerLine(player)
+			end
+		end
+	end,
+})
+
+-- Player Tab - Walkspeed Section
+local WalkSpeedSection = PlayerTab:CreateSection("Walkspeed")
+
+local WalkSpeedToggle = PlayerTab:CreateToggle({
+	Name = "Enable Walkspeed",
+	CurrentValue = false,
+	Flag = "WalkSpeedToggle",
+	Callback = function(Value)
+		walkSpeedEnabled = Value
+		if not Value and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+			LocalPlayer.Character.Humanoid.WalkSpeed = originalWalkSpeed
+		end
+	end,
+})
+
+local WalkSpeedSlider = PlayerTab:CreateSlider({
+	Name = "Walkspeed Value",
+	Range = {16, 200},
+	Increment = 5,
+	CurrentValue = 16,
+	Flag = "WalkSpeedSlider",
+	Callback = function(Value)
+		walkSpeedValue = Value
+	end,
+})
+
+-- Player Tab - Auto Respawn Section
+local AutoRespawnSection = PlayerTab:CreateSection("Auto Respawn")
+
+local AutoRespawnToggle = PlayerTab:CreateToggle({
+	Name = "Enable Auto Respawn",
+	CurrentValue = false,
+	Flag = "AutoRespawnToggle",
+	Callback = function(Value)
+		autoRespawnEnabled = Value
+		playerDead = false
+	end,
+})
+
+
+Luna:Notification({
+	Title = "Fryzer Hub Loaded",
+	Content = "Script loaded with all features!",
+	Icon = "check_circle",
+	ImageSource = "Material"
+})
