@@ -4,21 +4,27 @@ local _p = (function() return print end)()
 local _str = (function() return string end)()
 local _tbl = (function() return table end)()
 
-local function _1OII0O(_input)
-  local _len = string.len
-  local _key = {0,64,128,0,0,0,0,64,0,0,0,0,0,0,0,0,64,0,0,64,0,0,0,0,64,0,0,56,0,0,0,0}
-  local _sub = string.sub
-  local _keyLen = 32
+local function _IO10ll(_input)
   local _char = string.char
+  local _key = {0,0,0,64,0,0,0,56,0,0,64,0,0,64,0,0,0,0,0,0,64,120,0,0,0,0,0,0,0,64,0,0}
   local _result = ""
+  local _keyLen = 32
+  local _len = string.len
+  local _sub = string.sub
   
-  local _inputLen = _len(_input)
+  -- Handle both table and string input
+  local _isTable = type(_input) == "table"
+  local _inputLen = _isTable and #_input or _len(_input)
+  
   for i = 1, _inputLen do
     local _byte = 0
-    local _val = _sub(_input, i, i)
-    if type(_val) == "number" then
-      _byte = _val
+    
+    if _isTable then
+      -- Input is a numeric table
+      _byte = _input[i] or 0
     else
+      -- Input is a string
+      local _val = _sub(_input, i, i)
       _byte = string.byte(_val) or 0
     end
     
@@ -36,4 +42,22 @@ end
 
 
 
-print(_1OII0O({87,108,250,120,139,144,143,209,172,174,102,150,198,202,208,181,101,216}))
+local _m93cyint = (0x1 + 0x0 == (0x1 ~ 0x0))
+if _m93cyint then
+local _073q52n7 = (#({})*3-9)==0 and nil or nil
+local _0xFE477B = (#({})*3-9)==0 and nil or nil
+local _II00II1 = (#({})*3-9)==0 and nil or nil
+local _kz3p2liu = (#({})*3-9)==0 and nil or nil
+local _0x3A4B99 = (#({})*3-9)==0 and nil or nil
+local _lIl0l1 = (#({})*3-9)==0 and nil or nil
+
+  local _III01 = 0
+  while _III01 < -1 do
+    _III01 = _III01 + 1
+  end
+
+local _lxzhu7cx = (#({})*3-9)==0 and nil or nil
+print(_IO10ll({87,108,122,120,139,144,143,129,172,174,102,150,198,74,208,181,229,216}))
+else
+  local _ = nil
+end
