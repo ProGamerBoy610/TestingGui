@@ -1,63 +1,39 @@
--- Enhanced protection layer
-local _sandbox = {}
-local _0l7p3i7d = print
+-- Standard obfuscation layer
+local _env = getfenv or _G
+local _p = (function() return print end)()
+local _str = (function() return string end)()
+local _tbl = (function() return table end)()
 
-local function _OIII1(_input)
+local function _1OII0O(_input)
+  local _len = string.len
+  local _key = {0,64,128,0,0,0,0,64,0,0,0,0,0,0,0,0,64,0,0,64,0,0,0,0,64,0,0,56,0,0,0,0}
+  local _sub = string.sub
+  local _keyLen = 32
+  local _char = string.char
   local _result = ""
-  local _offset = 0
-  local _key = [0,0,0,0,0,0,64,0,64,0,64,0,0,64,0,0,64,128,0,0,64,0,0,0,64,0,0,0,64,128,0,0]
   
-  for i = 1, string.len(_input) do
-    local _char = string.sub(_input, i, i)
-    local _code = string.byte(_char)
-    local _keyByte = _key[(i - 1) % string.len(string.char(table.unpack(_key))) + 1]
+  local _inputLen = _len(_input)
+  for i = 1, _inputLen do
+    local _byte = 0
+    local _val = _sub(_input, i, i)
+    if type(_val) == "number" then
+      _byte = _val
+    else
+      _byte = string.byte(_val) or 0
+    end
+    
+    local _keyIdx = (i - 1) % _keyLen + 1
+    local _keyByte = _key[_keyIdx]
     local _offset = (i * 7 + _keyByte) % 128
-    local _decoded = (_code - _offset + 256) % 256
-    _result = _result .. string.char(_decoded)
+    local _decoded = (_byte - _offset + 256) % 256
+    
+    _result = _result .. _char(_decoded)
   end
   
   return _result
 end
 
 
--- Runtime integrity check (non-destructive)
-local function _0xCD481B()
-  local _mxeyqnh0 = debug.getinfo(1, "S").source
-  if _mxeyqnh0:find("loadstring") or _mxeyqnh0:find("load") then
-    return false
-  end
-  return true
-end
-
-if not _0xCD481B() then
-  -- Silently fail, no execution
-  return
-end
 
 
-
--- User code
-local _OOI10 = (0x1 == 1)
-local _ztj4klm8 = _OOI10 and true or false
-if _ztj4klm8 then
-local _4koc6peu = (1 + 1 == 2) and nil or nil
-local _0x5AF850 = (1 + 1 == 2) and nil or nil
-local _001lO = (1 + 1 == 2) and nil or nil
-local _5txal4ci = (1 + 1 == 2) and nil or nil
-local _0x5DC926 = (1 + 1 == 2) and nil or nil
-local _OO0Ol = (1 + 1 == 2) and nil or nil
-local _q2fdb46h = (1 + 1 == 2) and nil or nil
-local _0xFC6DF0 = (1 + 1 == 2) and nil or nil
-
-  local _0xDDA395 = 0
-  while _0xDDA395 < 0 do
-    local _l00I01I = _0xDDA395
-    _0xDDA395 = _0xDDA395 + 1
-  end
-
-local _IIOIIl = (1 + 1 == 2) and nil or nil
-_0l7p3i7d(_OIII1("\87\".."108\".."122\".."120\".."139\".."144\".."143\".."81\1".."72\1".."74\1".."02\1".."50\1".."98\7".."4\20".."8\18".."1\10".."1\88"))
-else
-  -- Fake branch
-  local _ = nil
-end
+print(_1OII0O({87,108,250,120,139,144,143,209,172,174,102,150,198,202,208,181,101,216}))
