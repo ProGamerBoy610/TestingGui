@@ -1,119 +1,241 @@
-local r1_0 = game:GetService("ReplicatedStorage"):WaitForChild("Remotes"):WaitForChild("FinishedRagdoll")
-local r2_0 = Instance.new("ScreenGui", game.CoreGui)
-r2_0.Name = "chrishhMoneyGUI"
-r2_0.ResetOnSpawn = false
-local function r3_0(r0_2)
-  local r1_2 = Instance.new("Frame", r2_0)
-  r1_2.Size = UDim2.new(0, 250, 0, 50)
-  r1_2.Position = UDim2.new(1, -270, 0, -60)
-  r1_2.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-  r1_2.BorderSizePixel = 0
-  r1_2.BackgroundTransparency = 1
-  Instance.new("UICorner", r1_2).CornerRadius = UDim.new(0, 10)
-  local r2_2 = Instance.new("UIStroke", r1_2)
-  r2_2.Color = Color3.fromRGB(0, 170, 255)
-  r2_2.Thickness = 2
-  r2_2.Transparency = 0.3
-  local r3_2 = Instance.new("TextLabel", r1_2)
-  r3_2.Size = UDim2.new(1, -20, 1, 0)
-  r3_2.Position = UDim2.new(0, 10, 0, 0)
-  r3_2.BackgroundTransparency = 1
-  r3_2.Text = r0_2
-  r3_2.TextColor3 = Color3.fromRGB(255, 255, 255)
-  r3_2.Font = Enum.Font.GothamSemibold
-  r3_2.TextSize = 16
-  r3_2.TextXAlignment = Enum.TextXAlignment.Left
-  for r7_2 = 1, 10, 1 do
-    r1_2.BackgroundTransparency = 1 - r7_2 * 0.1
-    task.wait(0.03)
-  end
-  task.wait(4)
-  for r7_2 = 1, 10, 1 do
-    r1_2.BackgroundTransparency = r7_2 * 0.1
-    r3_2.TextTransparency = r7_2 * 0.1
-    r2_2.Transparency = 0.3 + r7_2 * 0.07
-    task.wait(0.03)
-  end
-  r1_2:Destroy()
+-- ====================================================================
+--                     BREAK A FRIEND - FIXED SCRIPT
+-- ====================================================================
+
+-- Wait for the game to fully load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
 end
-r3_0("Thanks for using this script by Danang")
-local r4_0 = Instance.new("Frame", r2_0)
-r4_0.Size = UDim2.new(0, 260, 0, 140)
-r4_0.Position = UDim2.new(0.7, 0, 0.4, 0)
-r4_0.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-r4_0.BorderSizePixel = 0
-r4_0.Active = true
-r4_0.Draggable = true
-Instance.new("UICorner", r4_0).CornerRadius = UDim.new(0, 12)
-local r5_0 = Instance.new("UIStroke", r4_0)
-r5_0.Color = Color3.fromRGB(0, 170, 255)
-r5_0.Thickness = 2
-r5_0.Transparency = 0.4
-local r6_0 = Instance.new("TextLabel", r4_0)
-r6_0.Text = "Break A Friend"
-r6_0.Size = UDim2.new(1, 0, 0, 30)
-r6_0.BackgroundTransparency = 1
-r6_0.TextColor3 = Color3.fromRGB(255, 255, 255)
-r6_0.TextSize = 18
-r6_0.Font = Enum.Font.GothamSemibold
-local r7_0 = Instance.new("TextBox", r4_0)
-r7_0.PlaceholderText = "(ex: 999999)"
-r7_0.Size = UDim2.new(1, -20, 0, 35)
-r7_0.Position = UDim2.new(0, 10, 0, 40)
-r7_0.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-r7_0.TextColor3 = Color3.fromRGB(255, 255, 255)
-r7_0.TextSize = 16
-r7_0.Font = Enum.Font.Gotham
-Instance.new("UICorner", r7_0).CornerRadius = UDim.new(0, 8)
-local r8_0 = Instance.new("UIStroke", r7_0)
-r8_0.Color = Color3.fromRGB(0, 120, 255)
-r8_0.Thickness = 1.6
-r8_0.Transparency = 0.35
-local r9_0 = Instance.new("TextButton", r4_0)
-r9_0.Text = "Click"
-r9_0.Size = UDim2.new(1, -20, 0, 35)
-r9_0.Position = UDim2.new(0, 10, 0, 85)
-r9_0.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-r9_0.TextColor3 = Color3.fromRGB(255, 255, 255)
-r9_0.TextSize = 17
-r9_0.Font = Enum.Font.GothamSemibold
-Instance.new("UICorner", r9_0).CornerRadius = UDim.new(0, 8)
-local r10_0 = Instance.new("UIStroke", r9_0)
-r10_0.Color = Color3.fromRGB(0, 170, 255)
-r10_0.Thickness = 2
-r10_0.Transparency = 0.25
-local r11_0 = Instance.new("TextButton", r2_0)
-r11_0.Text = "-"
-r11_0.Size = UDim2.new(0, 35, 0, 35)
-r11_0.Position = UDim2.new(0.7, 225, 0.4, -40)
-r11_0.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-r11_0.TextColor3 = Color3.fromRGB(255, 255, 255)
-r11_0.TextSize = 22
-r11_0.Font = Enum.Font.GothamBold
-Instance.new("UICorner", r11_0).CornerRadius = UDim.new(0, 12)
-local r12_0 = Instance.new("UIStroke", r11_0)
-r12_0.Color = Color3.fromRGB(0, 170, 255)
-r12_0.Thickness = 1.8
-r12_0.Transparency = 0.35
-local r13_0 = false
-r11_0.MouseButton1Click:Connect(function()
-  r13_0 = not r13_0
-  r4_0.Visible = not r13_0
-  local r0_1 = r11_0
-  local r1_1 = r13_0
-  if r1_1 then
-    r1_1 = "+" or "-"
-  else
-    goto label_14	-- block#2 is visited secondly
-  end
-  r0_1.Text = r1_1
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = Players.LocalPlayer
+
+-- Wait for the remote event with error handling
+local FinishedRagdoll
+local success = pcall(function()
+    local RemotesFolder = ReplicatedStorage:WaitForChild("Remotes", 10)
+    if RemotesFolder then
+        FinishedRagdoll = RemotesFolder:WaitForChild("FinishedRagdoll", 10)
+    end
 end)
-r9_0.MouseButton1Click:Connect(function()
-  local r0_3 = tonumber(r7_0.Text)
-  if r0_3 then
-    r1_0:FireServer(r0_3)
-    r3_0("Money added: " .. r0_3)
-  else
-    r7_0.Text = "Must be numbers!"
-  end
+
+if not success or not FinishedRagdoll then
+    warn("❌ [Break A Friend] Could not find FinishedRagdoll remote. Make sure you're in the correct game!")
+    return
+end
+
+-- Create GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BreakAFriendGUI"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+-- Protection for different executors
+pcall(function()
+    ScreenGui.Parent = game:GetService("CoreGui")
 end)
+
+if not ScreenGui.Parent then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+-- Notification function
+local function showNotification(message)
+    local NotificationFrame = Instance.new("Frame")
+    NotificationFrame.Size = UDim2.new(0, 250, 0, 50)
+    NotificationFrame.Position = UDim2.new(1, -270, 0, -60)
+    NotificationFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+    NotificationFrame.BorderSizePixel = 0
+    NotificationFrame.BackgroundTransparency = 1
+    NotificationFrame.Parent = ScreenGui
+    
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = NotificationFrame
+    
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(0, 170, 255)
+    Stroke.Thickness = 2
+    Stroke.Transparency = 0.3
+    Stroke.Parent = NotificationFrame
+    
+    local TextLabel = Instance.new("TextLabel")
+    TextLabel.Size = UDim2.new(1, -20, 1, 0)
+    TextLabel.Position = UDim2.new(0, 10, 0, 0)
+    TextLabel.BackgroundTransparency = 1
+    TextLabel.Text = message
+    TextLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    TextLabel.Font = Enum.Font.GothamSemibold
+    TextLabel.TextSize = 16
+    TextLabel.TextXAlignment = Enum.TextXAlignment.Left
+    TextLabel.Parent = NotificationFrame
+    
+    -- Fade in
+    for i = 1, 10 do
+        NotificationFrame.BackgroundTransparency = 1 - (i * 0.1)
+        task.wait(0.03)
+    end
+    
+    -- Wait
+    task.wait(4)
+    
+    -- Fade out
+    for i = 1, 10 do
+        NotificationFrame.BackgroundTransparency = i * 0.1
+        TextLabel.TextTransparency = i * 0.1
+        Stroke.Transparency = 0.3 + (i * 0.07)
+        task.wait(0.03)
+    end
+    
+    NotificationFrame:Destroy()
+end
+
+-- Show welcome notification
+showNotification("Thanks for using Break A Friend!")
+
+-- Main Frame
+local MainFrame = Instance.new("Frame")
+MainFrame.Size = UDim2.new(0, 260, 0, 140)
+MainFrame.Position = UDim2.new(0.7, 0, 0.4, 0)
+MainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+MainFrame.BorderSizePixel = 0
+MainFrame.Active = true
+MainFrame.Draggable = true
+MainFrame.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 12)
+MainCorner.Parent = MainFrame
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(0, 170, 255)
+MainStroke.Thickness = 2
+MainStroke.Transparency = 0.4
+MainStroke.Parent = MainFrame
+
+-- Title Label
+local TitleLabel = Instance.new("TextLabel")
+TitleLabel.Text = "Break A Friend"
+TitleLabel.Size = UDim2.new(1, 0, 0, 30)
+TitleLabel.BackgroundTransparency = 1
+TitleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+TitleLabel.TextSize = 18
+TitleLabel.Font = Enum.Font.GothamSemibold
+TitleLabel.Parent = MainFrame
+
+-- Input TextBox
+local InputBox = Instance.new("TextBox")
+InputBox.PlaceholderText = "Enter amount (ex: 999999)"
+InputBox.Text = ""
+InputBox.Size = UDim2.new(1, -20, 0, 35)
+InputBox.Position = UDim2.new(0, 10, 0, 40)
+InputBox.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+InputBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+InputBox.TextSize = 16
+InputBox.Font = Enum.Font.Gotham
+InputBox.ClearTextOnFocus = false
+InputBox.Parent = MainFrame
+
+local InputCorner = Instance.new("UICorner")
+InputCorner.CornerRadius = UDim.new(0, 8)
+InputCorner.Parent = InputBox
+
+local InputStroke = Instance.new("UIStroke")
+InputStroke.Color = Color3.fromRGB(0, 120, 255)
+InputStroke.Thickness = 1.6
+InputStroke.Transparency = 0.35
+InputStroke.Parent = InputBox
+
+-- Execute Button
+local ExecuteButton = Instance.new("TextButton")
+ExecuteButton.Text = "Add Money"
+ExecuteButton.Size = UDim2.new(1, -20, 0, 35)
+ExecuteButton.Position = UDim2.new(0, 10, 0, 85)
+ExecuteButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+ExecuteButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ExecuteButton.TextSize = 17
+ExecuteButton.Font = Enum.Font.GothamSemibold
+ExecuteButton.Parent = MainFrame
+
+local ButtonCorner = Instance.new("UICorner")
+ButtonCorner.CornerRadius = UDim.new(0, 8)
+ButtonCorner.Parent = ExecuteButton
+
+local ButtonStroke = Instance.new("UIStroke")
+ButtonStroke.Color = Color3.fromRGB(0, 170, 255)
+ButtonStroke.Thickness = 2
+ButtonStroke.Transparency = 0.25
+ButtonStroke.Parent = ExecuteButton
+
+-- Toggle Button (Minimize)
+local ToggleButton = Instance.new("TextButton")
+ToggleButton.Text = "-"
+ToggleButton.Size = UDim2.new(0, 35, 0, 35)
+ToggleButton.Position = UDim2.new(0.7, 225, 0.4, -40)
+ToggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+ToggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+ToggleButton.TextSize = 22
+ToggleButton.Font = Enum.Font.GothamBold
+ToggleButton.Parent = ScreenGui
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 12)
+ToggleCorner.Parent = ToggleButton
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Color = Color3.fromRGB(0, 170, 255)
+ToggleStroke.Thickness = 1.8
+ToggleStroke.Transparency = 0.35
+ToggleStroke.Parent = ToggleButton
+
+-- Toggle functionality
+local isMinimized = false
+ToggleButton.MouseButton1Click:Connect(function()
+    isMinimized = not isMinimized
+    MainFrame.Visible = not isMinimized
+    ToggleButton.Text = isMinimized and "+" or "-"
+end)
+
+-- Execute button functionality
+ExecuteButton.MouseButton1Click:Connect(function()
+    local amount = tonumber(InputBox.Text)
+    
+    if amount and amount > 0 then
+        local success, error = pcall(function()
+            FinishedRagdoll:FireServer(amount)
+        end)
+        
+        if success then
+            showNotification("✅ Money added: " .. amount)
+            InputBox.Text = ""
+        else
+            showNotification("❌ Failed to add money")
+            warn("[Break A Friend] Error:", error)
+        end
+    else
+        InputBox.Text = ""
+        InputBox.PlaceholderText = "Must be a valid number!"
+        task.wait(2)
+        InputBox.PlaceholderText = "Enter amount (ex: 999999)"
+    end
+end)
+
+-- Button hover effects
+ExecuteButton.MouseEnter:Connect(function()
+    ExecuteButton.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+end)
+
+ExecuteButton.MouseLeave:Connect(function()
+    ExecuteButton.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+end)
+
+ToggleButton.MouseEnter:Connect(function()
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+end)
+
+ToggleButton.MouseLeave:Connect(function()
+    ToggleButton.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+end)
+
+print("✅ [Break A Friend] Script loaded successfully!")
