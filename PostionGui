@@ -1180,7 +1180,7 @@ end)
 -- ====================================================================
 
 -- Section: Auto Favorite Settings
-local Section1 = MainTab:Section({
+local Sectionfavorit = MainTab:Section({
     Title = "Auto Favorite Settings",
     Icon = "star",
 })
@@ -1372,7 +1372,7 @@ end
 -- ====================================================================
 
 -- Section: Main Locations
-local Section1 = TpTab:Section({
+local Sectiontps1 = TpTab:Section({
     Title = "Main Locations",
     Icon = "map-pin",
 })
