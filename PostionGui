@@ -1199,15 +1199,14 @@ local AutoFavoriteToggle = MainTab:Toggle({
 })
 
 -- FAVORITE RARITY DROPDOWN
-local FavoriteRarityDropdown = MainTab:Dropdown({
+local Favoritedropdown = MainTab:Dropdown({
     Title = "Favorite Rarity",
     Desc = "Select minimum rarity to favorite",
     Values = { "Mythic", "Secret" },
     Value = { "Mythic" },
-    Multi = false,
+    Multi = true,
     AllowNone = false,
     Callback = function(option)
-        -- For single select dropdown, option is a table with one item
         local selectedRarity = type(option) == "table" and option[1] or option
         Config.FavoriteRarity = selectedRarity
         print("[Config] Favorite rarity set to: " .. selectedRarity .. "+")
