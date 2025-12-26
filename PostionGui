@@ -1305,43 +1305,63 @@ local function teleportTo(locationName)
         return false
     end
     
-    local success = pcall(function()
+    local success, errorMsg = pcall(function()
         local character = LocalPlayer.Character
-        if not character then return end
+        if not character then 
+            warn("❌ [Teleport] Character not found")
+            return 
+        end
         
         local rootPart = character:FindFirstChild("HumanoidRootPart")
         local humanoid = character:FindFirstChild("Humanoid")
-        if not rootPart or not humanoid then return end
         
-        -- Disable collision temporarily to prevent getting stuck
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanCollide = false
-            end
+        if not rootPart then
+            warn("❌ [Teleport] HumanoidRootPart not found")
+            return
         end
         
+        if not humanoid then
+            warn("❌ [Teleport] Humanoid not found")
+            return
+        end
+        
+        -- Disable collision temporarily to prevent getting stuck
+        pcall(function()
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+        end)
+        
         -- Teleport slightly above the target position to prevent clipping
-        local safeCFrame = cframe + Vector3.new(0, 3, 0)
+        local safeCFrame = cframe * CFrame.new(0, 3, 0)  -- Changed from + to *
         rootPart.CFrame = safeCFrame
         
         -- Wait a moment for physics to settle
         task.wait(0.1)
         
-        -- Re-enable collision
-        for _, part in pairs(character:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.CanCollide = true
+        -- Re-enable collision (with error protection)
+        pcall(function()
+            for _, part in pairs(character:GetDescendants()) do
+                if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+                    part.CanCollide = true
+                end
             end
-        end
+        end)
         
-        -- Set humanoid state to ensure proper landing
-        humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+        -- Set humanoid state to ensure proper landing (with error protection)
+        pcall(function()
+            if humanoid and humanoid.Parent then
+                humanoid:ChangeState(Enum.HumanoidStateType.Freefall)
+            end
+        end)
         
         print("✅ [Teleport] Moved to " .. locationName)
     end)
     
     if not success then
-        warn("❌ [Teleport] Failed to teleport to " .. locationName)
+        warn("❌ [Teleport] Failed to teleport to " .. locationName .. " | Error: " .. tostring(errorMsg))
     end
     
     return success
