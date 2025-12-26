@@ -1372,12 +1372,12 @@ end
 -- ====================================================================
 
 -- Section: Main Locations
-local Section1 = Tab2:Section({
+local Section1 = TpTab:Section({
     Title = "Main Locations",
     Icon = "map-pin",
 })
 
-local SpawnButton = Tab2:Button({
+local SpawnButton = TpTab:Button({
     Title = "Spawn",
     Desc = "Starting area",
     Icon = "home",
@@ -1386,7 +1386,7 @@ local SpawnButton = Tab2:Button({
     end
 })
 
-local SisyphusButton = Tab2:Button({
+local SisyphusButton = TpTab:Button({
     Title = "Sisyphus Statue",
     Desc = "Popular fishing spot",
     Icon = "map-pin",
@@ -1395,7 +1395,7 @@ local SisyphusButton = Tab2:Button({
     end
 })
 
-local CoralButton = Tab2:Button({
+local CoralButton = TpTab:Button({
     Title = "Coral Reefs",
     Desc = "Underwater fishing area",
     Icon = "anchor",
@@ -1404,7 +1404,7 @@ local CoralButton = Tab2:Button({
     end
 })
 
-local DepthsButton = Tab2:Button({
+local DepthsButton = TpTab:Button({
     Title = "Esoteric Depths",
     Desc = "Deep water location",
     Icon = "chevrons-down",
@@ -1413,7 +1413,7 @@ local DepthsButton = Tab2:Button({
     end
 })
 
-local CraterButton = Tab2:Button({
+local CraterButton = TpTab:Button({
     Title = "Crater Island",
     Desc = "Island location",
     Icon = "island",
@@ -1422,7 +1422,7 @@ local CraterButton = Tab2:Button({
     end
 })
 
-local LostIsleButton = Tab2:Button({
+local LostIsleButton = TpTab:Button({
     Title = "Lost Isle",
     Desc = "Hidden island",
     Icon = "compass",
@@ -1431,7 +1431,7 @@ local LostIsleButton = Tab2:Button({
     end
 })
 
-local TropicalButton = Tab2:Button({
+local TropicalButton = TpTab:Button({
     Title = "Tropical Grove",
     Desc = "Tropical paradise",
     Icon = "palmtree",
@@ -1440,7 +1440,7 @@ local TropicalButton = Tab2:Button({
     end
 })
 
-local MountButton = Tab2:Button({
+local MountButton = TpTab:Button({
     Title = "Mount Hallow",
     Desc = "Mountain peak",
     Icon = "mountain",
@@ -1449,7 +1449,7 @@ local MountButton = Tab2:Button({
     end
 })
 
-local TreasureButton = Tab2:Button({
+local TreasureButton = TpTab:Button({
     Title = "Treasure Room",
     Desc = "Secret treasure location",
     Icon = "gem",
@@ -1458,7 +1458,7 @@ local TreasureButton = Tab2:Button({
     end
 })
 
-local KohanaButton = Tab2:Button({
+local KohanaButton = TpTab:Button({
     Title = "Kohana",
     Desc = "Village area",
     Icon = "tent",
@@ -1467,7 +1467,7 @@ local KohanaButton = Tab2:Button({
     end
 })
 
-local CellarButton = Tab2:Button({
+local CellarButton = TpTab:Button({
     Title = "Underground Cellar",
     Desc = "Secret underground area",
     Icon = "arrow-down-circle",
@@ -1476,7 +1476,7 @@ local CellarButton = Tab2:Button({
     end
 })
 
-local JungleButton = Tab2:Button({
+local JungleButton = TpTab:Button({
     Title = "Ancient Jungle",
     Desc = "Dense jungle area",
     Icon = "trees",
@@ -1485,7 +1485,7 @@ local JungleButton = Tab2:Button({
     end
 })
 
-local TempleButton = Tab2:Button({
+local TempleButton = TpTab:Button({
     Title = "Sacred Temple",
     Desc = "Ancient temple ruins",
     Icon = "church",
@@ -1495,12 +1495,12 @@ local TempleButton = Tab2:Button({
 })
 
 -- Section: Machines
-local Section2 = Tab2:Section({
+local Section2 = TpTab:Section({
     Title = "Machines",
     Icon = "settings",
 })
 
-local LuckMachineButton = Tab2:Button({
+local LuckMachineButton = TpTab:Button({
     Title = "Luck Machine",
     Desc = "Increase your luck",
     Icon = "clover",
@@ -1509,7 +1509,7 @@ local LuckMachineButton = Tab2:Button({
     end
 })
 
-local SpinWheelButton = Tab2:Button({
+local SpinWheelButton = TpTab:Button({
     Title = "Spin Wheel",
     Desc = "Try your luck on the wheel",
     Icon = "disc",
@@ -1518,7 +1518,7 @@ local SpinWheelButton = Tab2:Button({
     end
 })
 
-local WeatherMachineButton = Tab2:Button({
+local WeatherMachineButton = TpTab:Button({
     Title = "Weather Machine",
     Desc = "Control the weather",
     Icon = "cloud-rain",
@@ -1528,12 +1528,12 @@ local WeatherMachineButton = Tab2:Button({
 })
 
 -- Section: NPCs
-local Section3 = Tab2:Section({
+local Section3 = TpTab:Section({
     Title = "NPCs",
     Icon = "users",
 })
 
-local AlexButton = Tab2:Button({
+local AlexButton = TpTab:Button({
     Title = "Alex",
     Desc = "Talk to Alex",
     Icon = "user",
@@ -1542,7 +1542,7 @@ local AlexButton = Tab2:Button({
     end
 })
 
-local AlienButton = Tab2:Button({
+local AlienButton = TpTab:Button({
     Title = "Alien Merchant",
     Desc = "Special shop keeper",
     Icon = "shopping-bag",
@@ -1551,7 +1551,7 @@ local AlienButton = Tab2:Button({
     end
 })
 
-local AuraKidButton = Tab2:Button({
+local AuraKidButton = TpTab:Button({
     Title = "Aura Kid",
     Desc = "Aura upgrades",
     Icon = "sparkles",
@@ -1560,7 +1560,7 @@ local AuraKidButton = Tab2:Button({
     end
 })
 
-local BillyButton = Tab2:Button({
+local BillyButton = TpTab:Button({
     Title = "Billy Bob",
     Desc = "Talk to Billy Bob",
     Icon = "user",
@@ -1569,7 +1569,7 @@ local BillyButton = Tab2:Button({
     end
 })
 
-local BoatButton = Tab2:Button({
+local BoatButton = TpTab:Button({
     Title = "Boat Expert",
     Desc = "Boat services",
     Icon = "ship",
@@ -1578,7 +1578,7 @@ local BoatButton = Tab2:Button({
     end
 })
 
-local JimButton = Tab2:Button({
+local JimButton = TpTab:Button({
     Title = "Jim",
     Desc = "Talk to Jim",
     Icon = "user",
@@ -1587,7 +1587,7 @@ local JimButton = Tab2:Button({
     end
 })
 
-local JoeButton = Tab2:Button({
+local JoeButton = TpTab:Button({
     Title = "Joe",
     Desc = "Talk to Joe",
     Icon = "user",
@@ -1596,7 +1596,7 @@ local JoeButton = Tab2:Button({
     end
 })
 
-local RonButton = Tab2:Button({
+local RonButton = TpTab:Button({
     Title = "Ron",
     Desc = "Talk to Ron",
     Icon = "user",
@@ -1605,7 +1605,7 @@ local RonButton = Tab2:Button({
     end
 })
 
-local ScientistButton = Tab2:Button({
+local ScientistButton = TpTab:Button({
     Title = "Scientist",
     Desc = "Research and experiments",
     Icon = "flask",
@@ -1614,7 +1614,7 @@ local ScientistButton = Tab2:Button({
     end
 })
 
-local ScottButton = Tab2:Button({
+local ScottButton = TpTab:Button({
     Title = "Scott",
     Desc = "Talk to Scott",
     Icon = "user",
@@ -1623,7 +1623,7 @@ local ScottButton = Tab2:Button({
     end
 })
 
-local SethButton = Tab2:Button({
+local SethButton = TpTab:Button({
     Title = "Seth",
     Desc = "Talk to Seth",
     Icon = "user",
@@ -1632,7 +1632,7 @@ local SethButton = Tab2:Button({
     end
 })
 
-local SillyButton = Tab2:Button({
+local SillyButton = TpTab:Button({
     Title = "Silly Fisherman",
     Desc = "Fishing tips and tricks",
     Icon = "fish",
@@ -1641,7 +1641,7 @@ local SillyButton = Tab2:Button({
     end
 })
 
-local GuardianButton = Tab2:Button({
+local GuardianButton = TpTab:Button({
     Title = "Temple Guardian",
     Desc = "Protects the temple",
     Icon = "shield",
@@ -1650,7 +1650,7 @@ local GuardianButton = Tab2:Button({
     end
 })
 
-local TourButton = Tab2:Button({
+local TourButton = TpTab:Button({
     Title = "Tour Guide",
     Desc = "Get a tour",
     Icon = "map",
