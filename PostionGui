@@ -1,9 +1,13 @@
-print("junki")
-for i = 1, 1e7 do
-    if i % 1000 == 0 then
-        task.wait() -- yields execution
-    end
-    math.sqrt(i)
+if not game:IsLoaded() then
+    game.Loaded:Wait()
 end
 
-loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/refs/heads/main/obfuscated_advanced.lua%20(3).txt"))()
+task.spawn(function()
+    local ok, err = pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/refs/heads/main/obfuscated_advanced.lua%20(3).txt"))()
+    end)
+
+    if not ok then
+        warn(err)
+    end
+end)
