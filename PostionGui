@@ -1,12 +1,9 @@
--- wait for roblox to fully load
 if not game:IsLoaded() then
     game.Loaded:Wait()
 end
 
--- let executor stabilize
 task.wait(1)
 
--- anti-timeout chunk runner
 local function runInChunks(fn)
     local co = coroutine.create(fn)
 
@@ -14,21 +11,32 @@ local function runInChunks(fn)
         while coroutine.status(co) ~= "dead" do
             local ok, err = coroutine.resume(co)
             if not ok then
-                warn("Loader error:", err)
+                warn("Runtime error:", err)
                 return
             end
-            task.wait() -- yield every frame (VERY IMPORTANT)
+            task.wait()
         end
     end)
 end
 
--- run your big script safely
 runInChunks(function()
-    local src = game:HttpGet(
-        "https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/refs/heads/main/obfuscated_advanced.lua%20(3).txt",
-        true
-    )
+    local ok, src = pcall(function()
+        return game:HttpGet(
+            "https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/main/obfuscated_advanced.lua%20(3).txt",
+            true
+        )
+    end)
 
-    local fn = loadstring(src)
+    if not ok or type(src) ~= "string" or #src == 0 then
+        warn("HttpGet failed or returned empty data")
+        return
+    end
+
+    local fn, err = loadstring(src)
+    if not fn then
+        warn("Loadstring error:", err)
+        return
+    end
+
     fn()
 end)
