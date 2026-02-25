@@ -648,17 +648,6 @@ end
 -- ============================================================
 -- TASK / SPAWN / DELAY LOGGING
 -- ============================================================
-local oldTaskSpawn = clonefunction(task.spawn)
-task.spawn = newcclosure(function(fn, ...)
-    log('task.spawn', 'task.spawn([function])')
-    return oldTaskSpawn(fn, ...)
-end)
-
-local oldTaskDelay = clonefunction(task.delay)
-task.delay = newcclosure(function(t, fn, ...)
-    log('task.delay', 'task.delay(' .. tostring(t) .. ', [function])')
-    return oldTaskDelay(t, fn, ...)
-end)
 
 -- ============================================================
 -- CLEANUP
@@ -678,7 +667,7 @@ print("[Logger] Executing target script...")
 
 -- Do not save this file
 -- Always use the loadstring 
-  _bsdata0={800378607,1772021652,8972894,19079375,"\136\158\166\198\203\83\225\161\196\18\20\81\188\202\224\49\149\85\136\172\53",9444390,21952567,"\87\87\240\251\83\183\218\106\123\175\89\35\69\32\201\58\167\230\39\117\95\235\192\4",4284879840,"5690eb7d54288f9c743684fb0f72a0b217d68594517366e1e83288004b9226eced929b63fb9c9c395222bcd5f0f5048c474dc241dedf8ad6257e3acaa829fb11a04308e119125b321cb0225a5ede5e6d05e7eb8401bb4891192e09f8cbc9ccab36a7b2ac48810493e4d7f6a41b3b4045d4444effbde9840c13d59ec95e2012f68eee6393728362808ee62ddde2237b8f57f436315d04cf1a983a6f458d32e56e3fcd7c00831c4ab29a0369ca3969761b13bcf17945f46c4e10ce0c86ee8d528bfb2eb847701bb505",".BDLB-3-CC5R-E24B1E2BE0A224B_3A.4R0R1BB50B2154C.5511B25CAECE5BLR5.2-2CEBCB0_41.4D2...L-C.55E1B5EA.DA12331AR..BEDDB5A-4B3AREL31_LE14C-_",55747425};
+  _bsdata0={1668009717,1772022661,8972894,66790675,"\136\158\166\198\203\83\225\161\196\18\20\81\188\202\224\49\149\85\136\172\53",9444390,10616711,"\87\87\240\251\83\183\218\106\123\175\89\35\69\32\201\58\167\230\39\117\95\235\192\4",1502596393,"e976aa2574e42ef0dc1b00ddf75dc8d300e850c0fe08d8892c8c59db07bab1a54ae5d4cad38ba251c1aa6096be344e1434a1e28cae6134781dc10400b238b9ec8669d9212858b48cd3d49c0868972accaa2fdcc2f502bb63f7dd574441c7658b08f809c78fe9daba1e9dcf32086958a33c5865ef61990066046ee43472ff6dbea5c36cab2c9633471e6b77bdba63ddc873ea6432500252b05386cddcbe8c9a3613c30d30415ec7e203e61baa48046b48886e8ccf26911b29d67bf6dff4b826faef774b83ccb12c7dc3","B4_AD42.5B..4AL0DB4RC01R_C2CBDA1_1B24111E_A-RRR_-RA_DEA0-BB_2-E-3A_E2.A2CB0R-AA_.L5.A--EA2A4.EB-45LA013BA2D43C1EBBC2-.C__32-004_030A5B",30638355};
 local f,b,a="static_content_130525","25db4afc2f3-janend";pcall(function()a=readfile(f.."/init-"..b..".lua")end) if a and #a>2000 then a=loadstring(a) else a=nil; end;
 if a then return a() else pcall(makefolder,f) a=game:HttpGet("https://cdn.luarmor.net/v4_init_janend.lua"..(_ca920af6193 or "")) writefile(f.."/init-"..b..".lua", a); 
 pcall(function() for i,v in pairs(listfiles('./'..f)) do local m=v:match('(init[%w%-]*).lua$') if m and m~=('init-'..b) then pcall(delfile, f..'/'..m..'.lua') end end; end); return loadstring(a)() end
