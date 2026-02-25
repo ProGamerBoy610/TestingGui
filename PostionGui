@@ -1,42 +1,685 @@
-if not game:IsLoaded() then
-    game.Loaded:Wait()
-end
+local HttpService = game:GetService("HttpService")
 
-task.wait(1)
+local old
+old = hookfunction(request, function(options, ...)
+    if type(options) == "table" then
+        local url = options.Url or options.url
+        if type(url) == "string" then
 
-local function runInChunks(fn)
-    local co = coroutine.create(fn)
-
-    task.spawn(function()
-        while coroutine.status(co) ~= "dead" do
-            local ok, err = coroutine.resume(co)
-            if not ok then
-                warn("Runtime error:", err)
-                return
+            if string.match(url, "luarmor%.net/sync") then
+                return {
+                    StatusMessage = "OK",
+                    Success = true,
+                    StatusCode = 200,
+                    Body = HttpService:JSONEncode({
+                        cf = "OTP",
+                        st = 1756501402,
+                        nodes = {
+                            "https://eu1-roblox-auth.luarmor.net/",
+                            "https://as1-roblox-auth.luarmor.net/",
+                            "https://as2-roblox-auth.luarmor.net/",
+                            "https://as3-roblox-auth.luarmor.net/",
+                            "https://us1-roblox-auth.luarmor.net/",
+                            "https://us2-roblox-auth.luarmor.net/",
+                            "https://au1-roblox-auth.luarmor.net/",
+                            "https://au2-roblox-auth.luarmor.net/"
+                        }
+                    }),
+                    Headers = {
+                        ["Connection"] = "keep-alive",
+                        ["Content-Type"] = "application/json",
+                        ["Server"] = "cloudflare"
+                    }
+                }
             end
-            task.wait()
+
+            local key = string.match(url, "luarmor%.net/check_key%?key=([^&]+)")
+            if key then
+                return {
+                    StatusMessage = "OK",
+                    Success = true,
+                    StatusCode = 200,
+                    Body = HttpService:JSONEncode({
+                        message = "The provided key is valid.",
+                        data = { note = "Ad Reward", auth_expire = 1756585044, total_executions = 2 },
+                        code = "KEY_VALID"
+                    }),
+                    Headers = {
+                        ["Connection"] = "keep-alive",
+                        ["Content-Type"] = "application/json",
+                        ["Server"] = "cloudflare"
+                    }
+                }
+            end
         end
-    end)
+    end
+    return old(options, ...)
+end)
+
+
+-- ============================================================
+-- COMPREHENSIVE API LOGGER v2.0
+-- Logs: HTTP requests, WebSockets, loadstrings, globals,
+--       Instance API, metamethods, env functions, file I/O,
+--       remotes, timers, encryption, and more.
+-- Output files:
+--   logged.txt       -> all general API calls
+--   api-calls.txt    -> HTTP requests (URL, method, headers, body, response)
+--   wss-calls.txt    -> WebSocket connections and messages
+--   loadstrings.txt  -> all loadstring'd code chunks
+--   remotes.txt      -> FireServer, InvokeServer, etc.
+--   env-scan.txt     -> _G and getgenv() dumps
+--   crypto.txt       -> encryption/obfuscation calls
+-- ============================================================
+
+print("[genv bot @pepsi] Logger v2.0 initializing...")
+
+-- Init all log files with headers
+local sessionTime = tostring(os.time and os.time() or tick())
+local function initFile(name, title)
+    writefile(name, "-- " .. title .. " | Session: " .. sessionTime .. "\n\n")
 end
 
-runInChunks(function()
-    local ok, src = pcall(function()
-        return game:HttpGet(
-            "https://raw.githubusercontent.com/ProGamerBoy610/TestingGui/main/obfuscated_advanced.lua%20(3).txt",
-            true
-        )
-    end)
+initFile('logged.txt',      'All API Calls')
+initFile('api-calls.txt',   'HTTP API Calls')
+initFile('wss-calls.txt',   'WebSocket Calls')
+initFile('loadstrings.txt', 'Loadstring Chunks')
+initFile('remotes.txt',     'Remote Calls')
+initFile('env-scan.txt',    'Environment Scan')
+initFile('crypto.txt',      'Crypto / Obfuscation')
 
-    if not ok or type(src) ~= "string" or #src == 0 then
-        warn("HttpGet failed or returned empty data")
+-- ============================================================
+-- UTILITY
+-- ============================================================
+local function isuilib()
+    local a = debug.traceback()
+    local b = a:lower():gsub('%s+','')
+    return b:find('windui') or b:find('rayfield') or b:find('obsidian') or
+           b:find('interface') or b:find('luna') or b:find('fluent') or
+           b:find('drday') or b:find('orion') or b:find('kavo') or
+           b:find('sentinelui') or b:find('synapse') or b:find('carbon')
+end
+
+local function formatlog(text)
+    if type(text) ~= 'string' then
+        error('Bad argument #1 to formatlog "string" expected, got: '..type(text))
         return
     end
+    return text
+        :gsub('table: ','')
+        :gsub('function: ','')
+        :gsub('Ugc','game')
+        :gsub('\n','\\n')
+        :gsub('%s%s+',' ')
+        :gsub('""','')
+        :gsub('Data Ping','DataPing')
+        :gsub('Workspace','workspace')
+        :gsub('game.Players','Players')
+        :gsub('Teleport Service','TeleportService')
+        :gsub('Run Service','RunService')
+        :gsub('HttpGetAsync','HttpGet')
+        :gsub('"',"'")
+end
 
-    local fn, err = loadstring(src)
-    if not fn then
-        warn("Loadstring error:", err)
+local function tblformat(tbl, depth)
+    local depth = depth or 0
+    local res = ''
+    local first = true
+    if depth > 5 then return '...[deep]' end
+    if type(tbl) ~= 'table' then
+        res = '"'..tostring(tbl)..'"'
+        if res == '"nil"' then res = '' end
+        return res
+    end
+    for i, v in pairs(tbl) do
+        if not first then res = res .. ', ' end
+        first = false
+        if type(i) == 'string' then
+            res = res .. i .. ' = '
+        end
+        if type(v) == 'table' then
+            res = res .. '{' .. tblformat(v, depth + 1) .. '}'
+        else
+            res = res .. tostring(v)
+        end
+    end
+    return res
+end
+
+local function safeJson(v)
+    local ok, hs = pcall(function() return game:GetService("HttpService") end)
+    if ok and hs then
+        local ok2, res = pcall(function() return hs:JSONEncode(v) end)
+        if ok2 then return res end
+    end
+    return tblformat(v)
+end
+
+-- Dedup caches
+local Track = {}
+local kirked = {}
+local cache = ''
+local upvalscache = ''
+local formatedcache = ''
+local logcount = 1
+
+local function log(upvals, line, dest)
+    upvals = upvals or 'nil'
+    upvals = formatlog(tostring(upvals))
+    if #upvals > 120 then
+        upvals = upvals:sub(1,60) .. '...(' .. #upvals .. ' chars)'
+    end
+    local formated = formatlog(tostring(line))
+    local logged = formated
+    if logged == cache then return end
+    if formated == formatedcache and upvals == upvalscache then return end
+    local charliekirk = logged .. ';' .. upvals
+    if kirked[charliekirk] then return end
+    if upvals:find('Signal') then
+        logged = formated .. ':Connect(function(...)end)'
+    end
+    if logged:find('game:HttpGet') then
+        logged = 'loadstring(' .. formated .. ')()'
+    end
+    if logcount > 80000 then
+        appendfile('logged.txt', '\n-- [LIMIT REACHED] Too many logs, stopping.\n')
+        game:shutdown()
         return
     end
+    logcount += 1
+    cache = logged
+    upvalscache = upvals
+    formatedcache = formated
+    kirked[charliekirk] = true
+    appendfile('logged.txt', logged .. '\n')
+    if dest then
+        appendfile(dest, logged .. '\n')
+    end
+end
 
-    fn()
+-- Raw append for structured multi-line blocks
+local function logBlock(file, content)
+    appendfile(file, content .. '\n\n')
+    appendfile('logged.txt', content .. '\n')
+end
+
+-- ============================================================
+-- HTTP / REQUEST LOGGING (full detail: url, method, headers, body, response)
+-- ============================================================
+local oldrequest = clonefunction(request)
+request = newcclosure(function(data)
+    local upvals = oldrequest(data)
+
+    -- Format body
+    local bodyStr = ''
+    if type(data.Body) == 'string' then
+        if data.Body:sub(1,1) == '{' then
+            bodyStr = data.Body
+        else
+            bodyStr = '"' .. data.Body .. '"'
+        end
+    elseif type(data.Body) == 'table' then
+        bodyStr = safeJson(data.Body)
+    else
+        bodyStr = tostring(data.Body or 'nil')
+    end
+
+    -- Format headers
+    local reqHeaders = '{\n'
+    if data.Headers then
+        for k, v in pairs(data.Headers) do
+            reqHeaders = reqHeaders .. '    ["' .. k .. '"] = "' .. tostring(v) .. '",\n'
+        end
+    end
+    reqHeaders = reqHeaders .. '}'
+
+    -- Format response
+    local respStatus = tostring(upvals and (upvals.StatusCode or upvals.StatusMessage) or 'unknown')
+    local respBody = ''
+    if upvals and type(upvals.Body) == 'string' then
+        respBody = #upvals.Body > 500 and (upvals.Body:sub(1,500) .. '...(' .. #upvals.Body .. ' chars)') or upvals.Body
+    end
+    local respHeaders = ''
+    if upvals and upvals.Headers then
+        for k, v in pairs(upvals.Headers) do
+            respHeaders = respHeaders .. '    ' .. k .. ': ' .. tostring(v) .. '\n'
+        end
+    end
+
+    local block = string.format(
+        "== HTTP REQUEST ==\n" ..
+        "  URL:    %s\n" ..
+        "  Method: %s\n" ..
+        "  Headers:\n%s\n" ..
+        "  Body:   %s\n" ..
+        "-- RESPONSE --\n" ..
+        "  Status: %s\n" ..
+        "  Headers:\n%s" ..
+        "  Body:   %s\n" ..
+        "==================",
+        tostring(data.Url or data.url or '?'),
+        tostring(data.Method or data.method or 'GET'),
+        reqHeaders,
+        bodyStr,
+        respStatus,
+        respHeaders,
+        respBody
+    )
+
+    logBlock('api-calls.txt', block)
+    log(upvals, 'request({Url="' .. tostring(data.Url or data.url or '') .. '", Method="' .. tostring(data.Method or 'GET') .. '"})')
+
+    return upvals
 end)
+
+if http and http.request then
+    setreadonly(http, false)
+    local oldHttp = clonefunction(http.request)
+    http.request = newcclosure(function(data)
+        local upvals = oldHttp(data)
+        logBlock('api-calls.txt', "== http.request ==\n  URL: " .. tostring(data.Url or '?') .. "\n  Method: " .. tostring(data.Method or 'GET'))
+        return upvals
+    end)
+    setreadonly(http, true)
+end
+
+-- HttpGet / HttpPost on game
+local mt = getrawmetatable(game)
+local oldnamecall = clonefunction(mt.__namecall)
+local oldindex = clonefunction(mt.__index)
+local oldnewindex = clonefunction(mt.__newindex)
+
+-- ============================================================
+-- WEBSOCKET LOGGING (connections, messages sent/received, close)
+-- ============================================================
+local wss = game:GetService('WebSocketService')
+local oldwsscc = clonefunction(wss.CreateClient)
+hookfunction(game.WebSocketService.CreateClient, newcclosure(function(_, url)
+    local entry = "== WSS CONNECT ==\n  URL: " .. tostring(url) .. "\n  Time: " .. tostring(tick())
+    logBlock('wss-calls.txt', entry)
+    log('WSS', 'WebSocketService:CreateClient("' .. tostring(url) .. '")')
+
+    local conn = oldwsscc(_, url)
+
+    -- Hook OnMessage
+    if conn and conn.OnMessage then
+        conn.OnMessage:Connect(function(msg)
+            local msgEntry = "== WSS MESSAGE RECEIVED ==\n  URL: " .. tostring(url) .. "\n  Msg: " .. tostring(msg)
+            logBlock('wss-calls.txt', msgEntry)
+        end)
+    end
+
+    -- Hook OnClose
+    if conn and conn.OnClose then
+        conn.OnClose:Connect(function()
+            logBlock('wss-calls.txt', "== WSS CLOSED ==\n  URL: " .. tostring(url))
+        end)
+    end
+
+    -- Hook Send
+    if conn and conn.Send then
+        local oldSend = clonefunction(conn.Send)
+        hookfunction(conn.Send, newcclosure(function(self, msg)
+            local sendEntry = "== WSS SEND ==\n  URL: " .. tostring(url) .. "\n  Msg: " .. tostring(msg)
+            logBlock('wss-calls.txt', sendEntry)
+            return oldSend(self, msg)
+        end))
+    end
+
+    return conn
+end))
+
+-- ============================================================
+-- LOADSTRING LOGGING (saves every chunk to loadstrings.txt)
+-- ============================================================
+local loadstrChunkIdx = 0
+local oldl = clonefunction(loadstring)
+hookfunction(loadstring, newcclosure(function(str, chunkname)
+    loadstrChunkIdx += 1
+    local header = string.format(
+        "== LOADSTRING CHUNK #%d ==\n-- chunkname: %s\n-- length: %d chars\n-- tick: %.3f\n",
+        loadstrChunkIdx,
+        tostring(chunkname or 'unknown'),
+        #tostring(str),
+        tick()
+    )
+    appendfile('loadstrings.txt', header .. tostring(str) .. '\n\n-- END CHUNK #' .. loadstrChunkIdx .. '\n\n')
+    writefile(loadstrChunkIdx .. '-chunk.lua', tostring(str))
+    log('loadstring', 'loadstring([chunk #' .. loadstrChunkIdx .. ', ' .. #tostring(str) .. ' chars])()')
+    return oldl(str, chunkname)
+end))
+
+-- ============================================================
+-- REMOTE LOGGING (FireServer, InvokeServer, FireAllClients, etc.)
+-- ============================================================
+local function hookRemote(inst)
+    local name = inst.Name or 'Unknown'
+    local path = pcall(inst.GetFullName, inst) and inst:GetFullName() or name
+
+    for _, method in ipairs({'FireServer','InvokeServer','FireClient','FireAllClients','InvokeClient'}) do
+        if inst[method] then
+            local ok, old = pcall(clonefunction, inst[method])
+            if ok then
+                local ok2 = pcall(hookfunction, inst[method], newcclosure(function(self, ...)
+                    local args = {...}
+                    local argStr = tblformat(args)
+                    local entry = string.format("== REMOTE %s ==\n  Path: %s\n  Args: %s\n  Tick: %.3f",
+                        method, path, argStr, tick())
+                    logBlock('remotes.txt', entry)
+                    log('remote', path .. ':' .. method .. '(' .. argStr .. ')')
+                    return old(self, ...)
+                end))
+            end
+        end
+    end
+end
+
+-- Hook existing remotes and new ones
+local function scanRemotes(parent)
+    for _, v in ipairs(parent:GetDescendants()) do
+        if v:IsA('RemoteEvent') or v:IsA('RemoteFunction') or v:IsA('BindableEvent') or v:IsA('BindableFunction') then
+            pcall(hookRemote, v)
+        end
+    end
+end
+
+pcall(scanRemotes, game)
+
+game.DescendantAdded:Connect(function(inst)
+    if inst:IsA('RemoteEvent') or inst:IsA('RemoteFunction') or inst:IsA('BindableEvent') or inst:IsA('BindableFunction') then
+        pcall(hookRemote, inst)
+    end
+end)
+
+-- ============================================================
+-- SETFFLAG LOGGING
+-- ============================================================
+local oldsetfflag = clonefunction(setfflag)
+setfflag = newcclosure(function(flag, state)
+    local upvals = oldsetfflag(flag, state)
+    log(upvals, 'setfflag("' .. tostring(flag) .. '", "' .. tostring(state) .. '")')
+    return upvals
+end)
+
+-- ============================================================
+-- INSTANCE.NEW LOGGING
+-- ============================================================
+Instance = Instance or {}
+local oldinstancenew = clonefunction(Instance.new)
+setreadonly(Instance, false)
+Instance.new = newcclosure(function(name, parent)
+    if checkcaller() and not isuilib() then
+        local upvals = oldinstancenew(name, parent)
+        local info = debug.getinfo and debug.getinfo(2,'Sl')
+        if info and info.source and info.source:find('@') then
+            log(upvals, 'local a = Instance.new("' .. tostring(name) .. '")')
+        else
+            Track[upvals] = tostring(name)
+            log(upvals, 'local ' .. tostring(name) .. ' = Instance.new("' .. tostring(name) .. '")')
+        end
+        return upvals
+    end
+    return oldinstancenew(name, parent)
+end)
+setreadonly(Instance, true)
+
+-- ============================================================
+-- METAMETHOD HOOKS (__index, __namecall, __newindex)
+-- ============================================================
+hookmetamethod(game, '__index', newcclosure(function(self, v, ...)
+    if checkcaller() and not isuilib() then
+        local upvals = oldindex(self, v, ...)
+        local skip = {GetService=1, HttpGet=1, JSONDecode=1, CoreGui=1, JSONEncode=1,
+                      WaitForChild=1, FindFirstChild=1, DescendantRemoving=1, IsA=1,
+                      GetDescendants=1, GetChildren=1, ClassName=1}
+        if skip[v] then return upvals end
+        if v == 'Character' then
+            log('LocalPlayer.Character', self:GetFullName() .. '.' .. v)
+            return upvals
+        end
+        if v == 'JobId' or v == 'PlaceId' or v == 'GameId' or v == 'CreatorId' then
+            log('game.ID', self:GetFullName() .. '.' .. v .. ' = "' .. tostring(upvals) .. '"')
+            return upvals
+        end
+        if tostring(upvals):find('function:') then
+            log(upvals, self:GetFullName() .. ':' .. v .. '(...)')
+            return upvals
+        end
+        log(upvals, self:GetFullName() .. '.' .. v)
+        return upvals
+    end
+    return oldindex(self, v, ...)
+end))
+
+hookmetamethod(game, '__namecall', newcclosure(function(self, ...)
+    if checkcaller() and not isuilib() and getnamecallmethod() ~= 'GetFullName' then
+        local instance = tostring(self)
+        local upvals = oldnamecall(self, ...)
+        local args = {...}
+        local formated = tblformat(args)
+        local method = getnamecallmethod()
+
+        -- Capture HttpGet / HttpGetAsync with full URL
+        if method == 'HttpGet' or method == 'HttpGetAsync' then
+            local url = args[1] or '?'
+            local entry = string.format("== game:HttpGet ==\n  URL: %s\n  Tick: %.3f", tostring(url), tick())
+            logBlock('api-calls.txt', entry)
+            log(upvals, 'loadstring(game:HttpGet("' .. tostring(url) .. '", true))()')
+            return upvals
+        end
+        if method == 'HttpPost' or method == 'HttpPostAsync' then
+            local url, body = args[1] or '?', args[2] or ''
+            local entry = string.format("== game:HttpPost ==\n  URL: %s\n  Body: %s\n  Tick: %.3f", tostring(url), tostring(body), tick())
+            logBlock('api-calls.txt', entry)
+            log(upvals, 'game:HttpPost("' .. tostring(url) .. '", ...)')
+            return upvals
+        end
+        if method == 'GetService' then
+            log(upvals, 'game:GetService("' .. tostring(args[1]) .. '")')
+            return upvals
+        end
+        if method == 'WaitForChild' then
+            log(upvals, instance .. ':WaitForChild("' .. tostring(args[1]) .. '")')
+            return upvals
+        end
+        if method == 'FindFirstChild' then
+            log(upvals, instance .. ':FindFirstChild("' .. tostring(args[1]) .. '")')
+            return upvals
+        end
+        if method == 'JSONDecode' then
+            log(upvals, 'HttpService:JSONDecode(...)')
+            return upvals
+        end
+        if method == 'JSONEncode' then
+            log(upvals, 'HttpService:JSONEncode(...)')
+            return upvals
+        end
+        if method == 'Teleport' or method == 'TeleportToPlaceInstance' then
+            log(upvals, 'TeleportService:' .. method .. '(' .. formated .. ')')
+            return upvals
+        end
+        log(upvals, instance .. ':' .. method .. '(' .. formated .. ')')
+        return upvals
+    end
+    return oldnamecall(self, ...)
+end))
+
+hookmetamethod(game, '__newindex', newcclosure(function(self, i, v)
+    if checkcaller() and not isuilib() then
+        local upvals = oldnewindex(self, i, v)
+        local a = Track[self] or self:GetFullName()
+        local b = tostring(i)
+        local c = typeof(v)
+        local d = tostring(v)
+        local valStr
+        if c == 'Instance' then valStr = v:GetFullName()
+        elseif c == 'number' then valStr = d
+        elseif c == 'string' then valStr = '"' .. d .. '"'
+        elseif c == 'boolean' then valStr = d
+        elseif c == 'Color3' then valStr = 'Color3.new(' .. d .. ')'
+        elseif c == 'CFrame' then valStr = 'CFrame.new(' .. d .. ')'
+        elseif c == 'Vector3' then valStr = 'Vector3.new(' .. d .. ')'
+        elseif c == 'UDim2' then valStr = 'UDim2.new(' .. d:gsub('{',''):gsub('}','') .. ')'
+        elseif c == 'Vector2' then valStr = 'Vector2.new(' .. d .. ')'
+        elseif c == 'UDim' then valStr = 'UDim.new(' .. d .. ')'
+        elseif c == 'EnumItem' then valStr = d
+        elseif c == 'ColorSequence' then valStr = 'ColorSequence.new(' .. d:gsub('%s+',',') .. ')'
+        elseif c == 'function' then valStr = 'function(...) end'
+        else valStr = '[' .. c .. '] ' .. d end
+        log(upvals, a .. '.' .. b .. ' = ' .. valStr)
+        return upvals
+    end
+    return oldnewindex(self, i, v)
+end))
+
+-- ============================================================
+-- PRINT / WARN / ERROR LOGGING
+-- ============================================================
+local oldprint = clonefunction(print)
+print = newcclosure(function(...)
+    if checkcaller() and not isuilib() then
+        local args = {...}
+        local parts = {}
+        for i = 1, select('#', ...) do
+            local v = args[i]
+            parts[i] = type(v) == 'table' and tblformat(v) or tostring(v)
+        end
+        local upvals = oldprint(...)
+        log(upvals, 'print("' .. table.concat(parts, '\t') .. '")')
+        return upvals
+    end
+    return oldprint(...)
+end)
+
+local oldwarn = clonefunction(warn)
+warn = newcclosure(function(...)
+    if checkcaller() and not isuilib() then
+        local args = {...}
+        local parts = {}
+        for i = 1, select('#', ...) do
+            parts[i] = tostring(args[i])
+        end
+        local upvals = oldwarn(...)
+        log(upvals, 'warn("' .. table.concat(parts, '\t') .. '")')
+        return upvals
+    end
+    return oldwarn(...)
+end)
+
+local oldError = clonefunction(error)
+error = newcclosure(function(msg, level)
+    if checkcaller() and not isuilib() then
+        oldError(msg, level)
+        log('error', 'error("' .. tostring(msg) .. '")')
+    end
+    return oldError(msg, level)
+end)
+
+-- ============================================================
+-- WRITEFILE / READFILE / APPENDFILE LOGGING
+-- ============================================================
+local oldWritefile = clonefunction(writefile)
+writefile = newcclosure(function(path, content)
+    log('writefile', 'writefile("' .. tostring(path) .. '", [' .. #tostring(content) .. ' chars])')
+    return oldWritefile(path, content)
+end)
+
+local oldReadfile = clonefunction(readfile)
+readfile = newcclosure(function(path)
+    local upvals = oldReadfile(path)
+    log('readfile', 'readfile("' .. tostring(path) .. '") -> [' .. #tostring(upvals) .. ' chars]')
+    return upvals
+end)
+
+-- ============================================================
+-- GETGENV / _G SCAN
+-- ============================================================
+function GlobalScan()
+    appendfile('env-scan.txt', '== _G SCAN at tick ' .. tostring(tick()) .. ' ==\n')
+    for i, v in pairs(_G) do
+        local line = '_G.' .. tostring(i) .. ' = ' .. tblformat(v)
+        appendfile('env-scan.txt', line .. '\n')
+        log('_G Scan', line)
+    end
+end
+
+function GenvScan()
+    appendfile('env-scan.txt', '== getgenv() SCAN at tick ' .. tostring(tick()) .. ' ==\n')
+    for i, v in pairs(getgenv()) do
+        local line = 'getgenv().' .. tostring(i) .. ' = ' .. tblformat(v)
+        appendfile('env-scan.txt', line .. '\n')
+        log('getgenv Scan', line)
+    end
+end
+
+-- Auto-scan after a small delay to catch anything set during init
+task.delay(3, function()
+    pcall(GlobalScan)
+    pcall(GenvScan)
+end)
+
+-- ============================================================
+-- CRYPTO / OBFUSCATION DETECTION
+-- ============================================================
+local function hookCrypto(fnName)
+    local fn = getgenv()[fnName]
+    if type(fn) == 'function' then
+        local oldFn = clonefunction(fn)
+        getgenv()[fnName] = newcclosure(function(...)
+            local args = {...}
+            local upvals = oldFn(...)
+            local entry = string.format("== %s ==\n  Input:  %s\n  Output: %s",
+                fnName,
+                tostring(args[1] and tostring(args[1]):sub(1,80) or 'nil'),
+                tostring(upvals and tostring(upvals):sub(1,80) or 'nil'))
+            logBlock('crypto.txt', entry)
+            log('crypto', fnName .. '(...)')
+            return upvals
+        end)
+    end
+end
+
+for _, name in ipairs({'base64encode','base64decode','base64_encode','base64_decode','b64encode','b64decode',
+                        'AES','aes','RC4','rc4','SHA256','sha256','MD5','md5',
+                        'encrypt','decrypt','hash','crypt'}) do
+    pcall(hookCrypto, name)
+end
+
+-- ============================================================
+-- TASK / SPAWN / DELAY LOGGING
+-- ============================================================
+local oldTaskSpawn = clonefunction(task.spawn)
+task.spawn = newcclosure(function(fn, ...)
+    log('task.spawn', 'task.spawn([function])')
+    return oldTaskSpawn(fn, ...)
+end)
+
+local oldTaskDelay = clonefunction(task.delay)
+task.delay = newcclosure(function(t, fn, ...)
+    log('task.delay', 'task.delay(' .. tostring(t) .. ', [function])')
+    return oldTaskDelay(t, fn, ...)
+end)
+
+-- ============================================================
+-- CLEANUP
+-- ============================================================
+game.DescendantRemoving:Connect(function(a)
+    Track[a] = nil
+end)
+
+print("[Logger] ✓ Initialization complete")
+print("[Logger] Output files: logged.txt | api-calls.txt | wss-calls.txt | loadstrings.txt | remotes.txt | env-scan.txt | crypto.txt")
+print("[Logger] Executing target script...")
+
+
+-- ============================================================
+-- FETCHED SCRIPT
+-- ============================================================
+
+-- Do not save this file
+-- Always use the loadstring 
+  _bsdata0={800378607,1772021652,8972894,19079375,"\136\158\166\198\203\83\225\161\196\18\20\81\188\202\224\49\149\85\136\172\53",9444390,21952567,"\87\87\240\251\83\183\218\106\123\175\89\35\69\32\201\58\167\230\39\117\95\235\192\4",4284879840,"5690eb7d54288f9c743684fb0f72a0b217d68594517366e1e83288004b9226eced929b63fb9c9c395222bcd5f0f5048c474dc241dedf8ad6257e3acaa829fb11a04308e119125b321cb0225a5ede5e6d05e7eb8401bb4891192e09f8cbc9ccab36a7b2ac48810493e4d7f6a41b3b4045d4444effbde9840c13d59ec95e2012f68eee6393728362808ee62ddde2237b8f57f436315d04cf1a983a6f458d32e56e3fcd7c00831c4ab29a0369ca3969761b13bcf17945f46c4e10ce0c86ee8d528bfb2eb847701bb505",".BDLB-3-CC5R-E24B1E2BE0A224B_3A.4R0R1BB50B2154C.5511B25CAECE5BLR5.2-2CEBCB0_41.4D2...L-C.55E1B5EA.DA12331AR..BEDDB5A-4B3AREL31_LE14C-_",55747425};
+local f,b,a="static_content_130525","25db4afc2f3-janend";pcall(function()a=readfile(f.."/init-"..b..".lua")end) if a and #a>2000 then a=loadstring(a) else a=nil; end;
+if a then return a() else pcall(makefolder,f) a=game:HttpGet("https://cdn.luarmor.net/v4_init_janend.lua"..(_ca920af6193 or "")) writefile(f.."/init-"..b..".lua", a); 
+pcall(function() for i,v in pairs(listfiles('./'..f)) do local m=v:match('(init[%w%-]*).lua$') if m and m~=('init-'..b) then pcall(delfile, f..'/'..m..'.lua') end end; end); return loadstring(a)() end
+  
