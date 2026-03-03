@@ -18,8 +18,6 @@ local player = Players.LocalPlayer
 local workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 
--- loadstring(game:HttpGet("https://pastefy.app/WlLv7GTf/raw"))()
-
 local function isDeltaExecutor()
     local executor = identifyexecutor and identifyexecutor() or "Unknown"
     return string.find(executor:lower(), "delta") ~= nil
@@ -34,1191 +32,13 @@ if not ModernGUILibrary.MakeTab or type(ModernGUILibrary.MakeTab) ~= "function" 
     warn("MakeTab is not a function")
     return
 end
-local window = ModernGUILibrary.MakeTab({
-    Name = "HOME",
-    Icon = "home"
-})
-
-local specialTab = ModernGUILibrary.MakeTab({
-    Name = "SPECIAL",
-    Icon = "send"
-})
-
-local mainTab = ModernGUILibrary.MakeTab({
-    Name = "MAIN",
-    Icon = "send"
-})
 
 local spawnerTab = ModernGUILibrary.MakeTab({
     Name = "SPAWNER",
     Icon = "send"
 })
 
-local destroyerTab = ModernGUILibrary.MakeTab({
-    Name = "DESTROY",
-    Icon = "send"
-})
-
-local settingTab = ModernGUILibrary.MakeTab({
-    Name = "SETTINGS",
-    Icon = "settings"
-})
-
-local switchTab = ModernGUILibrary.MakeTab({
-    Name = "SWITCH",
-    Icon = "help-circle"
-})
-
--- HOME Tab
-if not window.AddLabel or type(window.AddLabel) ~= "function" then
-    warn("AddLabel is not a function in window")
-    return
-end
-local homeHeader, homeHeaderMethods = window.AddLabel(
-    "HomeHeader",
-    "HOME MENU",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(11, 218, 81),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local versionNumber = "N/A"
-local serverVersionLabel, serverVersionMethods = window.AddLabel(
-    "ServerVersion",
-    "Server Version: " .. (versionNumber or "Unknown"),
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local hubVersionLabel, hubVersionMethods = window.AddLabel(
-    "HubVersion",
-    "Zysume Hub: V26.0 [NEW]",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local hubVersionLabel, hubVersionMethods = window.AddLabel(
-    "HubVersion",
-    "Last Updated: 03/02/2026",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local function formatTime(seconds)
-    local hours = math.floor(seconds / 3600)
-    local minutes = math.floor((seconds % 3600) / 60)
-    local secs = seconds % 60
-    return string.format("%02d:%02d:%02d", hours, minutes, secs)
-end
-
-local startTime = os.time()
-local timeLapseLabel, timeLapseMethods = window.AddLabel(
-    "TimeLapse",
-    "Timelapse: 00:00:00",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(100, 255, 100)
-    }
-)
-if not timeLapseMethods or not timeLapseMethods.setText then
-    warn("timeLapseMethods or setText is missing")
-end
-
-local function updateTimeLapse()
-    local currentTime = os.time()
-    local elapsedTime = currentTime - startTime
-    local formattedTime = formatTime(elapsedTime)
-    if timeLapseMethods and timeLapseMethods.setText and type(timeLapseMethods.setText) == "function" then
-        timeLapseMethods.setText("Timelapse: " .. formattedTime)
-    else
-        warn("setText method is missing or not a function")
-    end
-end
-
-spawn(function()
-    while true do
-        wait(1)
-        updateTimeLapse()
-    end
-end)
-
-local autoTeleport1, getAutoTeleportStatus1 = window.AddCheckbox(
-    "info2",
-    "NO LAG HUB [ OFFICIAL ]",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("NO-LAG HUB!", "success")
-            loadstring(game:HttpGet("https://rawscripts.net/raw/Grow-a-Garden-NoLag-Hub-no-key-38699"))()
-        else
-            ModernGUILibrary.createNotification("NO-LAG HUB", "info")
-        end
-    end
-)
-
-local specialssHeader, specialHeaderTab = window.AddLabel(
-    "SpecialssHeader",
-    "Volcano Booth & Unlimited Token",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 127),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = window.AddCheckbox(
-    "info9112",
-    "Free Volcano Booth",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Loading Free Volcano Booth...", "info")
-            pcall(function()
-                if not _G.StartBoothSystem then
-                    loadstring(game:HttpGet("https://pastefy.app/15EMMrHi/raw"))()
-                    wait(0.5)
-                end
-                
-                if _G.StartBoothSystem then
-                    _G.StartBoothSystem()
-                    ModernGUILibrary.createNotification("Volcano Booth System Started!", "success")
-                else
-                    ModernGUILibrary.createNotification("Failed to load booth system", "error")
-                end
-            end)
-        else
-            pcall(function()
-                if _G.StopBoothSystem then
-                    _G.StopBoothSystem()
-                    ModernGUILibrary.createNotification("Volcano Booth System Stopped", "warning")
-                end
-            end)
-        end
-    end
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = window.AddCheckbox(
-    "info9112",
-    "Free Carrot Coins v1.0",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Loading Free Carrot Coins v1.0...", "info")
-            pcall(function()
-                loadstring(game:HttpGet("https://pastefy.app/u5Xhc4Xy/raw"))()
-                ModernGUILibrary.createNotification("Free Coins Loaded, Wait 5Sec and Check Shop", "success")
-            end)
-        else
-            ModernGUILibrary.createNotification("Free Coins", "warning")
-        end
-    end
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = window.AddCheckbox(
-    "info9112",
-    "Token v4.0 [Buttercup Coin]",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Loading Unlimited Token v3.0...", "info")
-            pcall(function()
-                loadstring(game:HttpGet("https://pastefy.app/IMlUCBqe/raw"))()
-                ModernGUILibrary.createNotification("Unlimited Token v3.0 loaded!", "success")
-            end)
-        else
-            ModernGUILibrary.createNotification("Unlimited Token v3.0 disabled", "warning")
-        end
-    end
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = window.AddCheckbox(
-    "info9112",
-    "Pet Stealer v1.0",
-    nil,
-    function(checked)
-        if checked then
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            
-            
-            if playerGui:FindFirstChild("ProfileViewer") then
-                
-                ModernGUILibrary.createNotification("Pet Stealer Already Loaded, Enabling...", "info")
-                playerGui.ProfileViewer.Enabled = true
-                ModernGUILibrary.createNotification("Pet Stealer ", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Pet Stealer...", "info")
-            
-            pcall(function()
-                    loadstring(game:HttpGet("https://pastefy.app/c4Dt51n0/raw"))()
-                    ModernGUILibrary.createNotification("Pet Stealer is loaded!", "success")
-                    playerGui.ProfileViewer.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            if playerGui:FindFirstChild("ProfileViewer") then
-                ModernGUILibrary.createNotification("Pet Stealer..", "warning")
-                playerGui.ProfileViewer.Enabled = true
-            end
-        end
-    end
-)
-
-local specialssHeader, specialHeaderTab = specialTab.AddLabel(
-    "SpecialssHeader",
-    "TRADE FREEZER",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 127),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = specialTab.AddCheckbox(
-    "info9112",
-    "Trade Freezer v1.0",
-    nil,
-    function(checked)
-        if checked then
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            
-            
-            if playerGui:FindFirstChild("TradeFreezerUI") then
-                
-                ModernGUILibrary.createNotification("Trade Freezer Already Loaded, Enabling...", "info")
-                playerGui.TradeFreezerUI.Enabled = true
-                ModernGUILibrary.createNotification("Trade Freezer ", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Trade Freezer...", "info")
-            
-            pcall(function()
-                    loadstring(game:HttpGet("https://pastefy.app/QssOEn8g/raw"))()
-                    ModernGUILibrary.createNotification("Trade Freezer is loaded!", "success")
-                    playerGui.TradeFreezerUI.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            if playerGui:FindFirstChild("TradeFreezerUI") then
-                ModernGUILibrary.createNotification("Trade Freezer..", "warning")
-                playerGui.TradeFreezerUI.Enabled = true
-            end
-        end
-    end
-)
-
-local petRegistry = require(game:GetService("ReplicatedStorage").Data.PetRegistry.PetList)
-
-local petOptions = {}
-local petIcons = {}
-
-for petName, petData in pairs(petRegistry) do
-    table.insert(petOptions, petName)
-    petIcons[petName] = petData.Icon
-end
-
-local popularPetNames = {"Raccoon", "Kitsune", "Dragonfly", "Mimic Octopus", "Queen Bee", "Disco Bee", "Chicken Zombie", "Red Fox"}
-local popularPetOptions = {}
-
-for _, petName in ipairs(popularPetNames) do
-    if petRegistry[petName] then
-        table.insert(popularPetOptions, petName)
-    end
-end
-
-local selectedPet = petOptions[1] or "Dog"
-local selectedPopularPet = popularPetOptions[1] or ""
-local selectedColor = "Default"
-local lastInputWeight = "1"
-
-local colorOptions = {"Default", "White", "Blue", "Purple", "Yellow", "Orange", "Red"}
-local colorValues = {
-    ["Default"] = nil,
-    ["White"] = Color3.fromRGB(170, 170, 170),
-    ["Blue"] = Color3.fromRGB(7, 119, 255),
-    ["Purple"] = Color3.fromRGB(170, 85, 255),
-    ["Yellow"] = Color3.fromRGB(255, 255, 0),
-    ["Orange"] = Color3.fromRGB(255, 85, 0),
-    ["Red"] = Color3.fromRGB(255, 0, 0)
-}
-
--- Variable untuk monitoring permanen
-local tradingMonitorActive = false
-
-local petDropdown, petMethods = specialTab.AddDropdown(
-    "SelectPet",
-    "Select Pet",
-    petOptions,
-    selectedPet,
-    nil,
-    function(selectedPetValue)
-        selectedPet = selectedPetValue
-        ModernGUILibrary.createNotification("Pet selected: " .. selectedPetValue, "info")
-    end
-)
-petDropdown.ZIndex = 49
-
-local popularPetDropdown, popularPetMethods = specialTab.AddDropdown(
-    "PopularPets",
-    "Popular Pets",
-    popularPetOptions,
-    selectedPopularPet,
-    nil,
-    function(selectedPopularPetValue)
-        selectedPopularPet = selectedPopularPetValue
-        selectedPet = selectedPopularPetValue
-        ModernGUILibrary.createNotification("Popular Pet selected: " .. selectedPopularPetValue, "info")
-    end
-)
-popularPetDropdown.ZIndex = 48
-
-local colorDropdown, colorMethods = specialTab.AddDropdown(
-    "SelectColor",
-    "Select Color",
-    colorOptions,
-    selectedColor,
-    nil,
-    function(selectedColorValue)
-        selectedColor = selectedColorValue
-        ModernGUILibrary.createNotification("Color selected: " .. selectedColorValue, "info")
-    end
-)
-colorDropdown.ZIndex = 47
-
-local weightInput, weightMethods = specialTab.AddTextInput(
-    "PetWeight",
-    "Pet Weight:",
-    "1",
-    nil,
-    function(value)
-        if value and value ~= "" then
-            lastInputWeight = value
-            ModernGUILibrary.createNotification("Pet weight set to: " .. value, "info")
-        else
-            ModernGUILibrary.createNotification("Invalid weight input!", "error")
-        end
-    end
-)
-
--- Function untuk menghapus SEMUA ItemTemplate di TargetTrader
-local function clearAllTargetTraderItems()
-    local player = game:GetService("Players").LocalPlayer
-    local tradingUI = player.PlayerGui:FindFirstChild("TradingUI")
-    
-    if tradingUI then
-        local targetLocation = tradingUI.Main.Main.Holder.Main.TargetTrader.Main.Items.Main
-        if targetLocation then
-            -- Hapus SEMUA ItemTemplate
-            for _, child in pairs(targetLocation:GetChildren()) do
-                if child.Name == "ItemTemplate" then
-                    child:Destroy()
-                end
-            end
-        end
-    end
-end
-
--- Function untuk spawn pet
-local function spawnPetInTrade()
-    local player = game:GetService("Players").LocalPlayer
-    
-    local tradingUI = player.PlayerGui:FindFirstChild("TradingUI")
-    if not tradingUI then
-        ModernGUILibrary.createNotification("Trading UI not found!", "error")
-        return false
-    end
-    
-    -- Check apakah TradingUI enabled
-    if not tradingUI.Enabled then
-        ModernGUILibrary.createNotification("Sorry, But you're not in trade", "error")
-        return false
-    end
-    
-    local sourcePath = tradingUI.Main.Main.Holder.Main.LocalTrader.Main.Items.Main:FindFirstChild("ItemTemplate")
-    if not sourcePath then
-        ModernGUILibrary.createNotification("Source not found!", "error")
-        return false
-    end
-    
-    local targetLocation = tradingUI.Main.Main.Holder.Main.TargetTrader.Main.Items.Main
-    if not targetLocation then
-        ModernGUILibrary.createNotification("Target not found!", "error")
-        return false
-    end
-    
-    local clonedTemplate = sourcePath:Clone()
-    clonedTemplate.Name = "ItemTemplate"
-    clonedTemplate.Parent = targetLocation
-    
-    local itemImage = clonedTemplate:FindFirstChild("ITEM_IMAGE")
-    if itemImage and petIcons[selectedPet] then
-        itemImage.Image = petIcons[selectedPet]
-    end
-    
-    local uiStroke = clonedTemplate:FindFirstChild("UIStroke")
-    if uiStroke and colorValues[selectedColor] then
-        uiStroke.Color = colorValues[selectedColor]
-    end
-    
-    local hoverOverlay = clonedTemplate:FindFirstChild("Hover_Overlay")
-    if hoverOverlay then
-        local itemName = hoverOverlay:FindFirstChild("ITEM_NAME")
-        if itemName then
-            itemName.Text = selectedPet
-        end
-        
-        local itemWeight = hoverOverlay:FindFirstChild("ITEM_WEIGHT")
-        if itemWeight then
-            itemWeight.Text = lastInputWeight .. "kg"
-        end
-    end
-    
-    clonedTemplate.Visible = true
-    
-    ModernGUILibrary.createNotification("Pet spawned in trade: " .. selectedPet .. " (" .. selectedColor .. " - " .. lastInputWeight .. "kg)", "success")
-    return true
-end
-
--- Function untuk memulai monitoring permanen (tidak bisa dimatikan)
-local function startPermanentTradingMonitor()
-    if tradingMonitorActive then
-        return -- Sudah aktif, tidak perlu start lagi
-    end
-    
-    tradingMonitorActive = true
-    local player = game:GetService("Players").LocalPlayer
-    local RunService = game:GetService("RunService")
-    
-    spawn(function()
-        local lastTradingState = nil
-        
-        while tradingMonitorActive do
-            local tradingUI = player.PlayerGui:FindFirstChild("TradingUI")
-            
-            if tradingUI then
-                local currentState = tradingUI.Enabled
-                
-                -- Jika status berubah dari enabled ke disabled
-                if lastTradingState == true and currentState == false then
-                    clearAllTargetTraderItems()
-                    
-                end
-                
-                lastTradingState = currentState
-            end
-            
-            wait(0.1) -- Check setiap 0.1 detik
-        end
-    end)
-    
-    ModernGUILibrary.createNotification("Pet Spawned", "success")
-end
-
-local spawnCheckbox, spawnMethods = specialTab.AddCheckbox(
-    "SpawnInTrade",
-    "Spawn In Trade",
-    nil,
-    function(checked)
-        if checked then
-            -- Start monitoring permanen pada click pertama
-            if not tradingMonitorActive then
-                startPermanentTradingMonitor()
-            end
-            
-            -- Spawn pet
-            spawnPetInTrade()
-        end
-    end
-)
-
-local specialHeader, specialHeaderTab = specialTab.AddLabel(
-    "SpecialHeader",
-    "Pet Mover",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(127, 0, 255),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local autoTeleport9112, getAutoTeleportStatus9112 = specialTab.AddCheckbox(
-    "info9112",
-    "Pet Mover ~.~",
-    nil,
-    function(checked)
-        if checked then
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            
-            
-            if playerGui:FindFirstChild("PetMovementKillerGUI") then
-                
-                ModernGUILibrary.createNotification("Pet Mover Already Loaded, Enabling...", "info")
-                playerGui.PetMovementKillerGUI.Enabled = true
-                ModernGUILibrary.createNotification("Pet Mover ", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Pet Mover...", "info")
-            
-            pcall(function()
-                    loadstring(game:HttpGet("https://pastefy.app/rvGYzt12/raw"))()
-                    ModernGUILibrary.createNotification("Pet Mover is loaded!", "success")
-                    playerGui.PetMovementKillerGUI.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            
-            if playerGui:FindFirstChild("PetMovementKillerGUI") then
-                ModernGUILibrary.createNotification("Pet Mover..", "warning")
-                playerGui.PetMovementKillerGUI.Enabled = true
-            end
-        end
-    end
-)
-
-local specialHeader, specialHeaderTab = specialTab.AddLabel(
-    "SpecialHeader",
-    "Plant Spawner",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 128, 0),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
--- Get plant model names from PlantModels folder
-local plantModelsFolder = ReplicatedStorage:WaitForChild("PlantModels")
-local plantOptions = {}
-for _, model in pairs(plantModelsFolder:GetChildren()) do
-    if model:IsA("Model") then
-        table.insert(plantOptions, model.Name)
-    end
-end
-
-local selectedPlant = plantOptions[1] or "DefaultPlant"
-
-local plantDropdown, plantMethods = specialTab.AddDropdown(
-    "SelectPlant",
-    "Select Plant",
-    plantOptions,
-    selectedPlant,
-    nil,
-    function(selectedPlantValue)
-        selectedPlant = selectedPlantValue
-        ModernGUILibrary.createNotification("Plant selected: " .. selectedPlantValue, "info")
-    end
-)
-plantDropdown.ZIndex = 49
-
-local function spawnPlant(plantName)
-    local character = LocalPlayer.Character
-    if not character or not character:FindFirstChild("HumanoidRootPart") then return end
-    
-    -- Get the plant model
-    local plantModel = plantModelsFolder:FindFirstChild(plantName)
-    if not plantModel then return end
-    
-    -- Clone the plant
-    local plantClone = plantModel:Clone()
-    
-    -- Get player position and look direction
-    local humanoidRootPart = character.HumanoidRootPart
-    local playerPosition = humanoidRootPart.Position
-    local lookDirection = humanoidRootPart.CFrame.LookVector
-    
-    -- Calculate spawn position (7 studs in front)
-    local spawnPosition = playerPosition + (lookDirection * 7)
-    
-    -- Find the center and lowest point of the plant model
-    local modelCFrame, modelSize = plantModel:GetBoundingBox()
-    local modelBottomY = modelCFrame.Position.Y - (modelSize.Y / 2)
-    
-    -- Calculate Y offset to place plant bottom at player's feet level, then lower by 2 studs
-    local playerFeetY = playerPosition.Y - (humanoidRootPart.Size.Y / 2)
-    local yOffset = (playerFeetY - modelBottomY) - 2
-    
-    -- Calculate the offset from model center to desired spawn center
-    local centerOffset = Vector3.new(
-        spawnPosition.X - modelCFrame.Position.X,
-        yOffset,
-        spawnPosition.Z - modelCFrame.Position.Z
-    )
-    
-    -- Move all parts by the offset
-    for _, part in pairs(plantClone:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.Position = part.Position + centerOffset
-            part.Anchored = true
-        end
-    end
-    
-    -- Parent to workspace
-    plantClone.Parent = workspace
-    
-    return plantClone
-end
-
-local plantCheckbox, plantCheckboxState = specialTab.AddCheckbox(
-    "plantMethod",
-    "Plant it",
-    nil,
-    function(checked)
-        if checked then
-            local spawnedPlant = spawnPlant(selectedPlant)
-            if spawnedPlant then
-                ModernGUILibrary.createNotification("Planted: " .. selectedPlant, "success")
-            else
-                ModernGUILibrary.createNotification("Failed to plant: " .. selectedPlant, "error")
-            end
-        end
-    end
-)
-
-local special2Header, special2HeaderTab = specialTab.AddLabel(
-    "Special2Header",
-    "INFINITE SHECKLES >.<",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 0),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local jandelCheckbox, jandelElement = specialTab.AddCheckbox(
-    "SpecialJandel",
-    "Open Jandel Command",
-    nil,
-    function(checked)
-        if checked then
-            
-            
-            
-            if playerGui:FindFirstChild("JandelCommand") then
-                
-                ModernGUILibrary.createNotification("Jandel Commane already loaded, enabling...", "info")
-                playerGui.JandelCommand.Enabled = true
-                ModernGUILibrary.createNotification("Jandel Command enabled!", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Loading Jandel Command by Zysume...", "info")
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/ScriptMaker1111/zyhub/refs/heads/main/Jndel"))()
-                    ModernGUILibrary.createNotification("Jandel Command loaded!", "success")
-                    playerGui.JandelCommand.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            if playerGui:FindFirstChild("JandelCommand") then
-                ModernGUILibrary.createNotification("Jandel Command disabled", "warning")
-                playerGui.JandelCommand.Enabled = false
-            end
-        end
-    end
-)
-jandelCheckbox.ZIndex = 2
-
-local jandelsCheckbox, jandelsElement = specialTab.AddCheckbox(
-    "SpecialJandel",
-    "Infinite Dinosaur Egg",
-    nil,
-    function(checked)
-        if checked then
-            
-            
-            
-            if playerGui:FindFirstChild("DinoEggGUI") then
-                
-                ModernGUILibrary.createNotification("Inf Dino Egg already loaded, enabling...", "info")
-                playerGui.DinoEggGUI.Enabled = true
-                ModernGUILibrary.createNotification("Inf Dino Egg enabled!", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Inf Dino Egg by Zysume...", "info")
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/ScriptMaker1111/zyhub/refs/heads/main/Dinoclaim"))()
-                    ModernGUILibrary.createNotification("Inf Dino Egg loaded!", "success")
-                    playerGui.DinoEggGUI.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            
-            if playerGui:FindFirstChild("DinoEggGUI") then
-                ModernGUILibrary.createNotification("Inf Dino Egg disabled", "warning")
-                playerGui.DinoEggGUI.Enabled = false
-            end
-        end
-    end
-)
-jandelsCheckbox.ZIndex = 2
-
-local jandelssCheckbox, jandelssElement = specialTab.AddCheckbox(
-    "SpecialJandel",
-    "Infinite Sheckles Glitch",
-    nil,
-    function(checked)
-        if checked then
-            
-            
-            
-            if playerGui:FindFirstChild("ShecklesAutoGiverGUI") then
-                
-                ModernGUILibrary.createNotification("Inf Sheckles already loaded, enabling...", "info")
-                playerGui.ShecklesAutoGiverGUI.Enabled = true
-                ModernGUILibrary.createNotification("Inf Sheckles enabled!", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Inf Sheckles by Zysume...", "info")
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/ScriptMaker1111/zyhub/refs/heads/main/Infsheckles"))()
-                    ModernGUILibrary.createNotification("Inf Sheckles loaded!", "success")
-                    playerGui.ShecklesAutoGiverGUI.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            
-            if playerGui:FindFirstChild("ShecklesAutoGiverGUI") then
-                ModernGUILibrary.createNotification("Inf Sheckles disabled", "warning")
-                playerGui.ShecklesAutoGiverGUI.Enabled = false
-            end
-        end
-    end
-)
-jandelssCheckbox.ZIndex = 2
-
-local fruitStealerHeader, fruitStealerMethods = specialTab.AddLabel(
-    "FruitStealerHeader",
-    "Fruit Stealer!!",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 127),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local fruitStealerCheckbox, fruitStealerElement = specialTab.AddCheckbox(
-    "FruitStealer",
-    "Fruit Stealer v1.0",
-    nil,
-    function(checked)
-        if checked then
-            
-            
-            
-            if playerGui:FindFirstChild("ProfileViewer") then
-                
-                ModernGUILibrary.createNotification("Fruit Stealer v1.0 already loaded, enabling...", "info")
-                playerGui.ProfileViewer.Enabled = true
-                ModernGUILibrary.createNotification("Fruit Stealer v1.0 enabled!", "success")
-            else
-                
-                ModernGUILibrary.createNotification("Loading Fruit Stealer v1.0 by Zysume...", "info")
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/grp5ss/Syo/refs/heads/main/TESTDST"))()
-                    ModernGUILibrary.createNotification("Fruit Stealer v1.0 loaded!", "success")
-                    playerGui.ProfileViewer.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            
-            if playerGui:FindFirstChild("ProfileViewer") then
-                ModernGUILibrary.createNotification("Fruit Stealer v1.0 disabled", "warning")
-                playerGui.ProfileViewer.Enabled = false
-            end
-        end
-    end
-)
-fruitStealerCheckbox.ZIndex = 2
-
-local connections = {}
-local hookedPrompts = {}
-
-local autoTeleport91111, getAutoTeleportStatus9111 = specialTab.AddCheckbox(
-    "info91111",
-    "Bypass Steal Fruit",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Garden Bypasser Enabled", "success")
-            
-            local function customPromptFunction(promptObject)
-                
-                local fruitModel = nil
-                local currentParent = promptObject.Parent
-                
-                while currentParent and currentParent ~= workspace do
-                    if currentParent:IsA("Model") then
-                        local grandParent = currentParent.Parent
-                        if grandParent then
-                            if grandParent.Name == "Fruits" then
-                                fruitModel = currentParent
-                                break
-                            elseif grandParent.Name == "Plants_Physical" then
-                                fruitModel = currentParent
-                                break
-                            elseif grandParent.Parent and grandParent.Parent.Name == "Plants_Physical" then
-                                fruitModel = currentParent
-                                break
-                            end
-                        end
-                    end
-                    currentParent = currentParent.Parent
-                end
-                
-                if not fruitModel then
-                    return
-                end
-                
-                local originalAttributes = {}
-                local booleanMutations = {}
-                local fruitName = fruitModel.Name
-                local weight = nil
-                
-                local success, attributes = pcall(function()
-                    return fruitModel:GetAttributes()
-                end)
-                
-                if success and attributes then
-                    for attrName, attrValue in pairs(attributes) do
-                        if type(attrValue) == "boolean" then
-                            originalAttributes[attrName] = attrValue
-                            if attrValue == true and attrName ~= "d" and attrName ~= "IsOutlined" and attrName ~= "OfflineGrowthTarget" and attrName ~= "WaitForPlantGenerated" and attrName ~= "IgnoreFruitDistance" and attrName ~= "SkipRotation" then
-                                table.insert(booleanMutations, attrName)
-                            end
-                        elseif type(attrValue) == "string" and (attrName == "MaxAge" or attrName == "WeightMulti") then
-                            originalAttributes[attrName] = attrValue
-                        end
-                    end
-                end
-                
-                for _, descendant in pairs(fruitModel:GetDescendants()) do
-                    if descendant.Name == "Weight" then
-                        local value = descendant:FindFirstChild("Value")
-                        if value and value:IsA("NumberValue") then
-                            weight = value.Value
-                        elseif descendant:IsA("NumberValue") then
-                            weight = descendant.Value
-                        end
-                        if weight then break end
-                    end
-                end
-                
-                local weightStr = ""
-                if weight then
-                    local weightFormatted = string.format("%.2f", weight)
-                    if #weightFormatted > 5 then
-                        weightFormatted = string.sub(weightFormatted, 1, 5)
-                        if string.sub(weightFormatted, -1) == "." then
-                            weightFormatted = string.sub(weightFormatted, 1, -2)
-                        end
-                    end
-                    weightStr = " [" .. weightFormatted .. "kg]"
-                end
-                
-                local toolName = fruitName
-                if #booleanMutations > 0 then
-                    table.sort(booleanMutations)
-                    toolName = "[" .. table.concat(booleanMutations, ", ") .. "] " .. fruitName
-                end
-                toolName = toolName .. weightStr
-                
-                local newTool = Instance.new("Tool")
-                newTool.Name = toolName
-                newTool.RequiresHandle = true
-                newTool.CanBeDropped = true
-                
-                local player = game.Players.LocalPlayer
-                newTool:SetAttribute("a", tostring(player.UserId))
-                newTool:SetAttribute("b", "j")
-                newTool:SetAttribute("c", "{0}")
-                newTool:SetAttribute("d", false)
-                newTool:SetAttribute("f", fruitName)
-                
-                for attrName, attrValue in pairs(originalAttributes) do
-                    pcall(function()
-                        newTool:SetAttribute(attrName, attrValue)
-                    end)
-                end
-                
-                local fruitClone = fruitModel:Clone()
-                
-                for _, descendant in pairs(fruitClone:GetDescendants()) do
-                    if descendant:IsA("ProximityPrompt") then
-                        descendant:Destroy()
-                    end
-                end
-                
-                local modelCF, modelSize = fruitClone:GetBoundingBox()
-                
-                local handle = Instance.new("Part")
-                handle.Name = "Handle"
-                handle.Size = Vector3.new(0.1, 0.1, 0.1)
-                handle.Transparency = 1
-                handle.CanCollide = false
-                handle.Anchored = false
-                handle.CFrame = modelCF
-                handle.Parent = newTool
-                
-                local parts = {}
-                for _, obj in pairs(fruitClone:GetDescendants()) do
-                    if obj:IsA("BasePart") then
-                        table.insert(parts, {
-                            part = obj,
-                            relativeCF = modelCF:ToObjectSpace(obj.CFrame)
-                        })
-                    end
-                end
-                
-                for _, data in pairs(parts) do
-                    local part = data.part
-                    
-                    part.Anchored = false
-                    part.CanCollide = false
-                    
-                    part.Parent = newTool
-                    
-                    part.CFrame = handle.CFrame * data.relativeCF
-                    
-                    local weld = Instance.new("WeldConstraint")
-                    weld.Part0 = handle
-                    weld.Part1 = part
-                    weld.Parent = handle
-                end
-                
-                for _, child in pairs(fruitClone:GetChildren()) do
-                    if not child:IsA("BasePart") and not child:IsA("Script") and not child:IsA("LocalScript") then
-                        child.Parent = newTool
-                    end
-                end
-                
-                fruitClone:Destroy()
-                
-                newTool.GripPos = Vector3.new(0, -modelSize.Y/3, 0)
-                newTool.GripForward = Vector3.new(0, 0, -1)
-                newTool.GripRight = Vector3.new(1, 0, 0)
-                newTool.GripUp = Vector3.new(0, 1, 0)
-                
-                local backpack = player:FindFirstChild("Backpack")
-                
-                if backpack then
-                    newTool.Parent = backpack
-                    
-                    task.wait(0.1)
-                    local humanoid = player.Character and player.Character:FindFirstChild("Humanoid")
-                    if humanoid then
-                        humanoid:EquipTool(newTool)
-                    end
-                end
-                
-                if fruitModel and fruitModel.Parent then
-                    fruitModel:Destroy()
-                end
-            end
-            
-            local function hookProximityPrompt(prompt)
-                if not prompt or not prompt:IsA("ProximityPrompt") then return end
-                
-                if hookedPrompts[prompt] then return end
-                
-                local promptParent = prompt.Parent
-                if not promptParent then return end
-                
-                local newPrompt = Instance.new("ProximityPrompt")
-                newPrompt.Name = prompt.Name
-                newPrompt.ActionText = prompt.ActionText
-                newPrompt.ObjectText = prompt.ObjectText
-                newPrompt.HoldDuration = 0.5
-                newPrompt.MaxActivationDistance = prompt.MaxActivationDistance
-                newPrompt.RequiresLineOfSight = false
-                newPrompt.KeyboardKeyCode = prompt.KeyboardKeyCode
-                newPrompt.GamepadKeyCode = prompt.GamepadKeyCode
-                newPrompt.ClickablePrompt = prompt.ClickablePrompt
-                newPrompt.Enabled = prompt.Enabled
-                newPrompt.UIOffset = prompt.UIOffset
-                newPrompt.Style = prompt.Style
-                newPrompt.Exclusivity = prompt.Exclusivity
-                
-                pcall(function()
-                    prompt:Destroy()
-                end)
-                
-                newPrompt.Parent = promptParent
-                hookedPrompts[newPrompt] = true
-                
-                local processing = false
-                
-                local newConnection = newPrompt.Triggered:Connect(function(player)
-                    if player == game.Players.LocalPlayer and not processing then
-                        processing = true
-                        customPromptFunction(newPrompt)
-                        
-                        pcall(function()
-                            local NotificationModule = require(game.ReplicatedStorage.Modules.Notification)
-                            NotificationModule:CreateNotification("<font color=\"#FF0000\"><b>[BYPASS]</b></font> Successfully Stole Fruit!")
-                        end)
-                        
-                        task.wait(0.1)
-                        processing = false
-                    end
-                end)
-                
-                table.insert(connections, newConnection)
-            end
-            
-            local function isValidFruitPrompt(prompt)
-                if not prompt or not prompt:IsA("ProximityPrompt") then 
-                    return false 
-                end
-                
-                local parent = prompt.Parent
-                while parent and parent ~= workspace do
-                    if parent.Name == "Fruits" then
-                        return true
-                    end
-                    if parent.Name == "Plants_Physical" then
-                        return true
-                    end
-                    if parent.Name == "Important" then
-                        local plantsPhysical = parent:FindFirstChild("Plants_Physical")
-                        if plantsPhysical then
-                            local promptParent = prompt.Parent
-                            while promptParent and promptParent ~= parent do
-                                if promptParent == plantsPhysical or promptParent.Parent == plantsPhysical then
-                                    return true
-                                end
-                                promptParent = promptParent.Parent
-                            end
-                        end
-                    end
-                    parent = parent.Parent
-                end
-                
-                return false
-            end
-            
-            local function scanAndHookAllFruits()
-                local farmMain = workspace:FindFirstChild("Farm")
-                if not farmMain then 
-                    return 
-                end
-                
-                local promptCount = 0
-                local promptsToHook = {}
-                
-                for _, descendant in pairs(farmMain:GetDescendants()) do
-                    if descendant:IsA("ProximityPrompt") and descendant.Parent then
-                        if isValidFruitPrompt(descendant) then
-                            table.insert(promptsToHook, descendant)
-                            promptCount = promptCount + 1
-                        end
-                    end
-                end
-                
-                if promptCount == 0 then
-                    for _, descendant in pairs(workspace:GetDescendants()) do
-                        if descendant:IsA("ProximityPrompt") and descendant.Parent then
-                            if isValidFruitPrompt(descendant) then
-                                table.insert(promptsToHook, descendant)
-                                promptCount = promptCount + 1
-                            end
-                        end
-                    end
-                end
-                
-                for _, prompt in pairs(promptsToHook) do
-                    if prompt and prompt.Parent then
-                        hookProximityPrompt(prompt)
-                    end
-                end
-                
-                ModernGUILibrary.createNotification("Bypassed " .. promptCount .. " Fruits on the Server!", "success")
-            end
-            
-            scanAndHookAllFruits()
-            
-        else
-            ModernGUILibrary.createNotification("Garden Bypasser Disabled", "info")
-            
-            for _, conn in pairs(connections) do
-                if conn then 
-                    conn:Disconnect() 
-                end
-            end
-            
-            connections = {}
-            hookedPrompts = {}
-        end
-    end
-)
-
-local PlayerGui2 = LocalPlayer:WaitForChild("PlayerGui")
+-- ==================== SPAWNER TAB ====================
 
 local spawnerHeader2, spawnerHeaderMethods2 = spawnerTab.AddLabel(
     "SpawnerHeader2",
@@ -1262,6 +82,8 @@ local autoTeleport111, getAutoTeleportStatus111 = spawnerTab.AddCheckbox(
     end
 )
 
+-- ==================== GIFT SPAWNER SYSTEM ====================
+
 local connections = {}
 local originalFunctions = {}
 local hookedPrompts = {}
@@ -1272,11 +94,10 @@ local holdConnections = {}
 local X_ROTATION = 75
 local Y_ROTATION = 90
 local Z_ROTATION = 0
-local HOLD_DELAY = 0 -- Default delay dalam detik
+local HOLD_DELAY = 0
 
 local function setArmPose(rightShoulder)
     if not rightShoulder or not rightShoulder.Parent then return end
-    
     rightShoulder.C0 = CFrame.new(1, 0.5, 0) * CFrame.Angles(
         math.rad(X_ROTATION),
         math.rad(Y_ROTATION),
@@ -1286,34 +107,29 @@ end
 
 local function saveToolModel(tool)
     if not tool then return nil end
-    
     local toolClone = tool:Clone()
-    
     local tempStorage = ReplicatedStorage:FindFirstChild("TempToolStorage")
     if not tempStorage then
         tempStorage = Instance.new("Folder")
         tempStorage.Name = "TempToolStorage"
         tempStorage.Parent = ReplicatedStorage
     end
-    
     tempStorage:ClearAllChildren()
     toolClone.Parent = tempStorage
-    
     return toolClone
 end
 
 local function equipSavedToolToTarget(savedTool, targetChar, targetPlayer)
     if not savedTool or not targetChar then return nil end
-    
     local targetName = targetPlayer.Name
-    
+
     local giftedFolder = workspace:FindFirstChild("Gifted")
     if not giftedFolder then
         giftedFolder = Instance.new("Folder")
         giftedFolder.Name = "Gifted"
         giftedFolder.Parent = workspace
     end
-    
+
     local playerFolder = giftedFolder:FindFirstChild(targetName)
     if not playerFolder then
         playerFolder = Instance.new("Folder")
@@ -1322,38 +138,34 @@ local function equipSavedToolToTarget(savedTool, targetChar, targetPlayer)
     else
         playerFolder:ClearAllChildren()
     end
-    
+
     if activeTargets[targetName] and activeTargets[targetName].container then
         activeTargets[targetName].container:Destroy()
     end
-    
+
     local toolClone = savedTool:Clone()
-    
     local torso = targetChar:FindFirstChild("Torso")
     local targetRightArm = targetChar:FindFirstChild("Right Arm")
-    
+
     if not torso or not targetRightArm then
         toolClone:Destroy()
         return nil
     end
-    
+
     local handle = toolClone:FindFirstChild("Handle")
     if not handle then
         toolClone:Destroy()
         return nil
     end
-    
+
     for _, child in pairs(toolClone:GetChildren()) do
         child.Parent = playerFolder
     end
-    
     toolClone:Destroy()
-    
+
     handle = playerFolder:FindFirstChild("Handle")
-    if not handle then
-        return nil
-    end
-    
+    if not handle then return nil end
+
     for _, part in pairs(playerFolder:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -1361,13 +173,13 @@ local function equipSavedToolToTarget(savedTool, targetChar, targetPlayer)
             part.Massless = true
         end
     end
-    
+
     for _, child in pairs(handle:GetChildren()) do
         if child:IsA("Weld") or child:IsA("Motor6D") then
             child:Destroy()
         end
     end
-    
+
     local weld = Instance.new("Weld")
     weld.Name = "GiftedWeld"
     weld.Part0 = handle
@@ -1375,53 +187,44 @@ local function equipSavedToolToTarget(savedTool, targetChar, targetPlayer)
     weld.C0 = CFrame.new(0, 0, 0)
     weld.C1 = CFrame.new(0, -1, 0) * CFrame.Angles(math.rad(-90), 0, 0)
     weld.Parent = handle
-    
+
     return playerFolder
 end
 
 local function setupVisualHold(targetPlayer, targetChar, savedTool)
     local targetName = targetPlayer.Name
-    
     local torso = targetChar:FindFirstChild("Torso")
-    if not torso then
-        return false
-    end
-    
+    if not torso then return false end
+
     local rightShoulder = torso:FindFirstChild("Right Shoulder")
     local rightArm = targetChar:FindFirstChild("Right Arm")
-    
-    if not rightShoulder or not rightArm then
-        return false
-    end
-    
-    -- Tunggu delay sebelum mengatur pose dan equip tool
+
+    if not rightShoulder or not rightArm then return false end
+
     if HOLD_DELAY > 0 then
         task.wait(HOLD_DELAY)
     end
-    
+
     setArmPose(rightShoulder)
-    
+
     local giftedContainer = equipSavedToolToTarget(savedTool, targetChar, targetPlayer)
-    
-    if not giftedContainer then
-        return false
-    end
-    
+    if not giftedContainer then return false end
+
     if not activeTargets[targetName] then
         activeTargets[targetName] = {}
     end
-    
+
     activeTargets[targetName].player = targetPlayer
     activeTargets[targetName].character = targetChar
     activeTargets[targetName].rightShoulder = rightShoulder
     activeTargets[targetName].rightArm = rightArm
     activeTargets[targetName].container = giftedContainer
     activeTargets[targetName].torso = torso
-    
+
     if holdConnections[targetName] then
         holdConnections[targetName]:Disconnect()
     end
-    
+
     holdConnections[targetName] = RunService.RenderStepped:Connect(function()
         if not targetChar or not targetChar.Parent then
             if holdConnections[targetName] then
@@ -1436,7 +239,7 @@ local function setupVisualHold(targetPlayer, targetChar, savedTool)
             end
             return
         end
-        
+
         if rightShoulder and rightShoulder.Parent and torso and torso.Parent then
             rightShoulder.C0 = CFrame.new(1, 0.5, 0) * CFrame.Angles(
                 math.rad(X_ROTATION),
@@ -1444,7 +247,7 @@ local function setupVisualHold(targetPlayer, targetChar, savedTool)
                 math.rad(Z_ROTATION)
             )
         end
-        
+
         if giftedContainer and not giftedContainer.Parent then
             if holdConnections[targetName] then
                 holdConnections[targetName]:Disconnect()
@@ -1453,7 +256,7 @@ local function setupVisualHold(targetPlayer, targetChar, savedTool)
             activeTargets[targetName] = nil
         end
     end)
-    
+
     targetPlayer.CharacterAdded:Connect(function(newChar)
         if holdConnections[targetName] then
             holdConnections[targetName]:Disconnect()
@@ -1464,7 +267,7 @@ local function setupVisualHold(targetPlayer, targetChar, savedTool)
         end
         activeTargets[targetName] = nil
     end)
-    
+
     return true
 end
 
@@ -1477,28 +280,28 @@ local function cleanupAllVisualHolds()
             data.rightShoulder.C0 = CFrame.new(1, 0.5, 0)
         end
     end
-    
+
     for targetName, connection in pairs(holdConnections) do
         if connection then
             connection:Disconnect()
         end
     end
-    
+
     activeTargets = {}
     holdConnections = {}
-    
+
     local giftedFolder = workspace:FindFirstChild("Gifted")
     if giftedFolder then
         giftedFolder:ClearAllChildren()
     end
-    
+
     local tempStorage = ReplicatedStorage:FindFirstChild("TempToolStorage")
     if tempStorage then
         tempStorage:ClearAllChildren()
     end
 end
 
--- Input untuk Hold Delay
+-- Hold Delay Input
 local holdDelayInput, holdDelayInputMethods = spawnerTab.AddTextInput(
     "HoldDelayAmount",
     "Hold Delay After Gifted",
@@ -1526,15 +329,13 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
     function(checked)
         if checked then
             ModernGUILibrary.createNotification("Allow Gift Pets Enabled", "success")
-            
+
             local notificationMonitor = RunService.RenderStepped:Connect(function()
                 local success, result = pcall(function()
                     local topNotification = LocalPlayer.PlayerGui:FindFirstChild("Top_Notification")
                     if not topNotification then return end
-                    
                     local frame = topNotification:FindFirstChild("Frame")
                     if not frame then return end
-                    
                     for _, descendant in pairs(frame:GetDescendants()) do
                         if descendant:IsA("TextLabel") and descendant.Text == "You are not holding a tool!" then
                             local parentFrame = descendant.Parent
@@ -1546,11 +347,10 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                 end)
             end)
             table.insert(connections, notificationMonitor)
-            
+
             local function hasValidTool()
                 local character = game.Players.LocalPlayer.Character
                 if not character then return false end
-                
                 local function checkContainer(container)
                     for _, tool in pairs(container:GetChildren()) do
                         if tool:IsA("Tool") and tool:GetAttribute("b") == "l" then
@@ -1559,21 +359,18 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                     end
                     return false
                 end
-                
                 return checkContainer(game.Players.LocalPlayer.Backpack) or checkContainer(character)
             end
-            
+
             local function saveCurrentTool()
                 local character = game.Players.LocalPlayer.Character
                 if not character then return end
-                
                 for _, tool in pairs(character:GetChildren()) do
                     if tool:IsA("Tool") and tool:GetAttribute("b") == "l" then
                         savedTool = saveToolModel(tool)
                         return
                     end
                 end
-                
                 for _, tool in pairs(game.Players.LocalPlayer.Backpack:GetChildren()) do
                     if tool:IsA("Tool") and tool:GetAttribute("b") == "l" then
                         savedTool = saveToolModel(tool)
@@ -1581,74 +378,49 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                     end
                 end
             end
-            
+
             local function getPlayerUsernameFromPrompt(prompt)
                 if not prompt or not prompt.Parent then return nil end
-                
                 local head = prompt.Parent
                 if not head or head.Name ~= "Head" then return nil end
-                
                 local characterModel = head.Parent
                 if not characterModel or not characterModel:IsA("Model") then return nil end
-                
                 local username = characterModel.Name
-                
                 local targetPlayer = Players:FindFirstChild(username)
                 if targetPlayer and targetPlayer ~= LocalPlayer then
                     return username, targetPlayer, characterModel
                 end
-                
                 return nil, nil, nil
             end
-            
+
             local function customPromptFunction(promptObject)
-                if not hasValidTool() then
-                    return
-                end
-                
+                if not hasValidTool() then return end
                 saveCurrentTool()
-                
+
                 local targetUsername, targetPlayer, targetChar = getPlayerUsernameFromPrompt(promptObject)
-                
                 if not targetUsername or not targetPlayer or not targetChar then
                     require(game.ReplicatedStorage.Modules.Notification):CreateNotification("Failed to find target player!")
                     return
                 end
-                
+
                 spawn(function()
                     task.wait(0.1)
                     require(game.ReplicatedStorage.Modules.Notification):CreateNotification("Sent gift request!")
                     task.wait(3)
-                    
-                    
+
                     local Trading = PlayerGui:WaitForChild("Trading")
                     local FinalizingTrade = Trading:WaitForChild("FinalizingTrade")
-                    
+
                     FinalizingTrade.GroupTransparency = 1
-                    
-                    local tweenInfo = TweenInfo.new(
-                        1,
-                        Enum.EasingStyle.Quad,
-                        Enum.EasingDirection.Out
-                    )
-                    
-                    local showTween = TweenService:Create(
-                        FinalizingTrade,
-                        tweenInfo,
-                        {GroupTransparency = 0}
-                    )
-                    
-                    local hideTween = TweenService:Create(
-                        FinalizingTrade,
-                        tweenInfo,
-                        {GroupTransparency = 1}
-                    )
-                    
+
+                    local tweenInfo = TweenInfo.new(1, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+                    local showTween = TweenService:Create(FinalizingTrade, tweenInfo, {GroupTransparency = 0})
+                    local hideTween = TweenService:Create(FinalizingTrade, tweenInfo, {GroupTransparency = 1})
+
                     showTween:Play()
-                    
+
                     showTween.Completed:Connect(function()
                         task.wait(0.3)
-                        
                         spawn(function()
                             if savedTool then
                                 local character = game.Players.LocalPlayer.Character
@@ -1663,59 +435,50 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                                         equippedTool:Destroy()
                                     end
                                 end
-                                
                                 task.wait(0.5)
-                                
                                 local success = setupVisualHold(targetPlayer, targetChar, savedTool)
-                                
-                                if success then
-                                    
-                                end
-                                
                                 savedTool = nil
                             end
                         end)
-                        
+
                         hideTween:Play()
-                        
                         hideTween.Completed:Connect(function()
                             require(game.ReplicatedStorage.Modules.Notification):CreateNotification("Trade completed!")
                         end)
                     end)
                 end)
             end
-            
+
             local function hookProximityPrompt(prompt)
                 if not prompt or not prompt:IsA("ProximityPrompt") then return end
                 if hookedPrompts[prompt] then return end
-                
                 hookedPrompts[prompt] = true
-                
+
                 originalFunctions[prompt] = {
                     MaxActivationDistance = prompt.MaxActivationDistance,
                     Enabled = prompt.Enabled,
                     HoldDuration = prompt.HoldDuration,
                     RequiresLineOfSight = prompt.RequiresLineOfSight
                 }
-                
+
                 prompt.HoldDuration = 0.5
-                
+
                 local ProximityPromptService = game:GetService("ProximityPromptService")
-                
+
                 local triggeredConnection = ProximityPromptService.PromptTriggered:Connect(function(promptObject, playerWhoTriggered)
                     if promptObject == prompt and playerWhoTriggered == game.Players.LocalPlayer then
                         customPromptFunction(prompt)
                     end
                 end)
                 table.insert(connections, triggeredConnection)
-                
+
                 local buttonHoldBeganConnection = ProximityPromptService.PromptButtonHoldBegan:Connect(function(promptObject, playerWhoTriggered)
                     if promptObject == prompt and playerWhoTriggered == game.Players.LocalPlayer then
                         prompt.HoldDuration = 0.5
                     end
                 end)
                 table.insert(connections, buttonHoldBeganConnection)
-                
+
                 local propertyChangedConnection = prompt:GetPropertyChangedSignal("HoldDuration"):Connect(function()
                     if prompt.HoldDuration ~= 0.5 then
                         prompt.HoldDuration = 0.5
@@ -1723,13 +486,12 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                 end)
                 table.insert(connections, propertyChangedConnection)
             end
-            
+
             local function scanAndHookAllPrompts()
                 for _, obj in pairs(workspace:GetDescendants()) do
                     if obj:IsA("Model") and obj:FindFirstChild("Humanoid") and obj:FindFirstChild("Head") then
                         local head = obj:FindFirstChild("Head")
                         local prompt = head:FindFirstChild("ProximityPrompt")
-                        
                         if prompt then
                             prompt.HoldDuration = 0.5
                             hookProximityPrompt(prompt)
@@ -1737,9 +499,9 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                     end
                 end
             end
-            
+
             scanAndHookAllPrompts()
-            
+
             local descendantAddedConnection = workspace.DescendantAdded:Connect(function(descendant)
                 if descendant:IsA("ProximityPrompt") and descendant.Parent and descendant.Parent.Name == "Head" then
                     task.wait(0.1)
@@ -1747,22 +509,21 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                     hookProximityPrompt(descendant)
                 end
             end)
-            
+
             local childAddedConnection = workspace.ChildAdded:Connect(function(child)
                 if child:FindFirstChild("Humanoid") then
                     task.wait(1)
                     scanAndHookAllPrompts()
                 end
             end)
-            
+
             table.insert(connections, descendantAddedConnection)
             table.insert(connections, childAddedConnection)
-            
+
         else
             ModernGUILibrary.createNotification("Allow Gift Pets Disabled", "info")
-            
             cleanupAllVisualHolds()
-            
+
             for prompt, values in pairs(originalFunctions) do
                 if prompt and prompt.Parent then
                     for prop, value in pairs(values) do
@@ -1770,15 +531,15 @@ local autoTeleport9111, getAutoTeleportStatus9111 = spawnerTab.AddCheckbox(
                     end
                 end
             end
-            
+
             for _, conn in pairs(connections) do
-                if conn and (typeof(conn) == "RBXScriptConnection" and conn.Connected or typeof(conn) == "table") then 
+                if conn and (typeof(conn) == "RBXScriptConnection" and conn.Connected or typeof(conn) == "table") then
                     if typeof(conn.Disconnect) == "function" then
                         conn:Disconnect()
                     end
                 end
             end
-            
+
             savedTool = nil
             connections = {}
             originalFunctions = {}
@@ -1800,8 +561,10 @@ local autoTeleport9112, getAutoTeleportStatus9112 = spawnerTab.AddCheckbox(
     end
 )
 
-local spawnerHeader2, spawnerHeaderMethods2 = spawnerTab.AddLabel(
-    "SpawnerHeader2",
+-- ==================== OLD SPAWNER SECTION ====================
+
+local spawnerHeaderOld, spawnerHeaderOldMethods = spawnerTab.AddLabel(
+    "SpawnerHeaderOld",
     "SPAWNER SCRIPT [ OLD ]",
     nil,
     {
@@ -1828,8 +591,8 @@ local settingLabel00, settingLabel00s = spawnerTab.AddLabel(
     }
 )
 
-local autoTeleport111, getAutoTeleportStatus111 = spawnerTab.AddCheckbox(
-    "info222",
+local autoTeleport111b, getAutoTeleportStatus111b = spawnerTab.AddCheckbox(
+    "info222b",
     "ReModified v3.8 || Dark Spawner",
     nil,
     function(checked)
@@ -1842,22 +605,19 @@ local autoTeleport111, getAutoTeleportStatus111 = spawnerTab.AddCheckbox(
     end
 )
 
+local playerGui = LocalPlayer:WaitForChild("PlayerGui")
+
 local petPlacerCheckbox, petPlacerElement = spawnerTab.AddCheckbox(
     "PetPlacer",
     "Pet Placer v1.0 [ Not Animated ] [OLD]",
     nil,
     function(checked)
         if checked then
-            
-            
-            -- Cek apakah PetVisualPlacerGUI sudah ada
             if playerGui:FindFirstChild("PetVisualPlacerGUI") then
-                -- Jika sudah ada, langsung enable tanpa load ulang
                 ModernGUILibrary.createNotification("Pet Placer v1.0 already loaded, enabling...", "info")
                 playerGui.PetVisualPlacerGUI.Enabled = true
                 ModernGUILibrary.createNotification("Pet Placer v1.0 enabled!", "success")
             else
-                -- Jika belum ada, load script terlebih dahulu
                 ModernGUILibrary.createNotification("Loading Pet Placer v1.0 by Zysume...", "info")
                 pcall(function()
                     loadstring(game:HttpGet("https://raw.githubusercontent.com/grp5ss/Syo/refs/heads/main/Pet%20Placer"))()
@@ -1866,8 +626,6 @@ local petPlacerCheckbox, petPlacerElement = spawnerTab.AddCheckbox(
                 end)
             end
         else
-            -- Disable GUI jika checkbox di-uncheck
-            
             if playerGui:FindFirstChild("PetVisualPlacerGUI") then
                 ModernGUILibrary.createNotification("Pet Placer v1.0 disabled", "warning")
                 playerGui.PetVisualPlacerGUI.Enabled = false
@@ -1877,845 +635,4 @@ local petPlacerCheckbox, petPlacerElement = spawnerTab.AddCheckbox(
 )
 petPlacerCheckbox.ZIndex = 2
 
-local marketHeader, marketHeaderMethods = mainTab.AddLabel(
-    "MarketHeader",
-    "WEATHER EVENT & BYPASSER",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(127, 0, 255),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local weatherOptions = {
-    "Blackhole",
-    "SheckleRain",
-    "TropicalRain",
-    "SummerHarvest",
-    "BloodMoonEvent",
-    "AuroraBorealis",
-    "SpaceTravelEvent",
-    "DiscoEvent",
-    "ChocolateRain"
-}
-
-local selectedMethod = "Blackhole"
-
-local weatherDropdown, weatherMethods = mainTab.AddDropdown(
-    "SelectMethod",
-    "Select Weather",
-    weatherOptions,
-    "Blackhole",
-    nil,
-    function(selectedMethodValue)
-        selectedMethod = selectedMethodValue
-        ModernGUILibrary.createNotification("Method selected: " .. selectedMethodValue, "info")
-    end
-)
-weatherDropdown.ZIndex = 49
-
-local function createAttributeIfNotExists(attributeName)
-    local workspace = game:GetService("Workspace")
-    if workspace:GetAttribute(attributeName) == nil then
-        workspace:SetAttribute(attributeName, false)
-    end
-end
-
-local function disableAllMethods()
-    local workspace = game:GetService("Workspace")
-    for _, method in pairs(weatherOptions) do
-        createAttributeIfNotExists(method)
-        workspace:SetAttribute(method, false)
-    end
-end
-
-local function enableMethod(methodName)
-    local workspace = game:GetService("Workspace")
-    createAttributeIfNotExists(methodName)
-    workspace:SetAttribute(methodName, true)
-end
-
-for _, method in pairs(weatherOptions) do
-    createAttributeIfNotExists(method)
-end
-
-local weat1, weat1s = mainTab.AddCheckbox(
-    "wearMethod",
-    "Apply Weather",
-    nil,
-    function(checked)
-        if checked then
-            disableAllMethods()
-            enableMethod(selectedMethod)
-            ModernGUILibrary.createNotification("Applied Weather: " .. selectedMethod, "success")
-        else
-            disableAllMethods()
-            ModernGUILibrary.createNotification("All Weather disabled!", "info")
-        end
-    end
-)
-
-local fruitSpawnerCheckbox, fruitSpawnerElement = mainTab.AddCheckbox(
-    "FruitSpawner",
-    "Fruit Bypasser v1.0",
-    nil,
-    function(checked)
-        if checked then
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            
-            -- Cek apakah PetVisualPlacerGUI sudah ada
-            if playerGui:FindFirstChild("SummerEvent") then
-                -- Jika sudah ada, langsung enable tanpa load ulang
-                ModernGUILibrary.createNotification("Fruit Spawner v1.0 already loaded, enabling...", "info")
-                playerGui.SummerEvent.Enabled = true
-                ModernGUILibrary.createNotification("Fruit Spawner v1.0 enabled!", "success")
-            else
-                -- Jika belum ada, load script terlebih dahulu
-                ModernGUILibrary.createNotification("Loading Fruit Spawner v1.0 by Zysume...", "info")
-                pcall(function()
-                    loadstring(game:HttpGet("https://raw.githubusercontent.com/grp5ss/Syo/refs/heads/main/Smr"))()
-                    ModernGUILibrary.createNotification("Fruit Spawner v1.0 loaded!", "success")
-                    playerGui.SummerEvent.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            local playerGui = game:GetService("Players").LocalPlayer.PlayerGui
-            if playerGui:FindFirstChild("SummerEvent") then
-                ModernGUILibrary.createNotification("Fruit Spawner v1.0 disabled", "warning")
-                playerGui.SummerEvent.Enabled = false
-            end
-        end
-    end
-)
-fruitSpawnerCheckbox.ZIndex = 2
-
-local sheckleHeader, sheckleHeaderMethods = mainTab.AddLabel(
-    "ShecklesHeader",
-    "SHECKLES CHANGER",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 127),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
--- Get current sheckle value for default input
-local currentSheckles = "0"
-pcall(function()
-    local shecklesVal = LocalPlayer.PlayerGui.Sheckles_UI.TextLabel.val
-    if shecklesVal and shecklesVal.Value then
-        currentSheckles = tostring(shecklesVal.Value)
-    end
-end)
-
--- Get current summer coin value for default input
-local currentSummerCoins = "0"
-pcall(function()
-    local summerCoinsVal = LocalPlayer.PlayerGui.SummerCoins_UI.Frame.TextLabel1.val
-    if summerCoinsVal and summerCoinsVal.Value then
-        currentSummerCoins = tostring(summerCoinsVal.Value)
-    end
-end)
-
-local targetSheckleValue = currentSheckles
-local targetSummerCoinValue = currentSummerCoins
-local freezeEnabled = false
-local freezeConnection
-
-local sheckleInput, sheckleInputMethods = mainTab.AddTextInput(
-    "SheckleAmount",
-    "Sheckle Amount",
-    currentSheckles,
-    nil,
-    function(value)
-        if tonumber(value) then
-            targetSheckleValue = value
-            pcall(function()
-                local shecklesVal = LocalPlayer.PlayerGui.Sheckles_UI.TextLabel.val
-                if shecklesVal then
-                    shecklesVal.Value = tonumber(value)
-                end
-            end)
-            ModernGUILibrary.createNotification("Sheckles set to: " .. value, "success")
-        else
-            ModernGUILibrary.createNotification("Invalid number entered!", "error")
-        end
-    end
-)
-
-local summerCoinInput, summerCoinInputMethods = mainTab.AddTextInput(
-    "SummerCoinAmount",
-    "SummerCoin Amount",
-    currentSummerCoins,
-    nil,
-    function(value)
-        if tonumber(value) then
-            targetSummerCoinValue = value
-            pcall(function()
-                local summerCoinsVal = LocalPlayer.PlayerGui.SummerCoins_UI.Frame.TextLabel1.val
-                if summerCoinsVal then
-                    summerCoinsVal.Value = tonumber(value)
-                end
-            end)
-            ModernGUILibrary.createNotification("SummerCoins set to: " .. value, "success")
-        else
-            ModernGUILibrary.createNotification("Invalid number entered!", "error")
-        end
-    end
-)
-
-local function startFreeze()
-    if freezeConnection then
-        freezeConnection:Disconnect()
-    end
-    
-    freezeConnection = RunService.Heartbeat:Connect(function()
-        if freezeEnabled then
-            -- Freeze Sheckles
-            pcall(function()
-                local shecklesVal = LocalPlayer.PlayerGui.Sheckles_UI.TextLabel.val
-                if shecklesVal and shecklesVal.Value then
-                    local currentVal = shecklesVal.Value
-                    local targetVal = tonumber(targetSheckleValue)
-                    if targetVal and currentVal ~= targetVal then
-                        shecklesVal.Value = targetVal
-                    end
-                end
-            end)
-            
-            -- Freeze SummerCoins
-            pcall(function()
-                local summerCoinsVal = LocalPlayer.PlayerGui.SummerCoins_UI.Frame.TextLabel1.val
-                if summerCoinsVal and summerCoinsVal.Value then
-                    local currentVal = summerCoinsVal.Value
-                    local targetVal = tonumber(targetSummerCoinValue)
-                    if targetVal and currentVal ~= targetVal then
-                        summerCoinsVal.Value = targetVal
-                    end
-                end
-            end)
-        end
-    end)
-end
-
-local freezeCheckbox, freezeCheckboxMethods = mainTab.AddCheckbox(
-    "FreezeValue",
-    "Freeze Value",
-    nil,
-    function(checked)
-        freezeEnabled = checked
-        if checked then
-            startFreeze()
-            ModernGUILibrary.createNotification("Values frozen - Sheckles: " .. targetSheckleValue .. ", SummerCoins: " .. targetSummerCoinValue, "info")
-        else
-            if freezeConnection then
-                freezeConnection:Disconnect()
-                freezeConnection = nil
-            end
-            ModernGUILibrary.createNotification("Value freeze disabled!", "info")
-        end
-    end
-)
-
--- Initialize freeze system
-startFreeze()
-
--- Function to get all farm owners
-local function getAllFarmOwners()
-    local owners = {"Select Target"}
-    
-    if workspace:FindFirstChild("Farm") then
-        local farmChildren = workspace.Farm:GetChildren()
-        
-        for _, farm in pairs(farmChildren) do
-            if farm:FindFirstChild("Important") and 
-               farm.Important:FindFirstChild("Data") and 
-               farm.Important.Data:FindFirstChild("Owner") then
-                
-                local ownerValue = nil
-                pcall(function()
-                    if farm.Important.Data.Owner:FindFirstChild("Value") then
-                        ownerValue = farm.Important.Data.Owner.Value
-                    else
-                        ownerValue = farm.Important.Data.Owner.Value
-                    end
-                end)
-                
-                if ownerValue and ownerValue ~= "" then
-                    local ownerString = tostring(ownerValue)
-                    local alreadyExists = false
-                    for _, existingOwner in pairs(owners) do
-                        if existingOwner == ownerString then
-                            alreadyExists = true
-                            break
-                        end
-                    end
-                    if not alreadyExists then
-                        table.insert(owners, ownerString)
-                    end
-                end
-            end
-        end
-    end
-    
-    return owners
-end
-
--- Get initial farm owners
-local farmOwners = getAllFarmOwners()
-
-local update22Header, update22HeaderMethods = destroyerTab.AddLabel(
-    "Update22Header",
-    "DESTROYER TAB",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(255, 0, 0),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
--- Dropdown 1 - Select Target (Farm Owner)
-local targetDropdown, targetMethods = destroyerTab.AddDropdown(
-    "SelectTarget",
-    "Select Target",
-    farmOwners,
-    "Select Target",
-    nil,
-    function(selectedTarget)
-        ModernGUILibrary.createNotification("Target selected: " .. selectedTarget, "info")
-    end
-)
-targetDropdown.ZIndex = 50
-
--- Method options for farm destruction
-local methodOptions = {
-    "Normal",
-    "Hard"
-}
-
--- Dropdown 2 - Select Method (Normal/Hard)
-local methodDropdown, methodMethods = destroyerTab.AddDropdown(
-    "SelectMethod",
-    "Select Method",
-    methodOptions,
-    "Normal",
-    nil,
-    function(selectedMethod)
-        ModernGUILibrary.createNotification("Method selected: " .. selectedMethod, "info")
-    end
-)
-methodDropdown.ZIndex = 49
-
--- Text Input - Delay for farm destruction
-local delayInput, delayMethods = destroyerTab.AddTextInput(
-    "SetDelay",
-    "Set Delay (seconds)",
-    "1",
-    nil,
-    function(value)
-        ModernGUILibrary.createNotification("Delay set to: " .. value .. " seconds", "info")
-    end
-)
-
--- Farm Destroyer Variables
-local isDestroying = false
-
--- Normal Method (Farm Destroy 1)
-local function normalDestroyMethod(targetOwner)
-    print("ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â NORMAL DESTROY MODE - Target: " .. targetOwner)
-    
-    local function destroyWelds(farm)
-        print("\nÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¨ MULAI MENGHAPUS WELD/PRIMARYPART DAN UNANCHOR PARTS...")
-        print("ÃƒÂ°Ã…Â¸Ã…Â½Ã‚Â¯ Target Farm: " .. farm.Name)
-        
-        local weldCount = 0
-        local primaryPartCount = 0
-        local unanchoredCount = 0
-        
-        local function searchAndDestroy(parent)
-            for _, obj in pairs(parent:GetChildren()) do
-                if obj:IsA("Weld") or obj:IsA("WeldConstraint") or obj:IsA("Motor6D") or 
-                   obj:IsA("Snap") or obj:IsA("Glue") or obj:IsA("Attachment") then
-                    obj:Destroy()
-                    weldCount = weldCount + 1
-                end
-                
-                if obj:IsA("BasePart") then
-                    if obj.Anchored then
-                        obj.Anchored = false
-                        unanchoredCount = unanchoredCount + 1
-                    end
-                    
-                    obj.AssemblyLinearVelocity = Vector3.new(
-                        math.random(-10, 10),
-                        math.random(5, 15),
-                        math.random(-10, 10)
-                    )
-                end
-                
-                if obj:IsA("Model") and obj.PrimaryPart then
-                    obj.PrimaryPart = nil
-                    primaryPartCount = primaryPartCount + 1
-                end
-                
-                if #obj:GetChildren() > 0 then
-                    searchAndDestroy(obj)
-                end
-            end
-        end
-        
-        searchAndDestroy(farm)
-        ModernGUILibrary.createNotification("Normal Destroy Complete! Parts: " .. unanchoredCount, "success")
-    end
-    
-    local function findTargetFarm()
-        if not workspace:FindFirstChild("Farm") then
-            return nil
-        end
-        
-        local farmChildren = workspace.Farm:GetChildren()
-        
-        for _, farm in pairs(farmChildren) do
-            if farm:FindFirstChild("Important") and 
-               farm.Important:FindFirstChild("Data") and 
-               farm.Important.Data:FindFirstChild("Owner") then
-                
-                local ownerValue = nil
-                pcall(function()
-                    if farm.Important.Data.Owner:FindFirstChild("Value") then
-                        ownerValue = farm.Important.Data.Owner.Value
-                    else
-                        ownerValue = farm.Important.Data.Owner.Value
-                    end
-                end)
-                
-                if tostring(ownerValue) == targetOwner then
-                    return farm
-                end
-            end
-        end
-        
-        return nil
-    end
-    
-    local targetFarm = findTargetFarm()
-    if targetFarm then
-        destroyWelds(targetFarm)
-    else
-        ModernGUILibrary.createNotification("Target farm not found!", "error")
-    end
-end
-
--- Hard Method (Farm Destroy 2)
-local function hardDestroyMethod(targetOwner)
-    print("ÃƒÂ°Ã…Â¸Ã¢â‚¬ÂÃ‚Â¥ HARD DESTROY MODE - Target: " .. targetOwner)
-    
-    local function destroyAndPhysics(farm)
-        local allParts = {}
-        
-        local function searchAndDestroy(parent)
-            for _, obj in pairs(parent:GetChildren()) do
-                if obj:IsA("Weld") or obj:IsA("WeldConstraint") or obj:IsA("Motor6D") or 
-                   obj:IsA("Snap") or obj:IsA("Glue") or obj:IsA("Attachment") or
-                   obj:IsA("RigidConstraint") or obj:IsA("HingeConstraint") or
-                   obj:IsA("BallSocketConstraint") or obj:IsA("RodConstraint") or
-                   obj:IsA("RopeConstraint") or obj:IsA("SpringConstraint") or
-                   obj:IsA("PrismaticConstraint") or obj:IsA("CylindricalConstraint") or
-                   obj:IsA("UniversalConstraint") then
-                    obj:Destroy()
-                end
-                
-                if obj:IsA("BasePart") then
-                    table.insert(allParts, obj)
-                end
-                
-                if obj:IsA("Model") and obj.PrimaryPart then
-                    obj.PrimaryPart = nil
-                end
-                
-                if #obj:GetChildren() > 0 then
-                    searchAndDestroy(obj)
-                end
-            end
-        end
-        
-        searchAndDestroy(farm)
-        
-        wait(0.1)
-        
-        for i, part in pairs(allParts) do
-            if part and part.Parent then
-                part.Anchored = false
-                part.Material = Enum.Material.Concrete
-                part.TopSurface = Enum.SurfaceType.Smooth
-                part.BottomSurface = Enum.SurfaceType.Smooth
-                
-                local randomVelocity = Vector3.new(
-                    math.random(-15, 15),
-                    math.random(2, 8),
-                    math.random(-15, 15)
-                )
-                part.AssemblyLinearVelocity = randomVelocity
-                
-                part.AssemblyAngularVelocity = Vector3.new(
-                    math.random(-10, 10),
-                    math.random(-10, 10),
-                    math.random(-10, 10)
-                )
-                
-                part.CanCollide = true
-                
-                spawn(function()
-                    wait(math.random() * 2)
-                    if part and part.Parent then
-                        local impulse = Vector3.new(
-                            math.random(-8, 8),
-                            math.random(-3, 5),
-                            math.random(-8, 8)
-                        )
-                        part.AssemblyLinearVelocity = part.AssemblyLinearVelocity + impulse
-                    end
-                end)
-            end
-        end
-        
-        ModernGUILibrary.createNotification("Hard Destroy Complete! Physics Applied: " .. #allParts, "success")
-    end
-    
-    local function findTargetFarm()
-        if not workspace:FindFirstChild("Farm") then
-            return nil
-        end
-        
-        local farmChildren = workspace.Farm:GetChildren()
-        
-        for _, farm in pairs(farmChildren) do
-            if farm:FindFirstChild("Important") and 
-               farm.Important:FindFirstChild("Data") and 
-               farm.Important.Data:FindFirstChild("Owner") then
-                
-                local ownerValue = nil
-                pcall(function()
-                    if farm.Important.Data.Owner:FindFirstChild("Value") then
-                        ownerValue = farm.Important.Data.Owner.Value
-                    else
-                        ownerValue = farm.Important.Data.Owner.Value
-                    end
-                end)
-                
-                if tostring(ownerValue) == targetOwner then
-                    return farm
-                end
-            end
-        end
-        
-        return nil
-    end
-    
-    local targetFarm = findTargetFarm()
-    if targetFarm then
-        destroyAndPhysics(targetFarm)
-    else
-        ModernGUILibrary.createNotification("Target farm not found!", "error")
-    end
-end
-
--- Checkbox 1 - Destroy Target Farm
-local destroyCheckbox, getDestroyStatus = destroyerTab.AddCheckbox(
-    "DestroyTargetFarm",
-    "Destroy Target Farm",
-    nil,
-    function(checked)
-        if checked then
-            local selectedTarget = targetMethods.getValue()
-            local selectedMethod = methodMethods.getValue()
-            local delayTime = tonumber(delayMethods.getValue()) or 1
-            
-            if selectedTarget == "Select Target" then
-                ModernGUILibrary.createNotification("Please select a target first!", "warning")
-                return
-            end
-            
-            isDestroying = true
-            ModernGUILibrary.createNotification("Starting farm destruction in " .. delayTime .. " seconds...", "info")
-            
-            spawn(function()
-                wait(delayTime)
-                
-                if not isDestroying then return end
-                
-                if selectedMethod == "Normal" then
-                    normalDestroyMethod(selectedTarget)
-                elseif selectedMethod == "Hard" then
-                    hardDestroyMethod(selectedTarget)
-                end
-                
-                isDestroying = false
-            end)
-        else
-            isDestroying = false
-            ModernGUILibrary.createNotification("Farm destruction cancelled!", "warning")
-        end
-    end
-)
-
--- Refresh Target List Button - UPDATED VERSION WITH WORKING FUNCTIONALITY
-local refreshButton, refreshMethods = destroyerTab.AddButton(
-    "RefreshTargets",
-    "Refresh Target List",
-    nil,
-    function()
-        -- Get the current selected target to preserve selection if possible
-        local currentTarget = targetMethods.getValue()
-        
-        -- Update farm owners list by scanning the workspace again
-        local newFarmOwners = getAllFarmOwners()
-        
-        -- Check if the dropdown has setOptions method and use it
-        if targetMethods and targetMethods.setOptions and type(targetMethods.setOptions) == "function" then
-            -- Preserve current selection if it still exists in the new list
-            local preserveSelection = false
-            for _, owner in pairs(newFarmOwners) do
-                if owner == currentTarget then
-                    preserveSelection = true
-                    break
-                end
-            end
-            
-            if preserveSelection and currentTarget ~= "Select Target" then
-                -- Update options and keep current selection
-                targetMethods.setOptions(newFarmOwners, currentTarget)
-            else
-                -- Update options and reset to default
-                targetMethods.setOptions(newFarmOwners, "Select Target")
-            end
-            
-            -- Update the global variable
-            farmOwners = newFarmOwners
-            
-            -- Show success notification
-            local farmCount = #newFarmOwners - 1 -- Subtract 1 for "Select Target" option
-            ModernGUILibrary.createNotification("Target list refreshed! Found " .. farmCount .. " farms", "success")
-        else
-            -- Fallback method - just update the global variable and show notification
-            farmOwners = newFarmOwners
-            local farmCount = #newFarmOwners - 1
-            ModernGUILibrary.createNotification("Target list updated! Found " .. farmCount .. " farms (restart dropdown to see changes)", "warning")
-        end
-    end
-)
-
-local settingHeader, settingHeaderMethods = settingTab.AddLabel(
-    "SettingHeader",
-    "SETTINGS OPTION",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(11, 218, 81),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local set1, set1s = settingTab.AddCheckbox(
-    "info2",
-    "Hide Youtube Label GUI",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Youtube Label just Hided.!", "success")
-            
-            
-   PlayerGui.ModernGUI.MainFrame.YouTubeLabel.Visible = false
-        else
-        
-   PlayerGui.ModernGUI.MainFrame.YouTubeLabel.Visible = true
-   
-            ModernGUILibrary.createNotification("Youtube Label its visible now!", "info")
-        end
-    end
-)
-
-local set2, set2s = settingTab.AddCheckbox(
-    "info9",
-    "Hide Teleport UI",
-    nil,
-    function(checked)
-        if checked then
-            ModernGUILibrary.createNotification("Teleport UI just Hided.!", "success")
-            
-            
-   PlayerGui.Teleport_UI.Enabled = false
-        else
-        
-   PlayerGui.Teleport_UI.Enabled = true
-   
-            ModernGUILibrary.createNotification("Teleport UI its visible now!", "info")
-        end
-    end
-)
-
-local scaleinput1, scaleinputs1 = settingTab.AddLabel(
-    "scaleinp1",
-    "[ + ] Scaler Min-Max { 0.6 - 1.1 } ",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local scaleinput2, scaleinputs2 = settingTab.AddLabel(
-    "scaleinp2",
-    "[ + ] Default GUI { 0.993 }",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 14,
-        backgroundTransparency = 0,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local scaleInput, scaleMethods = settingTab.AddTextInput(
-    "SetScale",
-    "Set GUI Scale:",
-    "0.933",
-    nil,
-    function(value)
-        local numValue = tonumber(value)
-        if numValue then
-            -- Set minimum dan maksimum nilai
-            local minScale = 0.6
-            local maxScale = 1.1
-            
-            -- Validasi range
-            if numValue < minScale then
-                numValue = minScale
-                ModernGUILibrary.createNotification("Value too low! Set to minimum: " .. minScale, "warning")
-            elseif numValue > maxScale then
-                numValue = maxScale
-                ModernGUILibrary.createNotification("Value too high! Set to maximum: " .. maxScale, "warning")
-            end
-            
-            -- Mengatur scale dan reposisi GUI
-            
-            local modernGUI = player.PlayerGui.ModernGUI
-            local guiScale = modernGUI.GuiScale
-            
-            -- Set scale baru
-            guiScale.Scale = numValue
-            
-            -- Reposisi GUI ke tengah (seperti baru di-spawn)
-            if modernGUI:FindFirstChild("Frame") or modernGUI:FindFirstChild("MainFrame") then
-                local mainFrame = modernGUI:FindFirstChild("Frame") or modernGUI:FindFirstChild("MainFrame")
-                if mainFrame then
-                    -- Reset posisi ke tengah layar
-                    mainFrame.Position = UDim2.new(0.5, 0, 0.5, 0)
-                    mainFrame.AnchorPoint = Vector2.new(0.5, 0.5)
-                end
-            end
-            
-            ModernGUILibrary.createNotification("GUI Scale set to: " .. numValue .. " and repositioned to center", "info")
-        else
-            ModernGUILibrary.createNotification("Invalid input! Please enter a number between 0.5 and 2.0.", "error")
-        end
-    end
-)
-
-local switchsHeader, switchsHeaderMethods = switchTab.AddLabel(
-    "SwitchHeader",
-    "Switch Feature",
-    nil,
-    {
-        font = Enum.Font.GothamBold,
-        hasBackground = true,
-        textSize = 16,
-        backgroundColor = Color3.fromRGB(11, 218, 81),
-        textAlignment = Enum.TextXAlignment.Center,
-        backgroundTransparency = 0.1,
-        textColor = Color3.fromRGB(255, 255, 255)
-    }
-)
-
-local switchCheckbox, switchElement = switchTab.AddCheckbox(
-    "SwitchTab",
-    "Switch Loader",
-    nil,
-    function(checked)
-        if checked then
-            
-            -- Cek apakah ZysumeLoader sudah ada
-            if playerGui:FindFirstChild("ZysumeLoader") then
-                -- Jika sudah ada, langsung enable tanpa load ulang
-                ModernGUILibrary.createNotification("Zysume Loader already loaded, enabling...", "info")
-                playerGui.ZysumeLoader.Enabled = true
-                ModernGUILibrary.createNotification("Zysume Loader enabled!", "success")
-            else
-                -- Jika belum ada, destroy ModernGUIFE terlebih dahulu, lalu load script
-                ModernGUILibrary.createNotification("Loading Zysume Loader..", "info")
-                
-                -- Destroy ModernGUI sebelum load script baru
-                if playerGui:FindFirstChild("ModernGUI") then
-                    playerGui.ModernGUI:Destroy()
-                    ModernGUILibrary.createNotification("Zysume Hub destroyed", "warning")
-                end
-                
-                pcall(function()
-                    loadstring(game:HttpGet("https://api.luarmor.net/files/v3/loaders/841578f391c0adbfae0a3702f813b5dc.lua"))()
-                    ModernGUILibrary.createNotification("Zysume Loader is loaded!", "success")
-                    playerGui.ZysumeLoader.Enabled = true
-                end)
-            end
-        else
-            -- Disable GUI jika checkbox di-uncheck
-            
-            if playerGui:FindFirstChild("ZysumeLoader") then
-                ModernGUILibrary.createNotification("Zysume Loader disabled", "warning")
-                playerGui.ZysumeLoader.Enabled = false
-            end
-        end
-    end
-)
-switchCheckbox.ZIndex = 2
-
--- Set title for the GUI
-if PlayerGui:FindFirstChild("ModernGUI") and 
-   PlayerGui.ModernGUI:FindFirstChild("MainFrame") and
-   PlayerGui.ModernGUI.MainFrame:FindFirstChild("TopBar") and
-   PlayerGui.ModernGUI.MainFrame.TopBar:FindFirstChild("Title") then
-    PlayerGui.ModernGUI.MainFrame.TopBar.Title.Text = "GROW A GARDEN"
-end
-
-wait(0.2)
-pcall(function()
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/ZusumeHub/ZusumeHub/refs/heads/main/indixe"))()
-    wait(0.2)
-    loadstring(game:HttpGet("https://raw.githubusercontent.com/grp5ss/Syo/refs/heads/main/WEBHOOK%20ONLINE"))()
-    
-end)
-
-ModernGUILibrary.createNotification("GROW A GARDEN SCRIPT V26", "success")
+ModernGUILibrary.createNotification("SPAWNER TAB LOADED", "success")
