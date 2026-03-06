@@ -77,6 +77,10 @@ local playerDead         = false
 -- ============================================================
 -- TABS
 -- ============================================================
+local TabInfo = ModernGUI.MakeTab({
+    Name = "Info",
+    Icon = "info"
+})
 
 local TabCombat = ModernGUI.MakeTab({
     Name = "Combat",
@@ -815,35 +819,60 @@ local function launchPlayerTracker()
 end
 
 -- ============================================================
--- COMBAT TAB UI
+-- Info TAB 
 -- ============================================================
+local Info, method2 = TabInfo.AddLabel(
+    "Info",
+    "Information",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true,
+        backgroundColor = Color3.fromRGB(0, 150, 0),
+        backgroundTransparency = 0
+    }
+)
 
-TabCombat.AddLabel("CombatTitle", "-- Aimbot --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+
+TabInfo.AddLabel("promo", "This is made by (zysume) \n While I js updated the ui src only \n I already got permission to use this", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
-TabCombat.AddCheckbox("Aimbot", "Enable Aimbot", nil, function(checked)
-    aimbotEnabled = checked
-    ModernGUI.createNotification("Aimbot " .. (checked and "Enabled" or "Disabled"), checked and "success" or "warning")
-end)
+TabInfo.AddLabel("discord", "Join Discord For More Scripts", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
+})
 
-TabCombat.AddCheckbox("SmoothAim", "Smooth Aim", nil, function(checked)
-    smoothAim = checked
-    ModernGUI.createNotification("Smooth Aim " .. (checked and "Enabled" or "Disabled"), checked and "success" or "warning")
-end)
+local Copydsicord = TabInfo.AddButton(
+    "JoinDiscordbtn",
+    "Join Discord",
+    nil,
+    function()
+        setcipboard("https://discord.gg/UKYHGddQD3")
+        ModernGUI.createNotification("link Copied successfully", "success")
+        wait(1)
+    end,
+    "send"
+)
 
-TabCombat.AddCheckbox("WallCheck", "Wall Check (Aimbot)", nil, function(checked)
-    wallCheck = checked
-    ModernGUI.createNotification("Wall Check " .. (checked and "Enabled" or "Disabled"), checked and "success" or "warning")
-end)
+-- ============================================================
+-- COMBAT TAB UI
+-- ============================================================
+local Slientaim, welcomeMethods = TabCombat.AddLabel(
+    "Slientaim",
+    "Slient Aim",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true,
+        backgroundColor = Color3.fromRGB(0, 150, 0),
+        backgroundTransparency = 0
+    }
+)
 
-TabCombat.AddDropdown("AimPart", "Aim Part:", {"Head", "HumanoidRootPart", "Torso"}, "Head", nil, function(selected)
-    aimPart = selected
-    ModernGUI.createNotification("Aim Part: " .. selected, "success")
-end)
-
-TabCombat.AddLabel("SilentAimTitle", "-- Silent Aim --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+TabCombat.AddLabel("ESPTitle", "Standard ESP", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
 TabCombat.AddCheckbox("SilentAim", "Enable Silent Aim", nil, function(checked)
@@ -852,11 +881,24 @@ TabCombat.AddCheckbox("SilentAim", "Enable Silent Aim", nil, function(checked)
     ModernGUI.createNotification("Silent Aim " .. (checked and "Enabled" or "Disabled"), checked and "success" or "warning")
 end)
 
-TabCombat.AddLabel("ESPTitle", "-- Standard ESP --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+local Espes, method1 = TabCombat.AddLabel(
+    "Espes",
+    "ESP & Tracers",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true,
+        backgroundColor = Color3.fromRGB(0, 150, 0),
+        backgroundTransparency = 0
+    }
+)
+
+TabCombat.AddLabel("ESPTitle", "Standard ESP", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
-TabCombat.AddCheckbox("StandardESP", "Player ESP (Name, Distance, Health)", nil, function(checked)
+TabCombat.AddCheckbox("StandardESP", "Player ESP With Name, Distance And Health", nil, function(checked)
     espEnabled = checked
     if checked then
         -- Highlight-based basic ESP
@@ -942,8 +984,8 @@ TabCombat.AddCheckbox("StandardESP", "Player ESP (Name, Distance, Health)", nil,
     end
 end)
 
-TabCombat.AddLabel("WallESPTitle", "-- ESP (Wall Check) --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+TabCombat.AddLabel("WallESPTitle", "ESP With Wall Check", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
 TabCombat.AddCheckbox("WallCheckESP", "Player ESP Wall Check", nil, function(checked)
@@ -1033,8 +1075,8 @@ TabCombat.AddCheckbox("WallCheckESP", "Player ESP Wall Check", nil, function(che
     end
 end)
 
-TabCombat.AddLabel("TracerTitle", "-- ESP Tracer --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+TabCombat.AddLabel("TracerTitle", "ESP Tracer", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
 TabCombat.AddCheckbox("Tracer", "Enable Tracer", nil, function(checked)
@@ -1059,8 +1101,8 @@ end, "users")
 -- PLAYER TAB UI
 -- ============================================================
 
-TabPlayer.AddLabel("WalkspeedTitle", "-- Walkspeed --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+TabPlayer.AddLabel("WalkspeedTitle", "Walkspeed", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
 TabPlayer.AddCheckbox("WalkspeedToggle", "Enable Walkspeed", nil, function(checked)
@@ -1079,8 +1121,8 @@ TabPlayer.AddTextInput("WalkspeedValue", "Walkspeed Value:", 16, nil, function(v
     end
 end)
 
-TabPlayer.AddLabel("RespawnTitle", "-- Auto Respawn --", nil, {
-    textSize = 13, textColor = Color3.fromRGB(180, 180, 255), hasBackground = false
+TabPlayer.AddLabel("RespawnTitle", "Auto Respawn", nil, {
+    textSize = 13, textColor = Color3.fromRGB(255, 255, 255), hasBackground = false
 })
 
 TabPlayer.AddCheckbox("AutoRespawn", "Enable Auto Respawn", nil, function(checked)
