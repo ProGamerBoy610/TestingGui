@@ -6,32 +6,25 @@ local IS_ROBLOX = game ~= nil and typeof ~= nil
 
 local function kick_player(reason)
     if IS_ROBLOX then
-        -- Get the LocalPlayer (for LocalScripts) or find player by script context
-        local Players = game:GetService("Players")
-        local player = Players.LocalPlayer
-        
-        if not player then
-            -- If running on server, try to find the player who owns this script
-            -- This works for server-side scripts
-            for _, p in pairs(Players:GetPlayers()) do
-                -- Kick all players as a fallback (or implement proper player detection)
-                p:Kick("\n\n" ..
-                    "╔══════════════════════════════════════════╗\n" ..
-                    "║        ⛔  INJECTION DETECTED  ⛔        ║\n" ..
-                    "╠══════════════════════════════════════════╣\n" ..
-                    "║  Reason: " .. reason .. string.rep(" ", math.max(0, 32 - #reason)) .. "║\n" ..
-                    "║  You have been removed from the game.    ║\n" ..
-                    "╚══════════════════════════════════════════╝\n")
-                return
+        local success, err = pcall(function()
+            local Players = game:GetService("Players")
+            local player = Players.LocalPlayer
+            
+            if player and player.Kick then
+                player:Kick("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\nYou have been removed from the game for tampering.")
+            else
+                -- Fallback: try to kick all players (server-side)
+                for _, p in pairs(Players:GetPlayers()) do
+                    if p and p.Kick then
+                        p:Kick("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\nYou have been removed from the game for tampering.")
+                    end
+                end
             end
-        else
-            player:Kick("\n\n" ..
-                "╔══════════════════════════════════════════╗\n" ..
-                "║        ⛔  INJECTION DETECTED  ⛔        ║\n" ..
-                "╠══════════════════════════════════════════╣\n" ..
-                "║  Reason: " .. reason .. string.rep(" ", math.max(0, 32 - #reason)) .. "║\n" ..
-                "║  You have been removed from the game.    ║\n" ..
-                "╚══════════════════════════════════════════╝\n")
+        end)
+        
+        if not success then
+            -- If kick failed, at least error out to stop execution
+            error("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\n(Kick failed: " .. tostring(err) .. ")")
         end
     else
         -- Non-Roblox environment, just error
