@@ -4,41 +4,6 @@ local _REASON = ""
 -- Roblox-aware environment check
 local IS_ROBLOX = game ~= nil and typeof ~= nil
 
-local function kick_player(reason)
-    if IS_ROBLOX then
-        local success, err = pcall(function()
-            local Players = game:GetService("Players")
-            local player = Players.LocalPlayer
-            
-            if player and player.Kick then
-                player:Kick("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\nYou have been removed from the game for tampering.")
-            else
-                -- Fallback: try to kick all players (server-side)
-                for _, p in pairs(Players:GetPlayers()) do
-                    if p and p.Kick then
-                        p:Kick("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\nYou have been removed from the game for tampering.")
-                    end
-                end
-            end
-        end)
-        
-        if not success then
-            -- If kick failed, at least error out to stop execution
-            error("⛔ INJECTION DETECTED ⛔\n\nReason: " .. reason .. "\n\n(Kick failed: " .. tostring(err) .. ")")
-        end
-    else
-        -- Non-Roblox environment, just error
-        error("\n\n" ..
-            "╔══════════════════════════════════════════╗\n" ..
-            "║        ⛔  INJECTION DETECTED  ⛔        ║\n" ..
-            "╠══════════════════════════════════════════╣\n" ..
-            "║  Reason: " .. reason .. string.rep(" ", math.max(0, 32 - #reason)) .. "║\n" ..
-            "║  Script execution has been halted.       ║\n" ..
-            "╚══════════════════════════════════════════╝\n",
-        0)
-    end
-end
-
 local function check_getfenv_hook()
     if getfenv ~= nil then
         local t = type(getfenv)
@@ -101,74 +66,6 @@ local function check_getfenv_hook()
     end
 end
 
-local function check_exploit_functions()
-    -- Check for common exploit functions
-    local exploit_funcs = {
-        "getgenv", "getrenv", "getsenv", "getrawmetatable",
-        "setreadonly", "make_writeable", "hookfunction", "hookmetamethod",
-        "newcclosure", "islclosure", "checkcaller", "isexecutorclosure",
-        "loadstring", "HttpGet", "HttpPost", "request",
-        "syn", "Synapse", "KRNL", "Fluxus", "ScriptWare"
-    }
-    
-    for _, func_name in ipairs(exploit_funcs) do
-        if rawget(_G, func_name) ~= nil then
-            _SAFE = false
-            _REASON = "Exploit function detected: '" .. func_name .. "'"
-            return
-        end
-        
-        -- Also check in the environment
-        local ok, val = pcall(function() return _G[func_name] end)
-        if ok and val ~= nil then
-            _SAFE = false
-            _REASON = "Exploit function detected in environment: '" .. func_name .. "'"
-            return
-        end
-    end
-    
-    -- Check if getgenv exists as a global function
-    if type(getgenv) == "function" then
-        _SAFE = false
-        _REASON = "getgenv() function detected — executor environment present"
-        return
-    end
-    
-    -- Check if loadstring is available (it shouldn't be in Roblox by default)
-    if IS_ROBLOX and type(loadstring) == "function" then
-        _SAFE = false
-        _REASON = "loadstring() detected — remote code execution possible"
-        return
-    end
-end
-
-local function check_http_exploitation()
-    -- Check for HttpService being used suspiciously
-    if IS_ROBLOX then
-        local ok, HttpService = pcall(function() return game:GetService("HttpService") end)
-        if ok and HttpService then
-            -- Check if there are any suspicious patterns in _G that might indicate loaded scripts
-            local suspicious_urls = {
-                "pastebin", "github.com", "raw.githubusercontent", 
-                "discord.gg", "discord.com", "rbxscript",
-                "hastebin", "ghostbin", "scriptblox"
-            }
-            
-            for key, value in pairs(_G) do
-                if type(value) == "string" then
-                    for _, url_pattern in ipairs(suspicious_urls) do
-                        if string.find(string.lower(value), url_pattern) then
-                            _SAFE = false
-                            _REASON = "Suspicious remote URL detected in _G: contains '" .. url_pattern .. "'"
-                            return
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
 local function check_env_proxy()
     local mt = getmetatable(_G)
     if mt ~= nil then
@@ -196,8 +93,7 @@ local function check_fenv_leak()
     local suspicious_keys = {
         "fenv", "env", "_fenv", "__fenv",
         "genv", "globalenv", "_env", "rawenv",
-        "hookenv", "scriptenv", "executor", "exploit",
-        "script_env", "getgenv_cache", "getrenv_cache"
+        "hookenv", "scriptenv"
     }
     for _, key in ipairs(suspicious_keys) do
         if rawget(_G, key) ~= nil then
@@ -267,9 +163,7 @@ local function check_debug_upvalue_injection()
 end
 
 local function run_checks()
-    check_exploit_functions()
-    if _SAFE then check_getfenv_hook() end
-    if _SAFE then check_http_exploitation() end
+    check_getfenv_hook()
     if _SAFE then check_env_proxy() end
     if _SAFE then check_fenv_leak() end
     if _SAFE then check_bytecode_integrity() end
@@ -277,7 +171,15 @@ local function run_checks()
     if _SAFE then check_debug_upvalue_injection() end
 
     if not _SAFE then
-        kick_player(_REASON)
+        player:Kick("You are banned. Have fun being banned for hacks and cheats!")
+        error("\n\n" ..
+            "╔══════════════════════════════════════════╗\n" ..
+            "║        ⛔  INJECTION DETECTED  ⛔        ║\n" ..
+            "╠══════════════════════════════════════════╣\n" ..
+            "║  Reason: " .. _REASON .. string.rep(" ", math.max(0, 32 - #_REASON)) .. "║\n" ..
+            "║  Script execution has been halted.       ║\n" ..
+            "╚══════════════════════════════════════════╝\n",
+        0)
     else
         print("[Security] ✅ Environment clean — no injection detected.")
     end
