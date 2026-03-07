@@ -4,8 +4,8 @@ local _REASON = ""
 -- ⚙️ CONFIGURATION
 local WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL_HERE" -- Replace with your Discord webhook URL
 
--- Detect if we're in an executor environment
-local IS_EXECUTOR = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
+-- Detect if we're in Roblox
+local IS_ROBLOX = game ~= nil and typeof ~= nil
 
 -- Function to get executor info
 local function get_executor_info()
@@ -93,7 +93,7 @@ local function send_to_webhook(player_name, hwid, executor, reason)
     local request_func = syn and syn.request or http and http.request or http_request or request
     
     if request_func then
-        local success, err = pcall(function()
+        pcall(function()
             request_func({
                 Url = WEBHOOK_URL,
                 Method = "POST",
@@ -103,106 +103,111 @@ local function send_to_webhook(player_name, hwid, executor, reason)
                 Body = HttpService:JSONEncode(embed)
             })
         end)
-        
-        if not success then
-            warn("[Security] Failed to send webhook: " .. tostring(err))
-        end
     end
 end
 
--- Step 1: Check if someone hooked getfenv to spy on your script
+-- RELAXED CHECK: Only flag if getfenv is completely broken
 local function check_getfenv_hook()
     if getfenv ~= nil then
         local t = type(getfenv)
         if t ~= "function" then
             _SAFE = false
-            _REASON = "getfenv is not a function — someone replaced it"
+            _REASON = "getfenv is not a function — it's a " .. t
             return
         end
 
+        -- Just verify it works, don't check exact return values
         local ok, fenv = pcall(getfenv, 0)
         if not ok then
             _SAFE = false
-            _REASON = "getfenv(0) threw an error — likely hooked by another script"
+            _REASON = "getfenv(0) completely failed"
+            return
+        end
+        
+        -- Only fail if critical Roblox globals are missing
+        if IS_ROBLOX and fenv.game == nil then
+            _SAFE = false
+            _REASON = "Core Roblox globals missing from environment"
             return
         end
     end
 end
 
--- Step 2: Check if _G has been wrapped in a metatable to spy on your variables
+-- RELAXED CHECK: Only flag obvious proxy attacks
 local function check_env_proxy()
     local mt = getmetatable(_G)
     if mt ~= nil then
-        -- Check if the metatable has __index or __newindex (spying methods)
-        if mt.__index or mt.__newindex then
+        -- Only flag if metatable has suspicious hooks
+        if mt.__index and mt.__newindex and mt.__metatable then
             _SAFE = false
-            _REASON = "_G has a metatable with hooks — someone is monitoring your script"
+            _REASON = "_G has full proxy metatable (spying detected)"
             return
         end
     end
 end
 
--- Step 3: Check for leaked environment variables that indicate tampering
+-- Check for obviously leaked variables that indicate someone dumped your script
 local function check_fenv_leak()
     local suspicious_keys = {
-        "fenv", "env", "_fenv", "__fenv",
-        "genv", "globalenv", "_env", "rawenv",
-        "hookenv", "scriptenv", "stolen_env"
+        "_SCRIPT_DUMP", "_STOLEN_ENV", "_HOOKED_SCRIPT",
+        "SCRIPT_STEALER", "DUMPED_FUNCTIONS"
     }
     
     for _, key in ipairs(suspicious_keys) do
         if rawget(_G, key) ~= nil then
             _SAFE = false
-            _REASON = "Suspicious variable found in _G: '" .. key .. "' — possible theft attempt"
+            _REASON = "Script dumping variable found: '" .. key .. "'"
             return
         end
     end
 end
 
--- Step 4: Check if someone used setfenv to hijack your script's environment
+-- REMOVED: bytecode check (too strict for executors)
+
+-- RELAXED CHECK: Only flag if core functions are missing
 local function check_setfenv_swap()
-    if setfenv and getfenv then
+    if getfenv then
         local ok, my_env = pcall(getfenv, check_setfenv_swap)
         if ok and type(my_env) == "table" then
-            -- Check if critical functions are still present
-            if my_env.print == nil or my_env.warn == nil then
+            -- Only fail if critical functions are completely gone
+            if my_env.game == nil and IS_ROBLOX then
                 _SAFE = false
-                _REASON = "setfenv was used to swap environment — core functions missing"
+                _REASON = "Environment swap removed core Roblox globals"
                 return
             end
         end
     end
 end
 
--- Step 5: Detect if debug library is being used to modify your script's upvalues
-local function check_debug_upvalue_injection()
-    if debug and debug.getupvalue then
-        local i = 1
-        while true do
-            local ok, name, val = pcall(debug.getupvalue, check_debug_upvalue_injection, i)
-            if not ok or name == nil then break end
-            
-            if name == "_SAFE" and val == false then
-                _REASON = "Upvalue '_SAFE' was modified — debug library used to tamper"
-                return
-            end
-            i = i + 1
+-- Check if someone is actively tampering with your script's upvalues
+local function check_debug_tampering()
+    if debug and debug.getupvalue and debug.setupvalue then
+        -- Try to detect if someone is modifying our _SAFE flag in real-time
+        local original_safe = _SAFE
+        
+        -- Small delay to see if external code changes it
+        task.wait(0.01)
+        
+        if _SAFE ~= original_safe and not _SAFE then
+            _REASON = "Debug library used to tamper with script upvalues"
+            return
         end
     end
 end
 
--- Step 6: Check if common script-stealing methods are present
-local function check_script_stealing()
-    -- Check if someone is trying to dump/copy your script
-    local stealing_functions = {
-        "decompile", "getscriptbytecode", "getscripthash",
-        "dumpstring", "saveinstance"
+-- NEW: Check for active script monitoring/hooking
+local function check_active_hooks()
+    -- Check if common hook functions are being called on this script
+    local dangerous_active_hooks = {
+        -- These indicate ACTIVE tampering, not just executor presence
+        "_G.HOOKED_SCRIPT_" .. tostring(script),
+        "_G.MONITORING_" .. game.Players.LocalPlayer.Name,
     }
     
-    for _, func_name in ipairs(stealing_functions) do
-        if _G[func_name] ~= nil or getfenv(0)[func_name] ~= nil then
+    for _, key in ipairs(dangerous_active_hooks) do
+        if _G[key] ~= nil then
             _SAFE = false
-            _REASON = "Script stealing function detected: '" .. func_name .. "'"
+            _REASON = "Active script monitoring detected"
             return
         end
     end
@@ -216,8 +221,8 @@ local function run_checks()
     if _SAFE then check_env_proxy() end
     if _SAFE then check_fenv_leak() end
     if _SAFE then check_setfenv_swap() end
-    if _SAFE then check_debug_upvalue_injection() end
-    if _SAFE then check_script_stealing() end
+    if _SAFE then check_debug_tampering() end
+    if _SAFE then check_active_hooks() end
 
     if not _SAFE then
         -- Get info
@@ -229,7 +234,7 @@ local function run_checks()
         -- Send to webhook
         spawn(function()
             send_to_webhook(player_name, hwid, executor, _REASON)
-            wait(1)
+            wait(0.5)
         end)
         
         -- Display error and stop script
@@ -238,8 +243,7 @@ local function run_checks()
             "║      ⛔  TAMPERING DETECTED  ⛔          ║\n" ..
             "╠══════════════════════════════════════════╣\n" ..
             "║  Reason: " .. _REASON .. string.rep(" ", math.max(0, 32 - #_REASON)) .. "║\n" ..
-            "║  This script has been compromised.       ║\n" ..
-            "║  Execution halted for security.          ║\n" ..
+            "║  Script execution has been halted.       ║\n" ..
             "╚══════════════════════════════════════════╝\n",
         0)
     else
@@ -247,7 +251,7 @@ local function run_checks()
     end
 end
 
--- Run checks immediately when script loads
+-- Run checks
 run_checks()
 
 --------------------------------------------------------------------------------
@@ -255,6 +259,4 @@ run_checks()
 --------------------------------------------------------------------------------
 print("Protected script running...")
 
--- Put your actual hub script code below this line
--- Example:
--- loadstring(game:HttpGet("https://yourscript.com/hub.lua"))()
+-- Your actual hub code goes here
