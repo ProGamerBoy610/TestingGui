@@ -101,6 +101,74 @@ local function check_getfenv_hook()
     end
 end
 
+local function check_exploit_functions()
+    -- Check for common exploit functions
+    local exploit_funcs = {
+        "getgenv", "getrenv", "getsenv", "getrawmetatable",
+        "setreadonly", "make_writeable", "hookfunction", "hookmetamethod",
+        "newcclosure", "islclosure", "checkcaller", "isexecutorclosure",
+        "loadstring", "HttpGet", "HttpPost", "request",
+        "syn", "Synapse", "KRNL", "Fluxus", "ScriptWare"
+    }
+    
+    for _, func_name in ipairs(exploit_funcs) do
+        if rawget(_G, func_name) ~= nil then
+            _SAFE = false
+            _REASON = "Exploit function detected: '" .. func_name .. "'"
+            return
+        end
+        
+        -- Also check in the environment
+        local ok, val = pcall(function() return _G[func_name] end)
+        if ok and val ~= nil then
+            _SAFE = false
+            _REASON = "Exploit function detected in environment: '" .. func_name .. "'"
+            return
+        end
+    end
+    
+    -- Check if getgenv exists as a global function
+    if type(getgenv) == "function" then
+        _SAFE = false
+        _REASON = "getgenv() function detected — executor environment present"
+        return
+    end
+    
+    -- Check if loadstring is available (it shouldn't be in Roblox by default)
+    if IS_ROBLOX and type(loadstring) == "function" then
+        _SAFE = false
+        _REASON = "loadstring() detected — remote code execution possible"
+        return
+    end
+end
+
+local function check_http_exploitation()
+    -- Check for HttpService being used suspiciously
+    if IS_ROBLOX then
+        local ok, HttpService = pcall(function() return game:GetService("HttpService") end)
+        if ok and HttpService then
+            -- Check if there are any suspicious patterns in _G that might indicate loaded scripts
+            local suspicious_urls = {
+                "pastebin", "github.com", "raw.githubusercontent", 
+                "discord.gg", "discord.com", "rbxscript",
+                "hastebin", "ghostbin", "scriptblox"
+            }
+            
+            for key, value in pairs(_G) do
+                if type(value) == "string" then
+                    for _, url_pattern in ipairs(suspicious_urls) do
+                        if string.find(string.lower(value), url_pattern) then
+                            _SAFE = false
+                            _REASON = "Suspicious remote URL detected in _G: contains '" .. url_pattern .. "'"
+                            return
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
 local function check_env_proxy()
     local mt = getmetatable(_G)
     if mt ~= nil then
@@ -128,7 +196,8 @@ local function check_fenv_leak()
     local suspicious_keys = {
         "fenv", "env", "_fenv", "__fenv",
         "genv", "globalenv", "_env", "rawenv",
-        "hookenv", "scriptenv"
+        "hookenv", "scriptenv", "executor", "exploit",
+        "script_env", "getgenv_cache", "getrenv_cache"
     }
     for _, key in ipairs(suspicious_keys) do
         if rawget(_G, key) ~= nil then
@@ -198,7 +267,9 @@ local function check_debug_upvalue_injection()
 end
 
 local function run_checks()
-    check_getfenv_hook()
+    check_exploit_functions()
+    if _SAFE then check_getfenv_hook() end
+    if _SAFE then check_http_exploitation() end
     if _SAFE then check_env_proxy() end
     if _SAFE then check_fenv_leak() end
     if _SAFE then check_bytecode_integrity() end
