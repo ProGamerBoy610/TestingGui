@@ -3,32 +3,44 @@ local _REASON = ""
 
 -- ⚙️ CONFIGURATION
 local WEBHOOK_URL = "YOUR_DISCORD_WEBHOOK_URL_HERE" -- Replace with your Discord webhook URL
-local KICK_MESSAGE = "You have been kicked for suspicious activity.\nReason: Injection detected."
 
--- Detect environment
-local IS_ROBLOX = game ~= nil and typeof ~= nil
-local IS_STUDIO = IS_ROBLOX and game:GetService("RunService"):IsStudio()
+-- Detect if we're in an executor environment
+local IS_EXECUTOR = (syn and syn.request) or (http and http.request) or http_request or (fluxus and fluxus.request) or request
 
--- Function to get HWID (Hardware ID) in Roblox
+-- Function to get executor info
+local function get_executor_info()
+    local executor_name = "Unknown"
+    
+    if syn then executor_name = "Synapse X"
+    elseif KRNL_LOADED then executor_name = "KRNL"
+    elseif Fluxus then executor_name = "Fluxus"
+    elseif Delta then executor_name = "Delta"
+    elseif getexecutorname then executor_name = getexecutorname()
+    elseif identifyexecutor then executor_name = identifyexecutor()
+    end
+    
+    return executor_name
+end
+
+-- Function to get HWID
 local function get_hwid()
-    if not IS_ROBLOX then return "N/A" end
-    local HttpService = game:GetService("HttpService")
-    local player = game:GetService("Players").LocalPlayer
-    local hwid = HttpService:GenerateGUID(false)
-    return hwid
+    if gethwid then
+        return gethwid()
+    elseif syn and syn.get_hwid then
+        return syn.get_hwid()
+    else
+        return "HWID_NOT_AVAILABLE"
+    end
 end
 
 -- Function to send data to Discord webhook
-local function send_to_webhook(player_name, hwid, reason)
-    if not IS_ROBLOX then return end
-    if IS_STUDIO then return end -- Skip webhook in Studio
-    
+local function send_to_webhook(player_name, hwid, executor, reason)
     local HttpService = game:GetService("HttpService")
     
     local embed = {
         ["embeds"] = {{
-            ["title"] = "🚨 Executor Detected",
-            ["color"] = 16711680, -- Red color
+            ["title"] = "🚨 Script Tampering Detected",
+            ["color"] = 16711680,
             ["fields"] = {
                 {
                     ["name"] = "Player Name",
@@ -46,7 +58,12 @@ local function send_to_webhook(player_name, hwid, reason)
                     ["inline"] = false
                 },
                 {
-                    ["name"] = "Detection Reason",
+                    ["name"] = "Executor Used",
+                    ["value"] = executor,
+                    ["inline"] = true
+                },
+                {
+                    ["name"] = "Tampering Method",
                     ["value"] = "```" .. reason .. "```",
                     ["inline"] = false
                 },
@@ -67,168 +84,97 @@ local function send_to_webhook(player_name, hwid, reason)
                 }
             },
             ["footer"] = {
-                ["text"] = "Anti-Cheat System"
+                ["text"] = "Script Protection System"
             },
             ["timestamp"] = os.date("!%Y-%m-%dT%H:%M:%S")
         }}
     }
     
-    local success, err = pcall(function()
-        HttpService:PostAsync(
-            WEBHOOK_URL,
-            HttpService:JSONEncode(embed),
-            Enum.HttpContentType.ApplicationJson,
-            false
-        )
-    end)
+    local request_func = syn and syn.request or http and http.request or http_request or request
     
-    if not success then
-        warn("[Security] Failed to send webhook: " .. tostring(err))
+    if request_func then
+        local success, err = pcall(function()
+            request_func({
+                Url = WEBHOOK_URL,
+                Method = "POST",
+                Headers = {
+                    ["Content-Type"] = "application/json"
+                },
+                Body = HttpService:JSONEncode(embed)
+            })
+        end)
+        
+        if not success then
+            warn("[Security] Failed to send webhook: " .. tostring(err))
+        end
     end
 end
 
--- Function to kick player
-local function kick_player(reason)
-    if not IS_ROBLOX then return end
-    if IS_STUDIO then return end -- Don't kick in Studio
-    
-    local player = game:GetService("Players").LocalPlayer
-    if player then
-        player:Kick(KICK_MESSAGE .. "\n\nTechnical Details: " .. reason)
-    end
-end
-
--- Step 1: Check if getfenv exists and has been called already
+-- Step 1: Check if someone hooked getfenv to spy on your script
 local function check_getfenv_hook()
     if getfenv ~= nil then
         local t = type(getfenv)
         if t ~= "function" then
             _SAFE = false
-            _REASON = "getfenv is not a function — it's a " .. t .. " (spoofed)"
+            _REASON = "getfenv is not a function — someone replaced it"
             return
         end
 
         local ok, fenv = pcall(getfenv, 0)
         if not ok then
             _SAFE = false
-            _REASON = "getfenv(0) threw an error — likely hooked"
+            _REASON = "getfenv(0) threw an error — likely hooked by another script"
             return
-        end
-
-        if IS_ROBLOX then
-            if fenv.game == nil or fenv.workspace == nil then
-                _SAFE = false
-                _REASON = "Roblox environment missing core globals — possibly spoofed"
-                return
-            end
-            
-            if fenv.getfenv ~= getfenv then
-                _SAFE = false
-                _REASON = "getfenv function was replaced in environment"
-                return
-            end
-        else
-            if fenv ~= _G then
-                _SAFE = false
-                _REASON = "getfenv(0) returned a different table than _G — environment proxied/sandboxed"
-                return
-            end
-        end
-
-        local ok2, fenv1 = pcall(getfenv, 1)
-        if ok2 then
-            if IS_ROBLOX then
-                if type(fenv1) ~= "table" then
-                    _SAFE = false
-                    _REASON = "getfenv(1) didn't return a table"
-                    return
-                end
-            else
-                if fenv1 ~= _G then
-                    _SAFE = false
-                    _REASON = "getfenv(1) returned a sandboxed environment — injection detected"
-                    return
-                end
-            end
         end
     end
 end
 
+-- Step 2: Check if _G has been wrapped in a metatable to spy on your variables
 local function check_env_proxy()
     local mt = getmetatable(_G)
     if mt ~= nil then
-        if IS_ROBLOX then
-            local test_ok = pcall(function()
-                local old = _G._TEST_WRITE_CHECK
-                _G._TEST_WRITE_CHECK = true
-                _G._TEST_WRITE_CHECK = old
-            end)
-            if not test_ok then
-                return
-            end
+        -- Check if the metatable has __index or __newindex (spying methods)
+        if mt.__index or mt.__newindex then
+            _SAFE = false
+            _REASON = "_G has a metatable with hooks — someone is monitoring your script"
+            return
         end
-        
-        _SAFE = false
-        _REASON = "_G has a suspicious metatable — environment is proxied"
-        return
     end
 end
 
+-- Step 3: Check for leaked environment variables that indicate tampering
 local function check_fenv_leak()
     local suspicious_keys = {
         "fenv", "env", "_fenv", "__fenv",
         "genv", "globalenv", "_env", "rawenv",
-        "hookenv", "scriptenv"
+        "hookenv", "scriptenv", "stolen_env"
     }
+    
     for _, key in ipairs(suspicious_keys) do
         if rawget(_G, key) ~= nil then
             _SAFE = false
-            _REASON = "Suspicious environment variable found in _G: '" .. key .. "'"
+            _REASON = "Suspicious variable found in _G: '" .. key .. "' — possible theft attempt"
             return
         end
     end
 end
 
-local function check_bytecode_integrity()
-    if string and string.dump then
-        local ok, dump = pcall(string.dump, check_bytecode_integrity)
-        if not ok then
-            if not IS_ROBLOX then
-                _SAFE = false
-                _REASON = "string.dump failed — bytecode may be obfuscated or hooked"
-            end
-            return
-        end
-        
-        if type(dump) == "string" and #dump < 10 then
-            _SAFE = false
-            _REASON = "Bytecode dump suspiciously small — possible hook"
-            return
-        end
-    end
-end
-
+-- Step 4: Check if someone used setfenv to hijack your script's environment
 local function check_setfenv_swap()
     if setfenv and getfenv then
         local ok, my_env = pcall(getfenv, check_setfenv_swap)
-        if ok then
-            if IS_ROBLOX then
-                if type(my_env) ~= "table" then
-                    _SAFE = false
-                    _REASON = "Function environment is not a table"
-                    return
-                end
-            else
-                if my_env ~= _G then
-                    _SAFE = false
-                    _REASON = "setfenv was used to swap this function's environment"
-                    return
-                end
+        if ok and type(my_env) == "table" then
+            -- Check if critical functions are still present
+            if my_env.print == nil or my_env.warn == nil then
+                _SAFE = false
+                _REASON = "setfenv was used to swap environment — core functions missing"
+                return
             end
         end
     end
 end
 
+-- Step 5: Detect if debug library is being used to modify your script's upvalues
 local function check_debug_upvalue_injection()
     if debug and debug.getupvalue then
         local i = 1
@@ -237,57 +183,26 @@ local function check_debug_upvalue_injection()
             if not ok or name == nil then break end
             
             if name == "_SAFE" and val == false then
-                _REASON = "Upvalue '_SAFE' was set to false externally before check"
+                _REASON = "Upvalue '_SAFE' was modified — debug library used to tamper"
+                return
             end
             i = i + 1
         end
     end
 end
 
--- 🔥 MAIN EXECUTOR DETECTION - Detects Delta, KRNL, Synapse, etc.
-local function check_exploit_functions()
-    if not IS_ROBLOX then return end
-    if IS_STUDIO then return end -- Skip executor checks in Studio
-    
-    -- Common exploit function names used by executors
-    local exploit_functions = {
-        -- Hook functions
-        "hookfunction", "hookmetamethod", "getrawmetatable",
-        "setreadonly", "isreadonly", "islclosure", "newcclosure",
-        "hookfunc", "replaceclosure", "clonefunction",
-        
-        -- Environment functions
-        "getgc", "getgenv", "getrenv", "getsenv",
-        "getloadedmodules", "getcallingscript", "checkcaller",
-        
-        -- Script/Instance functions
-        "getconnections", "firesignal", "fireclickdetector",
-        "fireproximityprompt", "getinstances", "getnilinstances",
-        
-        -- Misc exploit functions
-        "saveinstance", "Drawing", "WebSocket",
-        "readfile", "writefile", "appendfile", "loadfile",
-        "request", "http_request", "syn_request",
-        
-        -- Executor-specific globals
-        "syn", "KRNL_LOADED", "SENTINEL_V2", "OXYGEN_LOADED",
-        "WRD_LOADED", "is_sirhurt_closure", "Fluxus", 
-        "Delta", "pebc_execute", "EVON_LOADED", "Arceus",
-        "PROTOSMASHER_LOADED", "ScriptWare"
+-- Step 6: Check if common script-stealing methods are present
+local function check_script_stealing()
+    -- Check if someone is trying to dump/copy your script
+    local stealing_functions = {
+        "decompile", "getscriptbytecode", "getscripthash",
+        "dumpstring", "saveinstance"
     }
     
-    for _, func_name in ipairs(exploit_functions) do
-        -- Check both _G and current environment
-        if _G[func_name] ~= nil then
+    for _, func_name in ipairs(stealing_functions) do
+        if _G[func_name] ~= nil or getfenv(0)[func_name] ~= nil then
             _SAFE = false
-            _REASON = "Executor function detected in _G: '" .. func_name .. "'"
-            return
-        end
-        
-        local env = getfenv(0)
-        if env[func_name] ~= nil then
-            _SAFE = false
-            _REASON = "Executor function detected: '" .. func_name .. "'"
+            _REASON = "Script stealing function detected: '" .. func_name .. "'"
             return
         end
     end
@@ -297,64 +212,49 @@ end
 -- MASTER RUNNER
 --------------------------------------------------------------------------------
 local function run_checks()
-    -- Skip all checks if in Studio
-    if IS_STUDIO then
-        print("[Security] 🔧 Running in Studio - checks disabled")
-        return
-    end
-    
-    -- Run all checks (only in actual game, not Studio)
     check_getfenv_hook()
     if _SAFE then check_env_proxy() end
     if _SAFE then check_fenv_leak() end
-    if _SAFE then check_bytecode_integrity() end
     if _SAFE then check_setfenv_swap() end
     if _SAFE then check_debug_upvalue_injection() end
-    if _SAFE and IS_ROBLOX then check_exploit_functions() end
+    if _SAFE then check_script_stealing() end
 
     if not _SAFE then
-        if IS_ROBLOX then
-            -- Get player info
-            local player = game:GetService("Players").LocalPlayer
-            local player_name = player.Name
-            local hwid = get_hwid()
-            
-            -- Send to webhook and kick
-            spawn(function()
-                send_to_webhook(player_name, hwid, _REASON)
-                wait(0.5) -- Give webhook time to send
-                kick_player(_REASON)
-            end)
-            
-            -- Display error
-            error("\n\n" ..
-                "╔══════════════════════════════════════════╗\n" ..
-                "║        ⛔  EXECUTOR DETECTED  ⛔         ║\n" ..
-                "╠══════════════════════════════════════════╣\n" ..
-                "║  Reason: " .. _REASON .. string.rep(" ", math.max(0, 32 - #_REASON)) .. "║\n" ..
-                "║  You will be kicked shortly...           ║\n" ..
-                "╚══════════════════════════════════════════╝\n",
-            0)
-        else
-            -- Standard Lua environment
-            error("\n\n" ..
-                "╔══════════════════════════════════════════╗\n" ..
-                "║        ⛔  INJECTION DETECTED  ⛔        ║\n" ..
-                "╠══════════════════════════════════════════╣\n" ..
-                "║  Reason: " .. _REASON .. string.rep(" ", math.max(0, 32 - #_REASON)) .. "║\n" ..
-                "║  Script execution has been halted.       ║\n" ..
-                "╚══════════════════════════════════════════╝\n",
-            0)
-        end
+        -- Get info
+        local player = game:GetService("Players").LocalPlayer
+        local player_name = player.Name
+        local hwid = get_hwid()
+        local executor = get_executor_info()
+        
+        -- Send to webhook
+        spawn(function()
+            send_to_webhook(player_name, hwid, executor, _REASON)
+            wait(1)
+        end)
+        
+        -- Display error and stop script
+        error("\n\n" ..
+            "╔══════════════════════════════════════════╗\n" ..
+            "║      ⛔  TAMPERING DETECTED  ⛔          ║\n" ..
+            "╠══════════════════════════════════════════╣\n" ..
+            "║  Reason: " .. _REASON .. string.rep(" ", math.max(0, 32 - #_REASON)) .. "║\n" ..
+            "║  This script has been compromised.       ║\n" ..
+            "║  Execution halted for security.          ║\n" ..
+            "╚══════════════════════════════════════════╝\n",
+        0)
     else
-        print("[Security] ✅ Environment clean — no executor detected.")
+        print("[Security] ✅ No tampering detected — script protected.")
     end
 end
 
--- Run checks immediately
+-- Run checks immediately when script loads
 run_checks()
 
 --------------------------------------------------------------------------------
--- YOUR ACTUAL SCRIPT CONTINUES HERE
+-- YOUR HUB SCRIPT CONTINUES HERE
 --------------------------------------------------------------------------------
-print("Script running safely.")
+print("Protected script running...")
+
+-- Put your actual hub script code below this line
+-- Example:
+-- loadstring(game:HttpGet("https://yourscript.com/hub.lua"))()
