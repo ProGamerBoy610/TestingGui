@@ -1,1012 +1,1155 @@
--- XXMZ HUB - Escape Tsunami For Brainrots
--- Converted to ModernGUI Library
-
-if not game:IsLoaded() then game.Loaded:Wait() end
-
-local Players       = game:GetService("Players")
-local RunService    = game:GetService("RunService")
-local HttpService   = game:GetService("HttpService")
-local TweenService  = game:GetService("TweenService")
-local player        = Players.LocalPlayer
-local character     = player.Character or player.CharacterAdded:Wait()
-local hrp           = character:WaitForChild("HumanoidRootPart")
-local humanoid      = character:WaitForChild("Humanoid")
-
--- Load ModernGUI
-local ok, ModernGUI = pcall(function()
-    return loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Ui/refs/heads/main/Main", true))()
-end)
-if not ok or not ModernGUI then warn("Failed to load ModernGUI:", ModernGUI) return end
-
--- ============================================================
--- STATE
--- ============================================================
-local state = {
-    instantInteract     = false,
-    tpwalk              = false, tpwalkSpeed = 1, tpwalkConn = nil,
-    jumpPower           = false, jumpPowerVal = 50, oldJump = nil,
-    autoCollect         = false, collectDelay = 0.1, collectSlot = 1, maxSlots = 40,
-    autoFarm            = false, isFarming = false,
-    autoFarmV2          = false, isFarmingV2 = false,
-    farmTargetType      = "Best Brainrot",
-    farmTargetRarity    = "All",
-    selectedTypes       = {},
-    alertRarities       = {},
-    alertLBRarities     = {},
-    alertESP            = true,
-    lbESP               = true,
-    showAllESP          = false,
-    showAllLBESP        = false,
-    bestESPEnabled      = false,
-    bestWebhook         = "",
-    alertWebhook        = "",
-    lastBest            = nil,
-    platform            = nil,
+local gameid = {
+    [127794225497302] = true,
+    [9876543210] = false
 }
 
-local espObjects, allESPObjects, espLBObjects, allLBESPObjects = {}, {}, {}, {}
-local bestESP = nil
-local autoUpdateConn = nil
-
--- ============================================================
--- RARITY COLORS
--- ============================================================
-local RC = {
-    Celestial=Color3.fromRGB(0,255,255), Common=Color3.fromRGB(200,200,200),
-    Cosmic=Color3.fromRGB(138,43,226),   Divine=Color3.fromRGB(255,215,0),
-    Epic=Color3.fromRGB(163,53,238),     Infinity=Color3.fromRGB(255,0,255),
-    Legendary=Color3.fromRGB(255,128,0), Mythical=Color3.fromRGB(255,0,127),
-    Rare=Color3.fromRGB(0,112,221),      Secret=Color3.fromRGB(255,255,0),
-    Uncommon=Color3.fromRGB(0,255,0),
-}
-local RARITIES = {"Celestial","Common","Cosmic","Divine","Epic","Infinity","Legendary","Mythical","Rare","Secret","Uncommon"}
-
--- ============================================================
--- UTILITY FUNCTIONS
--- ============================================================
-local function notify(msg, t) ModernGUI.createNotification(msg, t or "success") end
-
-local function isAlive()
-    return character and character.Parent
-        and humanoid and humanoid.Health > 0
-        and hrp and hrp.Parent
+if not gameid[game.PlaceId] then
+    warn("WRONG GAME SKIBIDI SIGMA OHIO RETARDATION!!")
+    return
 end
 
-local function parseRate(t)
-    if not t then return 0 end
-    local s = t:gsub("%$",""):gsub("/s",""):gsub(" ","")
-    for sfx, m in pairs({K=1e3,M=1e6,B=1e9,T=1e12}) do
-        if s:upper():find(sfx) then
-            local n = tonumber(s:match("([%d%.]+)")) return n and n*m or 0
+print("Correct game. Loading script...")
+warn("I'm enjoy riding femboy dick...")
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- ============================================================
+-- SERVICES
+-- ============================================================
+local Players      = game:GetService("Players")
+local RunService   = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService  = game:GetService("UserInputService")
+
+local player   = Players.LocalPlayer
+local camera   = workspace.CurrentCamera
+
+-- ============================================================
+-- WINDOW
+-- ============================================================
+local Window = WindUI:CreateWindow({
+    Title      = "Hyperloop",
+    Icon       = "square-library",
+    Author     = "by ztll.x",
+    Folder     = "Hyperl",
+    Size       = UDim2.fromOffset(580, 460),
+    Transparent = true,
+    Theme      = "Midnight",
+    Resizable  = true,
+    Toggle     = "RightControl",
+})
+
+Window:EditOpenButton({
+    Title = "Open Hyperloop UI",
+    OnlyMobile = false
+})
+
+Window:Tag({
+    Title = "Free v1.01",
+    Color = Color3.fromHex("#0162FE"),
+    Radius = 20,
+})
+
+WindUI:Notify({
+    Title    = "Hyperloop Loaded",
+    Content  = "Press RightControl to toggle UI",
+    Icon     = "check",
+    Duration = 25,
+})
+
+-- ============================================================
+-- TABS
+-- ============================================================
+local TabFishing = Window:Tab({
+    Title   = "Fishing",
+    Icon    = "anchor",
+    Visible = true,
+})
+
+local TabESP = Window:Tab({
+    Title   = "ESP",
+    Icon    = "fish",
+    Visible = true,
+})
+
+local TabUtility = Window:Tab({
+    Title   = "Utility",
+    Icon    = "settings",
+    Visible = true,
+})
+
+local TabCommunity = Window:Tab({
+    Title   = "Community",
+    Icon    = "users",
+    Visible = true,
+})
+
+-- ============================================================
+-- PARAGRAPHS / WARNINGS PER TAB
+-- ============================================================
+
+-- Fishing Tab Description
+TabFishing:Paragraph({
+    Title = "Fishing",
+    Desc  = "Auto-damage bar filler and auto-catch spammer for fish. Enables automatic catching by hooking into the game's catching system.\n Warning: Use at your own risk — may be detected by anti-cheat.",
+})
+
+-- ESP Tab Description
+TabESP:Paragraph({
+    Title = "ESP",
+    Desc  = "Fish and Chest ESP with highlights, name labels, and mutation display. Shows all nearby fish and chests through walls.\n Warning: Visual ESP is client-side only. May be visible to other players via highlights.",
+})
+
+-- Utility Tab Description
+TabUtility:Paragraph({
+    Title = "Utility",
+    Desc  = "Anti-drown auto return and developer items. Includes automatic teleport to safety when oxygen is low and dev gun/tube equip.\n Warning: Teleport features and item exploits may be flagged by the game server.",
+})
+
+-- ============================================================
+-- FISHING TAB LOGIC
+-- ============================================================
+
+-- Auto Damage Bar (hookUI)
+local function hookUI()
+    local gui    = player:WaitForChild("PlayerGui")
+    local catch  = gui:WaitForChild("Main")
+                     :WaitForChild("CatchingBar")
+                     :WaitForChild("Frame")
+                     :WaitForChild("Bar")
+                     :WaitForChild("Catch")
+
+    local green    = catch:WaitForChild("Green")
+    local gradient = catch:WaitForChild("Gradient")
+
+    local TARGET_SIZE  = UDim2.new(1, 0, 1, 0)
+    local TARGET_COLOR = Color3.fromRGB(136, 194, 89)
+
+    RunService.RenderStepped:Connect(function()
+        if green.Parent and green.Size ~= TARGET_SIZE then
+            green.Size = TARGET_SIZE
         end
-    end
-    return tonumber(s) or 0
-end
-
-local function getTimeLeft(rb)
-    local r = rb:FindFirstChild("Root")
-    if r then
-        local tg = r:FindFirstChild("TimerGui")
-        if tg then local tl = tg:FindFirstChild("TimeLeft") if tl and tl:IsA("TextLabel") then return tl.Text end end
-    end
-    return "N/A"
-end
-
-local function isDivine(rb)
-    for _, c in pairs(rb:GetDescendants()) do
-        if c:IsA("TextLabel") and c.Name=="Class" and c.Text=="Divine" then return true end
-    end
-    return false
-end
-
-local function getRate(rb)
-    for _ = 1, 3 do
-        for _, c in pairs(rb:GetChildren()) do
-            if c:IsA("Model") then
-                local me = c:FindFirstChild("ModelExtents")
-                if me then
-                    local sg = me:FindFirstChild("StatsGui")
-                    if sg then
-                        local f = sg:FindFirstChild("Frame")
-                        if f then local r = f:FindFirstChild("Rate") if r and r.Text~="" then return r.Text end end
-                    end
-                end
-            end
+        if gradient.Parent and gradient.BackgroundColor3 ~= TARGET_COLOR then
+            gradient.BackgroundColor3 = TARGET_COLOR
         end
-        task.wait(0.1)
-    end
-    for _, o in pairs(rb:GetDescendants()) do
-        if o:IsA("TextLabel") and o.Text and o.Text:find("%$") then return o.Text end
-    end
-end
-
-local function isHolding()
-    return character and character:FindFirstChild("RenderedBrainrot") ~= nil
-end
-
--- ============================================================
--- WEBHOOK
--- ============================================================
-local function sendWebhook(url, msg)
-    if url=="" or not url then return false,"empty url" end
-    local ok2, res = pcall(function()
-        return request({Url=url, Method="POST",
-            Headers={["Content-Type"]="application/json"},
-            Body=HttpService:JSONEncode({content=msg})})
     end)
-    if not ok2 then
-        local ok3, _ = pcall(function()
-            return HttpService:PostAsync(url,HttpService:JSONEncode({content=msg}),
-                Enum.HttpContentType.ApplicationJson,false)
-        end)
-        return ok3, ok3 and "sent (alt)" or "failed"
-    end
-    return true, "sent"
+
+    green:GetPropertyChangedSignal("Size"):Connect(function()
+        if green.Size ~= TARGET_SIZE then
+            green.Size = TARGET_SIZE
+        end
+    end)
+
+    gradient:GetPropertyChangedSignal("BackgroundColor3"):Connect(function()
+        if gradient.BackgroundColor3 ~= TARGET_COLOR then
+            gradient.BackgroundColor3 = TARGET_COLOR
+        end
+    end)
 end
 
--- ============================================================
--- ESP
--- ============================================================
-local function createESP(model, text, color, timeLeft)
-    local hl = Instance.new("Highlight")
-    hl.Name="BrainrotHighlight" hl.FillColor=color hl.OutlineColor=color
-    hl.FillTransparency=0.5 hl.OutlineTransparency=0 hl.Parent=model
-
-    local ap = model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart",true)
-    if not ap then return {Highlight=hl} end
-
-    local bb = Instance.new("BillboardGui")
-    bb.Name="BrainrotBB" bb.AlwaysOnTop=true
-    bb.Size=UDim2.new(0,200,0,70) bb.StudsOffset=Vector3.new(0,5,0) bb.Parent=ap
-
-    local lb = Instance.new("TextLabel")
-    lb.BackgroundTransparency=1 lb.Size=UDim2.new(1,0,1,0)
-    lb.Text=timeLeft and (text.."\nTime: "..timeLeft) or text
-    lb.TextColor3=color lb.TextStrokeTransparency=0 lb.TextStrokeColor3=Color3.new(0,0,0)
-    lb.TextScaled=true lb.Font=Enum.Font.GothamBold lb.Parent=bb
-
-    return {Highlight=hl, Billboard=bb, Label=lb}
-end
-
-local function clearESPs(t) for _,e in pairs(t) do if e then if e.Highlight then e.Highlight:Destroy() end if e.Billboard then e.Billboard:Destroy() end end end end
-
--- ============================================================
--- BRAINROT FINDERS
--- ============================================================
-local function findBestBrainrot(targetRarity)
-    local ab = workspace:FindFirstChild("ActiveBrainrots") if not ab then return end
-    local best, bestRate = nil, 0
-
-    local function checkRB(rb, rarity)
-        local model = nil
-        for _, o in pairs(rb:GetChildren()) do if o:IsA("Model") then model=o break end end
-        if not model then return end
-        local rt = getRate(rb) if not rt then return end
-        local rv = parseRate(rt)
-        if rv > bestRate then
-            bestRate=rv
-            best={Model=model,RenderedBrainrot=rb,Rate=rt,Rarity=rarity,RateValue=rv,TimeLeft=getTimeLeft(rb)}
-        end
-    end
-
-    if targetRarity and targetRarity~="All" then
-        if targetRarity=="Divine" then
-            for _, rb in pairs(ab:GetDescendants()) do
-                if rb.Name=="RenderedBrainrot" and isDivine(rb) then checkRB(rb,"Divine") end
-            end
-        else
-            local f = ab:FindFirstChild(targetRarity)
-            if f then for _, rb in pairs(f:GetChildren()) do if rb.Name=="RenderedBrainrot" then checkRB(rb,targetRarity) end end end
-        end
-        return best
-    end
-
-    for _, rf in pairs(ab:GetChildren()) do
-        local rn = rf.Name
-        if next(state.selectedTypes)==nil or state.selectedTypes[rn] then
-            for _, rb in pairs(rf:GetChildren()) do if rb.Name=="RenderedBrainrot" then checkRB(rb,rn) end end
-        end
-    end
-    if next(state.selectedTypes)==nil or state.selectedTypes["Divine"] then
-        for _, rb in pairs(ab:GetDescendants()) do
-            if rb.Name=="RenderedBrainrot" and isDivine(rb) then checkRB(rb,"Divine") end
-        end
-    end
-    return best
-end
-
-local function findLuckyBlock(targetRarity)
-    local alb = workspace:FindFirstChild("ActiveLuckyBlocks") if not alb then return end
-    for _, lb in pairs(alb:GetDescendants()) do
-        if lb:IsA("Model") and lb.Name:find("_") then
-            local parts = lb.Name:split("_")
-            local r = parts[#parts]
-            if targetRarity=="All" or r==targetRarity then
-                return {Model=lb, Rarity=r, Position=lb:GetPivot().Position}
-            end
-        end
-    end
-end
-
-local function getTarget()
-    if state.farmTargetType=="Best Brainrot" then return findBestBrainrot(nil)
-    elseif state.farmTargetType=="Brainrot" then return findBestBrainrot(state.farmTargetRarity)
-    else return findLuckyBlock(state.farmTargetRarity) end
-end
-
--- ============================================================
--- PLATFORM
--- ============================================================
-local function makePlatform()
-    if state.platform and state.platform.Parent then state.platform:Destroy() end
-    local p = Instance.new("Part")
-    p.Name="AntiFallPlatform" p.Size=Vector3.new(10,1,10) p.Anchored=true
-    p.CanCollide=true p.Transparency=1 p.Material=Enum.Material.ForceField p.Parent=workspace
-    state.platform=p return p
-end
-
-local function updatePlatform()
-    if state.platform and state.platform.Parent and hrp and hrp.Parent then
-        local pos=hrp.Position
-        state.platform.CFrame=CFrame.new(pos.X,pos.Y-4,pos.Z)
-    end
-end
-
-local function destroyPlatform()
-    if state.platform then state.platform:Destroy() state.platform=nil end
-end
-
--- ============================================================
--- INTERACT
--- ============================================================
-local function interact()
-    for _, p in pairs(workspace:GetDescendants()) do
-        if p:IsA("ProximityPrompt") then
-            local pp = p.Parent
-            if pp and pp:IsA("BasePart") and (pp.Position-hrp.Position).Magnitude<10 then
-                fireproximityprompt(p) return true
-            end
-        end
-    end
-    return false
-end
-
-local function slide(pos, dur)
-    local t = TweenService:Create(hrp,TweenInfo.new(dur or 1.5,Enum.EasingStyle.Linear,Enum.EasingDirection.Out),{CFrame=CFrame.new(pos)})
-    t:Play() t.Completed:Wait()
-end
-
--- ============================================================
--- AUTO FARM V1
--- ============================================================
-local function doFarmV1()
-    if state.isFarming or not isAlive() then return end
-    state.isFarming=true
-    makePlatform()
-
-    local startPos  = Vector3.new(164,27,141)
-    local safe1     = Vector3.new(2250,-3,76)
-    local safe2     = Vector3.new(2594,-2,82)
-    local final     = Vector3.new(110,3,-1)
-    local xLim      = 2053
-    local midZ      = 137
-
-    local pc = RunService.Heartbeat:Connect(updatePlatform)
-
-    local function bail() pc:Disconnect() destroyPlatform() state.isFarming=false end
-    local function chk() if not isAlive() then bail() return true end return false end
-
-    local t = getTarget()
-    if t and (t.Model or t.Position) then
-        local bpos = t.Model and t.Model:GetPivot().Position or t.Position
-        local bx   = bpos.X
-
-        if chk() then return end
-        hrp.CFrame = CFrame.new(startPos) task.wait(0.3)
-
-        local tx  = math.min(bx, xLim)
-        local mid = Vector3.new(tx, 27, midZ)
-
-        if chk() then return end
-        slide(mid, 3.5) task.wait(0.3)
-
-        local function goPickup(safeBack)
-            if chk() then return end
-            slide(bpos, 0.3) task.wait(0.2)
-            if chk() then return end
-            interact() task.wait(0.4)
-            if isHolding() then
-                if chk() then return end
-                slide(Vector3.new(154,4,136), 2.0) task.wait(0.3)
-                if chk() then return end
-                hrp.CFrame=CFrame.new(134,3,56)
-                notify("Brainrot coletado e depositado!")
-            else
-                if safeBack then
-                    if chk() then return end slide(safeBack,0.3) task.wait(0.3)
-                end
-                if chk() then return end
-                slide(mid, 0.3) task.wait(0.3)
-                if chk() then return end
-                slide(startPos, 3.5)
-            end
-        end
-
-        if bx <= xLim then
-            goPickup(nil)
-        elseif bx <= 2594 then
-            if chk() then return end slide(safe1,0.3) task.wait(0.3)
-            goPickup(safe1)
-        else
-            if chk() then return end slide(safe1,0.3) task.wait(0.3)
-            if chk() then return end slide(safe2,0.3) task.wait(0.3)
-            goPickup(safe2)
-        end
-
-        task.wait(0.3)
-        if not isHolding() then
-            if not isAlive() then bail() return end
-            hrp.CFrame=CFrame.new(final)
-        end
-    end
-
-    bail()
-end
-
--- ============================================================
--- AUTO FARM V2
--- ============================================================
-local function doFarmV2()
-    if state.isFarmingV2 or not isAlive() then return end
-    state.isFarmingV2=true
-
-    for _, o in pairs(workspace:GetDescendants()) do
-        if o.Name=="Walls" or o.Name=="RightWalls" then o:Destroy() end
-    end
-
-    makePlatform()
-    local startPos = Vector3.new(154,4,136)
-    local endPos   = Vector3.new(2926,4,136)
-    local deposit  = Vector3.new(134,3,56)
-    local xLim     = 2926
-
-    local pc = RunService.Heartbeat:Connect(updatePlatform)
-    local function bail() pc:Disconnect() destroyPlatform() state.isFarmingV2=false end
-    local function chk() if not isAlive() then bail() return true end return false end
-
-    local t = getTarget()
-    if t and (t.Model or t.Position) then
-        local bpos = t.Model and t.Model:GetPivot().Position or t.Position
-        local bx   = bpos.X
-
-        if chk() then return end
-        hrp.CFrame=CFrame.new(startPos) task.wait(0.3)
-
-        local function pickAndDeposit(preSlide, slideDur)
-            if preSlide then
-                if chk() then return end slide(preSlide, slideDur or 2.5) task.wait(0.3)
-            end
-            if chk() then return end slide(bpos, 0.3) task.wait(0.2)
-            if chk() then return end interact() task.wait(0.4)
-            if isHolding() then
-                if chk() then return end slide(Vector3.new(bx,4,136),0.3) task.wait(0.2)
-                if chk() then return end slide(startPos, preSlide and 3.0 or 2.0) task.wait(0.3)
-                if chk() then return end hrp.CFrame=CFrame.new(deposit)
-                notify("Item coletado e depositado! (V2)")
-            else
-                if chk() then return end slide(startPos, preSlide and 3.0 or 2.5)
-            end
-        end
-
-        if bx <= xLim then
-            pickAndDeposit(Vector3.new(bx,4,136), 2.5)
-        else
-            pickAndDeposit(endPos, 2.5)
-        end
-    end
-
-    bail()
-end
-
--- ============================================================
--- BEST BRAINROT ESP UPDATE
--- ============================================================
-local function updateBestESP()
-    if bestESP then
-        if bestESP.Highlight then bestESP.Highlight:Destroy() end
-        if bestESP.Billboard then bestESP.Billboard:Destroy() end
-        bestESP=nil
-    end
-    local b = findBestBrainrot(nil)
-    if not b or not b.Model then return end
-    bestESP = createESP(b.Model, "BEST BRAINROT\n"..b.Rate.."\n["..b.Rarity.."]", Color3.fromRGB(255,215,0), b.TimeLeft)
-
-    local changed = not state.lastBest or state.lastBest.RateValue~=b.RateValue or state.lastBest.Rarity~=b.Rarity
-    if changed and state.bestWebhook~="" then
-        state.lastBest=b
-        task.spawn(function()
-            local gameName = pcall(function() return game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end) and "Server" or "Server"
-            sendWebhook(state.bestWebhook,
-                "🏆 **MELHOR BRAINROT ATUALIZADO!**\n\n💎 **Raridade:** "..b.Rarity..
-                "\n💰 **Rate:** "..b.Rate.."\n⏰ **Time Left:** "..b.TimeLeft)
-        end)
-    end
-    return b
-end
-
--- ============================================================
--- SHOW ALL ESP HELPERS
--- ============================================================
-local function refreshAllBrainrotESP()
-    clearESPs(allESPObjects) allESPObjects={}
-    if not state.showAllESP then return end
-    local ab = workspace:FindFirstChild("ActiveBrainrots") if not ab then return end
-    for _, rf in pairs(ab:GetChildren()) do
-        local rn=rf.Name
-        if state.alertRarities[rn] then
-            for _, rb in pairs(rf:GetChildren()) do
-                if rb.Name=="RenderedBrainrot" then
-                    local model=nil for _,o in pairs(rb:GetChildren()) do if o:IsA("Model") then model=o break end end
-                    if model then
-                        local rt=getRate(rb)
-                        table.insert(allESPObjects, createESP(model,"["..rn.."\n"..(rt or ""),RC[rn] or Color3.new(1,1,1),getTimeLeft(rb)))
-                    end
-                end
-            end
-        end
-    end
-    if state.alertRarities["Divine"] then
-        for _, rb in pairs(ab:GetDescendants()) do
-            if rb.Name=="RenderedBrainrot" and isDivine(rb) then
-                local model=nil for _,o in pairs(rb:GetChildren()) do if o:IsA("Model") then model=o break end end
-                if model then
-                    local rt=getRate(rb)
-                    table.insert(allESPObjects, createESP(model,"[Divine]\n"..(rt or ""),RC.Divine,getTimeLeft(rb)))
-                end
-            end
-        end
-    end
-    notify("ESP em "..#allESPObjects.." brainrots!")
-end
-
-local function refreshAllLBESP()
-    clearESPs(allLBESPObjects) allLBESPObjects={}
-    if not state.showAllLBESP then return end
-    local alb = workspace:FindFirstChild("ActiveLuckyBlocks") if not alb then return end
-    for _, lb in pairs(alb:GetDescendants()) do
-        if lb:IsA("Model") and lb.Name:find("_") then
-            local parts=lb.Name:split("_") local r=parts[#parts]
-            if state.alertLBRarities[r] then
-                table.insert(allLBESPObjects, createESP(lb,"[LUCKY BLOCK]\n"..r, RC[r] or Color3.fromRGB(255,255,0)))
-            end
-        end
-    end
-    notify("ESP em "..#allLBESPObjects.." Lucky Blocks!")
-end
-
--- ============================================================
--- AUTO COLLECT
--- ============================================================
-local function findBase()
-    local bases = workspace:FindFirstChild("Bases") if not bases then return end
-    for _, bm in pairs(bases:GetChildren()) do
-        if bm:IsA("Model") then
-            local title=bm:FindFirstChild("Title")
-            if title then
-                local tg=title:FindFirstChild("TitleGui")
-                if tg then
-                    local fr=tg:FindFirstChild("Frame")
-                    if fr then local pn=fr:FindFirstChild("PlayerName") if pn and pn.Text==player.Name then return bm.Name end end
-                end
-            end
-        end
-    end
-end
-
--- ============================================================
--- CREATE TABS
--- ============================================================
-local InfoTab    = ModernGUI.MakeTab({Name="Info",    Icon="help-circle"})
-local MainTab    = ModernGUI.MakeTab({Name="Main",    Icon="home"})
-local ESPTab     = ModernGUI.MakeTab({Name="ESP",     Icon="alert-circle"})
-local FarmTab    = ModernGUI.MakeTab({Name="Farm",    Icon="align-justify"})
-local PlayerTab  = ModernGUI.MakeTab({Name="Player",  Icon="user"})
-local WebhookTab = ModernGUI.MakeTab({Name="Webhook", Icon="link"})
-
--- ============================================================
--- INFO TAB
--- ============================================================
-local GREEN = Color3.fromRGB(57,252,3)
-local PINK  = Color3.fromRGB(252,3,198)
-local RED   = Color3.fromRGB(252,3,3)
-
--- Gather player info
-local function getPlayerInfo()
-    local userId    = tostring(player.UserId)
-    local acctAge   = tostring(player.AccountAge).." days"
-    local team      = player.Team and player.Team.Name or "None"
-    local ping      = math.floor(player:GetNetworkPing() * 1000).."ms"
-    local charPos   = "N/A"
-    if hrp then
-        local p=hrp.Position
-        charPos=string.format("%.1f, %.1f, %.1f", p.X, p.Y, p.Z)
-    end
-    local health = "N/A"
-    if humanoid then health=string.format("%.0f / %.0f", humanoid.Health, humanoid.MaxHealth) end
-    local gameName = "N/A"
-    pcall(function() gameName=game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end)
-    return userId, acctAge, team, ping, charPos, health, gameName
-end
-
-InfoTab.AddLabel("IL_title","👤 XXMZ HUB — Player Info",nil,{
-    textSize=16, textColor=Color3.fromRGB(255,255,255),
-    hasBackground=true, backgroundColor=GREEN, backgroundTransparency=0.55
-})
-
-local userId,acctAge,team,ping,charPos,health,gameName = getPlayerInfo()
-
-InfoTab.AddLabel("IL_name",  "🏷️  Name:      "..player.Name,nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_id",    "🔑  User ID:   "..userId,nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_age",   "📅  Acct Age:  "..acctAge,nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_team",  "🏟️  Team:      "..team,nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_ping",  "📡  Ping:      "..ping,nil,{
-    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_hp",    "❤️  Health:    "..health,nil,{
-    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_pos",   "📍  Position:  "..charPos,nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddLabel("IL_game",  "🎮  Game:      "..gameName,nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-InfoTab.AddButton("RefreshInfo","🔄 Refresh Player Info",nil,function()
-    local uid,age,tm,pn,pos,hp,gn = getPlayerInfo()
-    notify("Name: "..player.Name.."\nPing: "..pn.."\nHP: "..hp.."\nPos: "..pos)
-end,"alert-circle")
-
-InfoTab.AddLabel("IL_disc_title","🔗 Discord",nil,{
-    textColor=Color3.fromRGB(255,255,255),
-    hasBackground=true, backgroundColor=PINK, backgroundTransparency=0.5
-})
-InfoTab.AddLabel("IL_disc_link","discord.com/invite/UKYHGddQD3",nil,{
-    textColor=Color3.fromRGB(255,255,255),
-    hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-InfoTab.AddButton("CopyDiscord","📋 Copy Discord Invite",nil,function()
-    setclipboard("https://discord.com/invite/UKYHGddQD3")
-    notify("Discord link copied to clipboard!")
-end,"send")
-
-InfoTab.AddLabel("IL_credits","✨ Created by 29 • Rel • Unknown",nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
--- ============================================================
--- MAIN TAB
--- ============================================================
-MainTab.AddLabel("L1","⚙️ Main Features",nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
--- Instant Interact
-MainTab.AddCheckbox("InstantInteract","Instant Interact Prompt",nil,function(v)
-    state.instantInteract=v
-    if v then
-        for _, p in pairs(workspace:GetDescendants()) do if p:IsA("ProximityPrompt") then p.HoldDuration=0 end end
-        workspace.DescendantAdded:Connect(function(d)
-            if state.instantInteract and d:IsA("ProximityPrompt") then d.HoldDuration=0 end
-        end)
-        notify("Instant Interact ativado!")
+player:WaitForChild("PlayerGui").DescendantAdded:Connect(function(obj)
+    if obj.Name == "Green" or obj.Name == "Gradient" then
+        task.wait()
+        pcall(hookUI)
     end
 end)
 
--- Delete VIP Wall
-MainTab.AddButton("DelVIP","Delete VIP Wall",nil,function()
-    local found=false
-    for _, o in pairs(workspace:GetDescendants()) do
-        if o.Name=="VIPWalls" then o:Destroy() found=true notify("VIPWalls removido de: "..o.Parent.Name) end
-    end
-    if not found then notify("VIPWalls não encontrado!","warning") end
-end,"trash")
+hookUI()
 
--- Safe Corridor
-MainTab.AddButton("SafeCorr","Safe Corridor",nil,function()
-    local dm=workspace:FindFirstChild("DefaultMap")
-    if dm then
-        local w=dm:FindFirstChild("Walls") if w then w:Destroy() end
-        local rw=dm:FindFirstChild("RightWalls") if rw then rw:Destroy() end
-    end
-    local cor=Instance.new("Folder") cor.Name="SafeCorridor" cor.Parent=workspace
-    local function mp(size,cf,bc,tr)
-        local p=Instance.new("Part") p.Size=size p.CFrame=cf p.Anchored=true
-        p.Material=Enum.Material.SmoothPlastic p.BrickColor=BrickColor.new(bc) p.Transparency=tr p.Parent=cor
-    end
-    mp(Vector3.new(2048,20,1),CFrame.new(1173.6,10,137.1),"Bright blue",0.5)
-    mp(Vector3.new(2048,1,9), CFrame.new(1174.7,0,134.3), "Bright green",0.3)
-    mp(Vector3.new(742,20,1), CFrame.new(2567.2,10,137.3),"Bright blue",0.5)
-    mp(Vector3.new(741,1,7),  CFrame.new(2567.2,0.08,133.6),"Bright green",0.3)
-    notify("✅ Safe Corridor criado!")
-end,"shield")
+-- Auto Catch Spam
+local rs      = game:GetService("ReplicatedStorage")
+local target  = rs:WaitForChild("common")
+                  :WaitForChild("packages")
+                  :WaitForChild("Knit")
+                  :WaitForChild("Services")
+                  :WaitForChild("HarpoonService")
+                  :WaitForChild("RF")
+                  :WaitForChild("StartCatching")
 
--- Auto Collect Money
-MainTab.AddLabel("L2","💰 Auto Collect Money",nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-MainTab.AddCheckbox("AutoCollect","Auto Collect Money",nil,function(v)
-    state.autoCollect=v
-    if v then
-        local baseName=findBase()
-        if not baseName then notify("Base não encontrada!","error") state.autoCollect=false return end
-        state.collectSlot=1
-        notify("Coletando em: "..baseName)
-        task.spawn(function()
-            local ev=game:GetService("ReplicatedStorage").Packages.Net["RF/Plot.PlotAction"]
-            while state.autoCollect do
-                pcall(function() ev:InvokeServer("Collect Money",baseName,tostring(state.collectSlot)) end)
-                state.collectSlot=state.collectSlot%state.maxSlots+1
-                task.wait(state.collectDelay)
-            end
-        end)
-    else
-        state.collectSlot=1 notify("Auto Collect desativado!","warning")
-    end
-end)
+local capturedArgs = nil
+local spamming     = false
 
-MainTab.AddTextInput("CollectDelay","Collect Delay (s):",0.1,nil,function(v)
-    state.collectDelay=tonumber(v) or 0.1
-    notify("Delay: "..state.collectDelay.."s")
-end)
+local old
+old = hookmetamethod(game, "__namecall", newcclosure(function(self, ...)
+    local method = getnamecallmethod()
+    local args   = {...}
 
--- ============================================================
--- FARM TAB
--- ============================================================
-FarmTab.AddLabel("FL1","🌾 Farm Settings",nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
+    if self == target and method == "InvokeServer" then
+        capturedArgs = args
 
-FarmTab.AddDropdown("FarmType","Farm Target Type",
-    {"Best Brainrot","Brainrot","LuckyBlock"},"Best Brainrot",nil,function(v)
-    state.farmTargetType=v notify("Target: "..v)
-end)
+        if not spamming then
+            spamming = true
 
-FarmTab.AddDropdown("FarmRarity","Target Rarity (Brainrot/LB)",
-    {"All","Celestial","Common","Cosmic","Divine","Epic","Infinity","Legendary","Mythical","Rare","Secret","Uncommon"},"All",nil,function(v)
-    state.farmTargetRarity=v notify("Raridade alvo: "..v)
-end)
-
-FarmTab.AddMultiSelectDropdown("BestFilter","Best Brainrot Filter",RARITIES,{},nil,function(v)
-    state.selectedTypes={} for _,r in ipairs(v) do state.selectedTypes[r]=true end
-    notify("Filtro atualizado!")
-end)
-
-FarmTab.AddLabel("FL2","🤖 Auto Farm V1 (Original Route)",nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-FarmTab.AddCheckbox("AutoFarmV1","Auto Farm V1",nil,function(v)
-    state.autoFarm=v
-    if v then
-        character=player.Character or player.CharacterAdded:Wait()
-        hrp=character:WaitForChild("HumanoidRootPart")
-        humanoid=character:WaitForChild("Humanoid")
-        notify("Auto Farm V1 ativado!")
-        task.spawn(function()
-            while state.autoFarm do
-                if not state.isFarming and isAlive() then
-                    doFarmV1()
-                elseif not isAlive() then
-                    notify("Você morreu! Esperando respawn...","warning")
-                    player.CharacterAdded:Wait() task.wait(2)
-                    character=player.Character
-                    hrp=character:WaitForChild("HumanoidRootPart")
-                    humanoid=character:WaitForChild("Humanoid")
-                    notify("Respawn! Continuando farm...")
-                end
-                task.wait(3)
-            end
-        end)
-    else
-        state.autoFarm=false state.isFarming=false
-        notify("Auto Farm V1 desativado!","warning")
-    end
-end)
-
-FarmTab.AddButton("ManualFarmV1","Farm Manual V1 (Uma vez)",nil,function()
-    character=player.Character or player.CharacterAdded:Wait()
-    hrp=character:WaitForChild("HumanoidRootPart")
-    humanoid=character:WaitForChild("Humanoid")
-    task.spawn(doFarmV1)
-end,"play")
-
-FarmTab.AddLabel("FL3","⚡ Auto Farm V2 (Optimized Route)",nil,{
-    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-FarmTab.AddCheckbox("AutoFarmV2","Auto Farm V2",nil,function(v)
-    state.autoFarmV2=v
-    if v then
-        character=player.Character or player.CharacterAdded:Wait()
-        hrp=character:WaitForChild("HumanoidRootPart")
-        humanoid=character:WaitForChild("Humanoid")
-        notify("Auto Farm V2 ativado!")
-        task.spawn(function()
-            while state.autoFarmV2 do
-                if not state.isFarmingV2 and isAlive() then
-                    doFarmV2()
-                elseif not isAlive() then
-                    notify("Você morreu! Esperando respawn...","warning")
-                    player.CharacterAdded:Wait() task.wait(2)
-                    character=player.Character
-                    hrp=character:WaitForChild("HumanoidRootPart")
-                    humanoid=character:WaitForChild("Humanoid")
-                    notify("Respawn! Continuando farm V2...")
-                end
-                task.wait(3)
-            end
-        end)
-    else
-        state.autoFarmV2=false state.isFarmingV2=false
-        notify("Auto Farm V2 desativado!","warning")
-    end
-end)
-
-FarmTab.AddButton("ManualFarmV2","Farm Manual V2 (Uma vez)",nil,function()
-    character=player.Character or player.CharacterAdded:Wait()
-    hrp=character:WaitForChild("HumanoidRootPart")
-    humanoid=character:WaitForChild("Humanoid")
-    task.spawn(doFarmV2)
-end,"play")
-
--- ============================================================
--- ESP TAB
--- ============================================================
-ESPTab.AddLabel("EL1","🔍 Brainrot ESP",nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-ESPTab.AddCheckbox("BestESP","ESP Best Brainrot",nil,function(v)
-    state.bestESPEnabled=v
-    if v then
-        local b=updateBestESP()
-        if b then
-            notify("Melhor: "..b.Rarity.." | "..b.Rate.." | "..b.TimeLeft)
-            autoUpdateConn=task.spawn(function()
-                while state.bestESPEnabled do task.wait(5) if state.bestESPEnabled then updateBestESP() end end
-            end)
-        else
-            notify("Nenhum Brainrot encontrado!","warning")
-        end
-    else
-        if bestESP then
-            if bestESP.Highlight then bestESP.Highlight:Destroy() end
-            if bestESP.Billboard then bestESP.Billboard:Destroy() end
-            bestESP=nil
-        end
-        autoUpdateConn=nil
-    end
-end)
-
-ESPTab.AddButton("UpdateBest","Update Best Brainrot",nil,function()
-    local b=updateBestESP()
-    if b then notify("Atualizado! "..b.Rarity.." | "..b.Rate.." | "..b.TimeLeft)
-    else notify("Nenhum Brainrot ativo!","warning") end
-end,"refresh-cw")
-
-ESPTab.AddMultiSelectDropdown("AlertRarities","Alert Brainrot Rarities",RARITIES,{},nil,function(v)
-    state.alertRarities={} for _,r in ipairs(v) do state.alertRarities[r]=true end
-    if state.showAllESP then refreshAllBrainrotESP() end
-    notify("Alert raridades atualizadas!")
-end)
-
-ESPTab.AddCheckbox("AlertESPToggle","ESP on Spawn Alerts",nil,function(v)
-    state.alertESP=v
-end)
-
-ESPTab.AddCheckbox("ShowAllESP","ESP All Selected Rarities",nil,function(v)
-    state.showAllESP=v
-    if v then refreshAllBrainrotESP()
-    else clearESPs(allESPObjects) allESPObjects={} end
-end)
-
-ESPTab.AddButton("ClearAlertESP","Clear Alert ESPs",nil,function()
-    clearESPs(espObjects) espObjects={} notify("ESPs removidos!")
-end,"x")
-
-ESPTab.AddLabel("EL2","🎁 Lucky Block ESP",nil,{
-    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-ESPTab.AddMultiSelectDropdown("LBRarities","Alert LuckyBlock Rarities",RARITIES,{},nil,function(v)
-    state.alertLBRarities={} for _,r in ipairs(v) do state.alertLBRarities[r]=true end
-    if state.showAllLBESP then refreshAllLBESP() end
-    notify("LB alert raridades atualizadas!")
-end)
-
-ESPTab.AddCheckbox("LBESPToggle","ESP on LuckyBlock Spawn",nil,function(v)
-    state.lbESP=v
-end)
-
-ESPTab.AddCheckbox("ShowAllLBESP","ESP All Selected LB Rarities",nil,function(v)
-    state.showAllLBESP=v
-    if v then refreshAllLBESP()
-    else clearESPs(allLBESPObjects) allLBESPObjects={} end
-end)
-
-ESPTab.AddButton("ClearLBESP","Clear LuckyBlock ESPs",nil,function()
-    clearESPs(espLBObjects) espLBObjects={} notify("LB ESPs removidos!")
-end,"x")
-
--- ============================================================
--- PLAYER TAB
--- ============================================================
-PlayerTab.AddLabel("PL1","🏃 Movement",nil,{
-    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-PlayerTab.AddCheckbox("TPWalk","TP Walk",nil,function(v)
-    state.tpwalk=v
-    if v then
-        state.tpwalkConn=RunService.Heartbeat:Connect(function()
-            if state.tpwalk and humanoid and humanoid.MoveDirection.Magnitude>0 then
-                hrp.CFrame=hrp.CFrame+(humanoid.MoveDirection*state.tpwalkSpeed)
-            end
-        end)
-        notify("TP Walk ativado!")
-    else
-        if state.tpwalkConn then state.tpwalkConn:Disconnect() state.tpwalkConn=nil end
-        notify("TP Walk desativado!","warning")
-    end
-end)
-
-PlayerTab.AddTextInput("TPSpeed","TP Walk Speed:",1,nil,function(v)
-    state.tpwalkSpeed=tonumber(v) or 1
-    notify("TP Walk Speed: "..state.tpwalkSpeed)
-end)
-
-PlayerTab.AddCheckbox("JumpToggle","Jump Power",nil,function(v)
-    state.jumpPower=v
-    if v then
-        state.oldJump=humanoid.JumpPower
-        humanoid.JumpPower=state.jumpPowerVal
-        notify("Jump Power: "..state.jumpPowerVal)
-    else
-        if state.oldJump then humanoid.JumpPower=state.oldJump end
-        notify("Jump Power resetado!","warning")
-    end
-end)
-
-PlayerTab.AddTextInput("JumpVal","Jump Power Value:",50,nil,function(v)
-    state.jumpPowerVal=tonumber(v) or 50
-    if state.jumpPower then humanoid.JumpPower=state.jumpPowerVal end
-    notify("Jump Power: "..state.jumpPowerVal)
-end)
-
--- ============================================================
--- WEBHOOK TAB
--- ============================================================
-WebhookTab.AddLabel("WL1","🔗 Webhook Configuration",nil,{
-    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
-})
-
-WebhookTab.AddTextInput("BestWebhook","Webhook Best Brainrot:","",nil,function(v)
-    state.bestWebhook=v
-end)
-
-WebhookTab.AddTextInput("AlertWebhookInput","Webhook Alerts:","",nil,function(v)
-    state.alertWebhook=v
-end)
-
-WebhookTab.AddButton("TestBest","Test Best Webhook",nil,function()
-    if state.bestWebhook~="" then
-        local ok2,_=sendWebhook(state.bestWebhook,"🧪 Teste de webhook - Melhor Brainrot")
-        notify(ok2 and "Best webhook OK!" or "Erro no webhook!","error")
-    else notify("URL vazia!","warning") end
-end,"send")
-
-WebhookTab.AddButton("TestAlert","Test Alert Webhook",nil,function()
-    if state.alertWebhook~="" then
-        local ok2,_=sendWebhook(state.alertWebhook,"🧪 Teste de webhook - Alerta")
-        notify(ok2 and "Alert webhook OK!" or "Erro no webhook!","error")
-    else notify("URL vazia!","warning") end
-end,"send")
-
--- ============================================================
--- SPAWN DETECTION - BRAINROT
--- ============================================================
-local activeBrainrots = workspace:WaitForChild("ActiveBrainrots")
-
-for _, rf in pairs(activeBrainrots:GetChildren()) do
-    rf.ChildAdded:Connect(function(child)
-        if child.Name~="RenderedBrainrot" then return end
-        local rn=rf.Name
-        if state.alertRarities[rn] then
             task.spawn(function()
-                local rt=getRate(child) local tl=getTimeLeft(child)
-                notify("["..rn.."] Spawnou! "..(rt or "").."\nTime: "..tl)
-                if state.alertWebhook~="" then
-                    task.spawn(function()
-                        sendWebhook(state.alertWebhook,
-                            "@everyone\n\n🚨 **BRAINROT SPAWNOU!**\n⭐ **Raridade:** "..rn..
-                            "\n💰 **Rate:** "..(rt or "?").."\n⏰ **Time Left:** "..tl)
+                while spamming and capturedArgs do
+                    local ok = pcall(function()
+                        target:InvokeServer(unpack(capturedArgs))
                     end)
+
+                    if not ok then
+                        spamming = false
+                        break
+                    end
+
+                    task.wait(0.1)
                 end
-                if state.alertESP then
-                    local model=nil for _,o in pairs(child:GetChildren()) do if o:IsA("Model") then model=o break end end
-                    if model then table.insert(espObjects, createESP(model,"["..rn.."]\n"..(rt or ""),RC[rn] or Color3.new(1,1,1),tl)) end
-                end
-                if state.showAllESP then refreshAllBrainrotESP() end
             end)
         end
-        if state.bestESPEnabled then task.spawn(function() task.wait(0.3) updateBestESP() end) end
+    end
+
+    return old(self, ...)
+end))
+
+-- Fishing Tab UI Controls
+TabFishing:Toggle({
+    Title    = "Auto Damage Bar",
+    Desc     = "Keeps the catching bar always full (green zone maxed)",
+    Value    = true,
+    Flag     = "AutoDamageBar",
+    Callback = function(state)
+        -- hookUI already runs continuously; this toggle gates the RenderStepped writes
+        getgenv().AutoDamageBarEnabled = state
+    end,
+})
+
+TabFishing:Toggle({
+    Title    = "Auto Catch Spam",
+    Desc     = "Automatically spams the catch invoke to keep catching fish",
+    Value    = true,
+    Flag     = "AutoCatchSpam",
+    Callback = function(state)
+        spamming = state
+        if not state then
+            capturedArgs = nil
+        end
+    end,
+})
+
+-- ============================================================
+-- ESP TAB LOGIC (Fish + Chests with Highlights & Billboards)
+-- ============================================================
+
+getgenv().ESPSettings = getgenv().ESPSettings or {
+    Tracers     = true,
+    MaxDistance = 100,
+    Rarities    = {
+        Common    = true,
+        Uncommon  = true,
+        Rare      = true,
+        Epic      = true,
+        Legendary = true,
+        Mythic    = true,
+    },
+}
+
+-- ---- Fish ESP State ----
+local ESPState = {
+    FishHighlight    = true,
+    FishName         = true,
+    FishMutation     = true,
+    ChestHighlight   = true,
+    ChestName        = true,
+}
+
+local fishESP  = {}
+local chestESP = {}
+
+local espContainer = Instance.new("Folder")
+espContainer.Name   = "EssentialH_ESPObjects"
+espContainer.Parent = workspace
+
+-- Fish billboard / highlight helpers
+local CONFIG_ESP = {
+    Colors = {
+        Accent    = Color3.fromRGB(0, 170, 255),
+        ChestT1   = Color3.fromRGB(169, 169, 169),
+        ChestT2   = Color3.fromRGB(255, 215, 0),
+        ChestT3   = Color3.fromRGB(255, 140, 0),
+        Text      = Color3.fromRGB(255, 255, 255),
+    },
+    Font     = Enum.Font.GothamBold,
+    TextSize = 14,
+}
+
+local function getFishName(fish)
+    local ok, result = pcall(function() return fish.Head.stats.Fish.Text end)
+    return ok and result or "Unknown Fish"
+end
+
+local function getFishMutation(fish)
+    local ok, result = pcall(function() return fish.Head.stats.Mutation.Label.Text end)
+    return ok and result or ""
+end
+
+local function getChestColor(tier)
+    if tier == "Tier 3" then
+        return CONFIG_ESP.Colors.ChestT3
+    elseif tier == "Tier 2" then
+        return CONFIG_ESP.Colors.ChestT2
+    else
+        return CONFIG_ESP.Colors.ChestT1
+    end
+end
+
+local function createFishNameBillboard(fish)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name         = "FishESP_" .. fish.Name
+    billboard.Size         = UDim2.new(0, 160, 0, 22)
+    billboard.StudsOffset  = Vector3.new(0, 3, 0)
+    billboard.AlwaysOnTop  = true
+    billboard.LightInfluence = 0
+    billboard.Adornee      = fish.Head
+    billboard.Parent       = espContainer
+
+    local frame = Instance.new("Frame")
+    frame.Size                 = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 0.15
+    frame.BackgroundColor3     = CONFIG_ESP.Colors.Accent
+    frame.BorderSizePixel      = 0
+    frame.Parent               = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent       = frame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size                  = UDim2.new(1, -8, 1, 0)
+    textLabel.Position              = UDim2.new(0, 4, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text                  = getFishName(fish)
+    textLabel.TextColor3            = CONFIG_ESP.Colors.Text
+    textLabel.Font                  = CONFIG_ESP.Font
+    textLabel.TextSize              = 13
+    textLabel.TextStrokeTransparency = 0.3
+    textLabel.TextXAlignment        = Enum.TextXAlignment.Left
+    textLabel.Parent                = frame
+
+    return billboard
+end
+
+local function createFishMutationBillboard(fish)
+    local mutation = getFishMutation(fish)
+    if mutation == "" then return nil end
+
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name         = "MutationESP_" .. fish.Name
+    billboard.Size         = UDim2.new(0, 160, 0, 20)
+    billboard.StudsOffset  = Vector3.new(0, -8, 0)
+    billboard.AlwaysOnTop  = true
+    billboard.LightInfluence = 0
+    billboard.Adornee      = fish.Head
+    billboard.Parent       = espContainer
+
+    local frame = Instance.new("Frame")
+    frame.Size                 = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 0.15
+    frame.BackgroundColor3     = Color3.fromRGB(255, 70, 200)
+    frame.BorderSizePixel      = 0
+    frame.Parent               = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent       = frame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size                  = UDim2.new(1, -8, 1, 0)
+    textLabel.Position              = UDim2.new(0, 5, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text                  = " " .. mutation
+    textLabel.TextColor3            = CONFIG_ESP.Colors.Text
+    textLabel.Font                  = CONFIG_ESP.Font
+    textLabel.TextSize              = 12
+    textLabel.TextStrokeTransparency = 0.3
+    textLabel.TextXAlignment        = Enum.TextXAlignment.Left
+    textLabel.Parent                = frame
+
+    return billboard
+end
+
+local function createFishHighlight(fish)
+    local highlight = Instance.new("Highlight")
+    highlight.Name               = "FishHighlight"
+    highlight.FillColor          = CONFIG_ESP.Colors.Accent
+    highlight.OutlineColor       = Color3.new(1, 1, 1)
+    highlight.FillTransparency   = 0.6
+    highlight.OutlineTransparency = 0.4
+    highlight.DepthMode          = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee            = fish
+    highlight.Parent             = espContainer
+    return highlight
+end
+
+local function createChestBillboard(chest, tier)
+    local billboard = Instance.new("BillboardGui")
+    billboard.Name         = "ChestESP_" .. chest.Name
+    billboard.Size         = UDim2.new(0, 120, 0, 25)
+    billboard.StudsOffset  = Vector3.new(0, 2, 0)
+    billboard.AlwaysOnTop  = true
+    billboard.LightInfluence = 0
+    billboard.Adornee      = chest
+    billboard.Parent       = espContainer
+
+    local frame = Instance.new("Frame")
+    frame.Size                 = UDim2.new(1, 0, 1, 0)
+    frame.BackgroundTransparency = 0.15
+    frame.BackgroundColor3     = getChestColor(tier)
+    frame.BorderSizePixel      = 0
+    frame.Parent               = billboard
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent       = frame
+
+    local textLabel = Instance.new("TextLabel")
+    textLabel.Size                  = UDim2.new(1, -8, 1, 0)
+    textLabel.Position              = UDim2.new(0, 4, 0, 0)
+    textLabel.BackgroundTransparency = 1
+    textLabel.Text                  = " " .. tier
+    textLabel.TextColor3            = CONFIG_ESP.Colors.Text
+    textLabel.Font                  = CONFIG_ESP.Font
+    textLabel.TextSize              = 13
+    textLabel.TextStrokeTransparency = 0.3
+    textLabel.TextXAlignment        = Enum.TextXAlignment.Left
+    textLabel.Parent                = frame
+
+    return billboard
+end
+
+local function createChestHighlight(chest, tier)
+    local highlight = Instance.new("Highlight")
+    highlight.Name               = "ChestHighlight"
+    highlight.FillColor          = getChestColor(tier)
+    highlight.OutlineColor       = Color3.new(1, 1, 1)
+    highlight.FillTransparency   = 0.5
+    highlight.OutlineTransparency = 0.3
+    highlight.DepthMode          = Enum.HighlightDepthMode.AlwaysOnTop
+    highlight.Adornee            = chest
+    highlight.Parent             = espContainer
+    return highlight
+end
+
+function addFishESP(fish)
+    if not fish:FindFirstChild("Head") then return end
+    if not fish.Head:FindFirstChild("stats") then return end
+    if fishESP[fish] then return end
+
+    local espData = {}
+
+    if ESPState.FishHighlight then
+        espData.Highlight = createFishHighlight(fish)
+    end
+    if ESPState.FishName then
+        espData.NameBillboard = createFishNameBillboard(fish)
+    end
+    if ESPState.FishMutation then
+        espData.MutationBillboard = createFishMutationBillboard(fish)
+    end
+
+    fishESP[fish] = espData
+end
+
+function addChestESP(chest, tier)
+    if chestESP[chest] then return end
+
+    local espData = {}
+
+    if ESPState.ChestHighlight then
+        espData.Highlight = createChestHighlight(chest, tier)
+    end
+    if ESPState.ChestName then
+        espData.Billboard = createChestBillboard(chest, tier)
+    end
+
+    chestESP[chest] = espData
+end
+
+function removeFishESP(fish)
+    local esp = fishESP[fish]
+    if esp then
+        if esp.Highlight        then esp.Highlight:Destroy()        end
+        if esp.NameBillboard    then esp.NameBillboard:Destroy()    end
+        if esp.MutationBillboard then esp.MutationBillboard:Destroy() end
+        fishESP[fish] = nil
+    end
+end
+
+function removeChestESP(chest)
+    local esp = chestESP[chest]
+    if esp then
+        if esp.Highlight  then esp.Highlight:Destroy()  end
+        if esp.Billboard  then esp.Billboard:Destroy()  end
+        chestESP[chest] = nil
+    end
+end
+
+function updateAllESP()
+    for _, esp in pairs(fishESP) do
+        if esp.Highlight         then esp.Highlight:Destroy()         end
+        if esp.NameBillboard     then esp.NameBillboard:Destroy()     end
+        if esp.MutationBillboard then esp.MutationBillboard:Destroy() end
+    end
+    fishESP = {}
+
+    for _, esp in pairs(chestESP) do
+        if esp.Highlight then esp.Highlight:Destroy() end
+        if esp.Billboard then esp.Billboard:Destroy() end
+    end
+    chestESP = {}
+
+    local fishFolderPath = workspace:FindFirstChild("Game")
+        and workspace.Game:FindFirstChild("Fish")
+        and workspace.Game.Fish:FindFirstChild("client")
+
+    if fishFolderPath then
+        for _, fish in pairs(fishFolderPath:GetChildren()) do
+            addFishESP(fish)
+        end
+    end
+
+    local chestsFolder = workspace:FindFirstChild("Game") and workspace.Game:FindFirstChild("Chests")
+    if chestsFolder then
+        for _, tier in pairs({"Tier 1", "Tier 2", "Tier 3"}) do
+            local tierFolder = chestsFolder:FindFirstChild(tier)
+            if tierFolder then
+                for _, chest in pairs(tierFolder:GetChildren()) do
+                    addChestESP(chest, tier)
+                end
+            end
+        end
+    end
+end
+
+local function watchFish()
+    local fishFolderPath = workspace:FindFirstChild("Game")
+        and workspace.Game:FindFirstChild("Fish")
+        and workspace.Game.Fish:FindFirstChild("client")
+
+    if not fishFolderPath then
+        workspace.Game.Fish:WaitForChild("client")
+        fishFolderPath = workspace.Game.Fish.client
+    end
+
+    fishFolderPath.ChildAdded:Connect(function(fish)
+        task.wait(0.1)
+        addFishESP(fish)
+    end)
+    fishFolderPath.ChildRemoved:Connect(function(fish)
+        removeFishESP(fish)
     end)
 end
 
-activeBrainrots.DescendantAdded:Connect(function(d)
-    if d.Name~="RenderedBrainrot" or not isDivine(d) then return end
-    if not state.alertRarities["Divine"] then return end
-    task.spawn(function()
-        local rt=getRate(d) local tl=getTimeLeft(d)
-        notify("[Divine] Spawnou! "..(rt or "").."\nTime: "..tl)
-        if state.alertWebhook~="" then
-            task.spawn(function()
-                sendWebhook(state.alertWebhook,
-                    "@everyone\n\n🚨 **DIVINE SPAWNOU!**\n💰 **Rate:** "..(rt or "?").."\n⏰ **Time Left:** "..tl)
+local function watchChests()
+    local chestsFolder = workspace:FindFirstChild("Game") and workspace.Game:FindFirstChild("Chests")
+    if not chestsFolder then return end
+
+    for _, tier in pairs({"Tier 1", "Tier 2", "Tier 3"}) do
+        local tierFolder = chestsFolder:FindFirstChild(tier)
+        if tierFolder then
+            local tierCopy = tier
+            tierFolder.ChildAdded:Connect(function(chest)
+                task.wait(0.1)
+                addChestESP(chest, tierCopy)
+            end)
+            tierFolder.ChildRemoved:Connect(function(chest)
+                removeChestESP(chest)
             end)
         end
-        if state.alertESP then
-            local model=nil for _,o in pairs(d:GetChildren()) do if o:IsA("Model") then model=o break end end
-            if model then table.insert(espObjects, createESP(model,"[Divine]\n"..(rt or ""),RC.Divine,tl)) end
-        end
-        if state.showAllESP then refreshAllBrainrotESP() end
-    end)
+    end
+end
+
+task.spawn(function()
+    watchFish()
+    watchChests()
+    updateAllESP()
 end)
 
--- ============================================================
--- SPAWN DETECTION - LUCKY BLOCK
--- ============================================================
-local activeLuckyBlocks = workspace:WaitForChild("ActiveLuckyBlocks")
+-- ---- Name/Mutation/Rarity Drawing ESP ----
+getgenv().ESPSettings.Tracers     = true
+getgenv().ESPSettings.MaxDistance = 100
 
-activeLuckyBlocks.DescendantAdded:Connect(function(lb)
-    if not (lb:IsA("Model") and lb.Name:find("_")) then return end
-    local parts=lb.Name:split("_") local r=parts[#parts]
-    if not state.alertLBRarities[r] then return end
-    task.spawn(function()
-        notify("[LuckyBlock "..r.."] Spawnou!")
-        if state.alertWebhook~="" then
-            task.spawn(function()
-                sendWebhook(state.alertWebhook,
-                    "@everyone\n\n🎁 **LUCKY BLOCK SPAWNOU!**\n⭐ **Raridade:** "..r)
+local rarityColors = {
+    Common    = Color3.fromRGB(200, 200, 200),
+    Uncommon  = Color3.fromRGB(85, 255, 85),
+    Rare      = Color3.fromRGB(85, 170, 255),
+    Epic      = Color3.fromRGB(170, 85, 255),
+    Legendary = Color3.fromRGB(255, 170, 0),
+    Mythic    = Color3.fromRGB(255, 60, 60),
+}
+
+local rarityCache   = {}
+local mutationCache = {}
+local espDrawCache  = {}
+local textCache     = {}
+local connections   = {}
+
+local fishFolderDraw = workspace:WaitForChild("Game"):WaitForChild("Fish"):WaitForChild("client")
+local fishModules    = ReplicatedStorage:WaitForChild("common")
+                         :WaitForChild("presets")
+                         :WaitForChild("items")
+                         :WaitForChild("fish")
+
+local fishLookup = {}
+for _, biome in ipairs(fishModules:GetChildren()) do
+    for _, mod in ipairs(biome:GetChildren()) do
+        fishLookup[mod.Name] = mod
+    end
+end
+
+local mutationModules = ReplicatedStorage:WaitForChild("common")
+                          :WaitForChild("presets")
+                          :WaitForChild("fish")
+                          :WaitForChild("mutations")
+
+local function getMutationData(name)
+    if mutationCache[name] then return mutationCache[name] end
+    local mod = mutationModules:FindFirstChild(name)
+    if mod then
+        local ok, data = pcall(require, mod)
+        if ok and data then
+            mutationCache[name] = {
+                color           = data.color or Color3.new(1, 1, 1),
+                priceMultiplier = data.price_multiplier or 1,
+            }
+            return mutationCache[name]
+        end
+    end
+    mutationCache[name] = { color = Color3.new(1, 1, 1), priceMultiplier = 1 }
+    return mutationCache[name]
+end
+
+local function getRarityColor(name)
+    if rarityCache[name] then return rarityCache[name] end
+    local mod = fishLookup[name]
+    if mod then
+        local ok, data = pcall(require, mod)
+        if ok and data and data.rarity then
+            rarityCache[name] = rarityColors[data.rarity] or Color3.new(1, 1, 1)
+            return rarityCache[name]
+        end
+    end
+    rarityCache[name] = Color3.new(1, 1, 1)
+    return rarityCache[name]
+end
+
+local function createDrawText(color)
+    local t = Drawing.new("Text")
+    t.Center  = true
+    t.Outline = true
+    t.Size    = 14
+    t.Font    = 2
+    t.Color   = color
+    t.Visible = false
+    return t
+end
+
+local function createDrawLine(color)
+    local l = Drawing.new("Line")
+    l.Thickness = 1.5
+    l.Color     = color
+    l.Visible   = false
+    return l
+end
+
+local function rebuildDrawText(fish)
+    local data = textCache[fish]
+    if not data then return end
+    data.nameColor = getRarityColor(data.name)
+end
+
+local function hookFishDraw(fish)
+    local head  = fish:FindFirstChild("Head")
+    local stats = (head and head:FindFirstChild("stats"))
+        or (fish:FindFirstChild("RootPart") and fish.RootPart:FindFirstChild("stats"))
+    if not stats then return end
+
+    local nameLabel     = stats:FindFirstChild("Fish")
+    local mutationLabel
+    local mut           = stats:FindFirstChild("Mutation")
+    if mut then mutationLabel = mut:FindFirstChild("Label") end
+
+    textCache[fish] = {
+        name      = nameLabel and nameLabel.Text or "",
+        mutation  = mutationLabel and mutationLabel.Text or "",
+        nameColor = Color3.new(1, 1, 1),
+    }
+    rebuildDrawText(fish)
+    connections[fish] = {}
+
+    local function watchLabel(label, key)
+        if not label then return end
+        table.insert(connections[fish],
+            label:GetPropertyChangedSignal("Text"):Connect(function()
+                textCache[fish][key] = label.Text
+                rebuildDrawText(fish)
             end)
+        )
+    end
+
+    watchLabel(nameLabel,     "name")
+    watchLabel(mutationLabel, "mutation")
+end
+
+local function cleanupFishDraw(fish)
+    local esp = espDrawCache[fish]
+    if esp then
+        esp.name:Remove()
+        esp.mutationLabel:Remove()
+        esp.mutationName:Remove()
+        esp.mutationAmount:Remove()
+        esp.tracer:Remove()
+        espDrawCache[fish] = nil
+    end
+    if connections[fish] then
+        for _, c in ipairs(connections[fish]) do c:Disconnect() end
+        connections[fish] = nil
+    end
+    textCache[fish] = nil
+end
+
+RunService.RenderStepped:Connect(function()
+    if not ESPState.FishName and not ESPState.FishMutation then
+        for _, esp in pairs(espDrawCache) do
+            esp.name.Visible          = false
+            esp.mutationLabel.Visible = false
+            esp.mutationName.Visible  = false
+            esp.mutationAmount.Visible = false
+            esp.tracer.Visible        = false
         end
-        if state.lbESP then
-            table.insert(espLBObjects, createESP(lb,"[LUCKY BLOCK]\n"..r, RC[r] or Color3.fromRGB(255,255,0)))
+        return
+    end
+
+    local char = player.Character
+    local root = char and char:FindFirstChild("HumanoidRootPart")
+    if not root then return end
+
+    local mousePos = UserInputService:GetMouseLocation()
+
+    for _, fish in ipairs(fishFolderDraw:GetChildren()) do
+        if not espDrawCache[fish] then
+            espDrawCache[fish] = {
+                name          = createDrawText(Color3.new(1, 1, 1)),
+                mutationLabel = createDrawText(Color3.new(1, 1, 1)),
+                mutationName  = createDrawText(Color3.new(1, 1, 1)),
+                mutationAmount = createDrawText(Color3.new(1, 1, 1)),
+                tracer        = createDrawLine(Color3.new(1, 1, 1)),
+            }
+            hookFishDraw(fish)
         end
-        if state.showAllLBESP then refreshAllLBESP() end
-    end)
+    end
+
+    for fish, esp in pairs(espDrawCache) do
+        if not fish.Parent then
+            cleanupFishDraw(fish)
+            continue
+        end
+
+        local targetPart = fish:FindFirstChild("Head") or fish:FindFirstChild("RootPart")
+        if not targetPart then
+            esp.name.Visible          = false
+            esp.mutationLabel.Visible = false
+            esp.mutationName.Visible  = false
+            esp.mutationAmount.Visible = false
+            esp.tracer.Visible        = false
+            continue
+        end
+
+        local data = textCache[fish]
+        if not data then continue end
+
+        local dist = (root.Position - targetPart.Position).Magnitude
+        if dist > getgenv().ESPSettings.MaxDistance then
+            esp.name.Visible          = false
+            esp.mutationLabel.Visible = false
+            esp.mutationName.Visible  = false
+            esp.mutationAmount.Visible = false
+            esp.tracer.Visible        = false
+            continue
+        end
+
+        local fishMod    = fishLookup[data.name]
+        local fishRarity = "Common"
+        if fishMod then
+            local ok, modData = pcall(require, fishMod)
+            if ok and modData and modData.rarity then fishRarity = modData.rarity end
+        end
+        if not getgenv().ESPSettings.Rarities[fishRarity] then
+            esp.name.Visible          = false
+            esp.mutationLabel.Visible = false
+            esp.mutationName.Visible  = false
+            esp.mutationAmount.Visible = false
+            esp.tracer.Visible        = false
+            continue
+        end
+
+        local pos, visible = camera:WorldToViewportPoint(targetPart.Position)
+        if not visible then
+            esp.name.Visible          = false
+            esp.mutationLabel.Visible = false
+            esp.mutationName.Visible  = false
+            esp.mutationAmount.Visible = false
+            esp.tracer.Visible        = false
+            continue
+        end
+
+        if ESPState.FishName then
+            esp.name.Position = Vector2.new(pos.X, pos.Y)
+            esp.name.Text     = data.name
+            esp.name.Color    = getRarityColor(data.name)
+            esp.name.Visible  = true
+        else
+            esp.name.Visible = false
+        end
+
+        local mutationText = data.mutation
+        local price        = 1
+        local mutColor     = Color3.new(1, 1, 1)
+
+        if mutationText ~= "" and mutationText ~= "Shiny" then
+            local mutData = getMutationData(mutationText)
+            mutColor      = mutData.color or Color3.new(1, 1, 1)
+            price         = mutData.priceMultiplier or 1
+        else
+            mutationText = "None"
+            price        = 1
+            mutColor     = Color3.new(1, 1, 1)
+        end
+
+        if ESPState.FishMutation then
+            esp.mutationLabel.Position  = Vector2.new(pos.X - 50, pos.Y + 16)
+            esp.mutationLabel.Text      = "Mutation:"
+            esp.mutationLabel.Color     = Color3.new(1, 1, 1)
+            esp.mutationLabel.Visible   = true
+
+            esp.mutationName.Position   = Vector2.new(pos.X, pos.Y + 16)
+            esp.mutationName.Text       = mutationText
+            esp.mutationName.Color      = mutColor
+            esp.mutationName.Visible    = true
+
+            esp.mutationAmount.Position = Vector2.new(pos.X + 50, pos.Y + 16)
+            esp.mutationAmount.Text     = string.format("[x%.1f]", price)
+            esp.mutationAmount.Color    = Color3.new(1, 1, 1)
+            esp.mutationAmount.Visible  = true
+        else
+            esp.mutationLabel.Visible  = false
+            esp.mutationName.Visible   = false
+            esp.mutationAmount.Visible = false
+        end
+
+        if getgenv().ESPSettings.Tracers then
+            esp.tracer.From    = Vector2.new(mousePos.X, mousePos.Y)
+            esp.tracer.To      = Vector2.new(pos.X, pos.Y)
+            esp.tracer.Color   = getRarityColor(data.name)
+            esp.tracer.Visible = true
+        else
+            esp.tracer.Visible = false
+        end
+    end
 end)
 
--- ============================================================
--- CHARACTER RESPAWN HANDLER
--- ============================================================
-player.CharacterAdded:Connect(function(newChar)
-    character=newChar
-    hrp=character:WaitForChild("HumanoidRootPart")
-    humanoid=character:WaitForChild("Humanoid")
-    if state.jumpPower then humanoid.JumpPower=state.jumpPowerVal end
-end)
+fishFolderDraw.ChildRemoved:Connect(cleanupFishDraw)
+
+-- ---- ESP Tab UI Controls ----
+TabESP:Toggle({
+    Title    = "Fish Highlight",
+    Desc     = "Highlight fish through walls",
+    Value    = true,
+    Flag     = "FishHighlight",
+    Callback = function(state)
+        ESPState.FishHighlight = state
+        updateAllESP()
+    end,
+})
+
+TabESP:Toggle({
+    Title    = "Fish Name",
+    Desc     = "Show fish name labels",
+    Value    = true,
+    Flag     = "FishName",
+    Callback = function(state)
+        ESPState.FishName = state
+        updateAllESP()
+    end,
+})
+
+TabESP:Toggle({
+    Title    = "Fish Mutations",
+    Desc     = "Show mutation labels on fish",
+    Value    = true,
+    Flag     = "FishMutation",
+    Callback = function(state)
+        ESPState.FishMutation = state
+        updateAllESP()
+    end,
+})
+
+TabESP:Toggle({
+    Title    = "Chest Highlight",
+    Desc     = "Highlight chests through walls",
+    Value    = true,
+    Flag     = "ChestHighlight",
+    Callback = function(state)
+        ESPState.ChestHighlight = state
+        updateAllESP()
+    end,
+})
+
+TabESP:Toggle({
+    Title    = "Chest Name",
+    Desc     = "Show chest tier labels",
+    Value    = true,
+    Flag     = "ChestName",
+    Callback = function(state)
+        ESPState.ChestName = state
+        updateAllESP()
+    end,
+})
+
+TabESP:Toggle({
+    Title    = "Tracers",
+    Desc     = "Draw lines from crosshair to fish",
+    Value    = true,
+    Flag     = "Tracers",
+    Callback = function(state)
+        getgenv().ESPSettings.Tracers = state
+    end,
+})
+
+TabESP:Slider({
+    Title    = "Max Distance",
+    Desc     = "Maximum ESP draw distance (studs)",
+    Value    = { Min = 10, Max = 500, Default = 100 },
+    Step     = 10,
+    IsTooltip = true,
+    Flag     = "ESPMaxDist",
+    Callback = function(value)
+        getgenv().ESPSettings.MaxDistance = value
+    end,
+})
+
+local RaritySection = TabESP:Section({ Title = "Rarity Filters", Opened = true })
+
+RaritySection:Toggle({
+    Title    = "Common",
+    Value    = true,
+    Flag     = "RarityCommon",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Common = state end,
+})
+
+RaritySection:Toggle({
+    Title    = "Uncommon",
+    Value    = true,
+    Flag     = "RarityUncommon",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Uncommon = state end,
+})
+
+RaritySection:Toggle({
+    Title    = "Rare",
+    Value    = true,
+    Flag     = "RarityRare",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Rare = state end,
+})
+
+RaritySection:Toggle({
+    Title    = "Epic",
+    Value    = true,
+    Flag     = "RarityEpic",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Epic = state end,
+})
+
+RaritySection:Toggle({
+    Title    = "Legendary",
+    Value    = true,
+    Flag     = "RarityLegendary",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Legendary = state end,
+})
+
+RaritySection:Toggle({
+    Title    = "Mythic",
+    Value    = true,
+    Flag     = "RarityMythic",
+    Callback = function(state) getgenv().ESPSettings.Rarities.Mythic = state end,
+})
 
 -- ============================================================
--- DONE
+-- UTILITY TAB LOGIC
 -- ============================================================
-notify("XXMZ HUB carregado! - Escape Tsunami For Brainrots")
+
+-- Anti-Drown Auto Return
+local antidrown_enabled = false
+local character         = player.Character or player.CharacterAdded:Wait()
+local rootPart          = character:WaitForChild("HumanoidRootPart")
+
+player.CharacterAdded:Connect(function(char)
+    character = char
+    rootPart  = char:WaitForChild("HumanoidRootPart")
+end)
+
+local targetCFrame = CFrame.new(
+    -2.20499992, 4878.19482, -1.22399998,
+     0.968123913, 0, 0.250471711,
+     0, 1, 0,
+    -0.250471711, 0, 0.968123913
+)
+
+local safeHeight   = 280
+local speedUp      = 150
+local speedAcross  = 200
+local speedDown    = 200
+
+local function tweenTo(cframe, speed)
+    if not rootPart or not rootPart.Parent then return end
+    local distance  = (rootPart.Position - cframe.Position).Magnitude
+    local duration  = distance / speed
+    local tween     = TweenService:Create(
+        rootPart,
+        TweenInfo.new(duration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+        { CFrame = cframe }
+    )
+    tween:Play()
+    tween.Completed:Wait()
+end
+
+task.spawn(function()
+    while true do
+        if antidrown_enabled then
+            local oxygen = player:GetAttribute("oxygen")
+            if oxygen and oxygen < 15 then
+                local originalCFrame = rootPart.CFrame
+                local upCFrame       = originalCFrame + Vector3.new(0, safeHeight, 0)
+                local aboveTarget    = targetCFrame + Vector3.new(0, safeHeight, 0)
+
+                tweenTo(upCFrame,     speedUp)
+                tweenTo(aboveTarget,  speedAcross)
+                tweenTo(targetCFrame, speedDown)
+
+                task.wait(4.5)
+
+                tweenTo(aboveTarget,  speedUp)
+                tweenTo(upCFrame,     speedAcross)
+                tweenTo(originalCFrame, speedDown)
+            end
+        end
+        task.wait()
+    end
+end)
+
+-- ---- Utility Tab UI Controls ----
+TabUtility:Toggle({
+    Title    = "Anti-Drown Auto Return",
+    Desc     = "Automatically returns you to safety when oxygen drops below 15",
+    Value    = false,
+    Flag     = "AntiDrown",
+    Callback = function(state)
+        antidrown_enabled = state
+    end,
+})
+
+TabUtility:Button({
+    Title    = "Give Dev Gun",
+    Desc     = "Equips the Developer gun from inventory",
+    Icon     = "crosshair",
+    Callback = function()
+        local rsUtil = game:GetService("ReplicatedStorage")
+        local argsGun = {"guns", "Developer"}
+        rsUtil.common.packages.Knit.Services.InventoryService.RF.EquipItem:InvokeServer(unpack(argsGun))
+        WindUI:Notify({
+            Title    = "Dev Gun Equipped",
+            Content  = "Developer gun has been equipped",
+            Icon     = "check",
+            Duration = 3,
+        })
+    end,
+})
+
+TabUtility:Button({
+    Title    = "Give Best Tube (Sea Mine)",
+    Desc     = "Equips the Sea Mine tube from inventory",
+    Icon     = "zap",
+    Callback = function()
+        local rsUtil   = game:GetService("ReplicatedStorage")
+        local argsTube = {"tubes", "Sea Mine"}
+        rsUtil.common.packages.Knit.Services.InventoryService.RF.EquipItem:InvokeServer(unpack(argsTube))
+        WindUI:Notify({
+            Title    = "Sea Mine Equipped",
+            Content  = "Sea Mine tube has been equipped",
+            Icon     = "check",
+            Duration = 3,
+        })
+    end,
+})
+
+-- ============================================================
+-- COMMUNITY TAB
+-- ============================================================
+
+TabCommunity:Paragraph({
+    Title = "Welcome to Hyperloop Community",
+    Desc  = "Join our Discord for updates\nGet support and share scripts",
+    Image = "users",
+    Color = "Red",
+})
+
+TabCommunity:Divider()
+
+TabCommunity:Paragraph({
+    Title = "Discord Community",
+    Desc  = "Join our Discord for:\n• Script updates and announcements\n• Bug reports and support\n• Community scripts sharing",
+    Image = "message-circle",
+    Color = "Blue",
+})
+
+TabCommunity:Button({
+    Title    = "Copy Discord Invite",
+    Desc     = "Click to copy: dsc.gg/hyperloop",
+    Icon     = "link",
+    Callback = function()
+        setclipboard("https://dsc.gg/hyperloop/")
+        WindUI:Notify({
+            Title    = "Copied!",
+            Content  = "Discord invite copied to clipboard",
+            Icon     = "check",
+            Duration = 3,
+        })
+    end,
+})
+
+TabCommunity:Divider()
+
+TabCommunity:Paragraph({
+    Title = "Social Links",
+    Desc  = "Connect with us on social media for more content!",
+    Image = "globe",
+    Color = "Blue",
+})
+
+TabCommunity:Button({
+    Title    = "Copy Social Media Link",
+    Desc     = "Click to copy: guns.lol/the_url_linker",
+    Icon     = "external-link",
+    Callback = function()
+        setclipboard("https://guns.lol/the_url_linker")
+        WindUI:Notify({
+            Title    = "Link Copied!",
+            Content  = "Social media link copied to clipboard",
+            Icon     = "check",
+            Duration = 3,
+        })
+    end,
+})
+
+-- ============================================================
+-- KEYBIND & FINAL SETUP
+-- ============================================================
+
+TabFishing:Keybind({
+    Title    = "Toggle UI",
+    Desc     = "Press to show/hide the Hyperloop window",
+    Value    = "RightControl",
+    Flag     = "UIToggleKey",
+    Callback = function()
+        Window:Toggle()
+    end,
+})
+
+Window:SelectTab(1)
