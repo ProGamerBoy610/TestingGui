@@ -506,16 +506,98 @@ end
 -- ============================================================
 -- CREATE TABS
 -- ============================================================
+local InfoTab    = ModernGUI.MakeTab({Name="Info",    Icon="help-circle"})
 local MainTab    = ModernGUI.MakeTab({Name="Main",    Icon="home"})
-local ESPTab     = ModernGUI.MakeTab({Name="ESP",     Icon="eye"})
-local FarmTab    = ModernGUI.MakeTab({Name="Farm",    Icon="sprout"})
+local ESPTab     = ModernGUI.MakeTab({Name="ESP",     Icon="alert-circle"})
+local FarmTab    = ModernGUI.MakeTab({Name="Farm",    Icon="align-justify"})
 local PlayerTab  = ModernGUI.MakeTab({Name="Player",  Icon="user"})
-local WebhookTab = ModernGUI.MakeTab({Name="Webhook", Icon="bell"})
+local WebhookTab = ModernGUI.MakeTab({Name="Webhook", Icon="link"})
+
+-- ============================================================
+-- INFO TAB
+-- ============================================================
+local GREEN = Color3.fromRGB(57,252,3)
+local PINK  = Color3.fromRGB(252,3,198)
+local RED   = Color3.fromRGB(252,3,3)
+
+-- Gather player info
+local function getPlayerInfo()
+    local userId    = tostring(player.UserId)
+    local acctAge   = tostring(player.AccountAge).." days"
+    local team      = player.Team and player.Team.Name or "None"
+    local ping      = math.floor(player:GetNetworkPing() * 1000).."ms"
+    local charPos   = "N/A"
+    if hrp then
+        local p=hrp.Position
+        charPos=string.format("%.1f, %.1f, %.1f", p.X, p.Y, p.Z)
+    end
+    local health = "N/A"
+    if humanoid then health=string.format("%.0f / %.0f", humanoid.Health, humanoid.MaxHealth) end
+    local gameName = "N/A"
+    pcall(function() gameName=game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name end)
+    return userId, acctAge, team, ping, charPos, health, gameName
+end
+
+InfoTab.AddLabel("IL_title","👤 XXMZ HUB — Player Info",nil,{
+    textSize=16, textColor=Color3.fromRGB(255,255,255),
+    hasBackground=true, backgroundColor=GREEN, backgroundTransparency=0.55
+})
+
+local userId,acctAge,team,ping,charPos,health,gameName = getPlayerInfo()
+
+InfoTab.AddLabel("IL_name",  "🏷️  Name:      "..player.Name,nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_id",    "🔑  User ID:   "..userId,nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_age",   "📅  Acct Age:  "..acctAge,nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_team",  "🏟️  Team:      "..team,nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_ping",  "📡  Ping:      "..ping,nil,{
+    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_hp",    "❤️  Health:    "..health,nil,{
+    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_pos",   "📍  Position:  "..charPos,nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddLabel("IL_game",  "🎮  Game:      "..gameName,nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+
+InfoTab.AddButton("RefreshInfo","🔄 Refresh Player Info",nil,function()
+    local uid,age,tm,pn,pos,hp,gn = getPlayerInfo()
+    notify("Name: "..player.Name.."\nPing: "..pn.."\nHP: "..hp.."\nPos: "..pos)
+end,"alert-circle")
+
+InfoTab.AddLabel("IL_disc_title","🔗 Discord",nil,{
+    textColor=Color3.fromRGB(255,255,255),
+    hasBackground=true, backgroundColor=PINK, backgroundTransparency=0.5
+})
+InfoTab.AddLabel("IL_disc_link","discord.com/invite/UKYHGddQD3",nil,{
+    textColor=Color3.fromRGB(255,255,255),
+    hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
+InfoTab.AddButton("CopyDiscord","📋 Copy Discord Invite",nil,function()
+    setclipboard("https://discord.com/invite/UKYHGddQD3")
+    notify("Discord link copied to clipboard!")
+end,"send")
+
+InfoTab.AddLabel("IL_credits","✨ Created by 29 • Rel • Unknown",nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 -- ============================================================
 -- MAIN TAB
 -- ============================================================
-MainTab.AddLabel("L1","⚙️ Main Features")
+MainTab.AddLabel("L1","⚙️ Main Features",nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 -- Instant Interact
 MainTab.AddCheckbox("InstantInteract","Instant Interact Prompt",nil,function(v)
@@ -558,7 +640,9 @@ MainTab.AddButton("SafeCorr","Safe Corridor",nil,function()
 end,"shield")
 
 -- Auto Collect Money
-MainTab.AddLabel("L2","💰 Auto Collect Money")
+MainTab.AddLabel("L2","💰 Auto Collect Money",nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 MainTab.AddCheckbox("AutoCollect","Auto Collect Money",nil,function(v)
     state.autoCollect=v
     if v then
@@ -587,7 +671,9 @@ end)
 -- ============================================================
 -- FARM TAB
 -- ============================================================
-FarmTab.AddLabel("FL1","🌾 Farm Settings")
+FarmTab.AddLabel("FL1","🌾 Farm Settings",nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 FarmTab.AddDropdown("FarmType","Farm Target Type",
     {"Best Brainrot","Brainrot","LuckyBlock"},"Best Brainrot",nil,function(v)
@@ -604,7 +690,9 @@ FarmTab.AddMultiSelectDropdown("BestFilter","Best Brainrot Filter",RARITIES,{},n
     notify("Filtro atualizado!")
 end)
 
-FarmTab.AddLabel("FL2","🤖 Auto Farm V1 (Original Route)")
+FarmTab.AddLabel("FL2","🤖 Auto Farm V1 (Original Route)",nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 FarmTab.AddCheckbox("AutoFarmV1","Auto Farm V1",nil,function(v)
     state.autoFarm=v
@@ -641,7 +729,9 @@ FarmTab.AddButton("ManualFarmV1","Farm Manual V1 (Uma vez)",nil,function()
     task.spawn(doFarmV1)
 end,"play")
 
-FarmTab.AddLabel("FL3","⚡ Auto Farm V2 (Optimized Route)")
+FarmTab.AddLabel("FL3","⚡ Auto Farm V2 (Optimized Route)",nil,{
+    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 FarmTab.AddCheckbox("AutoFarmV2","Auto Farm V2",nil,function(v)
     state.autoFarmV2=v
@@ -681,7 +771,9 @@ end,"play")
 -- ============================================================
 -- ESP TAB
 -- ============================================================
-ESPTab.AddLabel("EL1","🔍 Brainrot ESP")
+ESPTab.AddLabel("EL1","🔍 Brainrot ESP",nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 ESPTab.AddCheckbox("BestESP","ESP Best Brainrot",nil,function(v)
     state.bestESPEnabled=v
@@ -731,7 +823,9 @@ ESPTab.AddButton("ClearAlertESP","Clear Alert ESPs",nil,function()
     clearESPs(espObjects) espObjects={} notify("ESPs removidos!")
 end,"x")
 
-ESPTab.AddLabel("EL2","🎁 Lucky Block ESP")
+ESPTab.AddLabel("EL2","🎁 Lucky Block ESP",nil,{
+    textColor=PINK, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 ESPTab.AddMultiSelectDropdown("LBRarities","Alert LuckyBlock Rarities",RARITIES,{},nil,function(v)
     state.alertLBRarities={} for _,r in ipairs(v) do state.alertLBRarities[r]=true end
@@ -756,7 +850,9 @@ end,"x")
 -- ============================================================
 -- PLAYER TAB
 -- ============================================================
-PlayerTab.AddLabel("PL1","🏃 Movement")
+PlayerTab.AddLabel("PL1","🏃 Movement",nil,{
+    textColor=GREEN, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 PlayerTab.AddCheckbox("TPWalk","TP Walk",nil,function(v)
     state.tpwalk=v
@@ -799,7 +895,9 @@ end)
 -- ============================================================
 -- WEBHOOK TAB
 -- ============================================================
-WebhookTab.AddLabel("WL1","🔗 Webhook Configuration")
+WebhookTab.AddLabel("WL1","🔗 Webhook Configuration",nil,{
+    textColor=RED, hasBackground=true, backgroundColor=Color3.fromRGB(10,10,10), backgroundTransparency=0.4
+})
 
 WebhookTab.AddTextInput("BestWebhook","Webhook Best Brainrot:","",nil,function(v)
     state.bestWebhook=v
