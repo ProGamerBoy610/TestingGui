@@ -105,7 +105,7 @@ end
 
 -- User Script Loader
 do
-    local code = "print(\"HIIIV2\")"
+    local code = "print(\"HIIIV3\")"
     local env = getfenv(0)
     local load_fn = env.loadstring or env.load
     if not load_fn then
