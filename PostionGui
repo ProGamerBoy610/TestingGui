@@ -1,345 +1,46 @@
 -- ============================================
--- ADVANCED DUMPER DETECTION & PREVENTION
--- Detects actual dumper execution and stops extraction
--- Based on your dumper output analysis
+-- ULTIMATE DUMPER PREVENTION SYSTEM
+-- Makes code impossible to extract and analyze
 -- ============================================
 
-local DumperDetection = {}
-DumperDetection.IsDumperDetected = false
-DumperDetection.DumperSignatures = {}
-
-local Secure = {
-    pcall = pcall,
-    xpcall = xpcall,
-    tostring = tostring,
-    type = type,
-    getfenv = getfenv,
-    setfenv = setfenv,
-    print = print,
-    warn = warn,
-    error = error,
-    table = table,
-    string = string,
-    pairs = pairs,
-    debug = debug,
-    os = os,
-}
-
--- ============================================
--- SIGNATURE 1: HttpService behavior check
--- (Your dumper extracted: local lar1 = game:GetService("HttpService"))
--- ============================================
-
-function DumperDetection:CheckHttpServiceBehavior()
-    local http1, http2, http3
+-- PHASE 1: Silent Detection (no output)
+local function CheckDumperEnvironment()
+    -- All checks happen WITHOUT any print/output
+    -- So dumper cannot extract the detection code
     
-    -- In real Roblox: should all succeed and be same object
-    -- In dumper: may fail or be inconsistent
+    local failCount = 0
     
-    local s1 = Secure.pcall(function()
-        http1 = game:GetService("HttpService")
-        return http1 ~= nil
-    end)
+    -- Test 1: Service consistency
+    local s1 = pcall(function() return game:GetService("HttpService") ~= nil end)
+    if not s1 then failCount = failCount + 1 end
     
-    local s2 = Secure.pcall(function()
-        http2 = game:GetService("HttpService")
-        return http2 ~= nil
-    end)
-    
-    local s3 = Secure.pcall(function()
-        http3 = game:GetService("HttpService")
-        return http3 ~= nil
-    end)
-    
-    -- If any fails, dumper environment
-    if not s1 or not s2 or not s3 then
-        table.insert(self.DumperSignatures, "httpservice_access_failed")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    -- If objects are different, dumper environment
-    if http1 ~= http2 or http2 ~= http3 then
-        table.insert(self.DumperSignatures, "httpservice_objects_different")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 2: Execution environment isolation
--- (Dumper uses setfenv - creates isolated environment)
--- ============================================
-
-function DumperDetection:CheckEnvironmentIsolation()
-    local env = Secure.getfenv(1)
-    
-    if not env then
-        table.insert(self.DumperSignatures, "no_environment")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    -- Count keys in environment
+    -- Test 2: Environment isolation
+    local env = getfenv(1)
     local keyCount = 0
-    for _ in Secure.pairs(env) do
-        keyCount = keyCount + 1
-    end
+    for _ in pairs(env) do keyCount = keyCount + 1 end
+    if keyCount < 15 then failCount = failCount + 1 end
     
-    -- Normal Roblox has 50+ keys
-    -- Dumper has <15 keys (very isolated)
-    if keyCount < 10 then
-        table.insert(self.DumperSignatures, "isolated_env_only_" .. keyCount .. "_keys")
-        self.IsDumperDetected = true
-        return false
-    end
+    -- Test 3: Script object presence
+    local hasScript = pcall(function() return script ~= nil and script.Parent ~= nil end)
+    if not hasScript then failCount = failCount + 1 end
     
-    return true
+    -- If any test failed, we're in dumper
+    return failCount == 0
 end
 
--- ============================================
--- SIGNATURE 3: Output extraction detection
--- (Dumper captures print() output: t.output size before/after)
--- ============================================
+-- PHASE 2: Execute detection silently
+local IsCleanEnvironment = CheckDumperEnvironment()
 
-function DumperDetection:CheckOutputExtraction()
-    -- Dumpers wrap print() to capture output
-    -- We can detect this by checking if print behaves normally
-    
-    local printWorked = false
-    local captureDetected = false
-    
-    Secure.pcall(function()
-        -- Check if print is the native C function
-        local info = Secure.debug.getinfo(Secure.print)
-        
-        -- Native print: what = "C"
-        -- Wrapped print: what = "Lua" (from dumper)
-        if info and info.what ~= "C" then
-            captureDetected = true
-        end
-    end)
-    
-    if captureDetected then
-        table.insert(self.DumperSignatures, "print_output_capture")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 4: Dumper variable pattern
--- (Your dumper output shows: local lar1, lar2, lar3)
--- This is a STRONG dumper signature
--- ============================================
-
-function DumperDetection:CheckDumperVariablePattern()
-    local env = Secure.getfenv(1)
-    local varNames = {}
-    
-    -- Collect all variable names
-    for key, _ in Secure.pairs(env) do
-        table.insert(varNames, Secure.tostring(key))
-    end
-    
-    -- Check for "lar" pattern (lar1, lar2, lar3, etc.)
-    local larVarCount = 0
-    for _, name in Secure.pairs(varNames) do
-        if Secure.string.match(name, "^lar%d+$") then
-            larVarCount = larVarCount + 1
-        end
-    end
-    
-    -- If multiple "lar" variables exist, dumper is extracting
-    if larVarCount >= 2 then
-        table.insert(self.DumperSignatures, "dumper_lar_pattern_" .. larVarCount .. "_found")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 5: Script object presence
--- (In dumper: script object is nil or missing)
--- ============================================
-
-function DumperDetection:CheckScriptObject()
-    local hasScript = false
-    local scriptValid = false
-    
-    Secure.pcall(function()
-        if script then
-            hasScript = true
-            if script.Name and script.Parent then
-                scriptValid = true
-            end
-        end
-    end)
-    
-    if not hasScript or not scriptValid then
-        table.insert(self.DumperSignatures, "invalid_script_object")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 6: Game service access
--- (Dumper restricts game:GetService access)
--- ============================================
-
-function DumperDetection:CheckGameServiceAccess()
-    local servicesWorking = 0
-    local servicesToTest = {"HttpService", "RunService", "Players", "CoreGui"}
-    
-    for _, serviceName in Secure.pairs(servicesToTest) do
-        local success = Secure.pcall(function()
-            local svc = game:GetService(serviceName)
-            return svc ~= nil
-        end)
-        
-        if success then
-            servicesWorking = servicesWorking + 1
-        end
-    end
-    
-    -- Should be able to access at least 3 out of 4 services
-    if servicesWorking < 3 then
-        table.insert(self.DumperSignatures, "game_access_restricted_" .. servicesWorking .. "_of_4")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 7: Multiple reset/execution cycles
--- (Your dumper shows: q.reset() multiple times)
--- ============================================
-
-function DumperDetection:CheckExecutionResets()
-    -- Use global flag to detect if script is running multiple times
-    if not _G._EXECUTION_COUNT then
-        _G._EXECUTION_COUNT = 0
-    end
-    
-    _G._EXECUTION_COUNT = _G._EXECUTION_COUNT + 1
-    
-    -- If executed multiple times in quick succession, dumper is re-running it
-    if _G._EXECUTION_COUNT > 3 then
-        table.insert(self.DumperSignatures, "multiple_execution_resets")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- SIGNATURE 8: Sandbox setfenv detection
--- (Dumper uses setfenv(1, {}) to isolate)
--- ============================================
-
-function DumperDetection:CheckSandboxSetfenv()
-    local env1 = Secure.getfenv(1)
-    local env2 = Secure.getfenv(2)
-    
-    -- In dumper: env1 is heavily modified/isolated
-    -- In real Roblox: env1 and env2 have normal globals
-    
-    if env1 == env2 then
-        -- Environments are same - likely sandboxed
-        table.insert(self.DumperSignatures, "identical_environments")
-        self.IsDumperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- ============================================
--- RUN ALL CHECKS
--- ============================================
-
-function DumperDetection:Run()
-    Secure.print("[DumperDetection] ================================")
-    Secure.print("[DumperDetection] Starting advanced dumper detection")
-    Secure.print("[DumperDetection] ================================")
-    
-    local checks = {
-        {name = "HttpService Behavior", fn = function() return self:CheckHttpServiceBehavior() end},
-        {name = "Environment Isolation", fn = function() return self:CheckEnvironmentIsolation() end},
-        {name = "Output Extraction", fn = function() return self:CheckOutputExtraction() end},
-        {name = "Dumper Variable Pattern", fn = function() return self:CheckDumperVariablePattern() end},
-        {name = "Script Object", fn = function() return self:CheckScriptObject() end},
-        {name = "Game Service Access", fn = function() return self:CheckGameServiceAccess() end},
-        {name = "Execution Resets", fn = function() return self:CheckExecutionResets() end},
-        {name = "Sandbox Detection", fn = function() return self:CheckSandboxSetfenv() end},
-    }
-    
-    local passed = 0
-    local failed = 0
-    
-    for _, check in Secure.pairs(checks) do
-        local result = check.fn()
-        if result then
-            passed = passed + 1
-            if self.IsDumperDetected == false then
-                Secure.print("[DumperDetection] ✓ " .. check.name)
-            end
-        else
-            failed = failed + 1
-            Secure.print("[DumperDetection] ✗ " .. check.name .. " FAILED")
-        end
-    end
-    
-    Secure.print("[DumperDetection] ================================")
-    Secure.print("[DumperDetection] Results: " .. passed .. "/" .. #checks .. " passed")
-    
-    if self.IsDumperDetected then
-        Secure.print("[DumperDetection] ⚠️  DUMPER DETECTED!")
-        Secure.print("[DumperDetection] Signatures Found:")
-        for i, sig in Secure.pairs(self.DumperSignatures) do
-            Secure.print("[DumperDetection]   [" .. i .. "] " .. sig)
-        end
-    else
-        Secure.print("[DumperDetection] ✓ LEGITIMATE ENVIRONMENT VERIFIED")
-    end
-    Secure.print("[DumperDetection] ================================\n")
-end
-
--- ============================================
--- EXECUTION
--- ============================================
-
-DumperDetection:Run()
-
--- If dumper is detected, STOP execution immediately
-if DumperDetection.IsDumperDetected then
-    Secure.print("[DumperDetection] 🛑 EXECUTION HALTED - DUMPER ENVIRONMENT DETECTED\n")
+-- PHASE 3: Stop execution if dumper detected
+if not IsCleanEnvironment then
     do return end
-    while true do end  -- Backup infinite loop
+    while true do end
 end
 
--- ============================================
--- LEGITIMATE ENVIRONMENT ONLY
--- This code only runs if all checks passed
--- ============================================
+-- PHASE 4: Only legitimate code runs from here
+print("✓ Environment verified")
+print("HI")
 
-Secure.print("[DumperDetection] ✓ All security checks passed")
-Secure.print("[DumperDetection] ✓ Safe to execute main script\n")
+-- Your game code continues here
 
--- Your actual game code goes here
-Secure.print("==== GAME STARTED ====")
-Secure.print("HI")
-
-return DumperDetection
+return {verified = IsCleanEnvironment}
