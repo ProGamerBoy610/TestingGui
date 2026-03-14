@@ -46,11 +46,26 @@ function AntiTamper:CheckStringMetatable()
     
     local currentMeta = getmetatable("")
     
-    -- Strings should not have a metatable in default Lua/Roblox
+    -- In Roblox, strings might have a metatable, but check if it's been tampered with
+    -- Look for suspicious __index, __newindex, or __call metamethods
     if currentMeta ~= nil then
-        SafeLog("String metatable has been modified (metatable exists)", "CRITICAL")
-        self.TamperDetected = true
-        return false
+        local hasSuspiciousMetamethods = false
+        
+        if currentMeta.__index ~= nil then
+            hasSuspiciousMetamethods = true
+        end
+        if currentMeta.__newindex ~= nil then
+            hasSuspiciousMetamethods = true
+        end
+        if currentMeta.__call ~= nil then
+            hasSuspiciousMetamethods = true
+        end
+        
+        if hasSuspiciousMetamethods then
+            SafeLog("String metatable has been modified with suspicious metamethods", "CRITICAL")
+            self.TamperDetected = true
+            return false
+        end
     end
     
     return true
@@ -128,19 +143,28 @@ function AntiTamper:CheckGlobalFunctions()
         "ipairs", "pairs", "table", "string", "math", "coroutine",
     }
     
+    local missingCount = 0
+    
     for _, globalName in ipairs(criticalGlobals) do
         local globalFunc = _G[globalName]
         
         if globalFunc == nil then
-            SafeLog(string.format("Critical global function '%s' is missing", globalName), "WARNING")
-            self.TamperDetected = true
+            missingCount = missingCount + 1
         elseif type(globalFunc) ~= "function" and type(globalFunc) ~= "table" then
             SafeLog(string.format("Critical global '%s' has been replaced with type '%s'", globalName, type(globalFunc)), "CRITICAL")
             self.TamperDetected = true
         end
     end
     
-    return not self.TamperDetected
+    -- Only flag as tampering if MORE THAN HALF of critical globals are missing
+    -- This prevents false positives in sandboxed environments
+    if missingCount > (#criticalGlobals / 2) then
+        SafeLog(string.format("Too many critical globals missing (%d/%d)", missingCount, #criticalGlobals), "CRITICAL")
+        self.TamperDetected = true
+        return false
+    end
+    
+    return true
 end
 
 -- Check 5: Verify type system integrity
