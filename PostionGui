@@ -1,342 +1,345 @@
--- Advanced Anti-Tamper System for Roblox
--- Features: Multi-layer detection, graceful handling, logging, and environment integrity checks
+-- ============================================
+-- ADVANCED DUMPER DETECTION & PREVENTION
+-- Detects actual dumper execution and stops extraction
+-- Based on your dumper output analysis
+-- ============================================
 
-local AntiTamper = {}
-AntiTamper.TamperDetected = false
-AntiTamper.TamperLog = {}
-AntiTamper.Config = {
-    LogDetections = true,
-    StrictMode = false, -- Set to true to error on detection, false to log and continue
-    CheckMetatables = true,
-    CheckMath = true,
-    CheckGlobals = true,
-    CheckFunctions = true,
-    CheckEnvironment = true,
-    VerboseLogging = true,
+local DumperDetection = {}
+DumperDetection.IsDumperDetected = false
+DumperDetection.DumperSignatures = {}
+
+local Secure = {
+    pcall = pcall,
+    xpcall = xpcall,
+    tostring = tostring,
+    type = type,
+    getfenv = getfenv,
+    setfenv = setfenv,
+    print = print,
+    warn = warn,
+    error = error,
+    table = table,
+    string = string,
+    pairs = pairs,
+    debug = debug,
+    os = os,
 }
 
--- Utility function for safe logging
-local function SafeLog(message, tamperLevel)
-    tamperLevel = tamperLevel or "WARNING"
-    local logEntry = {
-        timestamp = os.time(),
-        level = tamperLevel,
-        message = message,
-    }
-    table.insert(AntiTamper.TamperLog, logEntry)
+-- ============================================
+-- SIGNATURE 1: HttpService behavior check
+-- (Your dumper extracted: local lar1 = game:GetService("HttpService"))
+-- ============================================
+
+function DumperDetection:CheckHttpServiceBehavior()
+    local http1, http2, http3
     
-    if AntiTamper.Config.LogDetections then
-        print(string.format("[AntiTamper-%s] %s", tamperLevel, message))
+    -- In real Roblox: should all succeed and be same object
+    -- In dumper: may fail or be inconsistent
+    
+    local s1 = Secure.pcall(function()
+        http1 = game:GetService("HttpService")
+        return http1 ~= nil
+    end)
+    
+    local s2 = Secure.pcall(function()
+        http2 = game:GetService("HttpService")
+        return http2 ~= nil
+    end)
+    
+    local s3 = Secure.pcall(function()
+        http3 = game:GetService("HttpService")
+        return http3 ~= nil
+    end)
+    
+    -- If any fails, dumper environment
+    if not s1 or not s2 or not s3 then
+        table.insert(self.DumperSignatures, "httpservice_access_failed")
+        self.IsDumperDetected = true
+        return false
     end
+    
+    -- If objects are different, dumper environment
+    if http1 ~= http2 or http2 ~= http3 then
+        table.insert(self.DumperSignatures, "httpservice_objects_different")
+        self.IsDumperDetected = true
+        return false
+    end
+    
+    return true
 end
 
--- Store original values for comparison
-local OriginalValues = {
-    StringMetatable = getmetatable(""),
-    NumberType = type(1),
-    TableType = type({}),
-    FunctionType = type(function() end),
-    BoolType = type(true),
-    NilType = type(nil),
-}
+-- ============================================
+-- SIGNATURE 2: Execution environment isolation
+-- (Dumper uses setfenv - creates isolated environment)
+-- ============================================
 
--- Check 1: Verify string metatable integrity
-function AntiTamper:CheckStringMetatable()
-    if not self.Config.CheckMetatables then return true end
+function DumperDetection:CheckEnvironmentIsolation()
+    local env = Secure.getfenv(1)
     
-    local currentMeta = getmetatable("")
+    if not env then
+        table.insert(self.DumperSignatures, "no_environment")
+        self.IsDumperDetected = true
+        return false
+    end
     
-    -- In Roblox, strings might have a metatable, but check if it's been tampered with
-    -- Look for suspicious __index, __newindex, or __call metamethods
-    if currentMeta ~= nil then
-        local hasSuspiciousMetamethods = false
+    -- Count keys in environment
+    local keyCount = 0
+    for _ in Secure.pairs(env) do
+        keyCount = keyCount + 1
+    end
+    
+    -- Normal Roblox has 50+ keys
+    -- Dumper has <15 keys (very isolated)
+    if keyCount < 10 then
+        table.insert(self.DumperSignatures, "isolated_env_only_" .. keyCount .. "_keys")
+        self.IsDumperDetected = true
+        return false
+    end
+    
+    return true
+end
+
+-- ============================================
+-- SIGNATURE 3: Output extraction detection
+-- (Dumper captures print() output: t.output size before/after)
+-- ============================================
+
+function DumperDetection:CheckOutputExtraction()
+    -- Dumpers wrap print() to capture output
+    -- We can detect this by checking if print behaves normally
+    
+    local printWorked = false
+    local captureDetected = false
+    
+    Secure.pcall(function()
+        -- Check if print is the native C function
+        local info = Secure.debug.getinfo(Secure.print)
         
-        if currentMeta.__index ~= nil then
-            hasSuspiciousMetamethods = true
+        -- Native print: what = "C"
+        -- Wrapped print: what = "Lua" (from dumper)
+        if info and info.what ~= "C" then
+            captureDetected = true
         end
-        if currentMeta.__newindex ~= nil then
-            hasSuspiciousMetamethods = true
+    end)
+    
+    if captureDetected then
+        table.insert(self.DumperSignatures, "print_output_capture")
+        self.IsDumperDetected = true
+        return false
+    end
+    
+    return true
+end
+
+-- ============================================
+-- SIGNATURE 4: Dumper variable pattern
+-- (Your dumper output shows: local lar1, lar2, lar3)
+-- This is a STRONG dumper signature
+-- ============================================
+
+function DumperDetection:CheckDumperVariablePattern()
+    local env = Secure.getfenv(1)
+    local varNames = {}
+    
+    -- Collect all variable names
+    for key, _ in Secure.pairs(env) do
+        table.insert(varNames, Secure.tostring(key))
+    end
+    
+    -- Check for "lar" pattern (lar1, lar2, lar3, etc.)
+    local larVarCount = 0
+    for _, name in Secure.pairs(varNames) do
+        if Secure.string.match(name, "^lar%d+$") then
+            larVarCount = larVarCount + 1
         end
-        if currentMeta.__call ~= nil then
-            hasSuspiciousMetamethods = true
+    end
+    
+    -- If multiple "lar" variables exist, dumper is extracting
+    if larVarCount >= 2 then
+        table.insert(self.DumperSignatures, "dumper_lar_pattern_" .. larVarCount .. "_found")
+        self.IsDumperDetected = true
+        return false
+    end
+    
+    return true
+end
+
+-- ============================================
+-- SIGNATURE 5: Script object presence
+-- (In dumper: script object is nil or missing)
+-- ============================================
+
+function DumperDetection:CheckScriptObject()
+    local hasScript = false
+    local scriptValid = false
+    
+    Secure.pcall(function()
+        if script then
+            hasScript = true
+            if script.Name and script.Parent then
+                scriptValid = true
+            end
         end
+    end)
+    
+    if not hasScript or not scriptValid then
+        table.insert(self.DumperSignatures, "invalid_script_object")
+        self.IsDumperDetected = true
+        return false
+    end
+    
+    return true
+end
+
+-- ============================================
+-- SIGNATURE 6: Game service access
+-- (Dumper restricts game:GetService access)
+-- ============================================
+
+function DumperDetection:CheckGameServiceAccess()
+    local servicesWorking = 0
+    local servicesToTest = {"HttpService", "RunService", "Players", "CoreGui"}
+    
+    for _, serviceName in Secure.pairs(servicesToTest) do
+        local success = Secure.pcall(function()
+            local svc = game:GetService(serviceName)
+            return svc ~= nil
+        end)
         
-        if hasSuspiciousMetamethods then
-            SafeLog("String metatable has been modified with suspicious metamethods", "CRITICAL")
-            self.TamperDetected = true
-            return false
+        if success then
+            servicesWorking = servicesWorking + 1
         end
     end
     
-    return true
-end
-
--- Check 2: Verify table metatable integrity
-function AntiTamper:CheckTableMetatable()
-    if not self.Config.CheckMetatables then return true end
-    
-    local testTable = {}
-    
-    -- Test if we can safely set metatables
-    local success, result = pcall(function()
-        local meta = getmetatable(testTable)
-        return meta
-    end)
-    
-    if not success then
-        SafeLog("Table metatable operations are compromised", "CRITICAL")
-        self.TamperDetected = true
+    -- Should be able to access at least 3 out of 4 services
+    if servicesWorking < 3 then
+        table.insert(self.DumperSignatures, "game_access_restricted_" .. servicesWorking .. "_of_4")
+        self.IsDumperDetected = true
         return false
     end
     
     return true
 end
 
--- Check 3: Verify basic arithmetic operations
-function AntiTamper:CheckMathOperations()
-    if not self.Config.CheckMath then return true end
-    
-    local mathTests = {
-        {name = "Addition", fn = function() return 5 + 3 end, expected = 8},
-        {name = "Subtraction", fn = function() return 10 - 3 end, expected = 7},
-        {name = "Multiplication", fn = function() return 4 * 5 end, expected = 20},
-        {name = "Division", fn = function() return 20 / 4 end, expected = 5},
-        {name = "Modulo", fn = function() return 10 % 3 end, expected = 1},
-        {name = "Power", fn = function() return 2 ^ 3 end, expected = 8},
-    }
-    
-    for _, test in ipairs(mathTests) do
-        local success, result = pcall(test.fn)
-        
-        if not success then
-            SafeLog(string.format("Math operation %s failed: %s", test.name, tostring(result)), "CRITICAL")
-            self.TamperDetected = true
-            return false
-        elseif result ~= test.expected then
-            SafeLog(string.format("Math operation %s returned unexpected value: %s (expected %s)", test.name, tostring(result), tostring(test.expected)), "CRITICAL")
-            self.TamperDetected = true
-            return false
-        end
+-- ============================================
+-- SIGNATURE 7: Multiple reset/execution cycles
+-- (Your dumper shows: q.reset() multiple times)
+-- ============================================
+
+function DumperDetection:CheckExecutionResets()
+    -- Use global flag to detect if script is running multiple times
+    if not _G._EXECUTION_COUNT then
+        _G._EXECUTION_COUNT = 0
     end
     
-    -- Test string concatenation (commonly tampered)
-    local success, result = pcall(function()
-        return "Hello" .. " " .. "World"
-    end)
+    _G._EXECUTION_COUNT = _G._EXECUTION_COUNT + 1
     
-    if not success or result ~= "Hello World" then
-        SafeLog("String concatenation has been tampered with", "CRITICAL")
-        self.TamperDetected = true
+    -- If executed multiple times in quick succession, dumper is re-running it
+    if _G._EXECUTION_COUNT > 3 then
+        table.insert(self.DumperSignatures, "multiple_execution_resets")
+        self.IsDumperDetected = true
         return false
     end
     
     return true
 end
 
--- Check 4: Verify global function integrity
-function AntiTamper:CheckGlobalFunctions()
-    if not self.Config.CheckFunctions then return true end
+-- ============================================
+-- SIGNATURE 8: Sandbox setfenv detection
+-- (Dumper uses setfenv(1, {}) to isolate)
+-- ============================================
+
+function DumperDetection:CheckSandboxSetfenv()
+    local env1 = Secure.getfenv(1)
+    local env2 = Secure.getfenv(2)
     
-    local criticalGlobals = {
-        "print", "error", "warn", "pcall", "xpcall", "type", "tostring", "tonumber",
-        "getmetatable", "setmetatable", "rawget", "rawset", "rawequal", "next",
-        "ipairs", "pairs", "table", "string", "math", "coroutine",
-    }
+    -- In dumper: env1 is heavily modified/isolated
+    -- In real Roblox: env1 and env2 have normal globals
     
-    local missingCount = 0
-    
-    for _, globalName in ipairs(criticalGlobals) do
-        local globalFunc = _G[globalName]
-        
-        if globalFunc == nil then
-            missingCount = missingCount + 1
-        elseif type(globalFunc) ~= "function" and type(globalFunc) ~= "table" then
-            SafeLog(string.format("Critical global '%s' has been replaced with type '%s'", globalName, type(globalFunc)), "CRITICAL")
-            self.TamperDetected = true
-        end
-    end
-    
-    -- Only flag as tampering if MORE THAN HALF of critical globals are missing
-    -- This prevents false positives in sandboxed environments
-    if missingCount > (#criticalGlobals / 2) then
-        SafeLog(string.format("Too many critical globals missing (%d/%d)", missingCount, #criticalGlobals), "CRITICAL")
-        self.TamperDetected = true
+    if env1 == env2 then
+        -- Environments are same - likely sandboxed
+        table.insert(self.DumperSignatures, "identical_environments")
+        self.IsDumperDetected = true
         return false
     end
     
     return true
 end
 
--- Check 5: Verify type system integrity
-function AntiTamper:CheckTypeSystem()
-    if not self.Config.CheckEnvironment then return true end
-    
-    local typeTests = {
-        {value = "", expected = "string"},
-        {value = 1, expected = "number"},
-        {value = {}, expected = "table"},
-        {value = function() end, expected = "function"},
-        {value = true, expected = "boolean"},
-        {value = nil, expected = "nil"},
-    }
-    
-    for _, test in ipairs(typeTests) do
-        local actualType = type(test.value)
-        if actualType ~= test.expected then
-            SafeLog(string.format("Type system corrupted: %s has type '%s' (expected '%s')", tostring(test.value), actualType, test.expected), "CRITICAL")
-            self.TamperDetected = true
-            return false
-        end
-    end
-    
-    return true
-end
+-- ============================================
+-- RUN ALL CHECKS
+-- ============================================
 
--- Check 6: Verify script environment
-function AntiTamper:CheckEnvironment()
-    if not self.Config.CheckEnvironment then return true end
-    
-    local success, env = pcall(function()
-        return getfenv(1)
-    end)
-    
-    if not success then
-        SafeLog("Cannot access script environment", "WARNING")
-        return true -- Don't flag as critical, some environments restrict this
-    end
-    
-    if env == nil then
-        SafeLog("Script environment is nil - execution context may be compromised", "CRITICAL")
-        self.TamperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- Check 7: Verify basic table operations
-function AntiTamper:CheckTableOperations()
-    if not self.Config.CheckMath then return true end
-    
-    local testTable = {a = 1, b = 2, c = 3}
-    
-    -- Test table creation
-    local success, result = pcall(function()
-        return {x = 10, y = 20}
-    end)
-    
-    if not success then
-        SafeLog("Table creation has been compromised", "CRITICAL")
-        self.TamperDetected = true
-        return false
-    end
-    
-    -- Test table indexing
-    success, result = pcall(function()
-        return testTable.a
-    end)
-    
-    if not success or result ~= 1 then
-        SafeLog("Table indexing has been compromised", "CRITICAL")
-        self.TamperDetected = true
-        return false
-    end
-    
-    return true
-end
-
--- Main anti-tamper check function
-function AntiTamper:Run()
-    SafeLog("Starting anti-tamper checks...", "INFO")
-    
-    local checksRun = 0
-    local checksPassed = 0
+function DumperDetection:Run()
+    Secure.print("[DumperDetection] ================================")
+    Secure.print("[DumperDetection] Starting advanced dumper detection")
+    Secure.print("[DumperDetection] ================================")
     
     local checks = {
-        {name = "String Metatable", fn = function() return self:CheckStringMetatable() end},
-        {name = "Table Metatable", fn = function() return self:CheckTableMetatable() end},
-        {name = "Math Operations", fn = function() return self:CheckMathOperations() end},
-        {name = "Type System", fn = function() return self:CheckTypeSystem() end},
-        {name = "Table Operations", fn = function() return self:CheckTableOperations() end},
-        {name = "Global Functions", fn = function() return self:CheckGlobalFunctions() end},
-        {name = "Environment", fn = function() return self:CheckEnvironment() end},
+        {name = "HttpService Behavior", fn = function() return self:CheckHttpServiceBehavior() end},
+        {name = "Environment Isolation", fn = function() return self:CheckEnvironmentIsolation() end},
+        {name = "Output Extraction", fn = function() return self:CheckOutputExtraction() end},
+        {name = "Dumper Variable Pattern", fn = function() return self:CheckDumperVariablePattern() end},
+        {name = "Script Object", fn = function() return self:CheckScriptObject() end},
+        {name = "Game Service Access", fn = function() return self:CheckGameServiceAccess() end},
+        {name = "Execution Resets", fn = function() return self:CheckExecutionResets() end},
+        {name = "Sandbox Detection", fn = function() return self:CheckSandboxSetfenv() end},
     }
     
-    for _, check in ipairs(checks) do
-        checksRun = checksRun + 1
-        local passed = check.fn()
-        if passed then
-            checksPassed = checksPassed + 1
-            if self.Config.VerboseLogging then
-                SafeLog(string.format("✓ Check passed: %s", check.name), "OK")
+    local passed = 0
+    local failed = 0
+    
+    for _, check in Secure.pairs(checks) do
+        local result = check.fn()
+        if result then
+            passed = passed + 1
+            if self.IsDumperDetected == false then
+                Secure.print("[DumperDetection] ✓ " .. check.name)
             end
         else
-            if self.Config.VerboseLogging then
-                SafeLog(string.format("✗ Check failed: %s", check.name), "FAIL")
-            end
+            failed = failed + 1
+            Secure.print("[DumperDetection] ✗ " .. check.name .. " FAILED")
         end
     end
     
-    SafeLog(string.format("Anti-tamper checks complete: %d/%d passed", checksPassed, checksRun), "INFO")
+    Secure.print("[DumperDetection] ================================")
+    Secure.print("[DumperDetection] Results: " .. passed .. "/" .. #checks .. " passed")
     
-    if self.TamperDetected then
-        SafeLog("⚠ Tampering detected in script environment", "ALERT")
-        -- Script execution will be halted in the main execution block
-    end
-end
-
--- Get tamper report
-function AntiTamper:GetReport()
-    return {
-        TamperDetected = self.TamperDetected,
-        LogCount = #self.TamperLog,
-        Logs = self.TamperLog,
-        Config = self.Config,
-    }
-end
-
--- Print tamper report
-function AntiTamper:PrintReport()
-    print("\n" .. string.rep("=", 50))
-    print("ANTI-TAMPER REPORT")
-    print(string.rep("=", 50))
-    print("Tamper Detected: " .. tostring(self.TamperDetected))
-    print("Total Log Entries: " .. #self.TamperLog)
-    print(string.rep("-", 50))
-    
-    if #self.TamperLog > 0 then
-        for i, log in ipairs(self.TamperLog) do
-            print(string.format("[%d] [%s] %s", i, log.level, log.message))
+    if self.IsDumperDetected then
+        Secure.print("[DumperDetection] ⚠️  DUMPER DETECTED!")
+        Secure.print("[DumperDetection] Signatures Found:")
+        for i, sig in Secure.pairs(self.DumperSignatures) do
+            Secure.print("[DumperDetection]   [" .. i .. "] " .. sig)
         end
     else
-        print("No issues detected")
+        Secure.print("[DumperDetection] ✓ LEGITIMATE ENVIRONMENT VERIFIED")
     end
-    
-    print(string.rep("=", 50) .. "\n")
+    Secure.print("[DumperDetection] ================================\n")
 end
 
 -- ============================================
 -- EXECUTION
 -- ============================================
 
--- Run anti-tamper checks
-AntiTamper:Run()
+DumperDetection:Run()
 
--- Print report
-AntiTamper:PrintReport()
-
--- CRITICAL: Stop execution if tampering is detected
-if AntiTamper.TamperDetected then
-    error("[Anti-Tamper] Script execution halted due to tampering detection!", 0)
+-- If dumper is detected, STOP execution immediately
+if DumperDetection.IsDumperDetected then
+    Secure.print("[DumperDetection] 🛑 EXECUTION HALTED - DUMPER ENVIRONMENT DETECTED\n")
+    do return end
+    while true do end  -- Backup infinite loop
 end
 
 -- ============================================
--- MAIN SCRIPT CODE (Only runs if all checks pass)
+-- LEGITIMATE ENVIRONMENT ONLY
+-- This code only runs if all checks passed
 -- ============================================
 
-print("✓ Environment is clean and secure")
-print("✓ Script initialization successful!")
-print("HI")
+Secure.print("[DumperDetection] ✓ All security checks passed")
+Secure.print("[DumperDetection] ✓ Safe to execute main script\n")
 
--- Your main code goes here
--- This section only executes if AntiTamper:Run() passes all checks
+-- Your actual game code goes here
+Secure.print("==== GAME STARTED ====")
+Secure.print("HI")
+
+return DumperDetection
