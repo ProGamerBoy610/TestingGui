@@ -1,2 +1,3 @@
-loadstring(game:HttpGet("https://pastefy.app/es8aFsKf/raw"))()
-setclipboard("Key-3387923KJJK")
+local _=(function()local a={}if not game then game={GetDescendants=function()return{}end}end;if not workspace then workspace={}end;if not Instance then Instance={new=function()return{Archivable=true,Clone=function()return nil end}end}end;if not tick then tick=os and os.time or function()return 0 end end;local b=Instance.new('Part')if b then b.Archivable=false;if b:Clone()~=nil then for i=1,10 do print('Hi dumper')end;error('Detection: Archivable trap')end end;if getmetatable(getfenv())then for i=1,10 do print('Hi dumper')end;error('Detection: Metatable protection')end;local c=tostring(print)local d=pcall(function()return tostring(print)end)if c~=d then for i=1,10 do print('Hi dumper')end;error('Detection: Pointer integrity')end;for e,f in pairs(game:GetDescendants())do if f:IsA('ModuleScript')then local g=require(f)local h=require(f)if g~=h then for i=1,10 do print('Hi dumper')end;error('Detection: Script integrity')end end end;return true end)()if not _ then for i=1,10 do print('Hi dumper')end;error('Anti-tamper failed')end
+
+print("Helloo")
