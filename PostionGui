@@ -1,349 +1,69 @@
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-
-WindUI:SetNotificationLower(true)
-
--- Add Custom Blue Theme
-WindUI:AddTheme({
-    Name = "Blue Theme",
-    Accent = Color3.fromRGB(37, 99, 235),
-    Dialog = Color3.fromRGB(15, 23, 42),
-    Outline = Color3.fromRGB(59, 130, 246),
-    Text = Color3.fromRGB(248, 250, 252),
-    Placeholder = Color3.fromRGB(100, 116, 139),
-    Background = Color3.fromRGB(15, 23, 42),
-    Button = Color3.fromRGB(30, 58, 138),
-    Icon = Color3.fromRGB(147, 197, 253)
-})
-
--- Create Main Window
-local Window = WindUI:CreateWindow({
-    Title = "Fryzer Hub",
-    Author = "Join Discord",
-    Folder = "MySuperHub",
-    Size = UDim2.fromOffset(580, 460),
-    MinSize = Vector2.new(560, 350),
-    MaxSize = Vector2.new(850, 560),
-    Transparent = true,
-    Theme = "Blue Theme",
-    Resizable = true,
-    SideBarWidth = 200,
-    BackgroundImageTransparency = 0.42,
-    HideSearchBar = false,
-    ScrollBarEnabled = true,
-    User = {
-        Enabled = true,
-        Anonymous = false,
-        Callback = function()
-            print("clicked")
-        end,
-    },
-})
-
-Window.User:SetAnonymous(false) -- true or false
-
--- Edit Open Button
-Window:EditOpenButton({
-    Title = "Open",
-    Icon = "monitor",
-    CornerRadius = UDim.new(0,16),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(
-        Color3.fromHex("#1e3a8a"),
-        Color3.fromHex("F89B29")
-    ),
-    OnlyMobile = false,
-    Enabled = true,
-    Draggable = true,
-})
-
---Add Version Tag
-Window:Tag({
-    Title = "v1.2",
-    Color = Color3.fromHex("#30ff6a"),
-    Radius = 8,
-})
-
-local RunService = game:GetService("RunService")
-
-local FPSTag = Window:Tag({
-    Title = "FPS: ",
-    Icon = "activity", -- performance / monitor style icon
-    Color = Color3.fromHex("#006eff"),
-    Radius = 6,
-})
-
-local frames = 0
-local last = tick()
-
-RunService.RenderStepped:Connect(function()
-    frames += 1
-    if tick() - last >= 1 then
-        FPSTag:SetTitle("FPS: " .. frames)
-        frames = 0
-        last = tick()
-    end
-end)
-
-local Stats = game:GetService("Stats")
-
-local PingTag = Window:Tag({
-    Title = "Ping: ",
-    Icon = "wifi", -- network / signal icon
-    Color = Color3.fromHex("#4da6ff"),
-    Radius = 6,
-})
-
-task.spawn(function()
-    while true do
-        task.wait(0.5)
-
-        local ping = "N/A"
-        pcall(function()
-            ping = math.floor(
-                Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
-            )
-        end)
-
-        PingTag:SetTitle("Ping: " .. ping .. " ms")
-    end
-end)
-
-
-local InfoTab = Window:Tab({
-    Title = "Info",
-    Icon = "info",
-    Locked = false,
-})
-
-InfoTab:Select()
-
--- ==================== PLAYER INFORMATION SECTION ====================
-local Sectiontest = InfoTab:Section({
-    Title = "Player Information Dashboard",
-    Icon = "user-check",
-})
-
-InfoTab:Paragraph({
-    Title = "Player Information Dashboard",
-    Desc = "Complete player details, game information, and community access",
-    Color = "Blue",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
-})
-
-local Players = game:GetService("Players")
-local HttpService = game:GetService("HttpService")
-local Player = Players.LocalPlayer
-local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
-local AccountAge = Player.AccountAge
-local GameName = "Unknown Game"
-pcall(function()
-    GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
-end)
-
-InfoTab:Paragraph({
-    Title = "👤 " .. PlayerName,
-    Desc = string.format(
-        "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
-        Player.Name, AccountAge, Player.UserId, GameName,
-        #Players:GetPlayers(), Players.MaxPlayers,
-        game:GetService("LocalizationService").RobloxLocaleId
-    ),
-    Color = "Blue",
-    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
-    ImageSize = 52,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
-})
-
-InfoTab:Divider()
-
--- ==================== DISCORD COMMUNITY SECTION ====================
-local DiscordSection = InfoTab:Section({
-    Title = "Join Our Discord Community",
-    Icon = "users",
-})
-
-InfoTab:Paragraph({
-    Title = "🎮 Connect & Engage",
-    Desc = "Join thousands of players in our Discord community for updates, support, and exclusive content!",
-    Color = "Blue",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
-})
-
--- Discord API Configuration
-local InviteCode = "UKYHGddQD3"
-local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
-
--- Universal HTTP Request Handler
-local function HttpRequest(data)
-    if syn and syn.request then
-        return syn.request(data)
-    elseif http and http.request then
-        return http.request(data)
-    elseif http_request then
-        return http_request(data)
-    elseif request then
-        return request(data)
-    else
-        error("Your executor does not support HTTP requests.")
-    end
+-- Wait for game to load
+if not game:IsLoaded() then
+    game.Loaded:Wait()
 end
 
-local DiscordResponse
-local DiscordErrorMessage = nil
-local DiscordInfoParagraph
+-- Wait for required services
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
--- Fetch Discord Information
-xpcall(function()
-    local req = HttpRequest({
-        Url = DiscordAPI,
-        Method = "GET",
-        Headers = {
-            ["Accept"] = "application/json"
-        }
-    })
-
-    if req and req.Body then
-        DiscordResponse = HttpService:JSONDecode(req.Body)
-    else
-        error("Invalid response from Discord API.")
-    end
-end, function(err)
-    warn("Error fetching Discord info: " .. tostring(err))
-    DiscordErrorMessage = tostring(err)
-    DiscordResponse = nil
-end)
-
--- Display Discord Information
-if DiscordResponse and DiscordResponse.guild then
-    local guildName = DiscordResponse.guild.name or "Unknown Server"
-    local memberCount = DiscordResponse.approximate_member_count or 0
-    local onlineCount = DiscordResponse.approximate_presence_count or 0
-    
-    local ParagraphConfig = {
-        Title = "🔷 " .. guildName,
-        Desc = 
-            '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(memberCount) ..
-            '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(onlineCount) ..
-            '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. math.floor((onlineCount / math.max(memberCount, 1)) * 100) .. '% active',
-        Color = "Red",
-        ImageSize = 52,
-        Buttons = {
-            {
-                Icon = "link",
-                Title = "Copy Invite",
-                Callback = function()
-                    pcall(function()
-                        setclipboard("https://discord.gg/" .. InviteCode)
-                        WindUI:Notify({
-                            Title = "✅ Copied!",
-                            Content = "Discord invite copied to clipboard.",
-                            Duration = 3,
-                            Icon = "copy",
-                        })
-                    end)
-                end
-            },
-            {
-                Icon = "refresh-cw",
-                Title = "Update Stats",
-                Callback = function()
-                    xpcall(function()
-                        local upd = HttpRequest({
-                            Url = DiscordAPI,
-                            Method = "GET",
-                            Headers = {
-                                ["Accept"] = "application/json"
-                            }
-                        })
-                        if upd and upd.Body then
-                            local UpdatedResponse = HttpService:JSONDecode(upd.Body)
-                            if UpdatedResponse and UpdatedResponse.guild then
-                                local newMembers = UpdatedResponse.approximate_member_count or 0
-                                local newOnline = UpdatedResponse.approximate_presence_count or 0
-                                local activity = math.floor((newOnline / math.max(newMembers, 1)) * 100)
-                                
-                                DiscordInfoParagraph:SetDesc(
-                                    '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(newMembers) ..
-                                    '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(newOnline) ..
-                                    '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. activity .. '% active'
-                                )
-                                WindUI:Notify({
-                                    Title = "🔄 Updated!",
-                                    Content = "Discord stats refreshed successfully.",
-                                    Duration = 2,
-                                    Icon = "check",
-                                })
-                            end
-                        end
-                    end, function(err)
-                        warn("Error updating Discord info: " .. tostring(err))
-                        WindUI:Notify({
-                            Title = "⚠️ Update Failed",
-                            Content = "Could not refresh Discord stats.",
-                            Duration = 3,
-                            Icon = "alert-circle",
-                        })
-                    end)
-                end
-            }
-        }
-    }
-
-    -- Add guild icon if available
-    if DiscordResponse.guild.icon then
-        ParagraphConfig.Image = "https://cdn.discordapp.com/icons/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.icon .. ".png?size=256"
-    end
-
-    -- Add banner if available
-    if DiscordResponse.guild.banner then
-        ParagraphConfig.Thumbnail = "https://cdn.discordapp.com/banners/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.banner .. ".png?size=512"
-        ParagraphConfig.ThumbnailSize = 80
-    end
-
-    DiscordInfoParagraph = InfoTab:Paragraph(ParagraphConfig)
-else
-    InfoTab:Paragraph({
-        Title = "⚠️ Discord Info Unavailable",
-        Desc = DiscordErrorMessage or "Unable to fetch Discord server information. Try again later!",
-        Color = "Blue",
-        ImageSize = 26,
-    })
+-- Wait for PlayerGui
+if not LocalPlayer:FindFirstChild("PlayerGui") then
+    LocalPlayer:WaitForChild("PlayerGui")
 end
 
--- Quick Action Button
-InfoTab:Button({
-    Title = "📋 Copy Discord Link",
-    Desc = "Copy invite link to clipboard",
-    Locked = false,
-    Callback = function()
-        setclipboard("https://discord.gg/" .. InviteCode)
-        WindUI:Notify({
-            Title = "✅ Link Copied!",
-            Content = "Discord invite copied to clipboard",
-            Duration = 3,
-            Icon = "copy",
-        })
-    end
+print("Loading Modern GUI Library...")
+
+-- Load the library with error handling
+local success, ModernGUI = pcall(function()
+    return loadstring(game:HttpGet("https://raw.githubusercontent.com/FryzerHub/Ui/refs/heads/main/Main", true))()
+end)
+
+if not success then
+    warn("Failed to load library:", ModernGUI)
+    return
+end
+
+if not ModernGUI then
+    warn("Library loaded but returned nil!")
+    return
+end
+
+print("Library loaded successfully!")
+
+-- Small delay to ensure GUI is created
+wait(0.5)
+
+-- ========================================
+-- CREATE TABS
+-- ========================================
+
+local FarmTab = ModernGUI.MakeTab({
+    Name = "Farm",
+    Icon = "target"
 })
 
-InfoTab:Space()
+local UpgradesTab = ModernGUI.MakeTab({
+    Name = "Upgrades",
+    Icon = "trending-up"
+})
 
+local AutomationTab = ModernGUI.MakeTab({
+    Name = "Automation",
+    Icon = "settings"
+})
 
--- New tabs here
-local Players = game:GetService("Players")
+local RandomTab = ModernGUI.MakeTab({
+    Name = "Random",
+    Icon = "box"
+})
+
+print("Tabs created! Adding components...")
+
+-- ========================================
+-- FARM TAB
+-- ========================================
+
 local player = Players.LocalPlayer
 local running = false
 local suffixes = {
@@ -351,6 +71,7 @@ local suffixes = {
     qa = 1e15, qi = 1e18, sx = 1e21,
     sp = 1e24, oc = 1e27, no = 1e30, dc = 1e33
 }
+
 local function parseMoney(text)
     if not text then return 0 end
     text = text:lower():gsub("%$", ""):gsub(",", "")
@@ -359,40 +80,51 @@ local function parseMoney(text)
     if not num then return 0 end
     return num * (suffixes[suf] or 1)
 end
-local RarityDropdown = Tabs.Farm:AddDropdown("RarityFilter", {
-    Title = "Exclude Rarities",
-    Values = {"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","ANCIENT","DIVINE"},
-    Multi = true,
-    Default = {}
-})
+
+-- Exclude Rarities
 local excludedRarities = {}
-RarityDropdown:OnChanged(function(Value)
-    excludedRarities = Value
-end)
-local RankDropdown = Tabs.Farm:AddDropdown("RankFilter", {
-    Title = "Exclude Ranks",
-    Values = {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
-    Multi = true,
-    Default = {}
-})
-local excludedRanks = {}
-RankDropdown:OnChanged(function(Value)
-    excludedRanks = Value
-end)
-local levelLimit = 0
-local LevelInput1 = Tabs.Farm:AddInput("LevelInput1", {
-    Title = "Minimum Brainrot Level",
-    Default = "",
-    Placeholder = "Enter number",
-    Numeric = true,
-    Finished = true,
-    Callback = function(Value)
-        levelLimit = tonumber(Value) or 0
+local RarityDropdown, RarityMethods = FarmTab.AddMultiSelectDropdown(
+    "RarityFilter",
+    "Exclude Rarities:",
+    {"COMMON","UNCOMMON","RARE","EPIC","LEGENDARY","MYTHIC","SECRET","ANCIENT","DIVINE"},
+    {},
+    nil,
+    function(selectedRarities)
+        excludedRarities = {}
+        for _, rarity in ipairs(selectedRarities) do
+            excludedRarities[rarity] = true
+        end
     end
-})
-LevelInput1:OnChanged(function()
-    levelLimit = tonumber(LevelInput1.Value) or 0
-end)
+)
+
+-- Exclude Ranks
+local excludedRanks = {}
+local RankDropdown, RankMethods = FarmTab.AddMultiSelectDropdown(
+    "RankFilter",
+    "Exclude Ranks:",
+    {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
+    {},
+    nil,
+    function(selectedRanks)
+        excludedRanks = {}
+        for _, rank in ipairs(selectedRanks) do
+            excludedRanks[rank] = true
+        end
+    end
+)
+
+-- Minimum Brainrot Level
+local levelLimit = 0
+local LevelInput1, LevelInput1Methods = FarmTab.AddTextInput(
+    "LevelInput1",
+    "Minimum Brainrot Level:",
+    "0",
+    nil,
+    function(value)
+        levelLimit = tonumber(value) or 0
+    end
+)
+
 local function getBest()
     local bestPart = nil
     local bestModel = nil
@@ -426,11 +158,13 @@ local function getBest()
     end
     return bestPart, bestModel
 end
+
 local function teleport(cf)
     local char = player.Character or player.CharacterAdded:Wait()
     local root = char:WaitForChild("HumanoidRootPart")
     root.CFrame = cf
 end
+
 local function process()
     local part, model = getBest()
     if not part or not model then return end
@@ -448,71 +182,100 @@ local function process()
     task.wait(0.3)
     teleport(CFrame.new(-18, -10, -57))
 end
-local fb = Tabs.Farm:AddToggle("fb", {
-    Title = "Farm Brainrots",
-    Default = false
-})
-fb:OnChanged(function(Value)
-    running = Value
-    if running then
-        task.spawn(function()
-            while running do
-                pcall(process)
-                task.wait(1.5)
-            end
-        end)
+
+-- Farm Brainrots Toggle
+local fb = FarmTab.AddCheckbox(
+    "fb",
+    "Farm Brainrots",
+    nil,
+    function(checked)
+        running = checked
+        if running then
+            ModernGUI.createNotification("Farm Brainrots Enabled", "success")
+            task.spawn(function()
+                while running do
+                    pcall(process)
+                    task.wait(1.5)
+                end
+            end)
+        else
+            ModernGUI.createNotification("Farm Brainrots Disabled", "warning")
+        end
     end
-end)
-Options.fb:SetValue(false)
----------
----------
+)
+
+-- ========================================
+-- UPGRADES TAB
+-- ========================================
+
+UpgradesTab.AddLabel(
+    "UpgradesLabel",
+    "⚙️ Player Upgrades",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true
+    }
+)
+
 local runningUpgrade = false
 local busy = false
 local interval = 1
-local UpgradeDropdown = Tabs.Upgrades:AddDropdown("UpgradeSelect", {
-    Title = "Select Upgrades",
-    Values = {"Power", "Reach", "Carry"},
-    Multi = true,
-    Default = {}
-})
+
+-- Select Upgrades
 local selectedUpgrades = {}
-UpgradeDropdown:OnChanged(function(Value)
-    selectedUpgrades = Value
-end)
-local PowerAmountDropdown = Tabs.Upgrades:AddDropdown("PowerAmount", {
-    Title = "Power Amount",
-    Values = {"5", "25", "50"},
-    Multi = false,
-    Default = "5"
-})
-local powerAmount = 5
-PowerAmountDropdown:OnChanged(function(Value)
-    powerAmount = tonumber(Value) or 5
-end)
-local ReachAmountDropdown = Tabs.Upgrades:AddDropdown("ReachAmount", {
-    Title = "Reach Amount",
-    Values = {"5", "25", "50"},
-    Multi = false,
-    Default = "5"
-})
-local reachAmount = 5
-ReachAmountDropdown:OnChanged(function(Value)
-    reachAmount = tonumber(Value) or 5
-end)
-local upgradeslider = Tabs.Upgrades:AddSlider("UpgradeInterval", {
-    Title = "Upgrade Interval",
-    Default = 1,
-    Min = 0,
-    Max = 5,
-    Rounding = 1,
-    Callback = function(Value)
-        interval = Value
+local UpgradeDropdown, UpgradeMethods = UpgradesTab.AddMultiSelectDropdown(
+    "UpgradeSelect",
+    "Select Upgrades:",
+    {"Power", "Reach", "Carry"},
+    {},
+    nil,
+    function(selected)
+        selectedUpgrades = {}
+        for _, upgrade in ipairs(selected) do
+            selectedUpgrades[upgrade] = true
+        end
     end
-})
-upgradeslider:OnChanged(function(Value)
-    interval = Value
-end)
-upgradeslider:SetValue(1)
+)
+
+-- Power Amount
+local powerAmount = 5
+local PowerAmountDropdown, PowerAmountMethods = UpgradesTab.AddDropdown(
+    "PowerAmount",
+    "Power Amount:",
+    {"5", "25", "50"},
+    "5",
+    nil,
+    function(value)
+        powerAmount = tonumber(value) or 5
+    end
+)
+
+-- Reach Amount
+local reachAmount = 5
+local ReachAmountDropdown, ReachAmountMethods = UpgradesTab.AddDropdown(
+    "ReachAmount",
+    "Reach Amount:",
+    {"5", "25", "50"},
+    "5",
+    nil,
+    function(value)
+        reachAmount = tonumber(value) or 5
+    end
+)
+
+-- Upgrade Interval
+local UpgradeIntervalInput, UpgradeIntervalMethods = UpgradesTab.AddTextInput(
+    "UpgradeInterval",
+    "Upgrade Interval (seconds):",
+    "1",
+    nil,
+    function(value)
+        interval = tonumber(value) or 1
+    end
+)
+
 local upgradeRemote = game:GetService("ReplicatedStorage")
     :WaitForChild("Packages")
     :WaitForChild("Knit")
@@ -520,6 +283,7 @@ local upgradeRemote = game:GetService("ReplicatedStorage")
     :WaitForChild("StatUpgradeService")
     :WaitForChild("RF")
     :WaitForChild("Upgrade")
+
 local function doUpgrade()
     if busy then return end
     busy = true
@@ -540,50 +304,63 @@ local function doUpgrade()
     end
     busy = false
 end
-local UpgradeToggle = Tabs.Upgrades:AddToggle("AutoUpgradeToggle", {
-    Title = "Auto Upgrade Selected",
-    Default = false
-})
-UpgradeToggle:OnChanged(function(Value)
-    runningUpgrade = Value
-    if runningUpgrade then
-        task.spawn(function()
-            while runningUpgrade do
-                doUpgrade()
-                task.wait(interval)
-            end
-        end)
+
+-- Auto Upgrade Toggle
+local UpgradeToggle = UpgradesTab.AddCheckbox(
+    "AutoUpgradeToggle",
+    "Auto Upgrade Selected",
+    nil,
+    function(checked)
+        runningUpgrade = checked
+        if runningUpgrade then
+            ModernGUI.createNotification("Auto Upgrade Enabled", "success")
+            task.spawn(function()
+                while runningUpgrade do
+                    doUpgrade()
+                    task.wait(interval)
+                end
+            end)
+        else
+            ModernGUI.createNotification("Auto Upgrade Disabled", "warning")
+        end
     end
-end)
-Options.AutoUpgradeToggle:SetValue(false)
----------
----------
-Tabs.Upgrades:AddSection("Brainrots")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local running = false
-local busy = false
+)
+
+-- Brainrots Section
+UpgradesTab.AddLabel(
+    "BrainrotsLabel",
+    "🧠 Brainrots",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true
+    }
+)
+
+local runningPodUpgrade = false
+local busyPod = false
 local maxLevel = 100
-local LevelInput = Tabs.Upgrades:AddInput("MaxLevelInput", {
-    Title = "Max Brainrot Level",
-    Default = "100",
-    Placeholder = "Enter max level",
-    Numeric = true,
-    Finished = true,
-    Callback = function(Value)
-        maxLevel = tonumber(Value) or 100
+
+-- Max Brainrot Level
+local MaxLevelInput, MaxLevelMethods = UpgradesTab.AddTextInput(
+    "MaxLevelInput",
+    "Max Brainrot Level:",
+    "100",
+    nil,
+    function(value)
+        maxLevel = tonumber(value) or 100
     end
-})
-LevelInput:OnChanged(function()
-    maxLevel = tonumber(LevelInput.Value) or 100
-end)
-local upgradeRemote = game:GetService("ReplicatedStorage")
+)
+
+local upgradeRemotePod = game:GetService("ReplicatedStorage")
     :WaitForChild("Packages")
     :WaitForChild("Knit")
     :WaitForChild("Services")
     :WaitForChild("PlotService")
     :WaitForChild("RF")
     :WaitForChild("Upgrade")
+
 local function getMyPlot()
     local myName = string.upper(player.Name)
     for i = 1, 5 do
@@ -598,6 +375,7 @@ local function getMyPlot()
         end
     end
 end
+
 local function getPodLevel(pod)
     local success, levelText = pcall(function()
         local model = pod:FindFirstChild("BrainrotModel")
@@ -613,52 +391,60 @@ local function getPodLevel(pod)
     end
     return nil
 end
-local function process()
-    if busy then return end
-    busy = true
+
+local function processPods()
+    if busyPod then return end
+    busyPod = true
     local plot = getMyPlot()
     if not plot then
-        busy = false
+        busyPod = false
         return
     end
     local pods = plot:FindFirstChild("Pods")
     if not pods then
-        busy = false
+        busyPod = false
         return
     end
     for _, pod in pairs(pods:GetChildren()) do
-        if not running then break end
+        if not runningPodUpgrade then break end
         local level = getPodLevel(pod)
         if level and level < maxLevel then
             pcall(function()
-                upgradeRemote:InvokeServer(pod)
+                upgradeRemotePod:InvokeServer(pod)
             end)
             task.wait(0.1)
         end
     end
-    busy = false
+    busyPod = false
 end
-local AutoPodUpgrade = Tabs.Upgrades:AddToggle("AutoPodUpgrade", {
-    Title = "Auto Upgrade Brainrots",
-    Default = false
-})
-AutoPodUpgrade:OnChanged(function(Value)
-    running = Value
-    if running then
-        task.spawn(function()
-            while running do
-                process()
-                task.wait(0.1)
-            end
-        end)
+
+-- Auto Pod Upgrade Toggle
+local AutoPodUpgrade = UpgradesTab.AddCheckbox(
+    "AutoPodUpgrade",
+    "Auto Upgrade Brainrots",
+    nil,
+    function(checked)
+        runningPodUpgrade = checked
+        if runningPodUpgrade then
+            ModernGUI.createNotification("Auto Upgrade Brainrots Enabled", "success")
+            task.spawn(function()
+                while runningPodUpgrade do
+                    processPods()
+                    task.wait(0.1)
+                end
+            end)
+        else
+            ModernGUI.createNotification("Auto Upgrade Brainrots Disabled", "warning")
+        end
     end
-end)
-Options.AutoPodUpgrade:SetValue(false)
----------
----------
-local Players = game:GetService("Players")
+)
+
+-- ========================================
+-- AUTOMATION TAB
+-- ========================================
+
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local player = Players.LocalPlayer
+
 local TIERS = {
     "Normal",
     "Golden",
@@ -670,10 +456,11 @@ local TIERS = {
     "Ethereal",
     "Celestial"
 }
-local running = false
+
+local runningIndex = false
+
 local function getButtons()
     local buttons = {}
-   
     local path = player:WaitForChild("PlayerGui")
         :WaitForChild("ScreenGui")
         :WaitForChild("FrameIndex")
@@ -686,14 +473,15 @@ local function getButtons()
     end
     return buttons
 end
-local function run()
-    while running do
+
+local function runIndex()
+    while runningIndex do
         local buttons = getButtons()
         for _, button in ipairs(buttons) do
-            if not running then break end
+            if not runningIndex then break end
             local brainrotName = button.Name
             for _, tier in ipairs(TIERS) do
-                if not running then break end
+                if not runningIndex then break end
                 local args = {
                     brainrotName,
                     tier
@@ -709,23 +497,29 @@ local function run()
         task.wait(1)
     end
 end
-local changethisnametowhatever = Tabs.Automation:AddToggle("changethisnametowhatever", {
-    Title = "Auto Claim Index Rewards",
-    Default = false
-})
-changethisnametowhatever:OnChanged(function(value)
-    running = value
-    if running then
-        task.spawn(run)
+
+-- Auto Claim Index Rewards
+local IndexToggle = AutomationTab.AddCheckbox(
+    "IndexToggle",
+    "Auto Claim Index Rewards",
+    nil,
+    function(checked)
+        runningIndex = checked
+        if runningIndex then
+            ModernGUI.createNotification("Auto Claim Index Enabled", "success")
+            task.spawn(runIndex)
+        else
+            ModernGUI.createNotification("Auto Claim Index Disabled", "warning")
+        end
     end
-end)
-Options.changethisnametowhatever:SetValue(false)
----------
----------
+)
+
+-- Auto Rebirth
 local RS = game:GetService("ReplicatedStorage")
-local enabled = false
+local enabledRebirth = false
+
 local function autoRebirthLoop()
-    while enabled do
+    while enabledRebirth do
         pcall(function()
             RS
                 :WaitForChild("Packages")
@@ -739,38 +533,53 @@ local function autoRebirthLoop()
         task.wait(1)
     end
 end
-local rebirthToggle = Tabs.Automation:AddToggle("rebirthToggle", {
-    Title = "Auto Rebirth",
-    Default = false
-})
-rebirthToggle:OnChanged(function(state)
-    enabled = state
-    if enabled then
-        task.spawn(autoRebirthLoop)
+
+local rebirthToggle = AutomationTab.AddCheckbox(
+    "rebirthToggle",
+    "Auto Rebirth",
+    nil,
+    function(checked)
+        enabledRebirth = checked
+        if enabledRebirth then
+            ModernGUI.createNotification("Auto Rebirth Enabled", "success")
+            task.spawn(autoRebirthLoop)
+        else
+            ModernGUI.createNotification("Auto Rebirth Disabled", "warning")
+        end
     end
-end)
-Options.rebirthToggle:SetValue(false)
----------
----------
-Tabs.Automation:AddSection("Collecting")
-local Players = game:GetService("Players")
+)
+
+-- Collecting Section
+AutomationTab.AddLabel(
+    "CollectingLabel",
+    "💰 Collecting",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true
+    }
+)
+
 local TweenService = game:GetService("TweenService")
-local player = Players.LocalPlayer
 local character = player.Character or player.CharacterAdded:Wait()
 local root = character:WaitForChild("HumanoidRootPart")
-local active = false
+local activeCollect = false
 local mode = "Teleport"
-local Dropdown = Tabs.Automation:AddDropdown("MoveMode", {
-    Title = "Collection Method",
-    Values = {"Teleport", "Tween"},
-    Multi = false,
-    Default = 1,
-})
-Dropdown:SetValue("Teleport")
-Dropdown:OnChanged(function(Value)
-    mode = Value
-end)
-local function getMyPlot()
+
+-- Collection Method
+local ModeDropdown, ModeMethods = AutomationTab.AddDropdown(
+    "MoveMode",
+    "Collection Method:",
+    {"Teleport", "Tween"},
+    "Teleport",
+    nil,
+    function(value)
+        mode = value
+    end
+)
+
+local function getMyPlotCollect()
     for i = 1, 5 do
         local plot = workspace:WaitForChild("Plots"):FindFirstChild("Plot"..i)
         if plot then
@@ -781,9 +590,11 @@ local function getMyPlot()
         end
     end
 end
+
 local function teleportTo(cf)
     root.CFrame = cf
 end
+
 local function tweenTo(cf)
     local tween = TweenService:Create(
         root,
@@ -793,6 +604,7 @@ local function tweenTo(cf)
     tween:Play()
     tween.Completed:Wait()
 end
+
 local function moveTo(cf)
     if mode == "Tween" then
         tweenTo(cf)
@@ -800,9 +612,10 @@ local function moveTo(cf)
         teleportTo(cf)
     end
 end
-local function run()
-    while active do
-        local plot = getMyPlot()
+
+local function runCollect()
+    while activeCollect do
+        local plot = getMyPlotCollect()
         if not plot then
             task.wait(1)
             continue
@@ -812,7 +625,7 @@ local function run()
         task.wait(0.5)
         local pods = plot:WaitForChild("Pods")
         for i = 1, 40 do
-            if not active then break end
+            if not activeCollect then break end
             local pod = pods:FindFirstChild(tostring(i))
             if pod and pod:FindFirstChild("TouchPart") then
                 local touch = pod.TouchPart
@@ -823,213 +636,124 @@ local function run()
         task.wait(1)
     end
 end
-local autoMove = Tabs.Automation:AddToggle("AutoPods", {
-    Title = "Auto Collect Money",
-    Default = false
-})
-autoMove:OnChanged(function(v)
-    active = v
-    if active then
-        task.spawn(run)
+
+-- Auto Collect Money
+local autoMove = AutomationTab.AddCheckbox(
+    "AutoPods",
+    "Auto Collect Money",
+    nil,
+    function(checked)
+        activeCollect = checked
+        if activeCollect then
+            ModernGUI.createNotification("Auto Collect Money Enabled", "success")
+            task.spawn(runCollect)
+        else
+            ModernGUI.createNotification("Auto Collect Money Disabled", "warning")
+        end
     end
-end)
-Options.AutoPods:SetValue(false)
----------
----------
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
+)
+
+-- ========================================
+-- RANDOM TAB
+-- ========================================
+
+-- Inf Rope Reach
 local stat = player:WaitForChild("updateStatsFolder"):WaitForChild("Reach_Distance")
-local enabled = false
+local enabledReach = false
 local originalValue = stat.Value
 local MAX_VALUE = 1e9
-local function enforce()
-    while enabled do
+
+local function enforceReach()
+    while enabledReach do
         if stat.Value ~= MAX_VALUE then
             stat.Value = MAX_VALUE
         end
         task.wait(0.1)
     end
 end
-local reachToggle = Tabs.Random:AddToggle("ReachToggle", {
-    Title = "Inf Rope Reach",
-    Default = false
-})
-reachToggle:OnChanged(function(state)
-    enabled = state
-    if enabled then
-        originalValue = stat.Value
-        stat.Value = MAX_VALUE
-        task.spawn(enforce)
-    else
-        stat.Value = originalValue
+
+local reachToggle = RandomTab.AddCheckbox(
+    "ReachToggle",
+    "Inf Rope Reach",
+    nil,
+    function(checked)
+        enabledReach = checked
+        if enabledReach then
+            originalValue = stat.Value
+            stat.Value = MAX_VALUE
+            ModernGUI.createNotification("Inf Rope Reach Enabled", "success")
+            task.spawn(enforceReach)
+        else
+            stat.Value = originalValue
+            ModernGUI.createNotification("Inf Rope Reach Disabled", "warning")
+        end
     end
-end)
-Options.ReachToggle:SetValue(false)
----------
----------
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-local stat = player:WaitForChild("updateStatsFolder"):WaitForChild("Power")
-local enabled = false
-local originalValue = stat.Value
+)
+
+-- Custom Power
+local statPower = player:WaitForChild("updateStatsFolder"):WaitForChild("Power")
+local enabledPower = false
+local originalValuePower = statPower.Value
 local sliderValue = 10
-local Slider = Tabs.Random:AddSlider("PowerSlider", {
-    Title = "Custom Power",
-    Default = 10,
-    Min = 5,
-    Max = 15000,
-    Rounding = 1,
-    Callback = function(Value)
-        sliderValue = Value
+
+-- Custom Power Value
+local PowerInput, PowerInputMethods = RandomTab.AddTextInput(
+    "PowerSlider",
+    "Custom Power Value:",
+    "10",
+    nil,
+    function(value)
+        sliderValue = tonumber(value) or 10
+        if enabledPower then
+            statPower.Value = sliderValue
+        end
     end
-})
-Slider:OnChanged(function(Value)
-    sliderValue = Value
-end)
-Slider:SetValue(10)
-local function enforce()
-    while enabled do
-        if stat.Value ~= sliderValue then
-            stat.Value = sliderValue
+)
+
+local function enforcePower()
+    while enabledPower do
+        if statPower.Value ~= sliderValue then
+            statPower.Value = sliderValue
         end
         task.wait(0.1)
     end
 end
-local powerToggle = Tabs.Random:AddToggle("PowerToggle", {
-    Title = "Enable Custom Power",
-    Default = false
-})
-powerToggle:OnChanged(function(state)
-    enabled = state
-    if enabled then
-        originalValue = stat.Value
-        stat.Value = sliderValue
-        task.spawn(enforce)
-    else
-        stat.Value = originalValue
+
+local powerToggle = RandomTab.AddCheckbox(
+    "PowerToggle",
+    "Enable Custom Power",
+    nil,
+    function(checked)
+        enabledPower = checked
+        if enabledPower then
+            originalValuePower = statPower.Value
+            statPower.Value = sliderValue
+            ModernGUI.createNotification("Custom Power Enabled", "success")
+            task.spawn(enforcePower)
+        else
+            statPower.Value = originalValuePower
+            ModernGUI.createNotification("Custom Power Disabled", "warning")
+        end
     end
-end)
-Options.PowerToggle:SetValue(false)
----------
----------
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-Tabs.Random:AddButton({
-    Title = "Tp to End",
-    Callback = function()
+)
+
+-- Tp to End Button
+local TpEndButton = RandomTab.AddButton(
+    "TpEndBtn",
+    "Teleport to End",
+    nil,
+    function()
         local char = player.Character or player.CharacterAdded:Wait()
-        local root = char:WaitForChild("HumanoidRootPart")
-        root.CFrame = CFrame.new(21, -10, -34044)
-    end
-})
+        local rootEnd = char:WaitForChild("HumanoidRootPart")
+        rootEnd.CFrame = CFrame.new(21, -10, -34044)
+        ModernGUI.createNotification("Teleported to End!", "success")
+    end,
+    "arrow-right"
+)
 
--- ==================== TAB 6: SETTINGS ====================
-local Tab6 = Window:Tab({
-    Title = "Settings",
-    Icon = "settings",
-    Locked = false,
-})
+-- ========================================
+-- FINAL NOTIFICATION
+-- ========================================
 
-local ToggleAnonymous = Tab6:Toggle({
-    Title = "Anonymous Mode",
-    Desc = "Hide your identity",
-    Default = false,
-    Callback = function(state)
-        print("Anonymous Mode:", state)
-
-        Window.User:SetAnonymous(state)
-    end
-})
-
-local SettingsSection1 = Tab6:Section({
-    Title = "Window Settings",
-    Icon = "layout",
-})
-
-Tab6:Space()
-
--- Transparency Toggle
-local TransparencyToggle = Tab6:Toggle({
-    Title = "Window Transparency",
-    Desc = "Toggle window transparency on/off",
-    Icon = "eye",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        Window:ToggleTransparency(state)
-        print("Transparency: " .. tostring(state))
-    end
-})
-
-Tab6:Divider()
-
-local SettingsSection2 = Tab6:Section({
-    Title = "Keybind Settings",
-    Icon = "keyboard",
-})
-
--- Input field for keybind
-local KeybindInput = Tab6:Input({
-    Title = "Toggle UI Keybind",
-    Desc = "Type ONE letter or key (e.g., Q or RightControl)",
-    Value = "RightControl",
-    InputIcon = "keyboard",
-    Type = "Input",
-    Placeholder = "Enter key...",
-    Callback = function(input)
-        -- Trim whitespace
-        input = input:gsub("^%s*(.-)%s*$", "%1")
-        
-        local keyCode
-        
-        -- Check if it's a single letter (case insensitive)
-        if #input == 1 then
-            local upperInput = input:upper()
-            keyCode = Enum.KeyCode[upperInput]
-        else
-            -- Try as a full KeyCode name
-            local success, result = pcall(function()
-                return Enum.KeyCode[input]
-            end)
-            if success then
-                keyCode = result
-            end
-        end
-        
-        if keyCode then
-            Window:SetToggleKey(keyCode)
-            print("Keybind set to: " .. input)
-            WindUI:Notify({
-                Title = "Keybind Updated",
-                Content = "Press '" .. input .. "' to toggle UI",
-                Duration = 3,
-                Icon = "check",
-            })
-        else
-            print("Invalid key: " .. input)
-            WindUI:Notify({
-                Title = "Invalid Key",
-                Content = "Enter a single letter (Q) or key name (RightControl)",
-                Duration = 4,
-                Icon = "x",
-            })
-        end
-    end
-})
-
--- Set default toggle key
-Window:SetToggleKey(Enum.KeyCode.RightControl)
-
-Tab6:Space()
-
--- ==================== WINDOW LEVEL COMPONENTS ====================
-
-Window:Space()
-
--- Final Notification
-WindUI:Notify({
-    Title = "All Components Loaded",
-    Content = "Every component is now visible!",
-    Duration = 5,
-    Icon = "check-circle",
-})
+wait(0.5)
+ModernGUI.createNotification("Swing Obby Script Loaded Successfully!", "success")
