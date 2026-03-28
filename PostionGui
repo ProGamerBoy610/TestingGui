@@ -58,11 +58,6 @@ local UpgradesTab = ModernGUI.MakeTab({
     Icon = "trending-up"
 })
 
-local MainTab = ModernGUI.MakeTab({
-    Name = "Automation",
-    Icon = "settings"
-})
-
 print("Tabs created! Adding components...")
 
 local welcomeLabel, welcomeMethods = InfoTab.AddLabel(
