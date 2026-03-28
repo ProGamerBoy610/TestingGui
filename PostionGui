@@ -43,7 +43,7 @@ local InfoTab = ModernGUI.MakeTab({
     Icon = "home"
 })
 
-local RandomTab = ModernGUI.MakeTab({
+local MainTab = ModernGUI.MakeTab({
     Name = "Main",
     Icon = "user"
 })
@@ -58,7 +58,7 @@ local UpgradesTab = ModernGUI.MakeTab({
     Icon = "trending-up"
 })
 
-local AutomationTab = ModernGUI.MakeTab({
+local MainTab = ModernGUI.MakeTab({
     Name = "Automation",
     Icon = "settings"
 })
@@ -545,7 +545,7 @@ local function runIndex()
 end
 
 -- Auto Claim Index Rewards
-local IndexToggle = AutomationTab.AddCheckbox(
+local IndexToggle = MainTab.AddCheckbox(
     "IndexToggle",
     "Auto Claim Index Rewards",
     nil,
@@ -580,7 +580,7 @@ local function autoRebirthLoop()
     end
 end
 
-local rebirthToggle = AutomationTab.AddCheckbox(
+local rebirthToggle = MainTab.AddCheckbox(
     "rebirthToggle",
     "Auto Rebirth",
     nil,
@@ -596,7 +596,7 @@ local rebirthToggle = AutomationTab.AddCheckbox(
 )
 
 -- Collecting Section
-AutomationTab.AddLabel(
+MainTab.AddLabel(
     "CollectingLabel",
     "💰 Collecting",
     nil,
@@ -614,7 +614,7 @@ local activeCollect = false
 local mode = "Teleport"
 
 -- Collection Method
-local ModeDropdown, ModeMethods = AutomationTab.AddDropdown(
+local ModeDropdown, ModeMethods = MainTab.AddDropdown(
     "MoveMode",
     "Collection Method:",
     {"Teleport", "Tween"},
@@ -684,7 +684,7 @@ local function runCollect()
 end
 
 -- Auto Collect Money
-local autoMove = AutomationTab.AddCheckbox(
+local autoMove = MainTab.AddCheckbox(
     "AutoPods",
     "Auto Collect Money",
     nil,
@@ -700,7 +700,7 @@ local autoMove = AutomationTab.AddCheckbox(
 )
 
 -- ========================================
--- RANDOM TAB
+-- Main TAB
 -- ========================================
 
 -- Inf Rope Reach
@@ -718,7 +718,7 @@ local function enforceReach()
     end
 end
 
-local reachToggle = RandomTab.AddCheckbox(
+local reachToggle = MainTab.AddCheckbox(
     "ReachToggle",
     "Inf Rope Reach",
     nil,
@@ -743,7 +743,7 @@ local originalValuePower = statPower.Value
 local sliderValue = 10
 
 -- Custom Power Value
-local PowerInput, PowerInputMethods = RandomTab.AddTextInput(
+local PowerInput, PowerInputMethods = MainTab.AddTextInput(
     "PowerSlider",
     "Custom Power Value:",
     "10",
@@ -765,7 +765,7 @@ local function enforcePower()
     end
 end
 
-local powerToggle = RandomTab.AddCheckbox(
+local powerToggle = MainTab.AddCheckbox(
     "PowerToggle",
     "Enable Custom Power",
     nil,
@@ -784,7 +784,7 @@ local powerToggle = RandomTab.AddCheckbox(
 )
 
 -- Tp to End Button
-local TpEndButton = RandomTab.AddButton(
+local TpEndButton = MainTab.AddButton(
     "TpEndBtn",
     "Teleport to End",
     nil,
