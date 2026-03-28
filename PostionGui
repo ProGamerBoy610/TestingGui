@@ -38,9 +38,19 @@ wait(0.5)
 -- CREATE TABS
 -- ========================================
 
+local InfoTab = ModernGUI.MakeTab({
+    Name = "Info",
+    Icon = "home"
+})
+
+local RandomTab = ModernGUI.MakeTab({
+    Name = "Main",
+    Icon = "user"
+})
+
 local FarmTab = ModernGUI.MakeTab({
     Name = "Farm",
-    Icon = "target"
+    Icon = "minimize-2"
 })
 
 local UpgradesTab = ModernGUI.MakeTab({
@@ -53,16 +63,58 @@ local AutomationTab = ModernGUI.MakeTab({
     Icon = "settings"
 })
 
-local RandomTab = ModernGUI.MakeTab({
-    Name = "Random",
-    Icon = "box"
-})
-
 print("Tabs created! Adding components...")
+
+local welcomeLabel, welcomeMethods = InfoTab.AddLabel(
+    "WelcomeLabel",
+    "Welcome to Fryzer Hub! \n Pls join My Discord",
+    nil,
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true,
+        backgroundColor = Color3.fromRGB(0, 51, 255),
+        backgroundTransparency = 0
+    }
+)
+
+local executeButton = InfoTab.AddButton(
+    "CopyButton",
+    "Copy Discord Link",
+    nil,
+    function()
+        ModernGUI.createNotification("Copied Discord Link!", "success")
+        wait(0.5)
+        setclipboard("https://discord.gg/UKYHGddQD3")
+    end,
+    "send"
+)
+
 
 -- ========================================
 -- FARM TAB
 -- ========================================
+
+-- Farm Brainrots Toggle
+local fb = FarmTab.AddCheckbox(
+    "fb",
+    "Farm Brainrots",
+    nil,
+    function(checked)
+        running = checked
+        if running then
+            ModernGUI.createNotification("Farm Brainrots Enabled", "success")
+            task.spawn(function()
+                while running do
+                    pcall(process)
+                    task.wait(1.5)
+                end
+            end)
+        else
+            ModernGUI.createNotification("Farm Brainrots Disabled", "warning")
+        end
+    end
+)
 
 local player = Players.LocalPlayer
 local running = false
@@ -97,21 +149,20 @@ local RarityDropdown, RarityMethods = FarmTab.AddMultiSelectDropdown(
     end
 )
 
--- Exclude Ranks
-local excludedRanks = {}
-local RankDropdown, RankMethods = FarmTab.AddMultiSelectDropdown(
-    "RankFilter",
-    "Exclude Ranks:",
-    {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
-    {},
+local Settings, settings = FarmTab.AddLabel(
+    "Settingslabel",
+    "More Settings",
     nil,
-    function(selectedRanks)
-        excludedRanks = {}
-        for _, rank in ipairs(selectedRanks) do
-            excludedRanks[rank] = true
-        end
-    end
+    {
+        textSize = 16,
+        textColor = Color3.fromRGB(255, 255, 255),
+        hasBackground = true,
+        backgroundColor = Color3.fromRGB(0, 51, 255),
+        backgroundTransparency = 0
+    }
 )
+
+
 
 -- Minimum Brainrot Level
 local levelLimit = 0
@@ -183,23 +234,18 @@ local function process()
     teleport(CFrame.new(-18, -10, -57))
 end
 
--- Farm Brainrots Toggle
-local fb = FarmTab.AddCheckbox(
-    "fb",
-    "Farm Brainrots",
+-- Exclude Ranks
+local excludedRanks = {}
+local RankDropdown, RankMethods = FarmTab.AddMultiSelectDropdown(
+    "RankFilter",
+    "Exclude Ranks:",
+    {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
+    {},
     nil,
-    function(checked)
-        running = checked
-        if running then
-            ModernGUI.createNotification("Farm Brainrots Enabled", "success")
-            task.spawn(function()
-                while running do
-                    pcall(process)
-                    task.wait(1.5)
-                end
-            end)
-        else
-            ModernGUI.createNotification("Farm Brainrots Disabled", "warning")
+    function(selectedRanks)
+        excludedRanks = {}
+        for _, rank in ipairs(selectedRanks) do
+            excludedRanks[rank] = true
         end
     end
 )
