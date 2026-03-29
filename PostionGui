@@ -77,12 +77,231 @@ Window:EditOpenButton({
     Draggable = true,
 })
 
--- Add Version Tag
-Window:Tag({
-    Title = "v1.0",
-    Color = Color3.fromRGB(168, 85, 247),
-    Radius = 8,
+
+-- Info Tab
+-- ==================== PLAYER INFORMATION SECTION ====================
+local Sectiontest = InfoTab:Section({
+    Title = "Player Information Dashboard",
+    Icon = "user-check",
 })
+
+InfoTab:Paragraph({
+    Title = "Player Information Dashboard",
+    Desc = "Complete player details, game information, and community access",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
+local Player = Players.LocalPlayer
+local PlayerName = Player.DisplayName ~= "" and Player.DisplayName or Player.Name
+local AccountAge = Player.AccountAge
+local GameName = "Unknown Game"
+pcall(function()
+    GameName = game:GetService("MarketplaceService"):GetProductInfo(game.PlaceId).Name
+end)
+
+InfoTab:Paragraph({
+    Title = "👤 " .. PlayerName,
+    Desc = string.format(
+        "🏷️ Username: @%s\n🎂 Account Age: %d days\n🆔 User ID: %d\n🎮 Current Game: %s\n👥 Server: %d/%d players\n📍 Region: %s",
+        Player.Name, AccountAge, Player.UserId, GameName,
+        #Players:GetPlayers(), Players.MaxPlayers,
+        game:GetService("LocalizationService").RobloxLocaleId
+    ),
+    Color = "Blue",
+    Image = "https://www.roblox.com/headshot-thumbnail/image?userId=" .. Player.UserId .. "&width=150&height=150&format=png",
+    ImageSize = 52,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+InfoTab:Divider()
+
+-- ==================== DISCORD COMMUNITY SECTION ====================
+local DiscordSection = InfoTab:Section({
+    Title = "Join Our Discord Community",
+    Icon = "users",
+})
+
+InfoTab:Paragraph({
+    Title = "🎮 Connect & Engage",
+    Desc = "Join thousands of players in our Discord community for updates, support, and exclusive content!",
+    Color = "Blue",
+    Image = "",
+    ImageSize = 30,
+    Thumbnail = "",
+    ThumbnailSize = 80,
+    Locked = false,
+    Buttons = {}
+})
+
+-- Discord API Configuration
+local InviteCode = "UKYHGddQD3"
+local DiscordAPI = "https://discord.com/api/v10/invites/" .. InviteCode .. "?with_counts=true&with_expiration=true"
+
+-- Universal HTTP Request Handler
+local function HttpRequest(data)
+    if syn and syn.request then
+        return syn.request(data)
+    elseif http and http.request then
+        return http.request(data)
+    elseif http_request then
+        return http_request(data)
+    elseif request then
+        return request(data)
+    else
+        error("Your executor does not support HTTP requests.")
+    end
+end
+
+local DiscordResponse
+local DiscordErrorMessage = nil
+local DiscordInfoParagraph
+
+-- Fetch Discord Information
+xpcall(function()
+    local req = HttpRequest({
+        Url = DiscordAPI,
+        Method = "GET",
+        Headers = {
+            ["Accept"] = "application/json"
+        }
+    })
+
+    if req and req.Body then
+        DiscordResponse = HttpService:JSONDecode(req.Body)
+    else
+        error("Invalid response from Discord API.")
+    end
+end, function(err)
+    warn("Error fetching Discord info: " .. tostring(err))
+    DiscordErrorMessage = tostring(err)
+    DiscordResponse = nil
+end)
+
+-- Display Discord Information
+if DiscordResponse and DiscordResponse.guild then
+    local guildName = DiscordResponse.guild.name or "Unknown Server"
+    local memberCount = DiscordResponse.approximate_member_count or 0
+    local onlineCount = DiscordResponse.approximate_presence_count or 0
+    
+    local ParagraphConfig = {
+        Title = "🔷 " .. guildName,
+        Desc = 
+            '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(memberCount) ..
+            '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(onlineCount) ..
+            '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. math.floor((onlineCount / math.max(memberCount, 1)) * 100) .. '% active',
+        Color = "Red",
+        ImageSize = 52,
+        Buttons = {
+            {
+                Icon = "link",
+                Title = "Copy Invite",
+                Callback = function()
+                    pcall(function()
+                        setclipboard("https://discord.gg/" .. InviteCode)
+                        WindUI:Notify({
+                            Title = "✅ Copied!",
+                            Content = "Discord invite copied to clipboard.",
+                            Duration = 3,
+                            Icon = "copy",
+                        })
+                    end)
+                end
+            },
+            {
+                Icon = "refresh-cw",
+                Title = "Update Stats",
+                Callback = function()
+                    xpcall(function()
+                        local upd = HttpRequest({
+                            Url = DiscordAPI,
+                            Method = "GET",
+                            Headers = {
+                                ["Accept"] = "application/json"
+                            }
+                        })
+                        if upd and upd.Body then
+                            local UpdatedResponse = HttpService:JSONDecode(upd.Body)
+                            if UpdatedResponse and UpdatedResponse.guild then
+                                local newMembers = UpdatedResponse.approximate_member_count or 0
+                                local newOnline = UpdatedResponse.approximate_presence_count or 0
+                                local activity = math.floor((newOnline / math.max(newMembers, 1)) * 100)
+                                
+                                DiscordInfoParagraph:SetDesc(
+                                    '📊 <font color="#3b82f6"><b>Members:</b></font> ' .. tostring(newMembers) ..
+                                    '\n🟢 <font color="#10b981"><b>Online:</b></font> ' .. tostring(newOnline) ..
+                                    '\n📈 <font color="#f59e0b"><b>Activity:</b></font> ' .. activity .. '% active'
+                                )
+                                WindUI:Notify({
+                                    Title = "🔄 Updated!",
+                                    Content = "Discord stats refreshed successfully.",
+                                    Duration = 2,
+                                    Icon = "check",
+                                })
+                            end
+                        end
+                    end, function(err)
+                        warn("Error updating Discord info: " .. tostring(err))
+                        WindUI:Notify({
+                            Title = "⚠️ Update Failed",
+                            Content = "Could not refresh Discord stats.",
+                            Duration = 3,
+                            Icon = "alert-circle",
+                        })
+                    end)
+                end
+            }
+        }
+    }
+
+    -- Add guild icon if available
+    if DiscordResponse.guild.icon then
+        ParagraphConfig.Image = "https://cdn.discordapp.com/icons/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.icon .. ".png?size=256"
+    end
+
+    -- Add banner if available
+    if DiscordResponse.guild.banner then
+        ParagraphConfig.Thumbnail = "https://cdn.discordapp.com/banners/" .. DiscordResponse.guild.id .. "/" .. DiscordResponse.guild.banner .. ".png?size=512"
+        ParagraphConfig.ThumbnailSize = 80
+    end
+
+    DiscordInfoParagraph = InfoTab:Paragraph(ParagraphConfig)
+else
+    InfoTab:Paragraph({
+        Title = "⚠️ Discord Info Unavailable",
+        Desc = DiscordErrorMessage or "Unable to fetch Discord server information. Try again later!",
+        Color = "Blue",
+        ImageSize = 26,
+    })
+end
+
+-- Quick Action Button
+InfoTab:Button({
+    Title = "📋 Copy Discord Link",
+    Desc = "Copy invite link to clipboard",
+    Locked = false,
+    Callback = function()
+        setclipboard("https://discord.gg/" .. InviteCode)
+        WindUI:Notify({
+            Title = "✅ Link Copied!",
+            Content = "Discord invite copied to clipboard",
+            Duration = 3,
+            Icon = "copy",
+        })
+    end
+})
+
+InfoTab:Space()
 
 -- ==================== FARM TAB ====================
 local FarmTab = Window:Tab({
@@ -145,10 +364,8 @@ FarmTab:Dropdown({
 FarmTab:Dropdown({
     Title = "Exclude Ranks",
     Desc = "Select ranks to exclude from farming",
-    Multi = true,
-    Icon = "star",
     Options = {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
-    Default = {},
+    Default = {"NORMAL","GOLDEN","DIAMOND","EMERALD","RUBY","RAINBOW","VOID","ETHEREAL","CELESTIAL"},
     Callback = function(selected)
         excludedRanks = {}
         if type(selected) == "table" then
@@ -248,349 +465,9 @@ FarmTab:Toggle({
     end
 })
 
--- ==================== UPGRADES TAB ====================
-local UpgradesTab = Window:Tab({
-    Title = "Upgrades",
-    Icon = "trending-up",
-    Locked = false,
-})
-
-UpgradesTab:Section({
-    Title = "Player Upgrades",
-    Icon = "arrow-up-circle",
-})
-
-local runningUpgrade = false
-local busy = false
-local interval = 1
-local selectedUpgrades = {}
-local powerAmount = 5
-local reachAmount = 5
-
-UpgradesTab:Dropdown({
-    Title = "Select Upgrades",
-    Desc = "Choose which upgrades to auto-purchase",
-    Multi = true,
-    Icon = "list",
-    Options = {"Power", "Reach", "Carry"},
-    Default = {},
-    Callback = function(selected)
-        selectedUpgrades = {}
-        if type(selected) == "table" then
-            for _, v in pairs(selected) do
-                selectedUpgrades[v] = true
-            end
-        end
-    end
-})
-
-UpgradesTab:Dropdown({
-    Title = "Power Amount",
-    Desc = "Amount to purchase per upgrade",
-    Multi = false,
-    Icon = "zap",
-    Options = {"5", "25", "50"},
-    Default = "5",
-    Callback = function(value)
-        if type(value) == "string" then
-            powerAmount = tonumber(value) or 5
-        elseif type(value) == "table" and value[1] then
-            powerAmount = tonumber(value[1]) or 5
-        end
-    end
-})
-
-UpgradesTab:Dropdown({
-    Title = "Reach Amount",
-    Desc = "Amount to purchase per upgrade",
-    Multi = false,
-    Icon = "move",
-    Options = {"5", "25", "50"},
-    Default = "5",
-    Callback = function(value)
-        if type(value) == "string" then
-            reachAmount = tonumber(value) or 5
-        elseif type(value) == "table" and value[1] then
-            reachAmount = tonumber(value[1]) or 5
-        end
-    end
-})
-
-UpgradesTab:Slider({
-    Title = "Upgrade Interval",
-    Desc = "Seconds between upgrade attempts",
-    Icon = "clock",
-    Min = 0,
-    Max = 5,
-    Default = 1,
-    Increment = 1,
-    Callback = function(value)
-        interval = value
-    end
-})
-
-local upgradeRemote = game:GetService("ReplicatedStorage")
-    :WaitForChild("Packages")
-    :WaitForChild("Knit")
-    :WaitForChild("Services")
-    :WaitForChild("StatUpgradeService")
-    :WaitForChild("RF")
-    :WaitForChild("Upgrade")
-
-local function doUpgrade()
-    if busy then return end
-    busy = true
-    if selectedUpgrades["Power"] then
-        pcall(function()
-            upgradeRemote:InvokeServer("Power", powerAmount)
-        end)
-    end
-    if selectedUpgrades["Reach"] then
-        pcall(function()
-            upgradeRemote:InvokeServer("Reach_Distance", reachAmount)
-        end)
-    end
-    if selectedUpgrades["Carry"] then
-        pcall(function()
-            upgradeRemote:InvokeServer("GrabAmount", 1)
-        end)
-    end
-    busy = false
-end
-
-UpgradesTab:Toggle({
-    Title = "Auto Upgrade",
-    Desc = "Automatically purchase selected upgrades",
-    Icon = "trending-up",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        runningUpgrade = state
-        if runningUpgrade then
-            task.spawn(function()
-                while runningUpgrade do
-                    doUpgrade()
-                    task.wait(interval)
-                end
-            end)
-        end
-    end
-})
-
-UpgradesTab:Divider()
-
-UpgradesTab:Section({
-    Title = "Brainrot Upgrades",
-    Icon = "box",
-})
-
-local runningPodUpgrade = false
-local podBusy = false
-local maxLevel = 100
-
-UpgradesTab:Input({
-    Title = "Max Brainrot Level",
-    Desc = "Auto upgrade brainrots up to this level",
-    Value = "100",
-    InputIcon = "hash",
-    Type = "Input",
-    Placeholder = "Enter max level",
-    Callback = function(value)
-        maxLevel = tonumber(value) or 100
-    end
-})
-
-local plotUpgradeRemote = game:GetService("ReplicatedStorage")
-    :WaitForChild("Packages")
-    :WaitForChild("Knit")
-    :WaitForChild("Services")
-    :WaitForChild("PlotService")
-    :WaitForChild("RF")
-    :WaitForChild("Upgrade")
-
-local function getMyPlot()
-    local myName = string.upper(player.Name)
-    for i = 1, 5 do
-        local plot = workspace.Plots:FindFirstChild("Plot"..i)
-        if plot then
-            local success, ownerText = pcall(function()
-                return plot.MainSign.ScreenFrame.SurfaceGui.Frame.Owner.PlayerName.Text
-            end)
-            if success and ownerText == myName then
-                return plot
-            end
-        end
-    end
-end
-
-local function getPodLevel(pod)
-    local success, levelText = pcall(function()
-        local model = pod:FindFirstChild("BrainrotModel")
-        if not model then return nil end
-        local visual = model:FindFirstChild("VisualAnchor")
-        if not visual then return nil end
-        local brainrot = visual:GetChildren()[1]
-        if not brainrot then return nil end
-        return brainrot.LevelBoard.Frame.Level.Text
-    end)
-    if success and levelText then
-        return tonumber(string.match(levelText, "%d+")) or 0
-    end
-    return nil
-end
-
-local function processPodUpgrades()
-    if podBusy then return end
-    podBusy = true
-    local plot = getMyPlot()
-    if not plot then
-        podBusy = false
-        return
-    end
-    local pods = plot:FindFirstChild("Pods")
-    if not pods then
-        podBusy = false
-        return
-    end
-    for _, pod in pairs(pods:GetChildren()) do
-        if not runningPodUpgrade then break end
-        local level = getPodLevel(pod)
-        if level and level < maxLevel then
-            pcall(function()
-                plotUpgradeRemote:InvokeServer(pod)
-            end)
-            task.wait(0.1)
-        end
-    end
-    podBusy = false
-end
-
-UpgradesTab:Toggle({
-    Title = "Auto Upgrade Brainrots",
-    Desc = "Automatically upgrade brainrots to max level",
-    Icon = "arrow-up",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        runningPodUpgrade = state
-        if runningPodUpgrade then
-            task.spawn(function()
-                while runningPodUpgrade do
-                    processPodUpgrades()
-                    task.wait(0.1)
-                end
-            end)
-        end
-    end
-})
-
--- ==================== AUTOMATION TAB ====================
-local AutomationTab = Window:Tab({
-    Title = "Automation",
-    Icon = "cpu",
-    Locked = false,
-})
-
-AutomationTab:Section({
-    Title = "Index & Rebirth",
-    Icon = "gift",
-})
-
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local TIERS = {
-    "Normal", "Golden", "Diamond", "Emerald", "Ruby",
-    "Rainbow", "Void", "Ethereal", "Celestial"
-}
-
-local runningIndex = false
-
-local function getButtons()
-    local buttons = {}
-    local path = player:WaitForChild("PlayerGui")
-        :WaitForChild("ScreenGui")
-        :WaitForChild("FrameIndex")
-        :WaitForChild("Main")
-        :WaitForChild("ScrollingFrame")
-    for _, v in ipairs(path:GetChildren()) do
-        if v:IsA("ImageButton") then
-            table.insert(buttons, v)
-        end
-    end
-    return buttons
-end
-
-local function runIndex()
-    while runningIndex do
-        local buttons = getButtons()
-        for _, button in ipairs(buttons) do
-            if not runningIndex then break end
-            local brainrotName = button.Name
-            for _, tier in ipairs(TIERS) do
-                if not runningIndex then break end
-                local args = {brainrotName, tier}
-                ReplicatedStorage
-                    :WaitForChild("Remotes")
-                    :WaitForChild("NewBrainrotIndex")
-                    :WaitForChild("ClaimBrainrotIndex")
-                    :FireServer(unpack(args))
-                task.wait(0.1)
-            end
-        end
-        task.wait(1)
-    end
-end
-
-AutomationTab:Toggle({
-    Title = "Auto Claim Index Rewards",
-    Desc = "Automatically claim all index rewards",
-    Icon = "gift",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        runningIndex = state
-        if runningIndex then
-            task.spawn(runIndex)
-        end
-    end
-})
-
-local rebirthEnabled = false
-
-local function autoRebirthLoop()
-    while rebirthEnabled do
-        pcall(function()
-            ReplicatedStorage
-                :WaitForChild("Packages")
-                :WaitForChild("Knit")
-                :WaitForChild("Services")
-                :WaitForChild("StatUpgradeService")
-                :WaitForChild("RF")
-                :WaitForChild("Rebirth")
-                :InvokeServer()
-        end)
-        task.wait(1)
-    end
-end
-
-AutomationTab:Toggle({
-    Title = "Auto Rebirth",
-    Desc = "Automatically rebirth when available",
-    Icon = "refresh-cw",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        rebirthEnabled = state
-        if rebirthEnabled then
-            task.spawn(autoRebirthLoop)
-        end
-    end
-})
-
-AutomationTab:Divider()
-
-AutomationTab:Section({
+FarmTab:Section({
     Title = "Money Collection",
-    Icon = "dollar-sign",
+    Icon = "target",
 })
 
 local TweenService = game:GetService("TweenService")
@@ -599,10 +476,9 @@ local root = character:WaitForChild("HumanoidRootPart")
 local collectActive = false
 local collectMode = "Teleport"
 
-AutomationTab:Dropdown({
+FarmTab:Dropdown({
     Title = "Collection Method",
     Desc = "How to move between collection points",
-    Multi = false,
     Icon = "move",
     Options = {"Teleport", "Tween"},
     Default = "Teleport",
@@ -673,7 +549,7 @@ local function runCollect()
     end
 end
 
-AutomationTab:Toggle({
+FarmTab:Toggle({
     Title = "Auto Collect Money",
     Desc = "Automatically collect money from all pods",
     Icon = "dollar-sign",
@@ -687,9 +563,106 @@ AutomationTab:Toggle({
     end
 })
 
+
+FarmTab:Section({
+    Title = "Index & Rebirth",
+    Icon = "gift",
+})
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TIERS = {
+    "Normal", "Golden", "Diamond", "Emerald", "Ruby",
+    "Rainbow", "Void", "Ethereal", "Celestial"
+}
+
+local runningIndex = false
+
+local function getButtons()
+    local buttons = {}
+    local path = player:WaitForChild("PlayerGui")
+        :WaitForChild("ScreenGui")
+        :WaitForChild("FrameIndex")
+        :WaitForChild("Main")
+        :WaitForChild("ScrollingFrame")
+    for _, v in ipairs(path:GetChildren()) do
+        if v:IsA("ImageButton") then
+            table.insert(buttons, v)
+        end
+    end
+    return buttons
+end
+
+local function runIndex()
+    while runningIndex do
+        local buttons = getButtons()
+        for _, button in ipairs(buttons) do
+            if not runningIndex then break end
+            local brainrotName = button.Name
+            for _, tier in ipairs(TIERS) do
+                if not runningIndex then break end
+                local args = {brainrotName, tier}
+                ReplicatedStorage
+                    :WaitForChild("Remotes")
+                    :WaitForChild("NewBrainrotIndex")
+                    :WaitForChild("ClaimBrainrotIndex")
+                    :FireServer(unpack(args))
+                task.wait(0.1)
+            end
+        end
+        task.wait(1)
+    end
+end
+
+FarmTab:Toggle({
+    Title = "Auto Claim Index Rewards",
+    Desc = "Automatically claim all index rewards",
+    Icon = "gift",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        runningIndex = state
+        if runningIndex then
+            task.spawn(runIndex)
+        end
+    end
+})
+
+local rebirthEnabled = false
+
+local function autoRebirthLoop()
+    while rebirthEnabled do
+        pcall(function()
+            ReplicatedStorage
+                :WaitForChild("Packages")
+                :WaitForChild("Knit")
+                :WaitForChild("Services")
+                :WaitForChild("StatUpgradeService")
+                :WaitForChild("RF")
+                :WaitForChild("Rebirth")
+                :InvokeServer()
+        end)
+        task.wait(1)
+    end
+end
+
+FarmTab:Toggle({
+    Title = "Auto Rebirth",
+    Desc = "Automatically rebirth when available",
+    Icon = "refresh-cw",
+    Type = "Checkbox",
+    Default = false,
+    Callback = function(state)
+        rebirthEnabled = state
+        if rebirthEnabled then
+            task.spawn(autoRebirthLoop)
+        end
+    end
+})
+
+
 -- ==================== RANDOM TAB ====================
 local RandomTab = Window:Tab({
-    Title = "Random",
+    Title = "Useful",
     Icon = "box",
     Locked = false,
 })
@@ -715,7 +688,7 @@ end
 
 RandomTab:Toggle({
     Title = "Inf Rope Reach",
-    Desc = "Set rope reach to maximum",
+    Desc = "Set rope reach to maximum, Might be laggy",
     Icon = "maximize-2",
     Type = "Checkbox",
     Default = false,
@@ -727,54 +700,6 @@ RandomTab:Toggle({
             task.spawn(enforceReach)
         else
             stat.Value = originalReach
-        end
-    end
-})
-
-local powerStat = player:WaitForChild("updateStatsFolder"):WaitForChild("Power")
-local powerEnabled = false
-local originalPower = powerStat.Value
-local sliderValue = 10
-
-RandomTab:Slider({
-    Title = "Custom Power",
-    Desc = "Set your power level",
-    Icon = "zap",
-    Min = 5,
-    Max = 15000,
-    Default = 10,
-    Increment = 1,
-    Callback = function(value)
-        sliderValue = value
-        if powerEnabled then
-            powerStat.Value = value
-        end
-    end
-})
-
-local function enforcePower()
-    while powerEnabled do
-        if powerStat.Value ~= sliderValue then
-            powerStat.Value = sliderValue
-        end
-        task.wait(0.1)
-    end
-end
-
-RandomTab:Toggle({
-    Title = "Enable Custom Power",
-    Desc = "Apply custom power value",
-    Icon = "zap",
-    Type = "Checkbox",
-    Default = false,
-    Callback = function(state)
-        powerEnabled = state
-        if powerEnabled then
-            originalPower = powerStat.Value
-            powerStat.Value = sliderValue
-            task.spawn(enforcePower)
-        else
-            powerStat.Value = originalPower
         end
     end
 })
