@@ -75,6 +75,11 @@ Window:EditOpenButton({
     Enabled = true,
     Draggable = true,
 })
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
 
 -- Info Tab
 -- ==================== PLAYER INFORMATION SECTION ====================
