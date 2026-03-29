@@ -77,6 +77,13 @@ Window:EditOpenButton({
 })
 
 -- Info Tab
+local InfoTab = Window:Tab({
+    Title = "Info",
+    Icon = "info",
+    Locked = false,
+})
+
+
 -- ==================== PLAYER INFORMATION SECTION ====================
 InfoTab:Section({
     Title = "Player Information Dashboard",
