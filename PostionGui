@@ -2,37 +2,47 @@ local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/rel
 
 WindUI:SetNotificationLower(true)
 
--- Add Garden Theme with natural green gradients
+-- Add Purple Garden Theme with gradients
 WindUI:AddTheme({
     Name = "Garden",
     Accent = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromRGB(34, 139, 34), Transparency = 0 },
-        ["100"] = { Color = Color3.fromRGB(46, 125, 50), Transparency = 0 },
+        ["0"] = { Color = Color3.fromRGB(139, 92, 246), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(168, 85, 247), Transparency = 0 },
     }, {
         Rotation = 45,
     }),
     Dialog = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromRGB(18, 28, 18), Transparency = 0 },
-        ["100"] = { Color = Color3.fromRGB(22, 35, 22), Transparency = 0 },
+        ["0"] = { Color = Color3.fromRGB(17, 17, 17), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(24, 24, 24), Transparency = 0 },
     }, {
         Rotation = 90,
     }),
-    Outline = Color3.fromRGB(76, 175, 80),
-    Text = Color3.fromRGB(240, 255, 240),
-    Placeholder = Color3.fromRGB(129, 199, 132),
-    Background = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromRGB(15, 25, 15), Transparency = 0 },
-        ["100"] = { Color = Color3.fromRGB(20, 32, 20), Transparency = 0 },
+    Outline = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromRGB(167, 139, 250), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(196, 181, 253), Transparency = 0 },
     }, {
         Rotation = 135,
     }),
+    Text = Color3.fromRGB(250, 250, 250),
+    Placeholder = Color3.fromRGB(163, 163, 163),
+    Background = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromRGB(12, 12, 12), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(20, 20, 20), Transparency = 0 },
+    }, {
+        Rotation = 180,
+    }),
     Button = WindUI:Gradient({
-        ["0"] = { Color = Color3.fromRGB(56, 142, 60), Transparency = 0 },
-        ["100"] = { Color = Color3.fromRGB(67, 160, 71), Transparency = 0 },
+        ["0"] = { Color = Color3.fromRGB(124, 58, 237), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(139, 92, 246), Transparency = 0 },
     }, {
         Rotation = 45,
     }),
-    Icon = Color3.fromRGB(165, 214, 167)
+    Icon = WindUI:Gradient({
+        ["0"] = { Color = Color3.fromRGB(192, 132, 252), Transparency = 0 },
+        ["100"] = { Color = Color3.fromRGB(233, 213, 255), Transparency = 0 },
+    }, {
+        Rotation = 90,
+    })
 })
 
 -- Create Main Window
@@ -55,12 +65,12 @@ local Window = WindUI:CreateWindow({
 -- Edit Open Button
 Window:EditOpenButton({
     Title = "Open",
-    Icon = "leaf",
+    Icon = "zap",
     CornerRadius = UDim.new(0, 16),
     StrokeThickness = 2,
     Color = ColorSequence.new(
-        Color3.fromRGB(34, 139, 34),
-        Color3.fromRGB(76, 175, 80)
+        Color3.fromRGB(124, 58, 237),
+        Color3.fromRGB(168, 85, 247)
     ),
     OnlyMobile = false,
     Enabled = true,
@@ -70,7 +80,7 @@ Window:EditOpenButton({
 -- Add Version Tag
 Window:Tag({
     Title = "v1.0",
-    Color = Color3.fromRGB(76, 175, 80),
+    Color = Color3.fromRGB(168, 85, 247),
     Radius = 8,
 })
 
@@ -124,8 +134,10 @@ FarmTab:Dropdown({
     Default = {},
     Callback = function(selected)
         excludedRarities = {}
-        for _, v in pairs(selected) do
-            excludedRarities[v] = true
+        if type(selected) == "table" then
+            for _, v in pairs(selected) do
+                excludedRarities[v] = true
+            end
         end
     end
 })
@@ -139,8 +151,10 @@ FarmTab:Dropdown({
     Default = {},
     Callback = function(selected)
         excludedRanks = {}
-        for _, v in pairs(selected) do
-            excludedRanks[v] = true
+        if type(selected) == "table" then
+            for _, v in pairs(selected) do
+                excludedRanks[v] = true
+            end
         end
     end
 })
@@ -262,8 +276,10 @@ UpgradesTab:Dropdown({
     Default = {},
     Callback = function(selected)
         selectedUpgrades = {}
-        for _, v in pairs(selected) do
-            selectedUpgrades[v] = true
+        if type(selected) == "table" then
+            for _, v in pairs(selected) do
+                selectedUpgrades[v] = true
+            end
         end
     end
 })
@@ -276,7 +292,11 @@ UpgradesTab:Dropdown({
     Options = {"5", "25", "50"},
     Default = "5",
     Callback = function(value)
-        powerAmount = tonumber(value) or 5
+        if type(value) == "string" then
+            powerAmount = tonumber(value) or 5
+        elseif type(value) == "table" and value[1] then
+            powerAmount = tonumber(value[1]) or 5
+        end
     end
 })
 
@@ -288,7 +308,11 @@ UpgradesTab:Dropdown({
     Options = {"5", "25", "50"},
     Default = "5",
     Callback = function(value)
-        reachAmount = tonumber(value) or 5
+        if type(value) == "string" then
+            reachAmount = tonumber(value) or 5
+        elseif type(value) == "table" and value[1] then
+            reachAmount = tonumber(value[1]) or 5
+        end
     end
 })
 
@@ -583,7 +607,11 @@ AutomationTab:Dropdown({
     Options = {"Teleport", "Tween"},
     Default = "Teleport",
     Callback = function(value)
-        collectMode = value
+        if type(value) == "string" then
+            collectMode = value
+        elseif type(value) == "table" and value[1] then
+            collectMode = value[1]
+        end
     end
 })
 
