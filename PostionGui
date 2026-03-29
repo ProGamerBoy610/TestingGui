@@ -77,31 +77,11 @@ Window:EditOpenButton({
 })
 
 -- Info Tab
-local InfoTab = Window:Tab({
-    Title = "Info",
-    Icon = "info",
-    Locked = false,
-})
-
-
 -- ==================== PLAYER INFORMATION SECTION ====================
 InfoTab:Section({
     Title = "Player Information Dashboard",
     Icon = "user-check",
 })
-
-InfoTab:Paragraph({
-    Title = "Player Information Dashboard",
-    Desc = "Complete player details, game information, and community access",
-    Color = "Blue",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
-})
-
 local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local Player = Players.LocalPlayer
@@ -135,18 +115,6 @@ InfoTab:Divider()
 InfoTab:Section({
     Title = "Join Our Discord Community",
     Icon = "users",
-})
-
-InfoTab:Paragraph({
-    Title = "🎮 Connect & Engage",
-    Desc = "Join thousands of players in our Discord community for updates, support, and exclusive content!",
-    Color = "Blue",
-    Image = "",
-    ImageSize = 30,
-    Thumbnail = "",
-    ThumbnailSize = 80,
-    Locked = false,
-    Buttons = {}
 })
 
 -- Discord API Configuration
