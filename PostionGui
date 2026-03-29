@@ -80,7 +80,7 @@ Window:EditOpenButton({
 
 -- Info Tab
 -- ==================== PLAYER INFORMATION SECTION ====================
-local Sectiontest = InfoTab:Section({
+InfoTab:Section({
     Title = "Player Information Dashboard",
     Icon = "user-check",
 })
