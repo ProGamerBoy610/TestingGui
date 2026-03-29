@@ -48,8 +48,7 @@ WindUI:AddTheme({
 -- Create Main Window
 local Window = WindUI:CreateWindow({
     Title = "Swing Obby for Brainrots!",
-    Author = "by Phemonaz",
-    Folder = "SwingObbyHub",
+    Folder = "SwingObby",
     Size = UDim2.fromOffset(580, 460),
     MinSize = Vector2.new(560, 380),
     MaxSize = Vector2.new(850, 600),
@@ -58,7 +57,7 @@ local Window = WindUI:CreateWindow({
     Resizable = true,
     SideBarWidth = 200,
     BackgroundImageTransparency = 0.42,
-    HideSearchBar = false,
+    HideSearchBar = true,
     ScrollBarEnabled = true,
 })
 
@@ -76,7 +75,6 @@ Window:EditOpenButton({
     Enabled = true,
     Draggable = true,
 })
-
 
 -- Info Tab
 -- ==================== PLAYER INFORMATION SECTION ====================
@@ -127,7 +125,7 @@ InfoTab:Paragraph({
 InfoTab:Divider()
 
 -- ==================== DISCORD COMMUNITY SECTION ====================
-local DiscordSection = InfoTab:Section({
+InfoTab:Section({
     Title = "Join Our Discord Community",
     Icon = "users",
 })
